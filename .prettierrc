@@ -1,0 +1,19 @@
+{
+  "plugins": [
+    "prettier-plugin-embed",
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-tailwindcss"
+  ],
+  "organizeImportsSkipDestructiveCodeActions": true,
+  "semi": false,
+  "singleQuote": true,
+  "arrowParens": "avoid",
+  "quoteProps": "preserve",
+  "printWidth": 90,
+  "overrides": [
+    {
+      "files": ["packages/epos/src/epos/epos.ts"],
+      "options": { "printWidth": 100 }
+    }
+  ]
+}

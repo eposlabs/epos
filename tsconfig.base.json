@@ -1,0 +1,16 @@
+{
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+
+    "declaration": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noImplicitAny": true
+  }
+}

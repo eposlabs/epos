@@ -1,0 +1,52 @@
+const THROW = ':EPOS_BUS_THROW'
+
+export type Throw = { [THROW]: true; message: string }
+
+export class BusUtils extends $gl.Unit {
+  private $bus = this.up($gl.Bus, 'internal')!
+  private static THROW = THROW
+
+  id(prefix = '') {
+    const now = Date.now()
+    const rand = Math.random().toString(36).slice(2)
+    return [prefix, now, rand].filter(Boolean).join('-')
+  }
+
+  createTempObjectUrl(blob: Blob) {
+    const objectUrl = URL.createObjectURL(blob)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+    return objectUrl
+  }
+
+  /** Resolves with the first present result, catches errors as Throw object. */
+  async pick(promises: (Promise<unknown> | null)[]) {
+    if (promises.length === 0) return null
+
+    const result$ = Promise.withResolvers<unknown>()
+    let resolved = 0
+    for (const promise of promises) {
+      if (!promise) continue
+      async: (async () => {
+        const [result, error] = await this.$.safe(promise)
+        if (this.$.is.present(result)) {
+          result$.resolve(result)
+        } else if (error) {
+          const message = error?.message ?? 'Unexpected error'
+          const throwObject: Throw = { [THROW]: true, message }
+          result$.resolve(throwObject)
+          throw error
+        } else {
+          resolved += 1
+          if (resolved !== promises.length) return
+          result$.resolve(null)
+        }
+      })()
+    }
+
+    return await result$.promise
+  }
+
+  isThrow(value: unknown): value is Throw {
+    return this.$.is.object(value) && THROW in value
+  }
+}

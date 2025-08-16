@@ -1,0 +1,42 @@
+{
+  "name": "epos-server",
+  "version": "1.1.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "",
+  "keywords": [],
+  "scripts": {
+    "dev": "dropcap tsx watch --inspect ./src/entry/entry.ts",
+    "preview": "dropcap tsc watch ./src/entry/entry.ts",
+    "build": "dropcap tsc",
+    "start": "node dist/entry/entry.js",
+    "lint": "eslint src",
+    "release": "npm run build && npm publish",
+    "release:patch": "npm version patch && npm run release"
+  },
+  "bin": {
+    "epos": "./bin.js"
+  },
+  "files": [
+    "dist",
+    "bin.js"
+  ],
+  "dependencies": {
+    "@hono/node-server": "^1.18.2",
+    "chalk": "^5.5.0",
+    "dropcap": "^1.0.14",
+    "epos-types": "^0.0.5",
+    "file-type": "^21.0.0",
+    "globby": "^14.1.0",
+    "hono": "^4.9.1",
+    "mime": "^4.0.7",
+    "strip-json-comments": "^5.0.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@parcel/watcher": "^2.5.1",
+    "@types/ws": "^8.18.1",
+    "rimraf": "^6.0.1"
+  }
+}

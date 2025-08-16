@@ -1,0 +1,21 @@
+{
+  "name": "epos-types",
+  "version": "1.1.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "",
+  "keywords": [],
+  "scripts": {
+    "release": "npm publish",
+    "release:patch": "npm version patch && npm run release"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/epos-types.ts"
+    }
+  },
+  "files": [
+    "src"
+  ]
+}
