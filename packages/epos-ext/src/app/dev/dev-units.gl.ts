@@ -1,6 +1,7 @@
 export class DevUnits extends $gl.Unit {
   constructor(parent: $gl.Unit) {
     super(parent)
+    if (DROPCAP_PROD) return
     self.$units = {
       ...$gl,
       ...$exOsSwVw,

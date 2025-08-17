@@ -1,10 +1,10 @@
-export class StoreUtils extends $exSw.Unit {
-  private $store = this.up($exSw.Store, 'internal')!
+export class StatesUtils extends $exSw.Unit {
+  private $units = this.up($exSw.States)!.units
 
   raw<T>(value: T): T {
-    if (this.$.libs.mobx.isObservable(value) && this.$store.units.isUnit(value)) {
+    if (this.$.libs.mobx.isObservable(value) && this.$units.isUnit(value)) {
       const object: Obj = {}
-      const keys = this.$store.units.getAnnotationKeys(value)
+      const keys = this.$units.getKeys(value)
       for (const key of keys) {
         object[key] = this.raw((value as Obj)[key])
       }

@@ -1,18 +1,20 @@
 import type { IObservableFactory } from 'mobx'
 import type { Array as YjsArray, Map as YjsMap } from 'yjs'
-import type { Unit } from '../store-units.ex.sw'
 import type { Value } from './state.ex.sw'
+import type { Unit } from '../states-units.ex.sw'
 
 export const _meta_ = Symbol('meta')
 export const _keys_ = Symbol('keys')
 
+// MobX node
 export type MObj = Obj
 export type MArr = Arr
-export type MNode = (MObj | MArr) & { [_meta_]?: Meta }
+export type MNode = (MObj | MArr) & { [_meta_]?: Meta; _?: unknown; __?: unknown }
 
+// Yjs node
 export type YMap = YjsMap<unknown>
 export type YArr = YjsArray<unknown>
-export type YNode = (YMap | YArr) & { [_meta_]?: Meta }
+export type YNode = (YMap | YArr) & { [_meta_]?: Meta; _?: unknown }
 
 export type Owner = MNode | null
 
@@ -20,18 +22,17 @@ export type Meta = {
   mNode: MNode
   yNode: YNode
   owner: Owner
-  unobserve: () => void
+  unobserve?: () => void
 }
 
 export class StateNode extends $exSw.Unit {
-  private $state = this.up($exSw.State, 'internal')!
-  private $units = this.up($exSw.Store, 'internal')!.units
+  private $state = this.up($exSw.State)!
+  private $units = this.up($exSw.States)!.units
   private static _meta_ = _meta_
+  private static _keys_ = _keys_
 
-  // TODO: maybe use target.getOwner (?)
-  static getOwner(target: any) {
-    const meta = this.prototype.getMeta(target)
-    return meta?.owner ?? null
+  static getOwner<T extends MNode>(target: T) {
+    return this.prototype.getOwner(target)
   }
 
   create(target: YMap, owner?: Owner): MObj
@@ -62,14 +63,18 @@ export class StateNode extends $exSw.Unit {
     const isUnit = this.$units.isUnit(target)
 
     if (meta) {
+      if (!meta.unobserve) throw this.never
       meta.unobserve()
       delete meta.mNode[_meta_]
       delete meta.yNode[_meta_]
+      delete meta.mNode._
+      delete meta.yNode._
+      delete meta.mNode.__
       if (isUnit) this.$units.cleanup(target)
     }
 
     if (isUnit) {
-      for (const key of this.$units.getAnnotationKeys(target)) {
+      for (const key of this.$units.getKeys(target)) {
         this.detach((target as any)[key])
       }
     } else if (this.$.is.object(target)) {
@@ -95,7 +100,13 @@ export class StateNode extends $exSw.Unit {
     return meta.yNode as T extends MObj ? YMap : YArr
   }
 
-  private getMeta(target: any) {
+  getOwner<T extends MNode>(node: T): Owner {
+    const meta = this.getMeta(node)
+    if (!meta) return null
+    return meta.owner
+  }
+
+  private getMeta(target: any): Meta | null {
     return (target?.[_meta_] as Meta) ?? null
   }
 
@@ -110,18 +121,19 @@ export class StateNode extends $exSw.Unit {
       : this.createEmptyMobxObject()
 
     // Attach node
-    this.attach(mNode, yMap, owner, [...yMap.keys()])
+    this.attach(mNode, yMap, owner)
 
     // Fill recursively
     for (const key of yMap.keys()) {
       mNode[key] = this.create(yMap.get(key), mNode)
     }
 
+    // Observe node
     this.observe(mNode)
 
     // Setup unit
     if (isUnit) {
-      this.setupUnit(mNode as unknown as Unit)
+      this.setupUnit(mNode)
     }
 
     return mNode
@@ -139,6 +151,7 @@ export class StateNode extends $exSw.Unit {
       mNode.push(this.create(yArray.get(i), mNode))
     }
 
+    // Observe node
     this.observe(mNode)
 
     return mNode
@@ -156,7 +169,7 @@ export class StateNode extends $exSw.Unit {
     const yNode = !owner ? this.$state.doc.getMap('root') : new this.$.libs.yjs.Map()
 
     // Attach node
-    this.attach(mNode, yNode, owner, [...Object.keys(object)])
+    this.attach(mNode, yNode, owner)
 
     // Fill recursively
     for (const key in object) {
@@ -165,11 +178,12 @@ export class StateNode extends $exSw.Unit {
       yNode.set(key, meta?.yNode ?? object[key])
     }
 
+    // Observe node
     this.observe(mNode)
 
     // Setup unit
     if (isUnit) {
-      this.setupUnit(mNode as unknown as Unit)
+      this.setupUnit(mNode)
     }
 
     return mNode
@@ -190,6 +204,7 @@ export class StateNode extends $exSw.Unit {
       yNode.insert(mNode.length - 1, [meta?.yNode ?? item])
     }
 
+    // Observe node
     this.observe(mNode)
 
     return mNode
@@ -216,70 +231,65 @@ export class StateNode extends $exSw.Unit {
   }
 
   private createEmptyMobxUnit(spec: string, keys: string[]) {
-    // Create empty unit shape and construct MobX annotations
-    const unit: MObj = {}
-    const annotations: Record<string, IObservableFactory['ref']> = {}
-    for (const key of keys) {
-      unit[key] = undefined
-      annotations[key] = this.$.libs.mobx.observable
-    }
-
-    // Make unit observable
-    this.$.libs.mobx.makeObservable(unit, annotations, { deep: false })
-
-    // Apply unit prototype. Must be called after 'makeObservable' otherwise keys
-    // become non-configurable and we can't delete them during versioning.
-    const Unit = this.$units.getClassBySpec(spec)
-    if (!Unit) throw this.never
-    Reflect.setPrototypeOf(unit, Unit.prototype)
-
-    return unit
+    const unit = this.$units.createEmptyUnit(spec, keys)
+    return unit as unknown as MObj
   }
 
-  private setupUnit(unit: Unit) {
-    // Why whenInitialized? When unit runs versioner, changes should be broadcasted
-    // to other peers, but broadcasting is enabled only after the state is initialized.
-    this.$state.setup.whenInitialized(() => {
+  private setupUnit(unit: MObj) {
+    if (!this.$units.isUnit(unit)) throw this.never
+
+    // Why whenReady? When unit runs versioner, changes should be broadcasted
+    // to other peers, but broadcasting is enabled only after the state is ready.
+    this.$state.setup.whenReady(() => {
       this.$units.setup(unit)
     })
   }
 
-  private attach(mNode: MNode, yNode: YNode, owner: Owner = null, keys = null) {
-    // Observe mNode and yNode for changes
-    // const unobserve = this.$state.observer.observe(mNode, yNode)
-
-    // Add meta for mNode and yNode
-    const meta: Meta = { mNode, yNode, owner, unobserve: null }
+  private attach(mNode: MNode, yNode: YNode, owner: Owner = null) {
+    // Add meta
+    const meta: Meta = { mNode, yNode, owner }
     Reflect.defineProperty(mNode, _meta_, { configurable: true, get: () => meta })
     Reflect.defineProperty(yNode, _meta_, { configurable: true, get: () => meta })
 
-    // Add peeker for mNode
-    Reflect.defineProperty(mNode, '_', { get: () => this.$.libs.mobx.toJS(mNode) })
-
-    if (keys) {
-      Reflect.defineProperty(mNode, _keys_, { get: () => keys })
-    }
-
-    // console.log(this.trace(mNode))
-    // console.log(mNode._, this.trace(mNode))
+    // Add dev helpers
+    const mNodeToRaw = () => this.raw(mNode)
+    const yNodeToJson = () => yNode.toJSON()
+    const mNodeToJs = () => this.$.libs.mobx.toJS(mNode)
+    Reflect.defineProperty(mNode, '_', { configurable: true, get: mNodeToRaw })
+    Reflect.defineProperty(yNode, '_', { configurable: true, get: yNodeToJson })
+    Reflect.defineProperty(mNode, '__', { configurable: true, get: mNodeToJs })
   }
 
-  observe(mNode) {
+  private observe(mNode: MNode) {
     const meta = this.getMeta(mNode)
+    if (!meta) throw this.never
     meta.unobserve = this.$state.observer.observe(mNode, meta.yNode)
   }
 
-  private trace(mNode) {
-    let cursor = mNode
-    const path = []
-    while (true) {
-      const owner = $exSw.StateNode.getOwner(cursor)
-      if (!owner) break
-      const keys = Object.keys(owner)
-      const key = keys.find(k => owner[k] === cursor)
-      path.unshift(key)
-      cursor = owner
+  private raw<T>(value: T): T {
+    // Should we check for isObservable here? Probably not, because now __ is attached only to
+    // observable units. Or still yes, because we don't remove __? Should we remove?
+    if (this.$units.isUnit(value)) {
+      const object: Obj = {}
+      const keys = this.$units.getKeys(value)
+      for (const key of keys) {
+        object[key] = this.raw((value as Obj)[key])
+      }
+      return object as T
     }
-    return path
+
+    if (this.$.is.object(value)) {
+      const object: Obj = {}
+      for (const key in value) {
+        object[key] = this.raw(value[key])
+      }
+      return object as T
+    }
+
+    if (this.$.is.array(value)) {
+      return value.map(v => this.raw(v)) as T
+    }
+
+    return value
   }
 }

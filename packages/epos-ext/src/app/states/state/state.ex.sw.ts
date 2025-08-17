@@ -1,4 +1,4 @@
-import type { DbKey, DbName, DbStore } from '@/app/idb/idb.sw'
+import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
 import type { MObj } from './state-node.ex.sw'
 
 export type Location = [DbName, DbStore, DbKey]
@@ -24,16 +24,15 @@ export class State extends $exSw.Unit {
   id: string
   root: Root | null = null
   location: Location
+  doc = new this.$.libs.yjs.Doc()
+  bus: ReturnType<typeof this.$.bus.create>
+  initial: Initial | null
+  versioner: Versioner | null
 
-  private doc = new this.$.libs.yjs.Doc()
-  private bus: ReturnType<typeof this.$.bus.create>
-  private initial: Initial | null
-  private versioner: Versioner | null
-
-  private idb = new $exSw.StateIdb(this)
-  private node = new $exSw.StateNode(this)
-  private observer = new $exSw.StateObserver(this)
-  private setup = new $exSw.StateSetup(this)
+  idb = new $exSw.StateIdb(this)
+  node = new $exSw.StateNode(this)
+  observer = new $exSw.StateObserver(this)
+  setup = new $exSw.StateSetup(this)
 
   constructor(
     parent: $exSw.Unit,
@@ -63,22 +62,5 @@ export class State extends $exSw.Unit {
         fn()
       })
     })
-  }
-
-  get internal() {
-    return {
-      bus: this.bus,
-      doc: this.doc,
-      id: this.id,
-      idb: this.idb,
-      initial: this.initial,
-      location: this.location,
-      node: this.node,
-      observer: this.observer,
-      root: this.root,
-      setup: this.setup,
-      transaction: this.transaction,
-      versioner: this.versioner,
-    }
   }
 }

@@ -1,9 +1,7 @@
 // TODO: unit support here (?)
 // local state should support owner as well for units to work
 // and onChange we need to handle detach
-export class StoreLocalState extends $exSw.Unit {
-  private $units = this.up($exSw.Store, 'internal')!.units
-
+export class StatesLocal extends $exSw.Unit {
   create(data: unknown) {
     if (this.$.is.object(data)) {
       return this.createFromObject(data)
@@ -16,7 +14,7 @@ export class StoreLocalState extends $exSw.Unit {
 
   createFromObject(object: Obj, owner) {
     const spec = object['@']
-    const isUnit = this.$units.isUnitSpec(spec)
+    const isUnit = this.$.units.isUnitSpec(spec)
 
     let empty
     if (isUnit) {
@@ -30,7 +28,7 @@ export class StoreLocalState extends $exSw.Unit {
     this.hydrate(empty)
 
     if (isUnit) {
-      this.$units.setup(empty)
+      this.$.units.setup(empty)
     }
 
     return empty
@@ -50,7 +48,7 @@ export class StoreLocalState extends $exSw.Unit {
 
     // Apply unit prototype. Must be called after 'makeObservable' otherwise keys
     // become non-configurable and we can't delete them during versioning.
-    const Unit = this.$units.getClassBySpec(spec)
+    const Unit = this.$.units.getClassBySpec(spec)
     if (!Unit) throw this.never
     Reflect.setPrototypeOf(unit, Unit.prototype)
 

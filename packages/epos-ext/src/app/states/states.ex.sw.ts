@@ -1,7 +1,10 @@
 import type { Initial, Location, Versioner } from './state/state.ex.sw'
 
-export class StoreStates extends $exSw.Unit {
+export class States extends $exSw.Unit {
   map: Record<string, $exSw.State> = {}
+  local = new $exSw.StatesLocal(this)
+  units = new $exSw.StatesUnits(this)
+  utils = new $exSw.StatesUtils(this)
   private queue = new this.$.utils.Queue()
 
   get list() {
@@ -38,7 +41,7 @@ export class StoreStates extends $exSw.Unit {
     await state.init()
     this.map[id] = state
 
-    // Flag EX as connected
+    // Mark EX as connected
     if (this.$.env.is.ex) {
       this.$.bus.on(`states.exConnected[${id}]`, () => true)
     }
@@ -56,7 +59,7 @@ export class StoreStates extends $exSw.Unit {
     await state.cleanup()
     delete this.map[id]
 
-    // Unflag EX as connected
+    // Unmark EX as connected
     if (this.$.env.is.ex) {
       this.$.bus.off(`states.exConnected[${id}]`)
     }
@@ -86,10 +89,19 @@ export class StoreStates extends $exSw.Unit {
     this.$.libs.mobx.runInAction(() => transact())
   }
 
-  isConnected(location: Location) {
+  has(location: Location) {
     const id = location.join('/')
     return id in this.map
   }
+
+  // up(target: unknown, check: (cursor: unknown) => boolean) {
+  //   // let cursor = $exSw.StateNode.getOwner(this)
+  //   // while (cursor) {
+  //   //   if (cursor instanceof Ancestor) return cursor
+  //   //   cursor = $exSw.StateNode.getOwner(cursor)
+  //   // }
+  //   // return null
+  // }
 
   /** Automatically disconnect state if there are no EX connections to it */
   private initAutoDisconnect() {

@@ -11,7 +11,6 @@ export default defineConfig({
   },
 
   layers: {
-    global: false,
     input: './src/app',
     output: './src/layers',
   },

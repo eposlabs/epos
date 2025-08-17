@@ -1,8 +1,8 @@
 import { Unit } from 'dropcap/unit'
 
-class UnitGl extends Unit<$cs.App | $ex.App | $os.App | $sw.App | $vw.App> {}
 class UnitCs extends Unit<$cs.App> {}
 class UnitEx extends Unit<$ex.App> {}
+class UnitGl extends Unit<$cs.App | $ex.App | $os.App | $sw.App | $vw.App> {}
 class UnitOs extends Unit<$os.App> {}
 class UnitSw extends Unit<$sw.App> {}
 class UnitVw extends Unit<$vw.App> {}
@@ -13,9 +13,9 @@ class UnitSwVw extends Unit<$sw.App | $vw.App> {}
 class UnitExOsVw extends Unit<$ex.App | $os.App | $vw.App> {}
 class UnitExOsSwVw extends Unit<$ex.App | $os.App | $sw.App | $vw.App> {}
 
-$gl.Unit = UnitGl
 $cs.Unit = UnitCs
 $ex.Unit = UnitEx
+$gl.Unit = UnitGl
 $os.Unit = UnitOs
 $sw.Unit = UnitSw
 $vw.Unit = UnitVw
@@ -28,9 +28,9 @@ $exOsSwVw.Unit = UnitExOsSwVw
 
 // prettier-ignore
 declare global {
-  interface $Gl { Unit: typeof UnitGl }
   interface $Cs { Unit: typeof UnitCs }
   interface $Ex { Unit: typeof UnitEx }
+  interface $Gl { Unit: typeof UnitGl }
   interface $Os { Unit: typeof UnitOs }
   interface $Sw { Unit: typeof UnitSw }
   interface $Vw { Unit: typeof UnitVw }
@@ -41,9 +41,9 @@ declare global {
   interface $ExOsVw { Unit: typeof UnitExOsVw }
   interface $ExOsSwVw { Unit: typeof UnitExOsSwVw }
 
-  namespace $gl { export type Unit = UnitGl }
   namespace $cs { export type Unit = UnitCs }
   namespace $ex { export type Unit = UnitEx }
+  namespace $gl { export type Unit = UnitGl }
   namespace $os { export type Unit = UnitOs }
   namespace $sw { export type Unit = UnitSw }
   namespace $vw { export type Unit = UnitVw }

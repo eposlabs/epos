@@ -198,7 +198,7 @@ export class ProjectLayers extends Unit<Project> {
         if (layer1.length !== layer2.length) return layer2.length - layer1.length
         return layer1.localeCompare(layer2)
       })
-      .map(layer => `import './layer.${layer}'\n`)
+      .map(layer => `import './layer.${layer}'`)
 
     return [...imports].join('\n')
   }
@@ -222,9 +222,10 @@ export class ProjectLayers extends Unit<Project> {
         const $layerName = this.getLayerName(layer, '$camel')
         return `globalThis.${$layerName} = ${$layerName}`
       })
+      globals.unshift('')
     }
 
-    return [nocheck, '', ...vars, '', ...globals, ''].join('\n')
+    return [nocheck, '', ...vars, ...globals, ''].join('\n')
   }
 
   private getLayerName(layer: string, style: 'Pascal' | '$Pascal' | '$camel') {

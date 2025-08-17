@@ -15,7 +15,7 @@ export class App extends $sw.Unit {
   net = new $sw.Net(this)
   peer = new $sw.Peer(this)
   pkgs = new $sw.Pkgs(this)
-  store = new $exSw.Store(this)
+  states = new $exSw.States(this)
   tools = new $sw.Tools(this)
 
   async init() {

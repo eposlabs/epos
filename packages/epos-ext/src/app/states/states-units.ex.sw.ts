@@ -1,19 +1,44 @@
 import type { Log } from 'dropcap/utils'
-import type { IObservableFactory } from 'mobx/dist/api/observable'
-import type { MNode, MObj } from './state/state-node.ex.sw'
-import { _keys_, _meta_ } from './state/state-node.ex.sw'
+import type { IObservableFactory } from 'mobx'
 
 let $: $ex.App | $sw.App
+const _keys_ = Symbol('keys')
 const _disposers_ = Symbol('disposers')
 
-export class StoreUnits extends $exSw.Unit {
-  private $store = this.up($exSw.Store, 'internal')!
+export class StatesUnits extends $exSw.Unit {
   map: { [name: string]: typeof Unit } = {}
   Unit = Unit
 
   constructor(parent: $exSw.Unit) {
     super(parent)
     $ = this.$
+  }
+
+  createEmptyUnit(spec: string, keys: string[]) {
+    // Create empty unit shape and construct MobX annotations
+    const unit: Obj = {}
+    const annotations: Record<string, IObservableFactory['ref']> = {}
+    for (const key of keys) {
+      unit[key] = undefined
+      annotations[key] = this.$.libs.mobx.observable
+    }
+
+    // Make unit observable
+    this.$.libs.mobx.makeObservable(unit, annotations, { deep: false })
+
+    // Keep the list of annotated keys
+    Reflect.defineProperty(unit, _keys_, { get: () => keys })
+
+    // Apply prototype
+    const Unit = this.getClassBySpec(spec)
+    if (!Unit) throw this.never
+    Reflect.setPrototypeOf(unit, Unit.prototype)
+
+    return unit as unknown as Unit
+  }
+
+  getKeys(unit: Unit) {
+    return unit[_keys_]
   }
 
   register(Class: typeof Unit, aliases: string[] = []) {
@@ -26,7 +51,6 @@ export class StoreUnits extends $exSw.Unit {
   setup(unit: Unit) {
     this.setupUi(unit)
     this.setupLog(unit)
-    this.setupRaw(unit)
     this.setupRoot(unit)
     this.setupName(unit)
     this.setupVersion(unit)
@@ -42,6 +66,11 @@ export class StoreUnits extends $exSw.Unit {
     return target instanceof Unit
   }
 
+  // Only units in state are observable, other units are not
+  isObservableUnit(target: unknown): target is Unit {
+    return this.$.libs.mobx.isObservable(target) && this.isUnit(target)
+  }
+
   isUnitSpec(spec: unknown): spec is string {
     if (!this.$.is.string(spec)) return false
     const name = this.specToName(spec)
@@ -52,13 +81,6 @@ export class StoreUnits extends $exSw.Unit {
     const name = this.specToName(spec)
     if (!(name in this.map)) return null
     return this.map[name]
-  }
-
-  getAnnotationKeys(unit: Unit) {
-    const unit_ = unit as any
-    return unit_[_keys_]
-    // const _mobx_ = this.$.libs.mobx.$mobx
-    // return Object.keys(unit_[_mobx_].appliedAnnotations_)
   }
 
   // ---------------------------------------------------------------------------
@@ -86,20 +108,9 @@ export class StoreUnits extends $exSw.Unit {
     Reflect.defineProperty(unit, 'log', { get: () => log })
   }
 
-  private setupRaw(unit: Unit) {
-    Reflect.defineProperty(unit, '__', { get: () => this.$store.utils.raw(unit) })
-  }
-
   private setupRoot(unit: Unit) {
     const root = this.getRoot(unit)
-    Reflect.defineProperty(unit, '$', {
-      get: () => {
-        // const s = this
-        // const u = unit
-        // debugger
-        return root
-      },
-    })
+    Reflect.defineProperty(unit, '$', { get: () => root })
   }
 
   private setupName(unit: Unit) {
@@ -206,9 +217,9 @@ export class StoreUnits extends $exSw.Unit {
     return link.split(':')[0]
   }
 
-  private getRoot(unit: Unit) {
-    let root: Unit | MObj = unit
-    let cursor: Unit | MNode | null = unit
+  private getRoot(unit: Unit): Unit | null {
+    let root = unit
+    let cursor: any = unit
     while (cursor) {
       if ('@' in cursor) root = cursor
       cursor = $exSw.StateNode.getOwner(cursor)
@@ -224,16 +235,16 @@ export class StoreUnits extends $exSw.Unit {
 
 class Unit {
   '@' = this.constructor.name
-  declare $: Unit | MObj
-  declare __?: unknown
+  declare $: Obj | Unit
   declare log: Log
   declare init?: unknown
   declare cleanup?: unknown
   declare static v: Record<number, (this: Unit, unit: Unit) => void>;
+  declare [_keys_]: string[];
   declare [_disposers_]?: Fn[]
 
   up<T extends Unit>(Ancestor: Cls<T>): T | null {
-    let cursor = $exSw.StateNode.getOwner(this)
+    let cursor = $exSw.StateNode.getOwner(this as any)
     while (cursor) {
       if (cursor instanceof Ancestor) return cursor
       cursor = $exSw.StateNode.getOwner(cursor)

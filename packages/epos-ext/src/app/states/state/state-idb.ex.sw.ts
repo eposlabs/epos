@@ -1,5 +1,5 @@
 export class StateIdb extends $exSw.Unit {
-  private $state = this.up($exSw.State, 'internal')!
+  private $state = this.up($exSw.State)!
   private saving = false
   private pending = false
   private delay = this.$.env.is.dev ? 300 : 2000

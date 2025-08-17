@@ -1,10 +1,10 @@
 export type Origin = null | 'remote'
 
 export class StateSetup extends $exSw.Unit {
-  private $state = this.up($exSw.State, 'internal')!
-  private initialized = false
+  private $state = this.up($exSw.State)!
+  private ready = false
   private missedUpdates: Uint8Array[] = []
-  private afterInitFns: Fn[] = []
+  private afterReadyFns: Fn[] = []
 
   async init() {
     await this.$.peer.mutex(`state[${this.$state.id}]`, async () => {
@@ -13,8 +13,8 @@ export class StateSetup extends $exSw.Unit {
       this.broadcastLocalUpdates()
       this.applyMissedUpdates()
       this.upgradeRoot()
-      this.callAfterInitFns()
-      this.initialized = true
+      this.callAfterReadyFns()
+      this.ready = true
     })
   }
 
@@ -28,18 +28,18 @@ export class StateSetup extends $exSw.Unit {
     }
   }
 
-  whenInitialized(fn: Fn) {
-    if (this.initialized) {
+  whenReady(fn: Fn) {
+    if (this.ready) {
       fn()
     } else {
-      this.afterInitFns.push(fn)
+      this.afterReadyFns.push(fn)
     }
   }
 
   /** Listen for remote updates and apply them to Yjs document */
   private listenForRemoteUpdates() {
     this.$state.bus.on('update', (update: Uint8Array) => {
-      if (this.initialized) {
+      if (this.ready) {
         this.$.libs.yjs.applyUpdate(this.$state.doc, update, 'remote')
       } else {
         this.missedUpdates.push(update)
@@ -139,8 +139,8 @@ export class StateSetup extends $exSw.Unit {
     })
   }
 
-  private callAfterInitFns() {
-    this.afterInitFns.forEach(fn => fn())
-    this.afterInitFns = []
+  private callAfterReadyFns() {
+    this.afterReadyFns.forEach(fn => fn())
+    this.afterReadyFns = []
   }
 }
