@@ -1,4 +1,6 @@
 import App from './App'
 
-// console.log(BUNDLE)
-console.log('fg', App)
+console.warn('ssdxsxd33')
+console.log(SHARED)
+console.log(DATA)
+console.log(App)

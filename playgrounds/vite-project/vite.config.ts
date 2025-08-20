@@ -1,35 +1,10 @@
 // TODO: test tailwindcss with build mode
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { postBuildPlugin } from './post-build-plugin'
+import livereload from 'rollup-plugin-livereload'
+import { defineConfig } from 'vite'
+import rebundle from './vite-plugin-rebundle'
 
-export default defineConfig({
-  plugins: [
-    react({}),
-    postBuildPlugin({
-      // TODO:
-      // define: {},
-      // banner: { js: [], css: [] },
-      // footer: {},
-      // bundles: {
-      //   fg: {
-      //     define,banner,footer
-      //   }
-      // }
-      // + any esbuild options
-      define: {
-        default: {
-          DATA: 'default-data',
-        },
-        fg: {
-          BUNDLE: 'fg-bundle',
-        },
-        bg: {
-          BUNDLE: 'bg-bundle',
-        },
-      },
-    }),
-  ],
+export default defineConfig(({ mode }) => {
   // resolve: {
   //   alias: {
   //     react: 'preact/compat',
@@ -40,20 +15,38 @@ export default defineConfig({
   //   jsxFactory: 'h',
   //   jsxFragment: 'Fragment',
   // },
-  build: {
-    watch: {},
-    minify: false,
-    sourcemap: true,
-    outDir: 'a',
-    rollupOptions: {
-      input: {
-        fg: 'src/main.fg.tsx',
-        bg: 'src/main.bg.tsx',
-      },
-      output: {
-        entryFileNames: '[name].js',
-        assetFileNames: 'assets/[name].[ext]',
+
+  return {
+    plugins: [
+      react({}),
+      rebundle({
+        define: {
+          SHARED: 'data',
+        },
+        bundles: {
+          fg: {
+            define: {
+              DATA: 'a',
+            },
+          },
+        },
+      }),
+      mode === 'development' && livereload({ port: 3033 }),
+    ],
+    build: {
+      watch: mode === 'development' ? {} : undefined,
+      minify: false,
+      sourcemap: true,
+      rollupOptions: {
+        input: {
+          fg: 'src/main.fg.tsx',
+          bg: 'src/main.bg.tsx',
+        },
+        output: {
+          entryFileNames: '[name].js',
+          assetFileNames: 'assets/[name].[ext]',
+        },
       },
     },
-  },
+  }
 })

@@ -1,4 +1,4 @@
 import App from './App'
 
 // console.log(BUNDLE)
-console.log('bg', App)
+console.log('bsgsssdss32ss3s5', App)
