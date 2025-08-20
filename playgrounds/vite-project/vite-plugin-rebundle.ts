@@ -140,6 +140,7 @@ export default function rebundle(options: Options = {}): Plugin[] {
                 // 'process.env.DROPCAP_PORT': String(this.ws?.options.port ?? 0),
                 // 'process.env.DROPCAP_BUNDLE': this.$.libs.path.normalize(outfile),
                 // 'process.env.NODE_ENV': this.env,
+                'process.env.DROPCAP_BUNDLE': path.normalize(chunk[_fileName_]),
                 ...common?.define,
                 ...bundle?.define,
               }),

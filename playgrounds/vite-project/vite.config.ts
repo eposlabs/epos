@@ -5,23 +5,16 @@ import { defineConfig } from 'vite'
 import rebundle from './vite-plugin-rebundle'
 
 export default defineConfig(({ mode }) => {
-  // resolve: {
-  //   alias: {
-  //     react: 'preact/compat',
-  //     'react-dom': 'preact/compat',
-  //   },
-  // },
-  //  esbuild: {
-  //   jsxFactory: 'h',
-  //   jsxFragment: 'Fragment',
-  // },
-
   return {
     plugins: [
       react({}),
       rebundle({
         define: {
-          SHARED: 'data',
+          'DROPCAP_DEV': true,
+          'DROPCAP_PROD': false,
+          'process.env.DROPCAP_PORT': '3033',
+          // 'process.env.DROPCAP_BUNDLE': this.$.libs.path.normalize(outfile),
+          'process.env.NODE_ENV': 'development',
         },
         bundles: {
           fg: {
@@ -50,3 +43,14 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
+// resolve: {
+//   alias: {
+//     react: 'preact/compat',
+//     'react-dom': 'preact/compat',
+//   },
+// },
+//  esbuild: {
+//   jsxFactory: 'h',
+//   jsxFragment: 'Fragment',
+// },
