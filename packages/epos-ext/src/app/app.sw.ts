@@ -1,4 +1,5 @@
 export class App extends $sw.Unit {
+  name = 'newss2s2dsss'
   browser = chrome
   libs = new $sw.Libs(this)
   utils = new $exOsSwVw.Utils(this)

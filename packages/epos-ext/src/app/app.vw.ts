@@ -1,3 +1,5 @@
+import './app.vw.css'
+
 export class App extends $vw.Unit {
   browser = chrome
   libs = new $osVw.Libs(this)

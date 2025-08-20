@@ -2,7 +2,7 @@ import { context, type BuildOptions } from 'esbuild'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 
-import type { OutputBundle } from 'rollup'
+import type { OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
 
 export type FilePath = string
@@ -62,6 +62,34 @@ async function readFiles(paths: string[]) {
   return texts.join('\n')
 }
 
+const prev = {}
+
+async function detectChange(dir: string, chunk: OutputChunk) {
+  // if (chunk.name !== 'sw') return false
+
+  const files = [chunk.fileName, ...chunk.imports]
+  const prevData = prev[chunk.name] ?? {}
+
+  const data = {}
+  for (const file of files) {
+    const stat = await fs.stat(path.join(dir, file))
+    const f = await fs.readFile(path.join(dir, file), 'utf-8')
+    // const fMap = await fs.readFile(path.join(dir, file + '.map'), 'utf-8')
+    data[file] = f
+  }
+  prev[chunk.name] = data
+
+  const prevFiles = Object.keys(prevData)
+
+  if (files.length !== prevFiles.length) return true
+
+  for (const file of files) {
+    if (data[file] !== prevData[file]) return true
+  }
+
+  return false
+}
+
 export default function rebundle(options: Options = {}): Plugin[] {
   let config: ResolvedConfig
   let started = false
@@ -79,8 +107,24 @@ export default function rebundle(options: Options = {}): Plugin[] {
       apply: 'build',
       enforce: 'post',
 
-      configResolved(resolvedConfig) {
+      config() {
+        return {
+          build: {
+            emptyOutDir: false,
+          },
+        }
+      },
+
+      async configResolved(resolvedConfig) {
         config = resolvedConfig
+        await fs.rmdir(config.build.outDir, { recursive: true })
+
+        const originalInfo = config.logger.info
+        config.logger.info = (msg, opts) => {
+          const path = msg.split(/\s+/)[0]
+          if (path.endsWith('.js')) return
+          originalInfo(msg, opts)
+        }
       },
 
       generateBundle(_output, bundle) {
@@ -111,8 +155,8 @@ export default function rebundle(options: Options = {}): Plugin[] {
       },
 
       async writeBundle(output, bundle) {
-        if (started) return
-        started = true
+        // if (started) return
+        // started = true
 
         const dir = output.dir
         if (!dir) throw new Error('Output directory is not specified')
@@ -122,6 +166,9 @@ export default function rebundle(options: Options = {}): Plugin[] {
 
         await Promise.all(
           chunks.map(async chunk => {
+            const changed = await detectChange(dir, chunk)
+            if (!changed) return
+
             const bundle = bundles?.[chunk.name] ?? null
 
             const builder = await context({
@@ -140,7 +187,7 @@ export default function rebundle(options: Options = {}): Plugin[] {
                 // 'process.env.DROPCAP_PORT': String(this.ws?.options.port ?? 0),
                 // 'process.env.DROPCAP_BUNDLE': this.$.libs.path.normalize(outfile),
                 // 'process.env.NODE_ENV': this.env,
-                'process.env.DROPCAP_BUNDLE': path.normalize(chunk[_fileName_]),
+                'env_DROPCAP_BUNDLE': path.normalize(chunk[_fileName_]),
                 ...common?.define,
                 ...bundle?.define,
               }),
@@ -163,29 +210,32 @@ export default function rebundle(options: Options = {}): Plugin[] {
               ],
             })
 
-            if (config.build.watch) {
-              await builder.watch()
-            } else {
-              await builder.rebuild()
-              await builder.dispose()
+            await builder.rebuild()
+            await builder.dispose()
+
+            // if (config.build.watch) {
+            //   await builder.watch({ delay: 150 })
+            // } else {
+            //   await builder.rebuild()
+            //   await builder.dispose()
+            // }
+          }),
+        )
+
+        // Remove non-entry chunks both from disk and bundle object
+        await Promise.all(
+          Object.entries(bundle).map(async ([_, item]) => {
+            if (item.type === 'chunk' && item.fileName.endsWith('.js')) {
+              const p = path.resolve(dir, item.fileName)
+              await fs.unlink(p).catch(() => {})
+            }
+            if (item.type === 'asset' && item.fileName.endsWith('.js.map')) {
+              const p = path.resolve(dir, item.fileName)
+              await fs.unlink(p).catch(() => {})
             }
           }),
         )
       },
-
-      // Remove non-entry chunks both from disk and bundle object
-      // await Promise.all(
-      //   Object.entries(bundle).map(async ([fileName, item]) => {
-      //     if (item.type === 'chunk' && !item.isEntry && fileName.endsWith('.js')) {
-      //       const p = path.resolve(dir, fileName)
-      //       await fs.unlink(p).catch(() => {})
-      //     }
-      //     if (item.type === 'asset' && fileName.endsWith('.js.map')) {
-      //       const p = path.resolve(dir, fileName)
-      //       await fs.unlink(p).catch(() => {})
-      //     }
-      //   }),
-      // )
     },
   ]
 }

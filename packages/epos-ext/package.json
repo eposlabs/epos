@@ -2,6 +2,8 @@
   "name": "epos-ext",
   "type": "module",
   "scripts": {
+    "vite": "node --inspect ../../node_modules/vite/bin/vite.js build --mode development",
+    "vite:build": "vite build --mode production",
     "dev": "dropcap dev",
     "build": "dropcap build",
     "preview": "dropcap preview",
@@ -24,6 +26,10 @@
   "devDependencies": {
     "@types/chrome": "^0.1.3",
     "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7"
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.1",
+    "rollup-plugin-livereload": "^2.0.5",
+    "vite": "^7.1.3",
+    "vite-plugin-dynamic-chunk": "^0.0.3"
   }
 }
