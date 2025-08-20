@@ -1,0 +1,3 @@
+// @ts-nocheck
+
+const $gl = {}

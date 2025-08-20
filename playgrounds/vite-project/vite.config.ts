@@ -1,3 +1,4 @@
+// TODO: test tailwindcss with build mode
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { postBuildPlugin } from './post-build-plugin'
@@ -16,7 +17,6 @@ export default defineConfig({
       //   }
       // }
       // + any esbuild options
-
       define: {
         default: {
           DATA: 'default-data',
