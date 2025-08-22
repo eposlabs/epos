@@ -18,10 +18,8 @@ export class App extends $gl.Unit {
   }
 
   static v = {
-    24(this: any) {
-      console.warn('START VERSIONER', this.permissions[0].ui)
+    26(this: any) {
       this.permissions = [new $gl.Permission(list[0])] // list.map(name => new $gl.Permission(name))
-      console.warn('END VERSIONER', this.permissions[0].ui)
     },
   }
 }

@@ -13,8 +13,8 @@ export class StateSetup extends $exSw.Unit {
       this.broadcastLocalUpdates()
       this.applyMissedUpdates()
       this.upgradeRoot()
-      this.callAfterReadyFns()
       this.ready = true
+      this.callAfterReadyFns()
     })
   }
 
