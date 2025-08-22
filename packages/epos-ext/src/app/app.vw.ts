@@ -1,4 +1,4 @@
-import './app.vw.css'
+// import './app.vw.css'
 
 export class App extends $vw.Unit {
   browser = chrome

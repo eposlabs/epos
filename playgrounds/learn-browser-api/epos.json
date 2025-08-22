@@ -1,5 +1,5 @@
 {
-  "name": "test-browser-api",
+  "name": "learn-browser-api",
   "run": ["<web>", "<panel>", "<hub>"],
   "src": ["./dist/app.js", "./dist/app.css"],
   "mode": "shadow"

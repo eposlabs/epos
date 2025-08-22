@@ -1,8 +1,8 @@
-const NODE_ENV = env_NODE_ENV as 'development' | 'production'
-const EPOS_DEV_WS = env_EPOS_DEV_WS as string
-const EPOS_DEV_HUB = env_EPOS_DEV_HUB as string
-const EPOS_PROD_HUB = env_EPOS_PROD_HUB as string
-const DROPCAP_BUNDLE = env_DROPCAP_BUNDLE as string
+const NODE_ENV = process.env.NODE_ENV as 'development' | 'production'
+const EPOS_DEV_WS = process.env.EPOS_DEV_WS as string
+const EPOS_DEV_HUB = process.env.EPOS_DEV_HUB as string
+const EPOS_PROD_HUB = process.env.EPOS_PROD_HUB as string
+const DROPCAP_BUNDLE = process.env.DROPCAP_BUNDLE as string
 
 export type Bundle = 'ex' | 'ex-mini' | 'cs' | 'os' | 'vw' | 'sw'
 
@@ -18,7 +18,7 @@ export type Bundle = 'ex' | 'ex-mini' | 'cs' | 'os' | 'vw' | 'sw'
  */
 export class Env extends $gl.Unit {
   mode = NODE_ENV
-  bundle = DROPCAP_BUNDLE.replace('js/', '').replace('.js', '') as Bundle
+  bundle = DROPCAP_BUNDLE.split('js/')[1].replace('.js', '') as Bundle
   params = this.getParams()
   url = new EnvUrl(this)
   is = new EnvIs(this)

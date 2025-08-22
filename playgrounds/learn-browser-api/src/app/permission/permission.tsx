@@ -30,7 +30,7 @@ export class Permission extends $gl.Unit {
       <div class="flex flex-col">
         <button
           onClick={onClick}
-          class="flex gap-8 rounded-sm bg-gray-200 px-12 py-6 text-left cursor-pointer hover:brightness-95"
+          class="flex cursor-pointer gap-8 rounded-sm bg-gray-200 px-12 py-6 text-left hover:brightness-95"
         >
           <div>{this.granted ? '✅' : '🚫'}</div>
           <div>{this.name}</div>

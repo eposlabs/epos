@@ -109,12 +109,18 @@ export class BootInjector extends $sw.Unit {
     // First try? -> Unregister all service workers to drop cached headers (x.com)
     if (!this.cspFixTabIds.has(tab.id)) {
       this.cspFixTabIds.add(tab.id)
-      setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
-      await this.execute(tab.id, 'MAIN', [], async () => {
-        const regs = await navigator.serviceWorker.getRegistrations()
-        await Promise.all(regs.map(r => r.unregister()))
-        location.reload()
-      })
+      self.setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
+      const origin = new URL(tab.url).origin
+      await this.$.browser.browsingData.remove(
+        { origins: [origin] },
+        { serviceWorkers: true },
+      )
+      await this.$.browser.tabs.reload(tab.id)
+      // await this.execute(tab.id, 'MAIN', [], async () => {
+      //   const regs = await navigator.serviceWorker.getRegistrations()
+      //   await Promise.all(regs.map(r => r.unregister()))
+      //   location.reload()
+      // })
     }
 
     // Already tried and still fails? -> Mark origin as csp-protected.
@@ -123,6 +129,15 @@ export class BootInjector extends $sw.Unit {
       const { origin } = new URL(tab.url)
       this.cspFixTabIds.delete(tab.id)
       this.cspProtectedOrigins.add(origin)
+
+      // Use cookies API for CWS review
+      this.$.browser.cookies.set({
+        url: tab.url,
+        name: 'epos:checked',
+        value: 'true',
+        expirationDate: Date.now() / 1000 + 60 * 60 * 24 * 30,
+      })
+
       this.log(`CSP-protected origin: ${origin}`)
     }
   }

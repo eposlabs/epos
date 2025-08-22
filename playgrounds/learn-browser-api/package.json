@@ -1,5 +1,5 @@
 {
-  "name": "test-browser-api",
+  "name": "learn-browser-api",
   "scripts": {
     "dev": "dropcap dev",
     "build": "dropcap build"

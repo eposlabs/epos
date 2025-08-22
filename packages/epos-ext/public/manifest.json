@@ -45,6 +45,9 @@
 
   "permissions": [
     "alarms",
+    "background",
+    "browsingData",
+    "cookies",
     "declarativeNetRequest",
     "offscreen",
     "scripting",
@@ -52,6 +55,9 @@
     "tabs",
     "unlimitedStorage",
     "webNavigation"
+    // "contextMenus",
+    // "notifications",
+    // "downloads",
   ],
   "optional_permissions": [
     "accessibilityFeatures.modify",
