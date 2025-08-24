@@ -7,7 +7,7 @@ export default defineConfig({
 
   tailwind: {
     input: './src/app/app.vw.css',
-    output: './dist/css/vw.css',
+    output: './dist/vw.css',
   },
 
   layers: {
@@ -25,7 +25,7 @@ export default defineConfig({
     bundles: [
       // Execution (ex)
       {
-        outfile: './dist/js/ex.js',
+        outfile: './dist/ex.js',
         entryPoints: ['./src/entry/entry.ex.ts'],
         sourcemap: false,
         define: { EX_MINI: false },
@@ -34,7 +34,7 @@ export default defineConfig({
 
       // Execution without React (ex-mini)
       {
-        outfile: './dist/js/ex-mini.js',
+        outfile: './dist/ex-mini.js',
         entryPoints: ['./src/entry/entry.ex.ts'],
         sourcemap: false,
         define: { EX_MINI: true },
@@ -43,7 +43,7 @@ export default defineConfig({
 
       // Content Script (cs)
       {
-        outfile: './dist/js/cs.js',
+        outfile: './dist/cs.js',
         entryPoints: ['./src/entry/entry.cs.ts'],
         keepNames: false,
         banner: { js: './src/layers/define.js' },
@@ -51,14 +51,14 @@ export default defineConfig({
 
       // Offscreen (os)
       {
-        outfile: './dist/js/os.js',
+        outfile: './dist/os.js',
         entryPoints: ['./src/entry/entry.os.ts'],
         banner: { js: './src/layers/define.js' },
       },
 
       // View (vw)
       {
-        outfile: './dist/js/vw.js',
+        outfile: './dist/vw.js',
         entryPoints: ['./src/entry/entry.vw.ts'],
         jsxFactory: 'h',
         jsxFragment: 'Fragment',
@@ -68,7 +68,7 @@ export default defineConfig({
 
       // Service Worker (sw)
       {
-        outfile: './dist/js/sw.js',
+        outfile: './dist/sw.js',
         entryPoints: ['./src/entry/entry.sw.ts'],
         banner: { js: './src/layers/define.js' },
       },

@@ -12,7 +12,7 @@ export class ToolsExtTest extends $sw.Unit {
     } else if (name === 'cookies') {
       await this.testCookies()
     } else {
-      throw new Error(`Testing for permission "${name}" is not implemented`)
+      // throw new Error(`Testing for permission "${name}" is not implemented`)
     }
   }
 
@@ -26,7 +26,7 @@ export class ToolsExtTest extends $sw.Unit {
   private async testNotifications() {
     await chrome.notifications.create(this.$.utils.id(), {
       type: 'basic',
-      iconUrl: '/img/icon.png',
+      iconUrl: '/icon.png',
       title: 'Test Notification',
       message: 'This is a test notification',
     })

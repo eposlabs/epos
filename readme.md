@@ -50,7 +50,7 @@
   - epos.tabId
   - epos.is.tab
   - epos.is.hub
-  - epos.is.web
+  - epos.is.page
   - epos.is.shell
   - epos.is.popup
   - epos.is.panel

@@ -7,13 +7,13 @@ export class PkgExporter extends $sw.Unit {
     const zip = new this.$.libs.Zip()
 
     const engineFiles = [
-      'css/vw.css',
-      'js/cs.js',
-      'js/ex-mini.js',
-      'js/ex.js',
-      'js/os.js',
-      'js/sw.js',
-      'js/vw.js',
+      'vw.css',
+      'cs.js',
+      'ex-mini.js',
+      'ex.js',
+      'os.js',
+      'sw.js',
+      'vw.js',
       'frame.html',
       'offscreen.html',
       'view.html',
@@ -35,19 +35,19 @@ export class PkgExporter extends $sw.Unit {
       const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
       if (!blob) throw this.never
       assets[path] = blob
-      zip.file(`/assets/${path}`, blob)
+      zip.file(`assets/${path}`, blob)
     }
 
     const icon = pkg.manifest.icon
       ? assets[pkg.manifest.icon]
-      : await fetch('/img/icon.png').then(r => r.blob())
+      : await fetch('/icon.png').then(r => r.blob())
     const icon128 = await this.$.utils.convertImage(icon, {
       type: 'image/png',
       quality: 1,
       cover: true,
       size: 128,
     })
-    zip.file('/img/icon.png', icon128)
+    zip.file('icon.png', icon128)
 
     const manifest = await fetch('/manifest.json').then(r => r.json())
     const runItems = this.$pkg.bundles.flatMap(bundle => bundle.run)
@@ -56,7 +56,7 @@ export class PkgExporter extends $sw.Unit {
 
     const urls = runItems
       .map(run => {
-        if (run === '<web>') return '*://*/*'
+        if (run === '<page>') return '*://*/*'
         if (['<popup>', '<panel>', '<background>'].includes(run)) return null
         if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
         return run
@@ -70,21 +70,23 @@ export class PkgExporter extends $sw.Unit {
       action: {
         default_title: pkg.manifest.title ?? pkg.manifest.name,
       },
-      host_permissions: [...urls].sort(),
-      permissions: [
-        'alarms',
-        'declarativeNetRequest',
-        'offscreen',
-        'scripting',
-        hasPanel ? 'sidePanel' : null,
-        'tabs',
-        'unlimitedStorage',
-        'webNavigation',
-      ].filter(Boolean),
+      // host_permissions: [...urls].sort(),
+      // permissions: [
+      //   'alarms',
+      //   'declarativeNetRequest',
+      //   'offscreen',
+      //   'scripting',
+      //   hasPanel ? 'sidePanel' : null,
+      //   'tabs',
+      //   'unlimitedStorage',
+      //   'webNavigation',
+      // ].filter(Boolean),
     }
 
     zip.file('manifest.json', JSON.stringify(totalManifest, null, 2))
-
-    return await zip.generateAsync({ type: 'blob' })
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const url = await this.$.bus.send<string>('utils.createObjectUrl', blob)
+    await this.$.browser.downloads.download({ url, filename: `${this.$pkg.name}.zip` })
+    await this.$.bus.send('utils.revokeObjectUrl', url)
   }
 }

@@ -39,5 +39,5 @@ declare global {
   /** Global methods for SW */
   var add: any
   var remove: any
-  var zip: any
+  var eject: any
 }

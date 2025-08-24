@@ -44,12 +44,10 @@ export class BootInjector extends $sw.Unit {
     // Inject css
     const css = this.$.pkgs.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
-    console.warn(3)
 
     // Inject js (includes shadow css)
     const js = this.$.pkgs.getJs(tab.url, tab.id, busToken)
     if (js) async: this.injectJs(tab, js, 'script')
-    console.warn(4)
   }
 
   private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
@@ -102,12 +100,8 @@ export class BootInjector extends $sw.Unit {
 
   private async waitCsReady(tab: Tab) {
     return await this.execute(tab.id, 'ISOLATED', [], async () => {
-      console.warn('start')
       self.__eposCsReady$ ??= Promise.withResolvers()
-      console.warn(2)
-      const r = await self.__eposCsReady$.promise
-      console.warn(3)
-      return r
+      return await self.__eposCsReady$.promise
     })
   }
 

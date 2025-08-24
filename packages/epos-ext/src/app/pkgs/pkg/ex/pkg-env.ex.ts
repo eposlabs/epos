@@ -5,7 +5,7 @@ export class PkgEnv extends $ex.Unit {
   is = {
     tab: this.$.env.is.exTab,
     hub: this.$.env.is.exTabHub,
-    web: this.$.env.is.exTabWeb,
+    page: this.$.env.is.exTabPage,
     shell: this.$.env.is.exFramePopup || this.$.env.is.exFramePanel,
     popup: this.$.env.is.exFramePopup,
     panel: this.$.env.is.exFramePanel,

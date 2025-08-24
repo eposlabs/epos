@@ -17,7 +17,7 @@ export class PkgBundle extends $sw.Unit {
   }
 
   matches(target: Target) {
-    if (target === '<web>') return this.run.includes('<web>')
+    if (target === '<page>') return this.run.includes('<page>')
     if (target === '<popup>') return this.run.includes('<popup>')
     if (target === '<panel>') return this.run.includes('<panel>')
     if (target === '<background>') return this.run.includes('<background>')
@@ -42,7 +42,7 @@ export class PkgBundle extends $sw.Unit {
   private patternMatchesUrl(pattern: RefPattern | UrlPattern, url: string): boolean {
     const extOrigin = location.origin
 
-    if (pattern === '<web>') {
+    if (pattern === '<page>') {
       const { origin } = new URL(url)
       return (
         origin !== extOrigin &&

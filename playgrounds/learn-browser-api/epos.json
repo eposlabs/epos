@@ -1,8 +1,9 @@
 {
   "name": "learn-browser-api",
+  "title": "[epos] Learn Browser API",
   "bundles": [
     {
-      "run": ["<web>", "<panel>", "<hub>"],
+      "run": ["<page>", "<panel>", "<hub>"],
       "src": ["./dist/fg.js", "./dist/fg.css"],
       "mode": "shadow"
     },

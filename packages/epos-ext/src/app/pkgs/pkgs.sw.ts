@@ -31,8 +31,8 @@ export class Pkgs extends $sw.Unit {
 
   async init() {
     await this.loader.init()
-    this.engine.full = await fetch('/js/ex.js').then(r => r.text())
-    // this.engine.mini = await fetch('/js/ex-mini.js').then(r => r.text())
+    this.engine.full = await fetch('/ex.js').then(r => r.text())
+    // this.engine.mini = await fetch('/ex-mini.js').then(r => r.text())
     await this.restorePkgsFromIdb()
     this.updater.start()
   }

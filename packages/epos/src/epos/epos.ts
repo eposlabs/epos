@@ -159,10 +159,10 @@ export interface Epos {
   is: {
     /** True if running in a tab. */
     tab: boolean
-    /** True if running on on a hub page (<hub>). */
+    /** True if running on a hub page (<hub>). */
     hub: boolean
     /** True if running on any page except hub. */
-    web: boolean
+    page: boolean
     /** True if running in a popup or in side panel (<popup> or <panel>). */
     shell: boolean
     /** True if running in a popup (<popup>). */

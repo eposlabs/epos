@@ -18,7 +18,7 @@ export type Bundle = 'ex' | 'ex-mini' | 'cs' | 'os' | 'vw' | 'sw'
  */
 export class Env extends $gl.Unit {
   mode = NODE_ENV
-  bundle = DROPCAP_BUNDLE.split('js/')[1].replace('.js', '') as Bundle
+  bundle = DROPCAP_BUNDLE.split('/').at(-1)!.replace('.js', '') as Bundle
   params = this.getParams()
   url = new EnvUrl(this)
   is = new EnvIs(this)
@@ -96,8 +96,8 @@ class EnvIs extends $gl.Unit {
   exTabHubDev = this.ex && location.origin === EPOS_DEV_HUB
   exTabHubProd = this.ex && location.origin === EPOS_PROD_HUB
   exTabHub = this.exTabHubDev || this.exTabHubProd
-  exTabWeb = this.ex && !this.exTabHub && !this.$env.isExtPage()
-  exTab = this.exTabHub || this.exTabWeb
+  exTabPage = this.ex && !this.exTabHub && !this.$env.isExtPage()
+  exTab = this.exTabHub || this.exTabPage
 
   // Variations of exFrame
   exFrame = this.ex && !this.exTab

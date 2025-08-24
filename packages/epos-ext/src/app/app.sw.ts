@@ -28,7 +28,7 @@ export class App extends $sw.Unit {
     await this.dev.init()
     self.add = (name: string) => this.pkgs.install(name)
     self.remove = (name: string) => this.pkgs.remove(name)
-    self.zip = (name: string) => this.pkgs.export(name)
+    self.eject = (name: string) => this.pkgs.export(name)
   }
 
   private async initContentScript() {
@@ -43,7 +43,7 @@ export class App extends $sw.Unit {
       {
         id: 'cs',
         matches: ['<all_urls>'],
-        js: ['/js/cs.js'],
+        js: ['/cs.js'],
         runAt: 'document_start',
         world: 'ISOLATED',
         allFrames: false,
