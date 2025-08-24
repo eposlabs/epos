@@ -1,5 +1,5 @@
-import { App, type App as AppType } from '../app/app'
-import { Permission, type Permission as PermissionType } from '../app/permission/permission'
+import { App, type App as AppType } from '../app/app.gl'
+import { Permission, type Permission as PermissionType } from '../app/permission/permission.gl'
 
 Object.assign($gl, {
   App,

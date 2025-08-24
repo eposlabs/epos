@@ -15,6 +15,7 @@ import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/p
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw'
 import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/pkgs-updater.sw'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw'
+import { ToolsExtTest, type ToolsExtTest as ToolsExtTestType } from '../app/tools/tools-ext-test.sw'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.sw'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.sw'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.sw'
@@ -37,6 +38,7 @@ Object.assign($sw, {
   PkgsLoader,
   PkgsUpdater,
   Pkgs,
+  ToolsExtTest,
   ToolsExt,
   ToolsFetcher,
   Tools,
@@ -63,6 +65,7 @@ declare global {
     PkgsLoader: typeof PkgsLoader
     PkgsUpdater: typeof PkgsUpdater
     Pkgs: typeof Pkgs
+    ToolsExtTest: typeof ToolsExtTest
     ToolsExt: typeof ToolsExt
     ToolsFetcher: typeof ToolsFetcher
     Tools: typeof Tools
@@ -86,6 +89,7 @@ declare global {
     export type PkgsLoader = PkgsLoaderType
     export type PkgsUpdater = PkgsUpdaterType
     export type Pkgs = PkgsType
+    export type ToolsExtTest = ToolsExtTestType
     export type ToolsExt = ToolsExtType
     export type ToolsFetcher = ToolsFetcherType
     export type Tools = ToolsType

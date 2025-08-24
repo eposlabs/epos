@@ -3,13 +3,12 @@ import { epos } from 'epos/plugin-esbuild'
 import fs from 'node:fs/promises'
 
 export default defineConfig({
-  name: 'test-browser-api',
+  name: 'learn-browser-api',
   tailwind: {
-    input: './src/entry/entry.css',
-    output: './dist/app.css',
+    input: './src/entry/entry.fg.css',
+    output: './dist/fg.css',
   },
   layers: {
-    default: 'gl',
     input: './src/app',
     output: './src/layers',
   },
@@ -19,8 +18,13 @@ export default defineConfig({
     keepNames: true,
     bundles: [
       {
-        outfile: './dist/app.js',
-        entryPoints: ['./src/entry/entry.tsx'],
+        outfile: './dist/fg.js',
+        entryPoints: ['./src/entry/entry.fg.tsx'],
+        banner: { js: './src/layers/define.js' },
+      },
+      {
+        outfile: './dist/bg.js',
+        entryPoints: ['./src/entry/entry.bg.ts'],
         banner: { js: './src/layers/define.js' },
       },
     ],

@@ -13,9 +13,7 @@ export type PkgData = {
   assets?: Assets
 }
 
-// TODO: does pkg hash require assets?
-// YEs, asset hash is required as well
-// probably for now, don't bother, just use source hash
+// TODO: update hash deps (assets, mode, smth else?)
 export class Pkg extends $sw.Unit {
   private exporter = new $sw.PkgExporter(this)
   declare name: string
@@ -112,7 +110,6 @@ export class Pkg extends $sw.Unit {
   }
 
   private async getHash(target: Target) {
-    // TODO: trigger on 'mode' change
     const sources = this.getSources(target).sort()
     const snippets = sources.map(source => this.read(source))
     return await this.$.utils.hash([...snippets, this.manifest.popup])

@@ -42,7 +42,7 @@ export class App extends $sw.Unit {
     await this.$.browser.scripting.registerContentScripts([
       {
         id: 'cs',
-        matches: ['*://*/*'],
+        matches: ['<all_urls>'],
         js: ['/js/cs.js'],
         runAt: 'document_start',
         world: 'ISOLATED',

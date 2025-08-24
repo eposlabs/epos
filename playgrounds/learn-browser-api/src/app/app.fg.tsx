@@ -1,9 +1,4 @@
-import { list } from './app-permission-list'
-
-export class App extends $gl.Unit {
-  declare $epos: any
-  permissions = list.map(name => new $gl.Permission(name))
-
+export class App extends $gl.App<$fg.Permission> {
   ui() {
     return (
       <div class="mx-auto mt-20 mb-60 flex max-w-400 flex-col gap-12 px-20">
@@ -15,11 +10,5 @@ export class App extends $gl.Unit {
         </div>
       </div>
     )
-  }
-
-  static v = {
-    26(this: any) {
-      this.permissions = [new $gl.Permission(list[0])] // list.map(name => new $gl.Permission(name))
-    },
   }
 }

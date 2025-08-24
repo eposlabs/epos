@@ -151,14 +151,16 @@ export class ToolsExt extends $ex.Unit {
 
     // Request permissions
     const request = this.$.bus.send<PermissionsResult>('tools.requestPermissions', opts)
-    const [result, err] = await this.$.safe(request)
-    if (err) throw err
+    const [result, error] = await this.$.safe(request)
+
+    // Close permissions tab
+    await this.$.bus.send('tools.closePermissions')
+
+    // Error? -> Throw
+    if (error) throw error
 
     // Re-create API as new APIs might be added
     if (result.granted) this.api = await this.createApi()
-
-    // Close permissions tab
-    await this.$.bus.send(`tools.closePermissions[${result.id}]`)
 
     return result
   }

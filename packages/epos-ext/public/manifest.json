@@ -3,105 +3,30 @@
   "name": "[epos] Browser Augmentations",
   "version": "1.0",
   "manifest_version": 3,
-  "icons": {
-    "128": "/img/icon.png"
-  },
-  "background": {
-    "type": "module",
-    "service_worker": "/js/sw.js"
-  },
-  "sandbox": {
-    "pages": ["/frame.html"]
-  },
-  "action": {
-    "default_title": "epos"
-  },
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self';",
-    "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"
-  },
-  "web_accessible_resources": [
-    {
-      "matches": ["*://*/*"],
-      "resources": ["*"]
-    }
-  ],
-  "commands": {
-    "popup": {
-      "suggested_key": { "default": "Ctrl+Shift+X", "mac": "Command+Shift+X" },
-      "description": "Toggle Popup"
-    },
-    "sidePanel": {
-      "suggested_key": { "default": "Ctrl+Shift+S", "mac": "Command+Shift+S" },
-      "description": "Toggle Side Panel"
-    },
-    "_execute_action": {
-      "suggested_key": { "default": "Ctrl+Shift+L", "mac": "Command+Shift+L" }
-    }
-  },
-
-  "host_permissions": ["*://*/*"],
-  "optional_host_permissions": ["<all_urls>"],
-
+  "action": { "default_title": "epos" },
+  "icons": { "128": "/img/icon.png" },
+  "background": { "type": "module", "service_worker": "/js/sw.js" },
+  "sandbox": { "pages": ["/frame.html"] },
+  "web_accessible_resources": [{ "matches": ["<all_urls>"], "resources": ["*"] }],
+  "host_permissions": ["<all_urls>"],
   "permissions": [
     "alarms",
     "background",
     "browsingData",
+    "contextMenus",
     "cookies",
     "declarativeNetRequest",
+    "downloads",
+    "notifications",
     "offscreen",
     "scripting",
     "sidePanel",
     "tabs",
     "unlimitedStorage",
     "webNavigation"
-    // "contextMenus",
-    // "notifications",
-    // "downloads",
   ],
-  "optional_permissions": [
-    "accessibilityFeatures.modify",
-    "accessibilityFeatures.read",
-    "activeTab",
-    "background",
-    "bookmarks",
-    "browsingData",
-    "clipboardRead",
-    "clipboardWrite",
-    "contentSettings",
-    "contextMenus",
-    "cookies",
-    "declarativeContent",
-    "declarativeNetRequestFeedback",
-    "declarativeNetRequestWithHostAccess",
-    "desktopCapture",
-    "downloads.open",
-    "downloads.ui",
-    "downloads",
-    "favicon",
-    "gcm",
-    "history",
-    "identity.email",
-    "identity",
-    "idle",
-    "management",
-    "nativeMessaging",
-    "notifications",
-    "pageCapture",
-    "power",
-    "printerProvider",
-    "privacy",
-    "readingList",
-    "search",
-    "sessions",
-    "storage",
-    "system.cpu",
-    "system.display",
-    "system.memory",
-    "system.storage",
-    "tabCapture",
-    "tabGroups",
-    "topSites",
-    "webRequest"
-  ]
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"
+  }
 }

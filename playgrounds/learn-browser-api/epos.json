@@ -1,6 +1,14 @@
 {
   "name": "learn-browser-api",
-  "run": ["<web>", "<panel>", "<hub>"],
-  "src": ["./dist/app.js", "./dist/app.css"],
-  "mode": "shadow"
+  "bundles": [
+    {
+      "run": ["<web>", "<panel>", "<hub>"],
+      "src": ["./dist/fg.js", "./dist/fg.css"],
+      "mode": "shadow"
+    },
+    {
+      "run": ["<background>"],
+      "src": ["./dist/bg.js"]
+    }
+  ]
 }

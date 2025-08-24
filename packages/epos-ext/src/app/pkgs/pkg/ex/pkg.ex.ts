@@ -112,6 +112,10 @@ export class Pkg extends $ex.Unit {
       reactDomClient: libs.reactDomClient,
       reactJsxRuntime: libs.reactJsxRuntime,
       yjs: libs.yjs,
+
+      ...(this.name === 'learn-browser-api' && {
+        engine: this.$,
+      }),
     }
 
     class Epos {}

@@ -18,7 +18,6 @@ type StateValue =
   | boolean
   | number
   | string
-  | Blob
   | Unit
   | StateValue[]
   | { [key: string]: StateValue }

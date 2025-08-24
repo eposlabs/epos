@@ -15,6 +15,8 @@ import { unique } from './utils-unique'
 export class Utils extends $exOsSwVw.Unit {
   initOs() {
     this.$.bus.on('utils.convertImage', this.convertImage, this)
+    this.$.bus.on('utils.createObjectUrl', blob => URL.createObjectURL(blob))
+    this.$.bus.on('utils.revokeObjectUrl', url => URL.revokeObjectURL(url))
   }
 
   bind = bind

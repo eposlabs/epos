@@ -1,23 +1,25 @@
-export const list: chrome.runtime.ManifestPermissions[] = [
+// <all_urls> for files? instead of filter
+
+export const permissionList: chrome.runtime.ManifestPermissions[] = [
   // 'accessibilityFeatures.modify',
   // 'accessibilityFeatures.read',
-  // 'activeTab', // allowed
-  // 'background', // allowed
+  // 'activeTab', // ☁️ allowed
+  // 'background', // ☁️ allowed
   // 'bookmarks',
   // 'browsingData',
   // 'clipboardRead',
   // 'clipboardWrite',
-  'contentSettings',
-  'contextMenus',
-  // 'cookies',
+  // 'contentSettings',
+  'contextMenus', // ✅ included
+  'cookies', // ✅ included
   // 'declarativeContent',
-  // 'declarativeNetRequestFeedback', // allowed
-  // 'declarativeNetRequestWithHostAccess', // allowed
+  // 'declarativeNetRequestFeedback', // ☁️ allowed
+  // 'declarativeNetRequestWithHostAccess', // ☁️ allowed
   // 'desktopCapture',
   // 'downloads.open',
-  // 'downloads.ui', // allowed
-  'downloads',
-  'favicon',
+  // 'downloads.ui', // ☁️ allowed
+  'downloads', // ✅ included
+  // 'favicon',
   // 'gcm',
   // 'history',
   // 'identity.email',
@@ -25,15 +27,15 @@ export const list: chrome.runtime.ManifestPermissions[] = [
   // 'idle',
   // 'management',
   // 'nativeMessaging',
-  'notifications',
+  'notifications', // ✅ included
   // 'pageCapture',
   // 'power',
   // 'printerProvider',
   // 'privacy',
-  // 'readingList', // allowed
+  // 'readingList', // ☁️ allowed
   // 'search',
   // 'sessions',
-  // 'storage', // allowed
+  // 'storage', // ☁️ allowed
   // 'system.cpu',
   // 'system.display',
   // 'system.memory',

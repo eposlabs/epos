@@ -6,7 +6,7 @@ export class ToolsExt extends $vw.Unit {
   async init() {
     if (!this.$.env.is.vwPermissions) return
     this.$.bus.on('tools.requestPermissions', this.requestPermissions, this)
-    this.$.bus.on(`tools.closePermissions[${this.id}]`, () => self.close())
+    this.$.bus.on('tools.closePermissions', () => self.close())
     await this.$.bus.send('tools.permissionsReady')
   }
 
