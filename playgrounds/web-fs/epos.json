@@ -1,0 +1,14 @@
+{
+  "name": "web-fs",
+  "bundles": [
+    {
+      "run": "*://*",
+      "src": ["dist/web-fs.js", "dist/web-fs.css"],
+      "mode": "shadow"
+    },
+    {
+      "run": "https://developer.mozilla.org/*",
+      "src": ["src/mdn.css"]
+    }
+  ]
+}
