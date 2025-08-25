@@ -2,9 +2,12 @@
   "name": "web-fs",
   "bundles": [
     {
-      "run": "*://*",
-      "src": ["dist/web-fs.js", "dist/web-fs.css"],
-      "mode": "shadow"
+      "run": "<hub>",
+      "src": ["dist/web-fs.js", "dist/web-fs.css"]
+    },
+    {
+      "run": "<background>",
+      "src": ["./dist/bg.js"]
     },
     {
       "run": "https://developer.mozilla.org/*",

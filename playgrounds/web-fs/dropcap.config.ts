@@ -7,9 +7,18 @@ export default defineConfig({
     output: 'dist/web-fs.css',
   },
   build: {
-    outfile: 'dist/web-fs.js',
-    entryPoints: ['./src/web-fs.tsx'],
-    format: 'esm',
-    plugins: [epos()],
+    bundles: [
+      {
+        outfile: 'dist/web-fs.js',
+        entryPoints: ['./src/web-fs.tsx'],
+        format: 'esm',
+        plugins: [epos()],
+      },
+      {
+        outfile: 'dist/bg.js',
+        entryPoints: ['./src/bg.ts'],
+        format: 'esm',
+      },
+    ],
   },
 })

@@ -56,7 +56,6 @@ export class PkgExporter extends $sw.Unit {
 
     const urls = runItems
       .map(run => {
-        if (run === '<page>') return '*://*/*'
         if (['<popup>', '<panel>', '<background>'].includes(run)) return null
         if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
         return run

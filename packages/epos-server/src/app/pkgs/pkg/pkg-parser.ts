@@ -235,7 +235,6 @@ export class PkgParser extends $gl.Unit {
       throw new Error(`Invalid 'run' pattern: ${json}`)
     }
 
-    if (pattern === '<page>') return pattern
     if (pattern === '<popup>') return pattern
     if (pattern === '<panel>') return pattern
     if (pattern === '<background>') return pattern

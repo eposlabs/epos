@@ -3,7 +3,7 @@
   "title": "[epos] Learn Browser API",
   "bundles": [
     {
-      "run": ["<page>", "<panel>", "<hub>"],
+      "run": ["<panel>", "<hub>"],
       "src": ["./dist/fg.js", "./dist/fg.css"],
       "mode": "shadow"
     },

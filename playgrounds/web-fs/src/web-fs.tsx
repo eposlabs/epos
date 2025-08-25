@@ -1,5 +1,8 @@
 import 'epos'
-import { watchFile } from './watcher'
+
+declare global {
+  var FileSystemObserver: any
+}
 
 class App extends epos.Unit {
   ui() {
@@ -11,9 +14,16 @@ class App extends epos.Unit {
   }
 
   async openDir() {
-    const dirHandle = await self.showDirectoryPicker({ mode: 'readwrite' })
-    const fileHandle = await dirHandle.getFileHandle('epos.json', { create: true })
-    // fileHandle.getFile
+    epos.send('request')
+    // const dirHandle = await self.showDirectoryPicker({ mode: 'readwrite' })
+    // self.dirHandle = dirHandle
+    // await epos.set('dir-handle', dirHandle)
+
+    // const fileHandle = await dirHandle.getFileHandle('epos.json', { create: true })
+    // const observer = new FileSystemObserver((records: any) => {
+    //   console.warn(records)
+    // })
+    // await observer.observe(dirHandle)
   }
 }
 
