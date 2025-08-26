@@ -15,6 +15,10 @@ import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/p
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw'
 import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/pkgs-updater.sw'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw'
+import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/pkgs/pkgs-installer.sw'
+import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw'
+import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/pkgs-updater.sw'
+import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw'
 import { ToolsExtTest, type ToolsExtTest as ToolsExtTestType } from '../app/tools/tools-ext-test.sw'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.sw'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.sw'
@@ -34,6 +38,10 @@ Object.assign($sw, {
   PkgBundle,
   PkgExporter,
   Pkg,
+  PkgsInstaller,
+  PkgsLoader,
+  PkgsUpdater,
+  Pkgs,
   PkgsInstaller,
   PkgsLoader,
   PkgsUpdater,
@@ -65,6 +73,10 @@ declare global {
     PkgsLoader: typeof PkgsLoader
     PkgsUpdater: typeof PkgsUpdater
     Pkgs: typeof Pkgs
+    PkgsInstaller: typeof PkgsInstaller
+    PkgsLoader: typeof PkgsLoader
+    PkgsUpdater: typeof PkgsUpdater
+    Pkgs: typeof Pkgs
     ToolsExtTest: typeof ToolsExtTest
     ToolsExt: typeof ToolsExt
     ToolsFetcher: typeof ToolsFetcher
@@ -85,6 +97,10 @@ declare global {
     export type PkgBundle = PkgBundleType
     export type PkgExporter = PkgExporterType
     export type Pkg = PkgType
+    export type PkgsInstaller = PkgsInstallerType
+    export type PkgsLoader = PkgsLoaderType
+    export type PkgsUpdater = PkgsUpdaterType
+    export type Pkgs = PkgsType
     export type PkgsInstaller = PkgsInstallerType
     export type PkgsLoader = PkgsLoaderType
     export type PkgsUpdater = PkgsUpdaterType

@@ -11,8 +11,15 @@ export class PkgsInstaller extends $sw.Unit {
     this.remove = this.queue.wrap(this.remove, this)
   }
 
-  async install(name: string) {
-    const data = await this.fetchPkg(name)
+  async install(nameOrData: string | PkgData) {
+    let data: PkgData
+    if (this.$.utils.is.string(nameOrData)) {
+      data = await this.fetchPkg(nameOrData)
+    } else {
+      data = nameOrData
+    }
+
+    const name = data.name
     if (this.$pkgs.map[name]) {
       const pkg = this.$pkgs.map[name]
       await pkg.applyData(data)

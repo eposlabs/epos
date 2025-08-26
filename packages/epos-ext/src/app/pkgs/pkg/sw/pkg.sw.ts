@@ -46,6 +46,7 @@ export class Pkg extends $sw.Unit {
     this.manifest = data.manifest
     this.bundles = data.manifest.bundles.map(bundle => new $sw.PkgBundle(this, bundle))
 
+    // TODO: describe why assets might be absent
     if (data.assets) {
       await this.$.idb.deleteStore(this.name, ':assets')
       for (const [path, blob] of Object.entries(data.assets)) {

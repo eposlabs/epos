@@ -1,17 +1,10 @@
 {
   "name": "web-fs",
+  "action": "https://epos.dev/@web-fs",
   "bundles": [
     {
       "run": "<hub>",
-      "src": ["dist/web-fs.js", "dist/web-fs.css"]
-    },
-    {
-      "run": "<background>",
-      "src": ["./dist/bg.js"]
-    },
-    {
-      "run": "https://developer.mozilla.org/*",
-      "src": ["src/mdn.css"]
+      "src": ["./dist/fg.js", "dist/fg.css"]
     }
   ]
 }

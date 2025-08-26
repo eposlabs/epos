@@ -3,7 +3,7 @@ export type Action = Url | null
 export type Mode = 'normal' | 'shadow' | 'lite'
 export type Popup = { width?: number; height?: number }
 
-export type RefPattern = '<web>' | '<popup>' | '<panel>' | '<background>'
+export type RefPattern = '<popup>' | '<panel>' | '<background>'
 export type UrlPattern = `<hub>${string}` | string
 export type Pattern = RefPattern | UrlPattern | `!${UrlPattern}`
 

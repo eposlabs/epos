@@ -27,7 +27,7 @@ export class StatesUnits extends $exSw.Unit {
     this.$.libs.mobx.makeObservable(unit, annotations, { deep: false })
 
     // Keep the list of annotated keys
-    Reflect.defineProperty(unit, _keys_, { get: () => keys })
+    Reflect.defineProperty(unit, _keys_, { configurable: true, get: () => keys })
 
     // Apply prototype
     const Unit = this.getClassBySpec(spec)
@@ -169,6 +169,9 @@ export class StatesUnits extends $exSw.Unit {
       delete unit_[key] // required for MobX to pick up the change
       this.$.libs.mobx.set(unit, key, value)
     }
+
+    // Update keys
+    Reflect.defineProperty(unit, _keys_, { configurable: true, get: () => keysAfter })
   }
 
   // ---------------------------------------------------------------------------

@@ -1,3 +1,5 @@
 {
-  "name": "web-fs-target"
+  "name": "web-fs-target",
+  "run": "*://*",
+  "src": "./src/fss.js"
 }

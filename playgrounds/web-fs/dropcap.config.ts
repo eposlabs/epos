@@ -2,22 +2,24 @@ import { defineConfig } from 'dropcap'
 import epos from 'epos/plugin-esbuild'
 
 export default defineConfig({
+  name: '⚙️ web-fs',
   tailwind: {
-    input: 'src/web-fs.css',
-    output: 'dist/web-fs.css',
+    input: 'src/entry/entry.fg.css',
+    output: 'dist/fg.css',
+  },
+  layers: {
+    input: './src/app',
+    output: './src/layers',
   },
   build: {
+    keepNames: true,
     bundles: [
       {
-        outfile: 'dist/web-fs.js',
-        entryPoints: ['./src/web-fs.tsx'],
+        outfile: 'dist/fg.js',
+        entryPoints: ['./src/entry/entry.fg.tsx'],
         format: 'esm',
         plugins: [epos()],
-      },
-      {
-        outfile: 'dist/bg.js',
-        entryPoints: ['./src/bg.ts'],
-        format: 'esm',
+        banner: { js: './src/layers/define.js' },
       },
     ],
   },

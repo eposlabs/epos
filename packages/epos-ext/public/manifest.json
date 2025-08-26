@@ -21,6 +21,7 @@
     "offscreen",
     "scripting",
     "sidePanel",
+    "storage",
     "tabs",
     "unlimitedStorage",
     "webNavigation"
