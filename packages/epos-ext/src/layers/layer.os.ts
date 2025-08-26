@@ -3,14 +3,12 @@ import { App, type App as AppType } from '../app/app.os'
 import { Dev, type Dev as DevType } from '../app/dev/dev.os'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.os'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.os'
-import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.os'
 
 Object.assign($os, {
   Alive,
   App,
   Dev,
   Pkg,
-  Pkgs,
   Pkgs,
 })
 
@@ -23,7 +21,6 @@ declare global {
     Dev: typeof Dev
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
-    Pkgs: typeof Pkgs
   }
 
   namespace $os {
@@ -31,7 +28,6 @@ declare global {
     export type App = AppType
     export type Dev = DevType
     export type Pkg = PkgType
-    export type Pkgs = PkgsType
     export type Pkgs = PkgsType
   }
 }

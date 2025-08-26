@@ -312,11 +312,11 @@ export class PkgParser extends $fg.Unit {
         throw new Error(`Absolute paths are not allowed (${path})`)
       }
 
-      const fullPath = this.utils.join(dir, path)
-      const exists = await this.utils.exists(fullPath)
-      if (!exists) {
-        throw new Error(`File not found ${path}`)
-      }
+      // const fullPath = this.utils.join(dir, path)
+      // const exists = await this.utils.exists(fullPath)
+      // if (!exists) {
+      //   throw new Error(`File not found ${path}`)
+      // }
     }
 
     return paths

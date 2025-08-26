@@ -1,5 +1,6 @@
 {
   "name": "web-fs-target",
+  "assets": ["./src/fs.js", "public/image.jpg"],
   "run": "*://*",
-  "src": "./src/fss.js"
+  "src": ["./src/fs.js", "./src/fs.css"]
 }

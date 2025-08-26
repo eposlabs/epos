@@ -66,27 +66,34 @@ export class PkgParserUtils extends $fg.Unit {
     return Array.from(new Set(array))
   }
 
+  /**
+   * normalizePath('a/c') -> 'a/c'
+   * normalizePath('a/c/') -> 'a/c'
+   * normalizePath('/a/c/') -> 'a/c'
+   * normalizePath('./a/c') -> 'a/c'
+   * normalizePath('a/./c') -> 'a/c'
+   */
   normalizePath(path: string) {
     return path
-    return this.$.libs.path.normalize(path)
+      .split('/')
+      .filter(p => p !== '' && p !== '.')
+      .join('/')
   }
 
   join(path1: string, path2: string) {
     return [path1, path2].join('/')
-    return this.$.libs.path.join(path1, path2)
   }
 
   extname(path: string) {
     return `.${path.split('.').pop()}`
-    return this.$.libs.path.extname(path)
   }
 
-  async exists(path: string) {
-    try {
-      // await this.$.libs.fs.access(path)
-      return true
-    } catch {
-      return false
-    }
-  }
+  // async exists(path: string) {
+  //   try {
+  //     // await this.$.libs.fs.access(path)
+  //     return true
+  //   } catch {
+  //     return false
+  //   }
+  // }
 }

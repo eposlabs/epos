@@ -113,9 +113,8 @@ export class Pkg extends $ex.Unit {
       reactJsxRuntime: libs.reactJsxRuntime,
       yjs: libs.yjs,
 
-      ...(this.name === 'learn-browser-api' && {
-        engine: this.$,
-      }),
+      // TODO: change to package API
+      engine: this.$,
     }
 
     class Epos {}

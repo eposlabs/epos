@@ -3,7 +3,6 @@ import { Boot, type Boot as BootType } from '../app/boot/boot.vw'
 import { Dev, type Dev as DevType } from '../app/dev/dev.vw'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.vw'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.vw'
-import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.vw'
 import { Shell, type Shell as ShellType } from '../app/shell/shell.vw'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.vw'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.vw'
@@ -13,7 +12,6 @@ Object.assign($vw, {
   Boot,
   Dev,
   Pkg,
-  Pkgs,
   Pkgs,
   Shell,
   ToolsExt,
@@ -29,7 +27,6 @@ declare global {
     Dev: typeof Dev
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
-    Pkgs: typeof Pkgs
     Shell: typeof Shell
     ToolsExt: typeof ToolsExt
     Tools: typeof Tools
@@ -40,7 +37,6 @@ declare global {
     export type Boot = BootType
     export type Dev = DevType
     export type Pkg = PkgType
-    export type Pkgs = PkgsType
     export type Pkgs = PkgsType
     export type Shell = ShellType
     export type ToolsExt = ToolsExtType

@@ -52,15 +52,23 @@ export class PkgBundle extends $sw.Unit {
     if (pattern.startsWith('<hub>')) {
       const devHub = this.$.env.url.hub(true)
       const devHubPattern = pattern.replace('<hub>', `${devHub}/@${this.$pkg.name}`)
-      if (this.patternMatchesUrl(devHubPattern, url)) return true
+      if (new URLPattern(devHubPattern).test(url)) return true
 
       const prodHub = this.$.env.url.hub(false)
       const prodHubPattern = pattern.replace('<hub>', `${prodHub}/@${this.$pkg.name}`)
-      if (this.patternMatchesUrl(prodHubPattern, url)) return true
+      if (new URLPattern(prodHubPattern).test(url)) return true
 
       return false
     }
 
-    return new URLPattern(pattern).test(url)
+    // TODO: refactor
+    const patternOk = new URLPattern(pattern).test(url)
+    if (!patternOk) return false
+    const { origin } = new URL(url)
+    return (
+      origin !== extOrigin &&
+      origin !== this.$.env.url.hub(true) &&
+      origin !== this.$.env.url.hub(false)
+    )
   }
 }

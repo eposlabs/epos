@@ -56,7 +56,8 @@ export class Pkgs extends $sw.Unit {
     let engine = ''
     if (!url.startsWith('chrome-extension:')) {
       const hasReact = pkgDefs.some(js => this.hasReact(js))
-      engine = hasReact ? this.engine.full : this.engine.mini
+      // TODO: add engine.mini
+      engine = hasReact ? this.engine.full : this.engine.full
     }
 
     return [

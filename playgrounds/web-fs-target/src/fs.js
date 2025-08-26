@@ -1,1 +1,1 @@
-console.log('web-fs-targets')
+console.log('web-fs')

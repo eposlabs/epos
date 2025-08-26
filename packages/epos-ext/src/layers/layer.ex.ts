@@ -15,7 +15,6 @@ import { PkgUi, type PkgUi as PkgUiType } from '../app/pkgs/pkg/ex/pkg-ui.ex'
 import { PkgUnit, type PkgUnit as PkgUnitType } from '../app/pkgs/pkg/ex/pkg-unit.ex'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/ex/pkg.ex'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.ex'
-import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.ex'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.ex'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.ex'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.ex'
@@ -38,7 +37,6 @@ Object.assign($ex, {
   PkgUi,
   PkgUnit,
   Pkg,
-  Pkgs,
   Pkgs,
   ToolsExt,
   ToolsFetcher,
@@ -67,7 +65,6 @@ declare global {
     PkgUnit: typeof PkgUnit
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
-    Pkgs: typeof Pkgs
     ToolsExt: typeof ToolsExt
     ToolsFetcher: typeof ToolsFetcher
     Tools: typeof Tools
@@ -91,7 +88,6 @@ declare global {
     export type PkgUi = PkgUiType
     export type PkgUnit = PkgUnitType
     export type Pkg = PkgType
-    export type Pkgs = PkgsType
     export type Pkgs = PkgsType
     export type ToolsExt = ToolsExtType
     export type ToolsFetcher = ToolsFetcherType

@@ -9,6 +9,7 @@ export class PkgsInstaller extends $sw.Unit {
     super(parent)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
+    this.$.bus.on('pkgs.install', this.install, this)
   }
 
   async install(nameOrData: string | PkgData) {
