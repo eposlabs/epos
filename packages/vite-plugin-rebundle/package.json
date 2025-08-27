@@ -1,16 +1,30 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "Vite plugin that forces single-file output per entry. Ensures each entry point is bundled into a standalone file without code-splitting.",
   "scripts": {
-    "dev": "tsc --watch"
+    "dev": "rm -rf dist && tsc --watch",
+    "build": "rm -rf dist && tsc",
+    "lint": "eslint src",
+    "release": "npm run build && npm publish",
+    "release:patch": "npm version patch && npm run release",
+    "release:minor": "npm version minor && npm run release"
   },
   "exports": {
-    ".": {
-      "import": "./dist/index.js"
-    }
+    "import": "./dist/index.js"
   },
   "files": [
     "dist"
-  ]
+  ],
+  "keywords": [
+    "vite",
+    "vite-plugin"
+  ],
+  "dependencies": {
+    "chalk": "^5.6.0",
+    "merge-anything": "^6.0.6"
+  }
 }

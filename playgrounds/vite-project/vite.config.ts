@@ -10,16 +10,15 @@ export default defineConfig(({ mode }) => {
       react({}),
       rebundle({
         define: {
-          'DROPCAP_DEV': true,
-          'DROPCAP_PROD': false,
-          'process.env.DROPCAP_PORT': '3033',
-          // 'process.env.DROPCAP_BUNDLE': this.$.libs.path.normalize(outfile),
-          'process.env.NODE_ENV': 'development',
+          'DROPCAP_DEV': JSON.stringify(true),
+          'DROPCAP_PROD': JSON.stringify(false),
+          'process.env.DROPCAP_PORT': JSON.stringify('3033'),
+          'process.env.NODE_ENV': JSON.stringify('development'),
         },
         bundles: {
           fg: {
             define: {
-              DATA: 'a',
+              DATA: JSON.stringify('a'),
             },
           },
         },
