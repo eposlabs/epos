@@ -7,7 +7,7 @@ export class Dev extends $ex.Unit {
   }
 
   viteTest() {
-    if (DROPCAP_PROD) return
+    if (import.meta.env.PROD) return
 
     //      <script type="module">
     //  import { injectIntoGlobalHook } from "http://localhost:5173/@react-refresh";

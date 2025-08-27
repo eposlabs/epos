@@ -22,6 +22,7 @@ declare global {
     moveBefore(movedNode: Node, referenceNode: Node | null): void
   }
 
+  var BUNDLE: 'ex' | 'cs' | 'os' | 'vw' | 'sw'
   var EX_MINI: boolean
 
   /** App instance for CS, OS, SW and VW */

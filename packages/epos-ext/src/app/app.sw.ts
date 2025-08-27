@@ -1,5 +1,4 @@
 export class App extends $sw.Unit {
-  name = 'newss2s2dsss'
   browser = chrome
   libs = new $sw.Libs(this)
   utils = new $exOsSwVw.Utils(this)
@@ -20,6 +19,7 @@ export class App extends $sw.Unit {
   tools = new $sw.Tools(this)
 
   async init() {
+    console.warn('data')
     self.$ = this
     await this.net.init()
     await this.pkgs.init()

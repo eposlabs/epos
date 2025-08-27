@@ -1,8 +1,11 @@
-// TODO: test tailwindcss with build mode
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import livereload from 'rollup-plugin-livereload'
+import fs from 'node:fs/promises'
 import { defineConfig } from 'vite'
-import rebundle from '../../playgrounds/vite-project/vite-plugin-rebundle'
+import rebundle from 'vite-plugin-rebundle'
+
+const layers = await fs.readFile('./src/layers/define.js', 'utf-8')
+const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
 
 export default defineConfig(({ mode }) => {
   return {
@@ -12,50 +15,19 @@ export default defineConfig(({ mode }) => {
         'react-dom': 'preact/compat',
       },
     },
+
     esbuild: {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
     },
-    plugins: [
-      react({}),
-      rebundle({
-        keepNames: true,
-        define: {
-          'DROPCAP_DEV': true,
-          'DROPCAP_PROD': false,
-          'env_DROPCAP_PORT': '3033',
-          'env_NODE_ENV': 'development',
-          'env_EPOS_DEV_WS': 'ws://localhost:2093',
-          'env_EPOS_DEV_HUB': 'http://localhost:2093',
-          'env_EPOS_PROD_HUB': 'https://epos.dev',
-        },
-        banner: {
-          js: ['./src/layers/define.js'],
-        },
-        bundles: {
-          'ex': {
-            sourcemap: false,
-            define: { EX_MINI: false },
-            banner: {
-              js: ['./src/app/boot/boot-globals.ex.js'],
-            },
-          },
-          // 'ex-mini': {
-          //   sourcemap: false,
-          //   define: { EX_MINI: true },
-          //   banner: {
-          //     js: [, './src/app/boot/boot-globals.ex.js'],
-          //   },
-          // },
-          'cs': { keepNames: false },
-          'os': {},
-          'sw': {},
-          'vw': {},
-        },
-      }),
-      // livereload({ port: 3033 }),
-      // mode === 'development' && livereload({ port: 3033 }),
-    ],
+
+    define: define({
+      'import.meta.env.DROPCAP_PORT': 3033,
+      'import.meta.env.EPOS_DEV_WS': 'ws://localhost:2093',
+      'import.meta.env.EPOS_DEV_HUB': 'http://localhost:2093',
+      'import.meta.env.EPOS_PROD_HUB': 'https://epos.dev',
+    }),
+
     build: {
       watch: mode === 'development' ? {} : undefined,
       minify: false,
@@ -63,7 +35,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           'ex': './src/entry/entry.ex.ts',
-          // 'ex-mini': './src/entry/entry.ex.ts',
           'cs': './src/entry/entry.cs.ts',
           'os': './src/entry/entry.os.ts',
           'sw': './src/entry/entry.sw.ts',
@@ -75,5 +46,45 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+
+    plugins: [
+      react(),
+      tailwindcss(),
+
+      rebundle({
+        'ex': {
+          keepNames: true,
+          sourcemap: false,
+          define: define({ BUNDLE: 'ex', EX_MINI: false }),
+          banner: { js: [layers, globals].join('\n') },
+        },
+        'cs': {
+          keepNames: false, // why?
+          define: define({ BUNDLE: 'cs' }),
+          banner: { js: layers },
+        },
+        'os': {
+          keepNames: true,
+          define: define({ BUNDLE: 'os' }),
+          banner: { js: layers },
+        },
+        'sw': {
+          keepNames: true,
+          define: define({ BUNDLE: 'sw' }),
+          banner: { js: layers },
+        },
+        'vw': {
+          keepNames: true,
+          define: define({ BUNDLE: 'vw' }),
+          banner: { js: layers },
+        },
+      }),
+    ],
   }
 })
+
+function define(env: Record<string, any>) {
+  const result: Record<string, string> = {}
+  for (const key in env) result[key] = JSON.stringify(env[key])
+  return result
+}

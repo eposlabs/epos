@@ -1,10 +1,8 @@
-const NODE_ENV = process.env.NODE_ENV as 'development' | 'production'
-const EPOS_DEV_WS = process.env.EPOS_DEV_WS as string
-const EPOS_DEV_HUB = process.env.EPOS_DEV_HUB as string
-const EPOS_PROD_HUB = process.env.EPOS_PROD_HUB as string
-const DROPCAP_BUNDLE = process.env.DROPCAP_BUNDLE as string
+const EPOS_DEV_WS = import.meta.env.EPOS_DEV_WS
+const EPOS_DEV_HUB = import.meta.env.EPOS_DEV_HUB
+const EPOS_PROD_HUB = import.meta.env.EPOS_PROD_HUB
 
-export type Bundle = 'ex' | 'ex-mini' | 'cs' | 'os' | 'vw' | 'sw'
+export type Bundle = 'ex' | 'cs' | 'os' | 'vw' | 'sw'
 
 /**
  * #### Extension Pages
@@ -17,8 +15,7 @@ export type Bundle = 'ex' | 'ex-mini' | 'cs' | 'os' | 'vw' | 'sw'
  * - background frame - `/frame.html/?ref=background&tabId={tabId}&pkgName={pkgName}`
  */
 export class Env extends $gl.Unit {
-  mode = NODE_ENV
-  bundle = DROPCAP_BUNDLE.split('/').at(-1)!.replace('.js', '') as Bundle
+  bundle = BUNDLE
   params = this.getParams()
   url = new EnvUrl(this)
   is = new EnvIs(this)
@@ -37,7 +34,6 @@ export class Env extends $gl.Unit {
     return {
       bundle: this.bundle,
       isExtPage: this.isExtPage,
-      mode: this.mode,
       params: this.params,
       url: this.url,
     }
@@ -76,12 +72,12 @@ class EnvIs extends $gl.Unit {
   private $env = this.up(Env, 'internal')!
 
   // Environment
-  dev = this.$env.mode === 'development'
-  prod = this.$env.mode === 'production'
+  dev = import.meta.env.DEV
+  prod = import.meta.env.PROD
 
   // Bundle
   cs = this.$env.bundle === 'cs'
-  ex = this.$env.bundle === 'ex' || this.$env.bundle === 'ex-mini'
+  ex = this.$env.bundle === 'ex'
   os = this.$env.bundle === 'os'
   sw = this.$env.bundle === 'sw'
   vw = this.$env.bundle === 'vw'

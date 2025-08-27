@@ -1,6 +1,5 @@
 import $chalk from 'chalk'
 import * as $esbuild from 'esbuild'
-import * as $merge from 'merge-anything'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
 
@@ -8,10 +7,8 @@ import type { BuildOptions } from 'esbuild'
 import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 
-export type Options = BuildOptions & {
-  bundles?: {
-    [chunkName: string]: BuildOptions
-  }
+export type Options = {
+  [chunkName: string]: BuildOptions
 }
 
 export type ContentMap = {
@@ -21,7 +18,6 @@ export type ContentMap = {
 export class Rebundle {
   private options: Options
   private config: ResolvedConfig | null = null
-  private emptyOutDir: boolean = true
   private content: ContentMap = {}
 
   constructor(options: Options) {
@@ -33,7 +29,6 @@ export class Rebundle {
       name: 'vite-plugin-rebundle',
       apply: 'build',
       enforce: 'post',
-      config: this.onConfig,
       configResolved: this.onConfigResolved,
       writeBundle: this.onWriteBundle,
     }
@@ -43,26 +38,9 @@ export class Rebundle {
   // HOOKS
   // ---------------------------------------------------------------------------
 
-  private onConfig = (config: UserConfig) => {
-    // Save user's `emptyOutDir` value
-    this.emptyOutDir = config.build?.emptyOutDir ?? true
-
-    // Make `emptyOutDir = false` to prevent Vite from deleting rebundled output files
-    return {
-      build: {
-        emptyOutDir: false,
-      },
-    }
-  }
-
   private onConfigResolved = async (config: ResolvedConfig) => {
     // Save resolved config
     this.config = config
-
-    // Cleanup output directory if user's `emptyOutDir` is `true`
-    if (this.emptyOutDir) {
-      await $fs.rmdir(this.outDir, { recursive: true })
-    }
 
     // Hide .js files from output logs
     const info = this.config.logger.info
@@ -105,14 +83,13 @@ export class Rebundle {
 
         // Prepare chunk path and build options
         const chunkPath = $path.join(this.outDir, chunk.fileName)
-        const commonBuildOptions = this.without(this.options, 'bundles')
-        const chunkBuildOptions = this.options.bundles?.[chunk.name] ?? {}
+        const options = this.options[chunk.name] ?? {}
 
         // Build with esbuild
         await $esbuild.build({
           minify: Boolean(this.config.build.minify),
           sourcemap: Boolean(this.config.build.sourcemap),
-          ...$merge.mergeAndConcat(commonBuildOptions, chunkBuildOptions),
+          ...options,
 
           outfile: chunkPath,
           entryPoints: [chunkPath],
@@ -120,8 +97,7 @@ export class Rebundle {
           allowOverwrite: true,
 
           plugins: [
-            ...(commonBuildOptions.plugins ?? []),
-            ...(chunkBuildOptions.plugins ?? []),
+            ...(options.plugins ?? []),
             {
               name: 'logger',
               setup: build => {
@@ -149,26 +125,24 @@ export class Rebundle {
     )
 
     // Remove all non-entry chunks
-    await Promise.all(
-      nonEntryChunks.map(async chunk => {
-        // Remove file itself
-        const path = $path.resolve(this.outDir, chunk.fileName)
-        await $fs.unlink(path)
-        delete bundle[chunk.fileName]
+    for (const chunk of nonEntryChunks) {
+      // Remove file itself
+      const path = $path.resolve(this.outDir, chunk.fileName)
+      await $fs.unlink(path)
+      delete bundle[chunk.fileName]
 
-        // Remove sourcemap if any
-        if (chunk.sourcemapFileName) {
-          const sourcemapPath = $path.resolve(this.outDir, chunk.sourcemapFileName)
-          await $fs.unlink(sourcemapPath)
-          delete bundle[chunk.sourcemapFileName]
-        }
+      // Remove sourcemap if any
+      if (chunk.sourcemapFileName) {
+        const sourcemapPath = $path.resolve(this.outDir, chunk.sourcemapFileName)
+        await $fs.unlink(sourcemapPath)
+        delete bundle[chunk.sourcemapFileName]
+      }
 
-        // Remove containing directory if empty
-        const dir = $path.dirname(path)
-        const files = await $fs.readdir(dir)
-        if (files.length === 0) await $fs.rmdir(dir)
-      }),
-    )
+      // Remove containing directory if empty
+      const dir = $path.dirname(path)
+      const files = await $fs.readdir(dir)
+      if (files.length === 0) await $fs.rmdir(dir)
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -192,12 +166,6 @@ export class Rebundle {
     )
 
     return content
-  }
-
-  private without<T extends object, K extends keyof T>(object: T, key: K): Omit<T, K> {
-    const result = { ...object }
-    delete result[key]
-    return result
   }
 
   private get never() {
