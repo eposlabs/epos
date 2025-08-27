@@ -1,3 +1,4 @@
+// @types/wicg-file-system-access
 {
   "name": "web-fs",
   "action": "https://epos.dev/@web-fs",

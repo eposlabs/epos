@@ -1,0 +1,16 @@
+{
+  "name": "vite-plugin-rebundle",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

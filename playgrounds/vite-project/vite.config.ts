@@ -2,7 +2,7 @@
 import react from '@vitejs/plugin-react'
 import livereload from 'rollup-plugin-livereload'
 import { defineConfig } from 'vite'
-import rebundle from './vite-plugin-rebundle'
+import rebundle from 'vite-plugin-rebundle'
 
 export default defineConfig(({ mode }) => {
   return {
