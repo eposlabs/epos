@@ -3,9 +3,7 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs/promises'
 import { defineConfig } from 'vite'
 import rebundle from 'vite-plugin-rebundle'
-
-const layers = await fs.readFile('./src/layers/define.js', 'utf-8')
-const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
+import layers from 'vite-plugin-layers'
 
 export default defineConfig(({ mode }) => {
   return {
@@ -51,33 +49,43 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
 
-      rebundle({
-        'ex': {
-          keepNames: true,
-          sourcemap: false,
-          define: define({ BUNDLE: 'ex', EX_MINI: false }),
-          banner: { js: [layers, globals].join('\n') },
-        },
-        'cs': {
-          keepNames: false, // why?
-          define: define({ BUNDLE: 'cs' }),
-          banner: { js: layers },
-        },
-        'os': {
-          keepNames: true,
-          define: define({ BUNDLE: 'os' }),
-          banner: { js: layers },
-        },
-        'sw': {
-          keepNames: true,
-          define: define({ BUNDLE: 'sw' }),
-          banner: { js: layers },
-        },
-        'vw': {
-          keepNames: true,
-          define: define({ BUNDLE: 'vw' }),
-          banner: { js: layers },
-        },
+      layers({
+        input: './src/app',
+        output: './src/layers',
+      }),
+
+      rebundle(async () => {
+        const setup = await fs.readFile('./src/layers/define.js', 'utf-8')
+        const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
+
+        return {
+          'ex': {
+            keepNames: true,
+            sourcemap: false,
+            define: define({ BUNDLE: 'ex', EX_MINI: false }),
+            banner: { js: [setup, globals].join('\n') },
+          },
+          'cs': {
+            keepNames: false, // why?
+            define: define({ BUNDLE: 'cs' }),
+            banner: { js: setup },
+          },
+          'os': {
+            keepNames: true,
+            define: define({ BUNDLE: 'os' }),
+            banner: { js: setup },
+          },
+          'sw': {
+            keepNames: true,
+            define: define({ BUNDLE: 'sw' }),
+            banner: { js: setup },
+          },
+          'vw': {
+            keepNames: true,
+            define: define({ BUNDLE: 'vw' }),
+            banner: { js: setup },
+          },
+        }
       }),
     ],
   }

@@ -1,7 +1,8 @@
-import $chalk from 'chalk'
 import * as $esbuild from 'esbuild'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
+import * as $utils from '@eposlabs/utils'
+import $chalk from 'chalk'
 
 import type { BuildOptions } from 'esbuild'
 import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
@@ -11,16 +12,19 @@ export type Options = {
   [chunkName: string]: BuildOptions
 }
 
+export type OptionsInput = Options | (() => Options | Promise<Options>)
+
 export type ContentMap = {
   [path: string]: string
 }
 
-export class Rebundle {
-  private options: Options
+export class Rebundle extends $utils.Unit {
+  private options: OptionsInput
   private config: ResolvedConfig | null = null
   private content: ContentMap = {}
 
-  constructor(options: Options) {
+  constructor(options: OptionsInput) {
+    super()
     this.options = options
   }
 
@@ -55,6 +59,8 @@ export class Rebundle {
     output: NormalizedOutputOptions,
     bundle: OutputBundle,
   ) => {
+    const options = await this.getOptions()
+
     // Get entry js chunks
     const entryJsChunks = Object.values(bundle)
       .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
@@ -83,13 +89,13 @@ export class Rebundle {
 
         // Prepare chunk path and build options
         const chunkPath = $path.join(this.outDir, chunk.fileName)
-        const options = this.options[chunk.name] ?? {}
+        const chunkOptions = options[chunk.name] ?? {}
 
         // Build with esbuild
         await $esbuild.build({
           minify: Boolean(this.config.build.minify),
           sourcemap: Boolean(this.config.build.sourcemap),
-          ...options,
+          ...chunkOptions,
 
           outfile: chunkPath,
           entryPoints: [chunkPath],
@@ -97,7 +103,7 @@ export class Rebundle {
           allowOverwrite: true,
 
           plugins: [
-            ...(options.plugins ?? []),
+            ...(chunkOptions.plugins ?? []),
             {
               name: 'logger',
               setup: build => {
@@ -154,6 +160,11 @@ export class Rebundle {
     return this.config.build.outDir
   }
 
+  private async getOptions() {
+    if (typeof this.options !== 'function') return this.options
+    return await this.options()
+  }
+
   private async getChunkContentMap(chunk: OutputChunk) {
     const content: ContentMap = {}
     const usedPaths = [chunk.fileName, ...chunk.imports]
@@ -166,9 +177,5 @@ export class Rebundle {
     )
 
     return content
-  }
-
-  private get never() {
-    throw new Error('never')
   }
 }

@@ -19,7 +19,6 @@ export class App extends $sw.Unit {
   tools = new $sw.Tools(this)
 
   async init() {
-    console.warn('data')
     self.$ = this
     await this.net.init()
     await this.pkgs.init()

@@ -1,10 +1,10 @@
 {
-  "name": "vite-plugin-rebundle",
-  "version": "1.1.0",
+  "name": "vite-plugin-layers",
+  "version": "0.0.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
-  "description": "Vite plugin that forces single-file output per entry. Ensures each entry point is bundled into a standalone file without code-splitting.",
+  "description": "",
   "keywords": [
     "vite",
     "vite-plugin"
@@ -25,6 +25,6 @@
   ],
   "dependencies": {
     "chalk": "^5.6.0",
-    "esbuild": "^0.25.9"
+    "chokidar": "^4.0.3"
   }
 }
