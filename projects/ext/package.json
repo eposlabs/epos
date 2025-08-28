@@ -24,7 +24,7 @@
     "@tailwindcss/vite": "^4.1.12",
     "@types/chrome": "^0.1.4",
     "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.8",
+    "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
     "paralayer": "^0.0.4",
     "rollup-plugin-livereload": "^2.0.5",
