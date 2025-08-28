@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "prettier": "prettier --write ./",
-    "edge": "ncu --upgrade --workspaces"
+    "edge": "ncu --upgrade --deep"
   },
   "devDependencies": {
     "npm-check-updates": "^18.0.3",
