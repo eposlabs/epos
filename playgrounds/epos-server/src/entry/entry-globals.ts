@@ -1,1 +1,0 @@
-import '@eposlabs/utils/globals'
