@@ -1,4 +1,4 @@
-import 'dropcap/types'
+import '@eposlabs/utils/globals'
 
 declare global {
   type Subset<TSet, TSub extends TSet> = TSub

@@ -14,14 +14,11 @@ export type Options = {
 
 export type OptionsInput = Options | (() => Options | Promise<Options>)
 
-export type ContentMap = {
-  [path: string]: string
-}
-
 export class Rebundle extends $utils.Unit {
   private options: OptionsInput
   private config: ResolvedConfig | null = null
-  private content: ContentMap = {}
+  private chunkFiles: Record<string, string> = {}
+  private rebundledContent: Record<string, string> = {}
 
   constructor(options: OptionsInput) {
     super()
@@ -55,11 +52,7 @@ export class Rebundle extends $utils.Unit {
     }
   }
 
-  private onWriteBundle = async (
-    output: NormalizedOutputOptions,
-    bundle: OutputBundle,
-  ) => {
-    console.log(structuredClone(bundle))
+  private onWriteBundle = async (output: NormalizedOutputOptions, bundle: OutputBundle) => {
     const options = await this.getOptions()
 
     // Get entry js chunks
@@ -67,88 +60,91 @@ export class Rebundle extends $utils.Unit {
       .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
       .filter(chunk => chunk.isEntry && $path.extname(chunk.fileName) === '.js')
 
-    // Get non-entry chunks (.js, .js.map)
-    const nonEntryChunks = Object.values(bundle)
-      .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
-      .filter(chunk => !chunk.isEntry)
-
     // Rebundle entry js chunks with esbuild
     await Promise.all(
       entryJsChunks.map(async chunk => {
         if (!this.config) throw this.never
 
-        // Check if chunk has been modified
-        const content = await this.getChunkContentMap(chunk)
-        const usedPaths = Object.keys(content)
-        const changed = usedPaths.some(path => content[path] !== this.content[path])
+        const chunkPath = this.outPath(chunk.fileName)
+        const chunkBuildOptions = options[chunk.name] ?? {}
+        const chunkFiles = await this.readChunkFiles(chunk)
+        const chunkFilePaths = Object.keys(chunkFiles)
+        const chunkChanged = chunkFilePaths.some(path => chunkFiles[path] !== this.chunkFiles[path])
 
-        // Update content map
-        Object.assign(this.content, content)
+        // Update files cache
+        Object.assign(this.chunkFiles, chunkFiles)
 
-        // Not modified? -> Skip
-        if (!changed) return
-
-        // Prepare chunk path and build options
-        const chunkPath = $path.join(this.outDir, chunk.fileName)
-        const chunkOptions = options[chunk.name] ?? {}
-
-        // Build with esbuild
-        await $esbuild.build({
-          minify: Boolean(this.config.build.minify),
-          sourcemap: Boolean(this.config.build.sourcemap),
-          ...chunkOptions,
-
-          outfile: chunkPath,
-          entryPoints: [chunkPath],
-          bundle: true,
-          allowOverwrite: true,
-
-          plugins: [
-            ...(chunkOptions.plugins ?? []),
-            {
-              name: 'logger',
-              setup: build => {
-                build.onEnd(result => {
-                  if (result.errors.length > 0) return
-                  const dir = $chalk.dim(`${this.outDir}/`)
-                  const name = $chalk.cyan(chunk.fileName)
-                  const tag = $chalk.dim.cyan('rebundle')
-                  console.log(`${dir}${name} ${tag}`)
-                })
+        // Modified? -> Rebundle
+        if (chunkChanged) {
+          // Build with esbuild
+          await $esbuild.build({
+            minify: Boolean(this.config.build.minify),
+            sourcemap: Boolean(this.config.build.sourcemap),
+            ...chunkBuildOptions,
+            outfile: chunkPath,
+            entryPoints: [chunkPath],
+            bundle: true,
+            allowOverwrite: true,
+            plugins: [
+              ...(chunkBuildOptions.plugins ?? []),
+              {
+                name: 'logger',
+                setup: build => {
+                  build.onEnd(result => {
+                    if (result.errors.length > 0) return
+                    const outDir = $chalk.dim(`${this.outDir}/`)
+                    const fileName = $chalk.cyan(chunk.fileName)
+                    const rebundleTag = $chalk.dim.cyan('rebundle')
+                    console.log(`${outDir}${fileName} ${rebundleTag}`)
+                  })
+                },
               },
-            },
-          ],
-        })
+            ],
+          })
 
-        // Update chunk and corresponding sourcemap chunk
-        chunk.code = await $fs.readFile(chunkPath, 'utf-8')
+          // Save chunk content
+          this.rebundledContent[chunk.fileName] = await this.outRead(chunk.fileName)
+
+          // Save sourcemap content
+          if (chunk.sourcemapFileName) {
+            this.rebundledContent[chunk.sourcemapFileName] = await this.outRead(chunk.sourcemapFileName)
+          }
+        }
+
+        // Overwrite chunk
+        await this.outWrite(chunk.fileName, this.rebundledContent[chunk.fileName])
+        chunk.code = this.rebundledContent[chunk.fileName]
+
+        // Overwrite sourcemap
         if (chunk.sourcemapFileName) {
-          const sourcemapChunk = bundle[chunk.sourcemapFileName]
-          if (sourcemapChunk.type !== 'asset') throw this.never
-          const sourcemapChunkPath = $path.join(this.outDir, chunk.sourcemapFileName)
-          sourcemapChunk.source = await $fs.readFile(sourcemapChunkPath, 'utf-8')
+          const sourcemapAsset = bundle[chunk.sourcemapFileName]
+          if (sourcemapAsset.type !== 'asset') throw this.never
+          await this.outWrite(chunk.sourcemapFileName, this.rebundledContent[chunk.sourcemapFileName])
+          sourcemapAsset.source = this.rebundledContent[chunk.sourcemapFileName]
         }
       }),
     )
 
+    // Get non-entry chunks (.js, .js.map)
+    const nonEntryChunks = Object.values(bundle)
+      .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
+      .filter(chunk => !chunk.isEntry)
+
     // Remove all non-entry chunks
     for (const chunk of nonEntryChunks) {
-      // Remove file itself
-      const path = $path.resolve(this.outDir, chunk.fileName)
-      await $fs.unlink(path)
+      // Remove chunk
+      await $fs.unlink(this.outPath(chunk.fileName))
       delete bundle[chunk.fileName]
 
-      // Remove sourcemap if any
+      // Remove sourcemap
       if (chunk.sourcemapFileName) {
-        const sourcemapPath = $path.resolve(this.outDir, chunk.sourcemapFileName)
-        await $fs.unlink(sourcemapPath)
+        await $fs.unlink(this.outPath(chunk.sourcemapFileName))
         delete bundle[chunk.sourcemapFileName]
       }
 
-      // Remove containing directory if empty
-      const dir = $path.dirname(path)
-      const files = await $fs.readdir(dir)
-      if (files.length === 0) await $fs.rmdir(dir)
+      // Remove containing directory if empty (recursively)
+      const dir = $path.dirname(this.outPath(chunk.fileName))
+      await this.removeDirectoryIfEmpty(dir)
     }
   }
 
@@ -161,22 +157,39 @@ export class Rebundle extends $utils.Unit {
     return this.config.build.outDir
   }
 
+  private outPath(path: string) {
+    return $path.join(this.outDir, path)
+  }
+
+  private async outRead(path: string) {
+    return await $fs.readFile(this.outPath(path), 'utf-8')
+  }
+
+  private async outWrite(path: string, content: string) {
+    await $fs.writeFile(this.outPath(path), content, 'utf-8')
+  }
+
   private async getOptions() {
     if (typeof this.options !== 'function') return this.options
     return await this.options()
   }
 
-  private async getChunkContentMap(chunk: OutputChunk) {
-    const content: ContentMap = {}
-    const usedPaths = [chunk.fileName, ...chunk.imports]
+  private async readChunkFiles(chunk: OutputChunk) {
+    const files: Record<string, string> = {}
 
     await Promise.all(
-      usedPaths.map(async path => {
-        const fullPath = $path.join(this.outDir, path)
-        content[path] = await $fs.readFile(fullPath, 'utf-8')
+      [chunk.fileName, ...chunk.imports].map(async path => {
+        files[path] = await this.outRead(path)
       }),
     )
 
-    return content
+    return files
+  }
+
+  private async removeDirectoryIfEmpty(dir: string) {
+    const files = await $fs.readdir(dir)
+    if (files.length > 0) return
+    await $fs.rmdir(dir)
+    await this.removeDirectoryIfEmpty($path.dirname(dir))
   }
 }

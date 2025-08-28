@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@eposlabs/utils": "^0.0.1",
     "dropcap": "^1.0.13",
     "epos-types": "^0.0.5",
     "jszip": "^3.10.1",

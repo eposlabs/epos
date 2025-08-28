@@ -47,12 +47,12 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       react(),
-      // tailwindcss(),
+      tailwindcss(),
 
-      // paralayer({
-      //   input: './src/app',
-      //   output: './src/layers',
-      // }),
+      paralayer({
+        input: './src/app',
+        output: './src/layers',
+      }),
 
       rebundle(async () => {
         const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
