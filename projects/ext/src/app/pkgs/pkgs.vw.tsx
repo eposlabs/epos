@@ -68,10 +68,7 @@ export class Pkgs extends $vw.Unit {
       if (pkg) pkg.visited = true
     }
 
-    if (
-      Object.keys(this.state.map).length === 0 &&
-      Object.keys(this.state.actions).length <= 1
-    ) {
+    if (Object.keys(this.state.map).length === 0 && Object.keys(this.state.actions).length <= 1) {
       self.close()
     }
 
@@ -114,12 +111,7 @@ export class Pkgs extends $vw.Unit {
     return (
       <div className="fixed top-0 right-0 flex items-center gap-4 rounded-bl-xl bg-[#e9ff01] py-4 pr-8 pl-8 font-mono">
         <div className="font-[12px]">{state.selectedName}</div>
-        <svg
-          className="size-[10px]"
-          viewBox="0 0 14 14"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="size-[10px]" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M3.5 5.25L7 8.75L10.5 5.25"
             stroke="#181D27"

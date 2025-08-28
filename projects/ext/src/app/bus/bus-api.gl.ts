@@ -76,11 +76,7 @@ export class BusApi extends $gl.Unit {
     if (timeout) timer = self.setTimeout(() => timer$.resolve(false), timeout)
 
     // Wait for signal or timer
-    const result = await this.$bus.utils.pick([
-      this.send(name),
-      listener$.promise,
-      timer$.promise,
-    ])
+    const result = await this.$bus.utils.pick([this.send(name), listener$.promise, timer$.promise])
 
     // Cleanup
     this.off(name, listener)

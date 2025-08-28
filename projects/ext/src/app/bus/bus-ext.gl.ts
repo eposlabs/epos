@@ -9,10 +9,7 @@ export type Req = {
   origin: Subset<Origin, 'cs' | 'os' | 'sw' | 'vw'>
 }
 
-export type Interceptor = (
-  sender: chrome.runtime.MessageSender,
-  ...args: any[]
-) => unknown
+export type Interceptor = (sender: chrome.runtime.MessageSender, ...args: any[]) => unknown
 
 export class BusExt extends $gl.Unit {
   private $bus = this.up($gl.Bus, 'internal')!

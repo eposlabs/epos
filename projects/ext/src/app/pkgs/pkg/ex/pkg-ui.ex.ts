@@ -76,9 +76,7 @@ export class PkgUi extends $ex.Unit {
 
   render = (children: ReactNode, container?: Container) => {
     this.ensureReact('render')
-    container ??= this.$pkg.shadowCss
-      ? this.ensureShadow().shadowRoot!
-      : this.ensureRoot()
+    container ??= this.$pkg.shadowCss ? this.ensureShadow().shadowRoot! : this.ensureRoot()
     const root = this.$.libs.reactDomClient!.createRoot(container)
     root.render(children)
   }

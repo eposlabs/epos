@@ -71,9 +71,7 @@ export class StateSetup extends $exSw.Unit {
       })
 
       // Serve Yjs document as an update for EX
-      this.$state.bus.on('swGetDoc', () =>
-        this.$.libs.yjs.encodeStateAsUpdate(this.$state.doc),
-      )
+      this.$state.bus.on('swGetDoc', () => this.$.libs.yjs.encodeStateAsUpdate(this.$state.doc))
     }
   }
 
@@ -103,8 +101,7 @@ export class StateSetup extends $exSw.Unit {
         if (initial) {
           const data = initial()
           const isObject = Object.getPrototypeOf(data) === Object.prototype
-          if (!isObject)
-            throw new Error('State must be a regular object', { cause: data })
+          if (!isObject) throw new Error('State must be a regular object', { cause: data })
           if ('@' in data) throw new Error('State must not contain "@" key')
           Object.assign(root, data)
         }

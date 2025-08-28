@@ -38,9 +38,7 @@ export class PkgExporter extends $sw.Unit {
       zip.file(`assets/${path}`, blob)
     }
 
-    const icon = pkg.manifest.icon
-      ? assets[pkg.manifest.icon]
-      : await fetch('/icon.png').then(r => r.blob())
+    const icon = pkg.manifest.icon ? assets[pkg.manifest.icon] : await fetch('/icon.png').then(r => r.blob())
     const icon128 = await this.$.utils.convertImage(icon, {
       type: 'image/png',
       quality: 1,

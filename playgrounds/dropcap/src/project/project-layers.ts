@@ -168,11 +168,7 @@ export class ProjectLayers extends Unit<Project> {
       })
       .filter(Boolean)
 
-    const assign = [
-      `Object.assign(${$layerName}, {`,
-      ...allNames.map(name => `  ${name},`),
-      `})`,
-    ]
+    const assign = [`Object.assign(${$layerName}, {`, ...allNames.map(name => `  ${name},`), `})`]
 
     const globals = [
       `declare global {`,

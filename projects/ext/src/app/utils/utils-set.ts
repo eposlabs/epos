@@ -1,9 +1,4 @@
-export function set(
-  this: $exOsSwVw.Unit,
-  target: unknown,
-  path: PropertyKey[],
-  value: unknown,
-) {
+export function set(this: $exOsSwVw.Unit, target: unknown, path: PropertyKey[], value: unknown) {
   const [key, ...rest] = path
 
   if (this.$.is.object(target)) {

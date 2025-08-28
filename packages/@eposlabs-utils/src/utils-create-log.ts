@@ -12,11 +12,6 @@ export function createLog(name: string) {
   return log
 }
 
-function print(
-  type: 'log' | 'warn' | 'error',
-  name: string,
-  color: string,
-  ...args: unknown[]
-) {
+function print(type: 'log' | 'warn' | 'error', name: string, color: string, ...args: unknown[]) {
   console[type](`%c[${name}]`, `color: ${color}`, ...args)
 }

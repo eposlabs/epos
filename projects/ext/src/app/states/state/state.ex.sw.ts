@@ -7,14 +7,7 @@ export type Versioner = Record<number, (state: MObj) => void>
 export type Root = MObj & { ':version'?: number }
 
 /** Supported state values. */
-export type Value =
-  | undefined
-  | null
-  | boolean
-  | number
-  | string
-  | Value[]
-  | { [key: string]: Value }
+export type Value = undefined | null | boolean | number | string | Value[] | { [key: string]: Value }
 
 /**
  * #### How Sync Works
@@ -34,12 +27,7 @@ export class State extends $exSw.Unit {
   observer = new $exSw.StateObserver(this)
   setup = new $exSw.StateSetup(this)
 
-  constructor(
-    parent: $exSw.Unit,
-    location: Location,
-    initial?: Initial,
-    versioner?: Versioner,
-  ) {
+  constructor(parent: $exSw.Unit, location: Location, initial?: Initial, versioner?: Versioner) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)

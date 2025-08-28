@@ -116,9 +116,7 @@ export class StateNode extends $exSw.Unit {
     const isUnit = this.$units.isUnitSpec(spec)
 
     // Create empty node
-    const mNode = isUnit
-      ? this.createEmptyMobxUnit(spec, [...yMap.keys()])
-      : this.createEmptyMobxObject()
+    const mNode = isUnit ? this.createEmptyMobxUnit(spec, [...yMap.keys()]) : this.createEmptyMobxObject()
 
     // Attach node
     this.attach(mNode, yMap, owner)
@@ -163,9 +161,7 @@ export class StateNode extends $exSw.Unit {
     const isUnit = this.$units.isUnitSpec(spec)
 
     // Create empty node
-    const mNode = isUnit
-      ? this.createEmptyMobxUnit(spec, Object.keys(object))
-      : this.createEmptyMobxObject()
+    const mNode = isUnit ? this.createEmptyMobxUnit(spec, Object.keys(object)) : this.createEmptyMobxObject()
     const yNode = !owner ? this.$state.doc.getMap('root') : new this.$.libs.yjs.Map()
 
     // Attach node

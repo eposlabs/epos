@@ -38,8 +38,7 @@ function hsl2rgb(hh: number, ss: number, ll: number): Rgb {
   ll /= 100
   const k = (n: number) => (n + hh / 30) % 12
   const a = ss * Math.min(ll, 1 - ll)
-  const f = (n: number) =>
-    ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+  const f = (n: number) => ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
   return [f(0), f(8), f(4)].map(v => Math.round(v * 255)) as Rgb
 }
 

@@ -65,10 +65,6 @@ export class PkgBundle extends $sw.Unit {
     const patternOk = new URLPattern(pattern).test(url)
     if (!patternOk) return false
     const { origin } = new URL(url)
-    return (
-      origin !== extOrigin &&
-      origin !== this.$.env.url.hub(true) &&
-      origin !== this.$.env.url.hub(false)
-    )
+    return origin !== extOrigin && origin !== this.$.env.url.hub(true) && origin !== this.$.env.url.hub(false)
   }
 }

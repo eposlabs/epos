@@ -53,9 +53,7 @@ export class Ui extends $ex.Unit {
     }
   }
 
-  private createElement(
-    ...args: Parameters<typeof createElement>
-  ): ReturnType<typeof createElement> {
+  private createElement(...args: Parameters<typeof createElement>): ReturnType<typeof createElement> {
     if (!this.$.libs.react) throw this.never
     const [type, props, ...children] = args
     this.processNode(type, props)

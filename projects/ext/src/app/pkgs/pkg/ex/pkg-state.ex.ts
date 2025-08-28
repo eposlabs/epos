@@ -120,9 +120,7 @@ export class PkgState extends $ex.Unit {
     }
   }
 
-  private validateVersioner(
-    versioner?: unknown,
-  ): asserts versioner is undefined | Versioner {
+  private validateVersioner(versioner?: unknown): asserts versioner is undefined | Versioner {
     if (this.$.is.undefined(versioner)) return
 
     if (!this.$.is.object(versioner)) {

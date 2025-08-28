@@ -14,12 +14,6 @@ export class Pkg extends $vw.Unit {
   }
 
   ui = () => {
-    return (
-      <iframe
-        className="h-[100vh] w-[100vw]"
-        src={this.$.env.url.frame(this.name)}
-        name={this.name}
-      />
-    )
+    return <iframe className="h-[100vh] w-[100vw]" src={this.$.env.url.frame(this.name)} name={this.name} />
   }
 }
