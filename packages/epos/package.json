@@ -7,8 +7,8 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "tsc -w",
-    "build": "tsc",
+    "dev": "rm -rf dist && tsc -w",
+    "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
     "release": "npm version patch && npm run release:raw",
     "release:raw": "npm run build && npm publish",

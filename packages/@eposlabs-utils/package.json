@@ -1,6 +1,6 @@
 {
   "name": "@eposlabs/utils",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -10,7 +10,7 @@
     "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
     "release": "npm version patch && npm run release:raw",
-    "release:raw": "npm run build && npm publish",
+    "release:raw": "npm run build && npm publish --access public",
     "release:minor": "npm version minor && npm run release:raw"
   },
   "exports": {
@@ -25,5 +25,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
