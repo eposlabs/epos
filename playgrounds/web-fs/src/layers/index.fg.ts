@@ -1,1 +1,1 @@
-import './layer.fg'
+import './layer.fg.ts'

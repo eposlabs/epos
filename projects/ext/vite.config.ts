@@ -5,87 +5,85 @@ import react from '@vitejs/plugin-react'
 import rebundle from 'vite-plugin-rebundle'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(({ mode }) => {
-  return {
-    resolve: {
-      alias: {
-        'react': 'preact/compat',
-        'react-dom': 'preact/compat',
+export default defineConfig(({ mode }) => ({
+  resolve: {
+    alias: {
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
+    },
+  },
+
+  esbuild: {
+    jsxFactory: 'h',
+    jsxFragment: 'Fragment',
+    keepNames: true,
+  },
+
+  define: define({
+    'import.meta.env.DROPCAP_PORT': 3033,
+    'import.meta.env.EPOS_DEV_WS': 'ws://localhost:2093',
+    'import.meta.env.EPOS_DEV_HUB': 'http://localhost:2093',
+    'import.meta.env.EPOS_PROD_HUB': 'https://epos.dev',
+  }),
+
+  build: {
+    watch: mode === 'production' ? null : {},
+    minify: mode !== 'development',
+    sourcemap: mode === 'development',
+    rollupOptions: {
+      input: {
+        'ex': './src/entry/entry.ex.ts',
+        'cs': './src/entry/entry.cs.ts',
+        'os': './src/entry/entry.os.ts',
+        'sw': './src/entry/entry.sw.ts',
+        'vw': './src/entry/entry.vw.ts',
+      },
+      output: {
+        entryFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
       },
     },
+  },
 
-    esbuild: {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-      keepNames: true,
-    },
+  plugins: [
+    react(),
+    tailwindcss(),
 
-    define: define({
-      'import.meta.env.DROPCAP_PORT': 3033,
-      'import.meta.env.EPOS_DEV_WS': 'ws://localhost:2093',
-      'import.meta.env.EPOS_DEV_HUB': 'http://localhost:2093',
-      'import.meta.env.EPOS_PROD_HUB': 'https://epos.dev',
+    paralayer({
+      input: './src/app',
+      output: './src/layers',
     }),
 
-    build: {
-      watch: mode === 'development' || mode === 'preview' ? {} : undefined,
-      minify: mode !== 'development',
-      sourcemap: mode === 'development',
-      rollupOptions: {
-        input: {
-          'ex': './src/entry/entry.ex.ts',
-          'cs': './src/entry/entry.cs.ts',
-          'os': './src/entry/entry.os.ts',
-          'sw': './src/entry/entry.sw.ts',
-          'vw': './src/entry/entry.vw.ts',
+    rebundle(async () => {
+      const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
+      const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
+
+      return {
+        'ex': {
+          sourcemap: false,
+          define: define({ BUNDLE: 'ex', EX_MINI: false }),
+          banner: { js: [setup, globals].join('\n') },
         },
-        output: {
-          entryFileNames: '[name].js',
-          assetFileNames: '[name].[ext]',
+        'cs': {
+          define: define({ BUNDLE: 'cs' }),
+          banner: { js: setup },
         },
-      },
-    },
-
-    plugins: [
-      react(),
-      tailwindcss(),
-
-      paralayer({
-        input: './src/app',
-        output: './src/layers',
-      }),
-
-      rebundle(async () => {
-        const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
-        const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
-
-        return {
-          'ex': {
-            sourcemap: false,
-            define: define({ BUNDLE: 'ex', EX_MINI: false }),
-            banner: { js: [setup, globals].join('\n') },
-          },
-          'cs': {
-            define: define({ BUNDLE: 'cs' }),
-            banner: { js: setup },
-          },
-          'os': {
-            define: define({ BUNDLE: 'os' }),
-            banner: { js: setup },
-          },
-          'sw': {
-            define: define({ BUNDLE: 'sw' }),
-            banner: { js: setup },
-          },
-          'vw': {
-            define: define({ BUNDLE: 'vw' }),
-            banner: { js: setup },
-          },
-        }
-      }),
-    ],
-  }
-})
+        'os': {
+          define: define({ BUNDLE: 'os' }),
+          banner: { js: setup },
+        },
+        'sw': {
+          define: define({ BUNDLE: 'sw' }),
+          banner: { js: setup },
+        },
+        'vw': {
+          define: define({ BUNDLE: 'vw' }),
+          banner: { js: setup },
+        },
+      }
+    }),
+  ],
+}))
 
 function define(env: Record<string, any>) {
   const result: Record<string, string> = {}
