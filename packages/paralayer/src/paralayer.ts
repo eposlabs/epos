@@ -1,11 +1,10 @@
-import '@eposlabs/utils/globals'
-
 import * as $chokidar from 'chokidar'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
 import * as $utils from '@eposlabs/utils'
 
-import type { Plugin } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
+import type { FSWatcher } from 'chokidar'
 
 export type DirPath = string
 
@@ -32,6 +31,8 @@ export class Paralayer extends $utils.Unit {
   private queue = new $utils.Queue()
   private extensions = new Set(['.ts', '.tsx', '.js', '.jsx'])
   private previousLayers: string[] = []
+  private watcher: FSWatcher | null = null
+  private viteConfig: ResolvedConfig | null = null
 
   constructor(options: Options) {
     super()
@@ -42,6 +43,7 @@ export class Paralayer extends $utils.Unit {
     return {
       name: 'paralayer',
       enforce: 'pre',
+      configResolved: this.onConfigResolved,
       buildStart: this.onBuildStart,
     }
   }
@@ -52,17 +54,36 @@ export class Paralayer extends $utils.Unit {
 
     await $utils.safe($fs.rm(this.options.output, { recursive: true }))
 
-    const watcher = $chokidar.watch(this.options.input)
-    watcher.on('all', this.onAll)
-    watcher.on('ready', this.onReady)
+    this.watcher = $chokidar.watch(this.options.input)
+    this.watcher.on('all', this.onAll)
+    this.watcher.on('ready', this.onReady)
 
     await this.ready$.promise
     await this.queue.run(() => this.build())
   }
 
+  // ---------------------------------------------------------------------------
+  // VITE HOOKS
+  // ---------------------------------------------------------------------------
+
+  private onConfigResolved = (config: ResolvedConfig) => {
+    this.viteConfig = config
+  }
+
   private onBuildStart = async () => {
     await this.start()
+
+    if (!this.viteConfig) throw this.never
+    if (!this.watcher) throw this.never
+
+    if (!this.viteConfig.build.watch) {
+      await this.watcher.close()
+    }
   }
+
+  // ---------------------------------------------------------------------------
+  // HANDLERS
+  // ---------------------------------------------------------------------------
 
   private onAll = async (event: string, path: string) => {
     // Process only file events
@@ -99,12 +120,9 @@ export class Paralayer extends $utils.Unit {
     this.ready$.resolve()
   }
 
-  private getLayer(path: string) {
-    const name = $path.basename(path)
-    const layer = name.split('.').slice(1, -1).sort().join('.')
-    if (layer) return layer
-    return this.options.default ?? ''
-  }
+  // ---------------------------------------------------------------------------
+  // BUILD
+  // ---------------------------------------------------------------------------
 
   private async build() {
     // Group file paths by layers
@@ -167,6 +185,10 @@ export class Paralayer extends $utils.Unit {
     console.log(`[paralayer] Done`)
   }
 
+  // ---------------------------------------------------------------------------
+  // HELPERS
+  // ---------------------------------------------------------------------------
+
   private extractExportedClassNames(content: string) {
     return content
       .split('export class ')
@@ -175,7 +197,6 @@ export class Paralayer extends $utils.Unit {
   }
 
   private generateLayerContent(layer: string, layerPaths: string[]) {
-    const LayerName = this.getLayerName(layer, 'Pascal')
     const $LayerName = this.getLayerName(layer, '$Pascal')
     const $layerName = this.getLayerName(layer, '$camel')
     const allNames = layerPaths.flatMap(path => this.files[path]!.names)
@@ -192,11 +213,7 @@ export class Paralayer extends $utils.Unit {
       })
       .filter(Boolean)
 
-    const assign = [
-      `Object.assign(${$layerName}, {`,
-      ...allNames.map(name => `  ${name},`),
-      `})`,
-    ]
+    const assign = [`Object.assign(${$layerName}, {`, ...allNames.map(name => `  ${name},`), `})`]
 
     const globals = [
       `declare global {`,
@@ -252,11 +269,17 @@ export class Paralayer extends $utils.Unit {
     return [nocheck, '', ...vars, ...globals, ''].join('\n')
   }
 
-  private getLayerName(layer: string, style: 'Pascal' | '$Pascal' | '$camel') {
+  private getLayer(path: string) {
+    const name = $path.basename(path)
+    const layer = name.split('.').slice(1, -1).sort().join('.')
+    if (layer) return layer
+    return this.options.default ?? ''
+  }
+
+  private getLayerName(layer: string, style: '$camel' | '$Pascal') {
     const LayerName = layer.split('.').map(this.capitalize).join('')
-    if (style === 'Pascal') return LayerName
-    if (style === '$Pascal') return `$${LayerName}`
     if (style === '$camel') return `$${this.decapitalize(LayerName)}`
+    if (style === '$Pascal') return `$${LayerName}`
     throw this.never
   }
 

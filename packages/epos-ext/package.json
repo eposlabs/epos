@@ -2,17 +2,14 @@
   "name": "epos-ext",
   "type": "module",
   "scripts": {
-    "paralayer": "paralayer ./src/app ./src/layers",
-    "vite": "NODE_OPTIONS=--inspect vite build --mode development",
-    "dev": "dropcap dev",
-    "build": "dropcap build",
-    "preview": "dropcap preview",
+    "dev": "vite build --mode development",
+    "build": "vite build --mode production",
+    "preview": "vite build --mode preview",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@eposlabs/utils": "^0.0.1",
-    "dropcap": "^1.0.13",
     "epos-types": "^0.0.5",
     "jszip": "^3.10.1",
     "mobx": "^6.13.7",

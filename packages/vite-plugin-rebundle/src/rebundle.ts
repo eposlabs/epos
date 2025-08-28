@@ -6,7 +6,7 @@ import $chalk from 'chalk'
 
 import type { BuildOptions } from 'esbuild'
 import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
-import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 
 export type Options = {
   [chunkName: string]: BuildOptions
@@ -25,7 +25,7 @@ export class Rebundle extends $utils.Unit {
     this.options = options
   }
 
-  get plugin(): Plugin {
+  get vite(): Plugin {
     return {
       name: 'vite-plugin-rebundle',
       apply: 'build',
@@ -78,12 +78,12 @@ export class Rebundle extends $utils.Unit {
         if (chunkChanged) {
           // Build with esbuild
           await $esbuild.build({
-            minify: Boolean(this.config.build.minify),
             sourcemap: Boolean(this.config.build.sourcemap),
             ...chunkBuildOptions,
             outfile: chunkPath,
             entryPoints: [chunkPath],
             bundle: true,
+            minify: false,
             allowOverwrite: true,
             plugins: [
               ...(chunkBuildOptions.plugins ?? []),

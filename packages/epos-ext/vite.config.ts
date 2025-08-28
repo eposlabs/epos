@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
+      keepNames: true,
     },
 
     define: define({
@@ -27,9 +28,9 @@ export default defineConfig(({ mode }) => {
     }),
 
     build: {
-      watch: mode === 'development' ? {} : undefined,
-      minify: false,
-      sourcemap: true,
+      watch: mode === 'development' || mode === 'preview' ? {} : undefined,
+      minify: mode !== 'development',
+      sourcemap: mode === 'development',
       rollupOptions: {
         input: {
           'ex': './src/entry/entry.ex.ts',
@@ -60,28 +61,23 @@ export default defineConfig(({ mode }) => {
 
         return {
           'ex': {
-            keepNames: true,
             sourcemap: false,
             define: define({ BUNDLE: 'ex', EX_MINI: false }),
             banner: { js: [setup, globals].join('\n') },
           },
           'cs': {
-            keepNames: false, // why?
             define: define({ BUNDLE: 'cs' }),
             banner: { js: setup },
           },
           'os': {
-            keepNames: true,
             define: define({ BUNDLE: 'os' }),
             banner: { js: setup },
           },
           'sw': {
-            keepNames: true,
             define: define({ BUNDLE: 'sw' }),
             banner: { js: setup },
           },
           'vw': {
-            keepNames: true,
             define: define({ BUNDLE: 'vw' }),
             banner: { js: setup },
           },
