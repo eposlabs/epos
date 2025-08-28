@@ -52,7 +52,7 @@ export class Rebundle extends $utils.Unit {
     }
   }
 
-  private onWriteBundle = async (output: NormalizedOutputOptions, bundle: OutputBundle) => {
+  private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
     const options = await this.getOptions()
 
     // Get entry js chunks

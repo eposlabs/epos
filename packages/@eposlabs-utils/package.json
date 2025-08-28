@@ -8,10 +8,10 @@
   "scripts": {
     "dev": "rm -rf dist && tsc --watch",
     "build": "rm -rf dist && tsc",
-    "lint": "eslint src",
-    "release": "npm run build && npm publish",
-    "release:patch": "npm version patch && npm run release",
-    "release:minor": "npm version minor && npm run release"
+    "lint": "tsc --noEmit",
+    "release": "npm version patch && npm run release:raw",
+    "release:raw": "npm run build && npm publish",
+    "release:minor": "npm version minor && npm run release:raw"
   },
   "exports": {
     ".": {

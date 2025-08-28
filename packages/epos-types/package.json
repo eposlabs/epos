@@ -7,8 +7,9 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "release": "npm publish",
-    "release:patch": "npm version patch && npm run release"
+    "release": "npm version patch && npm run release:raw",
+    "release:raw": "npm run build && npm publish",
+    "release:minor": "npm version minor && npm run release:raw"
   },
   "exports": {
     ".": {
