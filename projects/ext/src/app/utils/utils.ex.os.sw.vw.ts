@@ -1,4 +1,4 @@
-import { ensureArray, is, Queue, QueueMap, safe, wait } from 'dropcap/utils'
+import { ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
 import { bind } from './utils-bind'
 import { convertImage } from './utils-convert-image'
 import { equal } from './utils-equal'

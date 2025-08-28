@@ -1,4 +1,4 @@
-import { is, safe } from 'dropcap/utils'
+import { is, safe } from '@eposlabs/utils'
 import { bind } from './utils-bind'
 import { time } from './utils-time'
 

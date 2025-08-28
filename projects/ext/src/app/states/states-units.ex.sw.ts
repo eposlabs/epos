@@ -1,4 +1,4 @@
-import type { Log } from 'dropcap/utils'
+import type { Log } from '@eposlabs/utils'
 import type { IObservableFactory } from 'mobx'
 
 let $: $ex.App | $sw.App

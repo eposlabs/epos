@@ -1,4 +1,4 @@
-import { createLog } from 'dropcap/utils'
+import { createLog } from '@eposlabs/utils'
 import Zip from 'jszip'
 import * as mobx from 'mobx'
 import * as nanoid from 'nanoid'

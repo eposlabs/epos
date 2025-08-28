@@ -1,4 +1,4 @@
-import { is } from '@eposlabs/utils'
+import { is } from './utils-is'
 
 export async function safe<T>(
   effect: (() => T | Promise<T>) | Promise<T>,

@@ -2,7 +2,6 @@ export type Tab = { id: number; url: string }
 export type JsInjectMode = 'script' | 'function'
 
 export class BootInjector extends $sw.Unit {
-  private $boot = this.up($sw.Boot, 'internal')!
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -111,10 +110,7 @@ export class BootInjector extends $sw.Unit {
       this.cspFixTabIds.add(tab.id)
       self.setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
       const origin = new URL(tab.url).origin
-      await this.$.browser.browsingData.remove(
-        { origins: [origin] },
-        { serviceWorkers: true },
-      )
+      await this.$.browser.browsingData.remove({ origins: [origin] }, { serviceWorkers: true })
       await this.$.browser.tabs.reload(tab.id)
       // await this.execute(tab.id, 'MAIN', [], async () => {
       //   const regs = await navigator.serviceWorker.getRegistrations()
@@ -133,12 +129,7 @@ export class BootInjector extends $sw.Unit {
     }
   }
 
-  private async execute<T extends Fn>(
-    tabId: number,
-    world: 'MAIN' | 'ISOLATED',
-    args: unknown[],
-    fn: T,
-  ) {
+  private async execute<T extends Fn>(tabId: number, world: 'MAIN' | 'ISOLATED', args: unknown[], fn: T) {
     const [{ result }] = await this.$.browser.scripting.executeScript({
       target: { tabId },
       world: world,
