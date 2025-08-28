@@ -7,7 +7,7 @@ export type Callback = Fn & { [_id_]?: string }
 export class ToolsExt extends $ex.Unit {
   declare api: typeof chrome
   private listenerIds = new Set<string>()
-  private static _id_ = _id_
+  static _id_ = _id_
 
   async init() {
     this.api = await this.createApi()

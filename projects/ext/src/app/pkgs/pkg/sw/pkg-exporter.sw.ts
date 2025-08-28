@@ -48,18 +48,18 @@ export class PkgExporter extends $sw.Unit {
     zip.file('icon.png', icon128)
 
     const manifest = await fetch('/manifest.json').then(r => r.json())
-    const runItems = this.$pkg.bundles.flatMap(bundle => bundle.run)
-    const hasPanel = runItems.includes('<panel>')
-    const hub = this.$.env.url.hub(false)
+    // const runItems = this.$pkg.bundles.flatMap(bundle => bundle.run)
+    // const hasPanel = runItems.includes('<panel>')
+    // const hub = this.$.env.url.hub(false)
 
-    const urls = runItems
-      .map(run => {
-        if (['<popup>', '<panel>', '<background>'].includes(run)) return null
-        if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
-        return run
-      })
-      .filter(this.$.is.present)
-      .filter(this.$.utils.unique.filter)
+    // const urls = runItems
+    //   .map(run => {
+    //     if (['<popup>', '<panel>', '<background>'].includes(run)) return null
+    //     if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
+    //     return run
+    //   })
+    //   .filter(this.$.is.present)
+    //   .filter(this.$.utils.unique.filter)
 
     const totalManifest = {
       ...manifest,

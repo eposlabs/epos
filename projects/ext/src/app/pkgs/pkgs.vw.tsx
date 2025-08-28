@@ -85,9 +85,9 @@ export class Pkgs extends $vw.Unit {
     const state = this.$.libs.valtio.useSnapshot(this.state) as State
     const pkgs = Object.values(state.map).sort(this.byName)
 
-    const onSelect = () => {
-      this.state.selectedName = pkgs[0]?.name ?? null
-    }
+    // const onSelect = () => {
+    //   this.state.selectedName = pkgs[0]?.name ?? null
+    // }
 
     return (
       <div className="">

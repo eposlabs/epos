@@ -1,4 +1,3 @@
-import type { reaction } from 'mobx'
 import type { createElement, FC } from 'react'
 import type { jsx, jsxs } from 'react/jsx-runtime'
 

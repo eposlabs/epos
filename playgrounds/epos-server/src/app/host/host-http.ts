@@ -2,7 +2,7 @@ import type { ServerType } from '@hono/node-server'
 
 export class HostHttp extends $gl.Unit {
   declare server: ServerType
-  private $host = this.up($gl.Host, 'internal')!
+  private $host = this.up($gl.Host)!
 
   async setup() {
     this.server = this.$.libs.honoServer.serve({

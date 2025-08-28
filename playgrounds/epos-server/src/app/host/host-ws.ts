@@ -2,7 +2,7 @@ import type { Server } from 'http'
 import type { WebSocketServer } from 'ws'
 
 export class HostWs extends $gl.Unit {
-  private $host = this.up($gl.Host, 'internal')!
+  private $host = this.up($gl.Host)!
   declare private server: WebSocketServer
 
   async setup() {

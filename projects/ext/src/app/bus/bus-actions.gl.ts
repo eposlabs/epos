@@ -8,7 +8,7 @@ export type Action = {
 }
 
 export class BusActions extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   list: Action[] = []
 
   register(action: Action) {

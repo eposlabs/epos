@@ -1,7 +1,5 @@
-import type { IObservableFactory } from 'mobx'
 import type { Array as YjsArray, Map as YjsMap } from 'yjs'
 import type { Value } from './state.ex.sw'
-import type { Unit } from '../states-units.ex.sw'
 
 export const _meta_ = Symbol('meta')
 export const _keys_ = Symbol('keys')
@@ -28,8 +26,8 @@ export type Meta = {
 export class StateNode extends $exSw.Unit {
   private $state = this.up($exSw.State)!
   private $units = this.up($exSw.States)!.units
-  private static _meta_ = _meta_
-  private static _keys_ = _keys_
+  static _meta_ = _meta_
+  static _keys_ = _keys_
 
   static getOwner<T extends MNode>(target: T) {
     return this.prototype.getOwner(target)

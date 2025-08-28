@@ -12,10 +12,10 @@ export type Req = {
 export type Interceptor = (sender: chrome.runtime.MessageSender, ...args: any[]) => unknown
 
 export class BusExt extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   private supported = this.$bus.is('cs', 'os', 'sw', 'vw')
   private interceptors: { [name: string]: Interceptor } = {}
-  private static REQUEST = REQUEST
+  static REQUEST = REQUEST
 
   constructor(parent: $gl.Unit) {
     super(parent)

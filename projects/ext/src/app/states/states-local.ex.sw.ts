@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // TODO: unit support here (?)
 // local state should support owner as well for units to work
 // and onChange we need to handle detach

@@ -4,14 +4,14 @@ export type Origin = 'exFrame' | 'exTab' | 'cs' | 'os' | 'sw' | 'vw'
 export type ProxyChild = `exFrame-${Frame}` | 'exTab' | `cs-${TabId}`
 
 export class Bus extends $gl.Unit {
-  private origin = this.getOrigin()
-  private utils = new $gl.BusUtils(this)
-  private ext = new $gl.BusExt(this)
-  private page = new $gl.BusPage(this)
-  private data = new $gl.BusData(this)
-  private actions = new $gl.BusActions(this)
-  private proxy = new $gl.BusProxy(this)
-  private api = new $gl.BusApi(this)
+  origin = this.getOrigin()
+  utils = new $gl.BusUtils(this)
+  ext = new $gl.BusExt(this)
+  page = new $gl.BusPage(this)
+  data = new $gl.BusData(this)
+  actions = new $gl.BusActions(this)
+  proxy = new $gl.BusProxy(this)
+  api = new $gl.BusApi(this)
 
   on = this.$.bind(this.api, 'on')
   off = this.$.bind(this.api, 'off')
@@ -29,7 +29,7 @@ export class Bus extends $gl.Unit {
     return this.page.getToken()
   }
 
-  private is(...origins: Origin[]) {
+  is(...origins: Origin[]) {
     return origins.includes(this.origin)
   }
 
@@ -41,18 +41,5 @@ export class Bus extends $gl.Unit {
     if (this.$.env.is.sw) return 'sw'
     if (this.$.env.is.vw) return 'vw'
     throw this.never
-  }
-
-  get internal() {
-    return {
-      actions: this.actions,
-      data: this.data,
-      ext: this.ext,
-      is: this.is,
-      origin: this.origin,
-      page: this.page,
-      proxy: this.proxy,
-      utils: this.utils,
-    }
   }
 }

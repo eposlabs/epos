@@ -3,8 +3,7 @@ const THROW = ':EPOS_BUS_THROW'
 export type Throw = { [THROW]: true; message: string }
 
 export class BusUtils extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
-  private static THROW = THROW
+  static THROW = THROW
 
   id(prefix = '') {
     const now = Date.now()

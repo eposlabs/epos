@@ -12,7 +12,7 @@ export type Storage = Map<string, unknown>
 export type StorageLink = { [STORAGE_KEY]: string }
 
 export class BusData extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   private blobs = new Map<string, Blob>() // SW only
 
   constructor(parent: $gl.Unit) {

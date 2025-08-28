@@ -1,9 +1,8 @@
 import type { Frame, ProxyChild, TabId } from './bus.gl'
 
 export class BusProxy extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   private isChild = this.$bus.is('exFrame', 'exTab', 'cs')
-  private isParent = this.$bus.is('cs', 'os', 'vw', 'sw')
 
   constructor(parent: $gl.Unit) {
     super(parent)

@@ -24,13 +24,13 @@ export type Res = {
 export type Interceptor = (frame: Frame | null, ...args: any[]) => unknown
 
 export class BusPage extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   private frame = this.$bus.origin === 'exFrame' ? self.name : null
   private token: string | null = null
   private supported = this.$bus.is('exFrame', 'exTab', 'cs', 'os', 'vw')
   private interceptors: { [name: string]: Interceptor } = {}
-  private static REQUEST = REQUEST
-  private static RESPONSE = RESPONSE
+  static REQUEST = REQUEST
+  static RESPONSE = RESPONSE
 
   constructor(parent: $gl.Unit) {
     super(parent)

@@ -1,4 +1,4 @@
-import type { Initial, Location, Versioner } from '@/app/states/state/state.ex.sw'
+import type { Initial, Location, Versioner } from '../../../states/state/state.ex.sw'
 
 export class PkgState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!

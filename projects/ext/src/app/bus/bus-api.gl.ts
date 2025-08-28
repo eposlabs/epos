@@ -1,5 +1,5 @@
 export class BusApi extends $gl.Unit {
-  private $bus = this.up($gl.Bus, 'internal')!
+  private $bus = this.up($gl.Bus)!
   id?: string
 
   constructor(parent: $gl.Unit, id?: string) {

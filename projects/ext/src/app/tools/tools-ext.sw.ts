@@ -1,6 +1,6 @@
 export class ToolsExt extends $sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
-  private test = new $sw.ToolsExtTest(this)
+  test = new $sw.ToolsExtTest(this)
 
   constructor(parent: $sw.Unit) {
     super(parent)

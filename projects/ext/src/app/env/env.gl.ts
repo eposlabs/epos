@@ -20,7 +20,7 @@ export class Env extends $gl.Unit {
   url = new EnvUrl(this)
   is = new EnvIs(this)
 
-  private isExtPage() {
+  isExtPage() {
     return location.protocol === 'chrome-extension:'
   }
 
@@ -29,19 +29,10 @@ export class Env extends $gl.Unit {
     const url = new URL(location.href)
     return Object.fromEntries(url.searchParams)
   }
-
-  get internal() {
-    return {
-      bundle: this.bundle,
-      isExtPage: this.isExtPage,
-      params: this.params,
-      url: this.url,
-    }
-  }
 }
 
 class EnvUrl extends $gl.Unit {
-  private $env = this.up(Env, 'internal')!
+  private $env = this.up(Env)!
 
   ws() {
     return EPOS_DEV_WS
@@ -69,7 +60,7 @@ class EnvUrl extends $gl.Unit {
 }
 
 class EnvIs extends $gl.Unit {
-  private $env = this.up(Env, 'internal')!
+  private $env = this.up(Env)!
 
   // Environment
   dev = import.meta.env.DEV
