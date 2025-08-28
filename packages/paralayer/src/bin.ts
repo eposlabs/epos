@@ -3,8 +3,8 @@ import { Paralayer } from './paralayer.js'
 
 const argv = minimist(process.argv.slice(2), {
   string: ['default'],
-  boolean: ['globalize'],
-  default: { default: null, globalize: false },
+  boolean: ['watch', 'globalize'],
+  default: { default: null, watch: false, globalize: false },
 })
 
 const paths = argv._
@@ -28,4 +28,6 @@ const paralayer = new Paralayer({
   default: argv.default,
 })
 
-await paralayer.start()
+await paralayer.start({
+  watch: argv.watch,
+})

@@ -48,7 +48,7 @@ export class Paralayer extends $utils.Unit {
     }
   }
 
-  start = async () => {
+  start = async ({ watch = false } = {}) => {
     if (this.started) return
     this.started = true
 
@@ -60,6 +60,7 @@ export class Paralayer extends $utils.Unit {
 
     await this.ready$.promise
     await this.queue.run(() => this.build())
+    if (!watch) await this.watcher.close()
   }
 
   // ---------------------------------------------------------------------------
@@ -71,14 +72,8 @@ export class Paralayer extends $utils.Unit {
   }
 
   private onBuildStart = async () => {
-    await this.start()
-
     if (!this.viteConfig) throw this.never
-    if (!this.watcher) throw this.never
-
-    if (!this.viteConfig.build.watch) {
-      await this.watcher.close()
-    }
+    await this.start({ watch: !!this.viteConfig.build.watch })
   }
 
   // ---------------------------------------------------------------------------
@@ -181,8 +176,6 @@ export class Paralayer extends $utils.Unit {
     const setupFile = $path.join(this.options.output, 'setup.js')
     const setupContent = this.generateSetupContent(allLayers)
     await $fs.writeFile(setupFile, setupContent, 'utf-8')
-
-    console.log(`[paralayer] Done`)
   }
 
   // ---------------------------------------------------------------------------

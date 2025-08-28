@@ -4,9 +4,9 @@ export class HostHono extends $gl.Unit {
   app = new this.$.libs.hono.Hono()
 
   private paths = {
-    hubHtml: '../../../static/hub.html',
-    mainHtml: '../../../static/main.html',
-    favicon: '../../../static/favicon.png',
+    hubHtml: '../../../public/hub.html',
+    mainHtml: '../../../public/main.html',
+    favicon: '../../../public/favicon.png',
   }
 
   constructor(parent: $gl.Unit) {
