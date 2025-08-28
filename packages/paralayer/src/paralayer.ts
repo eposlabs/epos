@@ -18,12 +18,12 @@ export type Options = {
   input: DirPath | DirPath[]
   output: DirPath
   /** Default layer name. If a file name does not have layer tags, default name will be used. */
-  default?: string
+  default?: string | null
   /** Whether the layer variables should be exposed globally. */
   globalize?: boolean
 }
 
-export class Layers extends $utils.Unit {
+export class Paralayer extends $utils.Unit {
   private files: { [path: string]: File | null } = {}
   private options: Options
   private started = false
@@ -38,15 +38,15 @@ export class Layers extends $utils.Unit {
     this.options = options
   }
 
-  get plugin(): Plugin {
+  get vite(): Plugin {
     return {
-      name: 'vite-plugin-layers',
+      name: 'paralayer',
       enforce: 'pre',
       buildStart: this.onBuildStart,
     }
   }
 
-  onBuildStart = async () => {
+  start = async () => {
     if (this.started) return
     this.started = true
 
@@ -58,6 +58,10 @@ export class Layers extends $utils.Unit {
 
     await this.ready$.promise
     await this.queue.run(() => this.build())
+  }
+
+  private onBuildStart = async () => {
+    await this.start()
   }
 
   private onAll = async (event: string, path: string) => {
@@ -103,13 +107,14 @@ export class Layers extends $utils.Unit {
   }
 
   private async build() {
-    // Ensure output directory exists
-    await $fs.mkdir(this.options.output, { recursive: true })
-
     // Group file paths by layers
     const paths = Object.keys(this.files)
+    if (paths.length === 0) return
     const pathsByLayers = Object.groupBy(paths, path => this.getLayer(path))
     const allLayers = Object.keys(pathsByLayers)
+
+    // Ensure output directory exists
+    await $fs.mkdir(this.options.output, { recursive: true })
 
     // Ensure all files are read
     await Promise.all(
@@ -154,10 +159,12 @@ export class Layers extends $utils.Unit {
       }
     }
 
-    // Generate define.js file
-    const defineFile = $path.join(this.options.output, 'define.js')
-    const defineContent = this.generateDefineContent(allLayers)
-    await $fs.writeFile(defineFile, defineContent, 'utf-8')
+    // Generate setup.js file
+    const setupFile = $path.join(this.options.output, 'setup.js')
+    const setupContent = this.generateSetupContent(allLayers)
+    await $fs.writeFile(setupFile, setupContent, 'utf-8')
+
+    console.log(`[paralayer] Done`)
   }
 
   private extractExportedClassNames(content: string) {
@@ -180,8 +187,7 @@ export class Layers extends $utils.Unit {
         if (file.names.length === 0) return ''
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)
-        const noExtPath = path.split('.').slice(0, -1).join('.')
-        const relativePath = $path.relative(this.options.output, noExtPath)
+        const relativePath = $path.relative(this.options.output, path)
         return `import { ${[...names, ...types].join(', ')} } from '${relativePath}'`
       })
       .filter(Boolean)
@@ -216,12 +222,12 @@ export class Layers extends $utils.Unit {
         if (layer1.length !== layer2.length) return layer2.length - layer1.length
         return layer1.localeCompare(layer2)
       })
-      .map(layer => `import './layer.${layer}'`)
+      .map(layer => `import './layer.${layer}.ts'`)
 
     return [...imports].join('\n')
   }
 
-  private generateDefineContent(allLayers: string[]) {
+  private generateSetupContent(allLayers: string[]) {
     const nocheck = '// @ts-nocheck'
 
     const layers = allLayers.toSorted((layer1, layer2) => {

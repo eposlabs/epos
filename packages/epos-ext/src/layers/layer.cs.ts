@@ -1,8 +1,8 @@
-import { App, type App as AppType } from '../app/app.cs'
-import { BootInjector, type BootInjector as BootInjectorType } from '../app/boot/boot-injector.cs'
-import { Boot, type Boot as BootType } from '../app/boot/boot.cs'
-import { Dev, type Dev as DevType } from '../app/dev/dev.cs'
-import { Utils, type Utils as UtilsType } from '../app/utils/utils.cs'
+import { App, type App as AppType } from '../app/app.cs.ts'
+import { BootInjector, type BootInjector as BootInjectorType } from '../app/boot/boot-injector.cs.ts'
+import { Boot, type Boot as BootType } from '../app/boot/boot.cs.ts'
+import { Dev, type Dev as DevType } from '../app/dev/dev.cs.ts'
+import { Utils, type Utils as UtilsType } from '../app/utils/utils.cs.ts'
 
 Object.assign($cs, {
   App,

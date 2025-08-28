@@ -7,6 +7,9 @@
   "description": "",
   "keywords": [],
   "scripts": {
+    "paralayer": "paralayer --default gl --globalize ./src/app ./src/layers",
+    "vite": "node --watch ./src/entry/entry.ts",
+    "vite:old": "vite-node --script",
     "dev": "dropcap tsx watch --inspect ./src/entry/entry.ts",
     "preview": "dropcap tsc watch ./src/entry/entry.ts",
     "build": "dropcap tsc",
@@ -39,6 +42,9 @@
   "devDependencies": {
     "@parcel/watcher": "^2.5.1",
     "@types/ws": "^8.18.1",
-    "rimraf": "^6.0.1"
+    "paralayer": "^0.0.3",
+    "rimraf": "^6.0.1",
+    "vite": "^7.1.3",
+    "vite-node": "^3.2.4"
   }
 }

@@ -1,4 +1,4 @@
-import './layer.ex.os.sw.vw'
-import './layer.ex.sw'
-import './layer.sw.vw'
-import './layer.sw'
+import './layer.ex.os.sw.vw.ts'
+import './layer.ex.sw.ts'
+import './layer.sw.vw.ts'
+import './layer.sw.ts'

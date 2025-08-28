@@ -1,4 +1,4 @@
-import { Unit as Unit0 } from 'dropcap/unit'
+import { Unit as Unit0 } from '@eposlabs/utils'
 
 import type { App } from '@/app/app'
 

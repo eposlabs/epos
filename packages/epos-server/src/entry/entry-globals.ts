@@ -1,1 +1,1 @@
-import 'dropcap/types'
+import '@eposlabs/utils/globals'

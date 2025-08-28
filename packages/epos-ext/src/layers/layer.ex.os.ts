@@ -1,4 +1,4 @@
-import { Peer, type Peer as PeerType } from '../app/peer/peer.ex.os'
+import { Peer, type Peer as PeerType } from '../app/peer/peer.ex.os.ts'
 
 Object.assign($exOs, {
   Peer,

@@ -1,4 +1,4 @@
-import { Libs, type Libs as LibsType } from '../app/libs/libs.os.vw'
+import { Libs, type Libs as LibsType } from '../app/libs/libs.os.vw.ts'
 
 Object.assign($osVw, {
   Libs,

@@ -1,9 +1,9 @@
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import fs from 'node:fs/promises'
 import { defineConfig } from 'vite'
+import fs from 'node:fs/promises'
+import paralayer from 'paralayer/vite'
+import react from '@vitejs/plugin-react'
 import rebundle from 'vite-plugin-rebundle'
-import layers from 'vite-plugin-layers'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => {
   return {
@@ -47,15 +47,15 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       react(),
-      tailwindcss(),
+      // tailwindcss(),
 
-      layers({
-        input: './src/app',
-        output: './src/layers',
-      }),
+      // paralayer({
+      //   input: './src/app',
+      //   output: './src/layers',
+      // }),
 
       rebundle(async () => {
-        const setup = await fs.readFile('./src/layers/define.js', 'utf-8')
+        const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
         const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
 
         return {

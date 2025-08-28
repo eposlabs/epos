@@ -1,4 +1,4 @@
-import { BootMedium, type BootMedium as BootMediumType } from '../app/boot/boot-medium.sw.vw'
+import { BootMedium, type BootMedium as BootMediumType } from '../app/boot/boot-medium.sw.vw.ts'
 
 Object.assign($swVw, {
   BootMedium,

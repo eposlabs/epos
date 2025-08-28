@@ -2,7 +2,8 @@
   "name": "epos-ext",
   "type": "module",
   "scripts": {
-    "vite": "vite build --mode development",
+    "paralayer": "paralayer ./src/app ./src/layers",
+    "vite": "NODE_OPTIONS=--inspect vite build --mode development",
     "dev": "dropcap dev",
     "build": "dropcap build",
     "preview": "dropcap preview",
@@ -28,10 +29,10 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.1",
+    "paralayer": "^0.0.3",
     "rollup-plugin-livereload": "^2.0.5",
     "tailwindcss": "^4.1.11",
     "vite": "^7.1.3",
-    "vite-plugin-layers": "^0.0.1",
     "vite-plugin-rebundle": "^1.0.0"
   }
 }

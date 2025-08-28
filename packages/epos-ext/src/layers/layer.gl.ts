@@ -1,13 +1,13 @@
-import { BusActions, type BusActions as BusActionsType } from '../app/bus/bus-actions.gl'
-import { BusApi, type BusApi as BusApiType } from '../app/bus/bus-api.gl'
-import { BusData, type BusData as BusDataType } from '../app/bus/bus-data.gl'
-import { BusExt, type BusExt as BusExtType } from '../app/bus/bus-ext.gl'
-import { BusPage, type BusPage as BusPageType } from '../app/bus/bus-page.gl'
-import { BusProxy, type BusProxy as BusProxyType } from '../app/bus/bus-proxy.gl'
-import { BusUtils, type BusUtils as BusUtilsType } from '../app/bus/bus-utils.gl'
-import { Bus, type Bus as BusType } from '../app/bus/bus.gl'
-import { DevUnits, type DevUnits as DevUnitsType } from '../app/dev/dev-units.gl'
-import { Env, type Env as EnvType } from '../app/env/env.gl'
+import { BusActions, type BusActions as BusActionsType } from '../app/bus/bus-actions.gl.ts'
+import { BusApi, type BusApi as BusApiType } from '../app/bus/bus-api.gl.ts'
+import { BusData, type BusData as BusDataType } from '../app/bus/bus-data.gl.ts'
+import { BusExt, type BusExt as BusExtType } from '../app/bus/bus-ext.gl.ts'
+import { BusPage, type BusPage as BusPageType } from '../app/bus/bus-page.gl.ts'
+import { BusProxy, type BusProxy as BusProxyType } from '../app/bus/bus-proxy.gl.ts'
+import { BusUtils, type BusUtils as BusUtilsType } from '../app/bus/bus-utils.gl.ts'
+import { Bus, type Bus as BusType } from '../app/bus/bus.gl.ts'
+import { DevUnits, type DevUnits as DevUnitsType } from '../app/dev/dev-units.gl.ts'
+import { Env, type Env as EnvType } from '../app/env/env.gl.ts'
 
 Object.assign($gl, {
   BusActions,

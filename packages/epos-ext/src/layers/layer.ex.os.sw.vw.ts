@@ -1,4 +1,4 @@
-import { Utils, type Utils as UtilsType } from '../app/utils/utils.ex.os.sw.vw'
+import { Utils, type Utils as UtilsType } from '../app/utils/utils.ex.os.sw.vw.ts'
 
 Object.assign($exOsSwVw, {
   Utils,

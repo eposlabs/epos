@@ -59,6 +59,7 @@ export class Rebundle extends $utils.Unit {
     output: NormalizedOutputOptions,
     bundle: OutputBundle,
   ) => {
+    console.log(structuredClone(bundle))
     const options = await this.getOptions()
 
     // Get entry js chunks

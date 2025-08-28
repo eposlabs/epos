@@ -1,4 +1,4 @@
-import { PkgsWatcher, type PkgsWatcher as PkgsWatcherType } from '../app/pkgs/pkgs-watcher.ex.os.vw'
+import { PkgsWatcher, type PkgsWatcher as PkgsWatcherType } from '../app/pkgs/pkgs-watcher.ex.os.vw.ts'
 
 Object.assign($exOsVw, {
   PkgsWatcher,

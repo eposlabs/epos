@@ -1,8 +1,8 @@
-import { Alive, type Alive as AliveType } from '../app/alive/alive.os'
-import { App, type App as AppType } from '../app/app.os'
-import { Dev, type Dev as DevType } from '../app/dev/dev.os'
-import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.os'
-import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.os'
+import { Alive, type Alive as AliveType } from '../app/alive/alive.os.ts'
+import { App, type App as AppType } from '../app/app.os.ts'
+import { Dev, type Dev as DevType } from '../app/dev/dev.os.ts'
+import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.os.ts'
+import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.os.ts'
 
 Object.assign($os, {
   Alive,

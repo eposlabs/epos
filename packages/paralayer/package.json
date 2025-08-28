@@ -1,6 +1,6 @@
 {
-  "name": "vite-plugin-layers",
-  "version": "0.0.1",
+  "name": "paralayer",
+  "version": "0.0.3",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -17,14 +17,29 @@
     "release:patch": "npm version patch && npm run release",
     "release:minor": "npm version minor && npm run release"
   },
+  "bin": {
+    "paralayer": "./bin.js"
+  },
   "exports": {
-    "import": "./dist/index.js"
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./vite": {
+      "default": "./dist/vite.js",
+      "types": "./dist/vite.d.ts"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "bin.js"
   ],
   "dependencies": {
     "chalk": "^5.6.0",
-    "chokidar": "^4.0.3"
+    "chokidar": "^4.0.3",
+    "minimist": "^1.2.8"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5"
   }
 }
