@@ -20,11 +20,11 @@ export default defineConfig(({ mode }) => ({
   },
 
   define: define({
+    'import.meta.env.DEV': mode === 'development',
+    'import.meta.env.PROD': mode !== 'development',
     'import.meta.env.EPOS_DEV_WS': 'ws://localhost:2093',
     'import.meta.env.EPOS_DEV_HUB': 'http://localhost:2093',
     'import.meta.env.EPOS_PROD_HUB': 'https://epos.dev',
-    'import.meta.env.DEV': mode === 'development',
-    'import.meta.env.PROD': mode !== 'development',
   }),
 
   build: {
