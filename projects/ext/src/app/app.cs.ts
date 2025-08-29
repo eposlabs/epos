@@ -10,7 +10,7 @@ export class App extends $cs.Unit {
   boot = new $cs.Boot(this)
   dev = new $cs.Dev(this)
 
-  init() {
+  async init() {
     self.$ = this
     self.__eposCsReady$ ??= Promise.withResolvers<{ busToken: string }>()
     const busToken = this.bus.getPageToken()

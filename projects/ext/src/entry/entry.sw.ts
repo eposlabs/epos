@@ -4,4 +4,10 @@ import './entry-units'
 import '../layers/index.gl'
 import '../layers/index.sw'
 
-new $sw.App().init()
+$: (async () => {
+  try {
+    await new $sw.App().init()
+  } catch (e) {
+    console.error(e)
+  }
+})()

@@ -12,6 +12,24 @@ export class PkgsInstaller extends $sw.Unit {
     this.$.bus.on('pkgs.install', this.install, this)
   }
 
+  async newInstall(target: string | { manifest: Manifest; files: Record<string, Blob> }) {
+    // Data
+    if (!this.$.is.string(target)) {
+      const { manifest, files } = target
+      this.log('Data', { manifest, files })
+    }
+
+    // Url
+    else if (URL.canParse(target)) {
+      this.log('Url', target)
+    }
+
+    // Name
+    else {
+      this.log('Name', target)
+    }
+  }
+
   async install(nameOrData: string | PkgData) {
     let data: PkgData
     if (this.$.utils.is.string(nameOrData)) {

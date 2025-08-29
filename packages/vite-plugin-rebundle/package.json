@@ -24,7 +24,10 @@
     "dist"
   ],
   "dependencies": {
+    "@types/ws": "^8.18.1",
     "chalk": "^5.6.0",
-    "esbuild": "^0.25.9"
+    "esbuild": "^0.25.9",
+    "portfinder": "^1.0.37",
+    "ws": "^8.18.3"
   }
 }

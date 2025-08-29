@@ -1,6 +1,6 @@
 import { Unit as Unit0 } from '@eposlabs/utils'
 
-import type { App } from '@/app/app'
+import type { App } from '../app/app'
 
 class Unit extends Unit0<App> {}
 

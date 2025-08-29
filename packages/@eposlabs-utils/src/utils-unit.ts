@@ -18,18 +18,10 @@ export class Unit<TRoot = unknown> {
     this.#parent = parent ?? null
   }
 
-  up<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null
-  up<T extends Unit<TRoot>, K extends keyof T>(Ancestor: Cls<T>, key: K): T[K] | null
-  up<T extends Unit<TRoot>, K extends keyof T>(Ancestor: Cls<T>, key?: K) {
+  up<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null {
     let cursor = this.#parent
     while (cursor) {
-      if (cursor instanceof Ancestor) {
-        if (key) {
-          return cursor as T[K]
-        } else {
-          return cursor as T
-        }
-      }
+      if (cursor instanceof Ancestor) return cursor as T
       cursor = cursor.#parent
     }
     return null

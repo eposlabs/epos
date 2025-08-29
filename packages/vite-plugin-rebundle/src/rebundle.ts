@@ -2,11 +2,14 @@ import * as $esbuild from 'esbuild'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
 import * as $utils from '@eposlabs/utils'
+import * as $ws from 'ws'
 import $chalk from 'chalk'
+import $portfinder from 'portfinder'
 
 import type { BuildOptions } from 'esbuild'
 import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
+import type { WebSocketServer } from 'ws'
 
 export type Options = {
   [chunkName: string]: BuildOptions
@@ -19,6 +22,8 @@ export class Rebundle extends $utils.Unit {
   private config: ResolvedConfig | null = null
   private chunkFiles: Record<string, string> = {}
   private rebundledContent: Record<string, string> = {}
+  private port: number | null = null
+  private ws: WebSocketServer | null = null
 
   constructor(options: OptionsInput) {
     super()
@@ -30,6 +35,7 @@ export class Rebundle extends $utils.Unit {
       name: 'vite-plugin-rebundle',
       apply: 'build',
       enforce: 'post',
+      config: this.onConfig,
       configResolved: this.onConfigResolved,
       writeBundle: this.onWriteBundle,
     }
@@ -38,6 +44,15 @@ export class Rebundle extends $utils.Unit {
   // ---------------------------------------------------------------------------
   // HOOKS
   // ---------------------------------------------------------------------------
+
+  private onConfig = async () => {
+    this.port = await $portfinder.getPort({ port: 3100 })
+    return {
+      define: {
+        'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port),
+      },
+    }
+  }
 
   private onConfigResolved = async (config: ResolvedConfig) => {
     // Save resolved config
@@ -53,7 +68,9 @@ export class Rebundle extends $utils.Unit {
   }
 
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
+    const ws = await this.ensureWs()
     const options = await this.getOptions()
+    const changedChunkNames: string[] = []
 
     // Get entry js chunks
     const entryJsChunks = Object.values(bundle)
@@ -77,7 +94,7 @@ export class Rebundle extends $utils.Unit {
         // Modified? -> Rebundle
         if (chunkChanged) {
           // Build with esbuild
-          await $esbuild.build({
+          const result = await $esbuild.build({
             sourcemap: Boolean(this.config.build.sourcemap),
             ...chunkBuildOptions,
             outfile: chunkPath,
@@ -85,22 +102,18 @@ export class Rebundle extends $utils.Unit {
             bundle: true,
             minify: false,
             allowOverwrite: true,
-            plugins: [
-              ...(chunkBuildOptions.plugins ?? []),
-              {
-                name: 'logger',
-                setup: build => {
-                  build.onEnd(result => {
-                    if (result.errors.length > 0) return
-                    const outDir = $chalk.dim(`${this.outDir}/`)
-                    const fileName = $chalk.cyan(chunk.fileName)
-                    const rebundleTag = $chalk.dim.cyan('rebundle')
-                    console.log(`${outDir}${fileName} ${rebundleTag}`)
-                  })
-                },
-              },
-            ],
           })
+
+          if (result.errors.length > 0) return
+
+          // Log successful build
+          const _outDir_ = $chalk.dim(`${this.outDir}/`)
+          const _fileName_ = $chalk.cyan(chunk.fileName)
+          const _rebundle_ = $chalk.dim.cyan('rebundle')
+          console.log(`${_outDir_}${_fileName_} ${_rebundle_}`)
+
+          // Mark chunk as changed
+          changedChunkNames.push(chunk.name)
 
           // Save chunk content
           this.rebundledContent[chunk.fileName] = await this.outRead(chunk.fileName)
@@ -146,6 +159,11 @@ export class Rebundle extends $utils.Unit {
       const dir = $path.dirname(this.outPath(chunk.fileName))
       await this.removeDirectoryIfEmpty(dir)
     }
+
+    // Notify about changed chunks
+    if (changedChunkNames.length > 0) {
+      ws.clients.forEach(client => client.send(JSON.stringify(changedChunkNames)))
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -167,6 +185,13 @@ export class Rebundle extends $utils.Unit {
 
   private async outWrite(path: string, content: string) {
     await $fs.writeFile(this.outPath(path), content, 'utf-8')
+  }
+
+  private async ensureWs() {
+    if (this.ws) return this.ws
+    if (!this.port) throw this.never
+    this.ws = new $ws.WebSocketServer({ port: this.port })
+    return this.ws
   }
 
   private async getOptions() {

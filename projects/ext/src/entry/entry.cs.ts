@@ -3,4 +3,10 @@ import './entry-units'
 import '../layers/index.gl'
 import '../layers/index.cs'
 
-new $cs.App().init()
+$: (async () => {
+  try {
+    await new $cs.App().init()
+  } catch (e) {
+    console.error(e)
+  }
+})()
