@@ -1,5 +1,13 @@
-import type { Manifest } from 'epos-types'
 import type { PkgData } from './pkg/sw/pkg.sw'
+import type { Manifest } from './pkgs-parser.sw'
+
+export type Pack = {
+  name: string
+  dev: boolean
+  manifest: Manifest
+  assets: Record<string, Blob>
+  sources: Record<string, string>
+}
 
 export class PkgsInstaller extends $sw.Unit {
   private $pkgs = this.up($sw.Pkgs)!
@@ -12,25 +20,79 @@ export class PkgsInstaller extends $sw.Unit {
     this.$.bus.on('pkgs.install', this.install, this)
   }
 
-  async newInstall(target: string | { manifest: Manifest; files: Record<string, Blob> }) {
-    // Data
-    if (!this.$.is.string(target)) {
-      const { manifest, files } = target
-      this.log('Data', { manifest, files })
-    }
-
-    // Url
-    else if (URL.canParse(target)) {
-      this.log('Url', target)
-    }
-
-    // Name
-    else {
-      this.log('Name', target)
+  async install(target: string | Pack) {
+    if (this.$.is.object(target)) {
+      await this.installFromPack(target)
+    } else if (URL.canParse(target)) {
+      await this.installFromUrl(target)
+    } else {
+      await this.installByName(target)
     }
   }
 
-  async install(nameOrData: string | PkgData) {
+  private async installByName(name: string) {
+    const url = `https://epos.dev/@/${name}/epos.json`
+    return await this.installFromUrl(url)
+  }
+
+  private async installFromUrl(url: string) {
+    // Parse url
+    const parsed = URL.parse(url)
+    if (!parsed) throw new Error(`Invalid URL: ${url}`)
+
+    // Ensure url path ends with '/epos.json'
+    if (!parsed.pathname.endsWith('/epos.json')) {
+      parsed.pathname = `${parsed.pathname}/epos.json`
+      url = parsed.href
+    }
+
+    // Fetch epos.json
+    const [res] = await this.$.safe(() => fetch(url))
+    if (!res) throw new Error(`Failed to fetch ${url}`)
+
+    // Read epos.json
+    const [data, error] = await this.$.safe(() => res.json())
+    if (error) throw new Error(`Failed to parse ${url}: ${error.message}`)
+
+    // Parse manifest
+    const manifest = await this.$pkgs.parser.parseManifest(data)
+    console.warn(manifest)
+
+    // Fetch assets
+    const assets: Record<string, Blob> = {}
+    for (const path of manifest.assets) {
+      const assetUrl = new URL(path, url)
+      const [blob] = await this.$.utils.safe(fetch(assetUrl).then(r => r.blob()))
+      if (!blob) throw new Error(`Failed to fetch asset: ${assetUrl.href}`)
+      assets[path] = blob
+    }
+
+    // Fetch sources
+    const sources: Record<string, string> = {}
+    for (const bundle of manifest.bundles) {
+      for (const path of bundle.files) {
+        if (path in sources) continue
+        const fileUrl = new URL(path, url)
+        const [text] = await this.$.utils.safe(fetch(fileUrl).then(r => r.text()))
+        if (!text) throw new Error(`Failed to fetch file: ${fileUrl.href}`)
+        sources[path] = text
+      }
+    }
+
+    await this.installFromPack({
+      name: manifest.name,
+      dev: false,
+      manifest: manifest,
+      assets: assets,
+      sources: sources,
+    })
+  }
+
+  private async installFromPack(pack: Pack) {
+    this.log('install from pack', pack)
+  }
+
+  async _install(nameOrData: string | PkgData) {
     let data: PkgData
     if (this.$.utils.is.string(nameOrData)) {
       data = await this.fetchPkg(nameOrData)

@@ -2,7 +2,7 @@ import type { PkgOpts } from './pkg/ex/pkg.ex'
 
 export class Pkgs extends $ex.Unit {
   map: { [name: string]: $ex.Pkg } = {}
-  private watcher = new $exOsVw.PkgsWatcher(this)
+  watcher = new $exOsVw.PkgsWatcher(this)
 
   async init() {
     await this.initDevHubAutoReload()

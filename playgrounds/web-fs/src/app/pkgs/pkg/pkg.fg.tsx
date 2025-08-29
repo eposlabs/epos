@@ -1,4 +1,4 @@
-import type { Manifest, Popup } from 'epos-types'
+// import type { Manifest, Popup } from 'epos-types'
 
 export type Src = { [path: string]: string }
 export type Assets = { [path: string]: Blob }

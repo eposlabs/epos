@@ -192,7 +192,7 @@ export class Paralayer extends $utils.Unit {
   private generateLayerContent(layer: string, layerPaths: string[]) {
     const $LayerName = this.getLayerName(layer, '$Pascal')
     const $layerName = this.getLayerName(layer, '$camel')
-    const allNames = layerPaths.flatMap(path => this.files[path]!.names)
+    const allNames = layerPaths.flatMap(path => this.files[path]?.names ?? [])
 
     const imports = layerPaths
       .map(path => {

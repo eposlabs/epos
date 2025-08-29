@@ -11,14 +11,14 @@ export type State = {
 }
 
 export class Pkgs extends $vw.Unit {
-  private state = this.$.libs.valtio.proxy<State>({
+  state = this.$.libs.valtio.proxy<State>({
     map: {},
     selectedName: null,
     hasPanel: false,
     actions: {},
   })
 
-  private watcher = new $exOsVw.PkgsWatcher(this)
+  watcher = new $exOsVw.PkgsWatcher(this)
 
   async init() {
     if (!this.$.env.is.vwShell) return

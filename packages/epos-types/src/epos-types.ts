@@ -8,8 +8,8 @@ export type UrlPattern = `<hub>${string}` | string
 export type Pattern = RefPattern | UrlPattern | `!${UrlPattern}`
 
 export type Bundle = {
-  run: Pattern[]
-  src: string[]
+  matches: Pattern[]
+  source: string[]
   mode: Mode
 }
 

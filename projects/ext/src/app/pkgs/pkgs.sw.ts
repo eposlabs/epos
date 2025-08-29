@@ -6,10 +6,12 @@ export type FragmentMap = { [name: string]: Fragment }
 
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
-  private engine = { full: '', mini: '' }
+  engine = { full: '', mini: '' }
   installer = new $sw.PkgsInstaller(this)
   loader = new $sw.PkgsLoader(this)
+  parser = new $sw.PkgsParser(this)
   updater = new $sw.PkgsUpdater(this)
+
   install = this.$.bind(this.installer, 'install')
   remove = this.$.bind(this.installer, 'remove')
 

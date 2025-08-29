@@ -1,4 +1,4 @@
-import type { Popup } from 'epos-types'
+import type { Popup } from '../pkgs-parser.sw'
 
 export class Pkg extends $vw.Unit {
   name: string

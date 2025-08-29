@@ -1,4 +1,4 @@
-import type { Manifest, Mode, Popup } from 'epos-types'
+import type { Manifest, Mode, Popup } from '../../pkgs-parser.sw'
 import type { Target } from './pkg-bundle.sw'
 
 export type Src = { [path: string]: string }

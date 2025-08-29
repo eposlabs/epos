@@ -1,11 +1,11 @@
-import type { Bundle, Mode, Pattern, RefPattern, UrlPattern } from 'epos-types'
+import type { Bundle, Mode, MatchPattern, RefPattern, UrlPattern } from '../../pkgs-parser.sw'
 
 export type Url = `<hub>${string}` | string
 export type Target = RefPattern | Url
 
 export class PkgBundle extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
-  run: Pattern[]
+  run: MatchPattern[]
   src: string[]
   mode: Mode
 

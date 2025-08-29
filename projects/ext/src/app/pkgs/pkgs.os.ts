@@ -1,6 +1,6 @@
 export class Pkgs extends $os.Unit {
   map: { [name: string]: $os.Pkg } = {}
-  private watcher = new $exOsVw.PkgsWatcher(this)
+  watcher = new $exOsVw.PkgsWatcher(this)
 
   async init() {
     await this.initWatcher()
