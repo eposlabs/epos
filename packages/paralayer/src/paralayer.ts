@@ -145,13 +145,13 @@ export class Paralayer extends $utils.Unit {
       const layerFile = $path.join(this.options.output, `layer.${layer}.ts`)
       const layerPaths = pathsByLayers[layer]!.toSorted()
       const layerContent = this.generateLayerContent(layer, layerPaths)
-      await $fs.writeFile(layerFile, layerContent, 'utf-8')
+      await this.write(layerFile, layerContent)
 
       // Top layer? -> Generate index.[layer].ts
       if (this.isTopLayer(layer)) {
         const indexFile = $path.join(this.options.output, `index.${layer}.ts`)
         const indexContent = this.generateIndexContent(layer, allLayers)
-        await $fs.writeFile(indexFile, indexContent, 'utf-8')
+        await this.write(indexFile, indexContent)
       }
     }
 
@@ -175,7 +175,7 @@ export class Paralayer extends $utils.Unit {
     // Generate setup.js file
     const setupFile = $path.join(this.options.output, 'setup.js')
     const setupContent = this.generateSetupContent(allLayers)
-    await $fs.writeFile(setupFile, setupContent, 'utf-8')
+    await this.write(setupFile, setupContent)
   }
 
   // ---------------------------------------------------------------------------
@@ -286,5 +286,11 @@ export class Paralayer extends $utils.Unit {
 
   private isTopLayer(layer: string) {
     return !layer.includes('.')
+  }
+
+  private async write(path: string, content: string) {
+    const [prevContent] = await $utils.safe(() => $fs.readFile(path, 'utf-8'))
+    if (content === prevContent) return
+    await $fs.writeFile(path, content, 'utf-8')
   }
 }

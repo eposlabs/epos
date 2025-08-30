@@ -22,6 +22,7 @@ export class Rebundle extends $utils.Unit {
   private config: ResolvedConfig | null = null
   private chunkFiles: Record<string, string> = {}
   private rebundledContent: Record<string, string> = {}
+  private hasError = false
   private port: number | null = null
   private ws: WebSocketServer | null = null
 
@@ -37,6 +38,7 @@ export class Rebundle extends $utils.Unit {
       enforce: 'post',
       config: this.onConfig,
       configResolved: this.onConfigResolved,
+      buildEnd: this.onBuildEnd,
       writeBundle: this.onWriteBundle,
     }
   }
@@ -67,7 +69,13 @@ export class Rebundle extends $utils.Unit {
     }
   }
 
+  private onBuildEnd = (error?: Error) => {
+    this.hasError = !!error
+  }
+
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
+    if (this.hasError) return
+
     const ws = await this.ensureWs()
     const options = await this.getOptions()
     const changedChunkNames: string[] = []
