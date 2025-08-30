@@ -52,7 +52,7 @@ export class App extends $sw.Unit {
     const exists = await this.$.browser.offscreen.hasDocument()
     if (exists) await this.$.browser.offscreen.closeDocument()
     await this.$.browser.offscreen.createDocument({
-      url: this.$.env.url.offscreen(),
+      url: this.$.env.url.offscreen,
       reasons: ['BLOBS'],
       justification: 'URL.createObjectURL',
     })

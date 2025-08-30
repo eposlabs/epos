@@ -1,18 +1,16 @@
-const EPOS_DEV_WS = import.meta.env.EPOS_DEV_WS
-const EPOS_DEV_HUB = import.meta.env.EPOS_DEV_HUB
-const EPOS_PROD_HUB = import.meta.env.EPOS_PROD_HUB
-
 export type Bundle = 'ex' | 'cs' | 'os' | 'vw' | 'sw'
+
+// TODO: permissions view -> system
 
 /**
  * #### Extension Pages
- * - offscreen - `/offscreen.html?ref=background`
+ * - offscreen - `/offscreen.html`
  * - popup view - `/view.html/?ref=popup&tabId={tabId}`
  * - panel view  - `/view.html/?ref=panel&tabId={tabId}`
+ * - popup frame - `/frame.html/?ref=popup&name={pkgName}&tabId={tabId}`
+ * - panel frame - `/frame.html/?ref=panel&name={pkgName}&tabId={tabId}`
+ * - background frame - `/frame.html/?ref=background&name={pkgName}&tabId={tabId}`
  * - permissions view - `/view.html/?ref=permissions`
- * - popup frame - `/frame.html/?ref=popup&tabId={tabId}&pkgName={pkgName}`
- * - panel frame - `/frame.html/?ref=panel&tabId={tabId}&pkgName={pkgName}`
- * - background frame - `/frame.html/?ref=background&tabId={tabId}&pkgName={pkgName}`
  */
 export class Env extends $gl.Unit {
   bundle = BUNDLE
@@ -34,28 +32,19 @@ export class Env extends $gl.Unit {
 class EnvUrl extends $gl.Unit {
   private $env = this.up(Env)!
 
-  ws() {
-    return EPOS_DEV_WS
-  }
-
-  hub(dev = false) {
-    return dev ? EPOS_DEV_HUB : EPOS_PROD_HUB
-  }
+  web = 'https://epos.dev'
+  offscreen = '/offscreen.html'
 
   view(ref: 'popup' | 'panel' | 'permissions', tabId?: string | number) {
     const q = new URLSearchParams({ ref, ...(tabId && { tabId: String(tabId) }) })
     return `/view.html?${q}`
   }
 
-  frame(pkgName: string) {
-    const { ref, tabId } = this.$env.params
-    const q = new URLSearchParams({ ref, pkgName, ...(tabId && { tabId }) })
+  frame(name: string) {
+    const ref = this.$env.is.os ? 'background' : this.$env.params.ref
+    const tabId = this.$env.is.os ? null : this.$env.params.tabId
+    const q = new URLSearchParams({ ref, name, ...(tabId && { tabId }) })
     return `/frame.html?${q}`
-  }
-
-  offscreen() {
-    const q = new URLSearchParams({ ref: 'background' })
-    return `/offscreen.html?${q}`
   }
 }
 
@@ -80,9 +69,7 @@ class EnvIs extends $gl.Unit {
   vwPermissions = this.vw && this.$env.params.ref === 'permissions'
 
   // Variations of exTab
-  exTabHubDev = this.ex && location.origin === EPOS_DEV_HUB
-  exTabHubProd = this.ex && location.origin === EPOS_PROD_HUB
-  exTabHub = this.exTabHubDev || this.exTabHubProd
+  exTabHub = location.origin === this.$env.url.web
   exTabPage = this.ex && !this.exTabHub && !this.$env.isExtPage()
   exTab = this.exTabHub || this.exTabPage
 

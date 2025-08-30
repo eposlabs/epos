@@ -1,20 +1,19 @@
-import type { Manifest, Mode, Pattern, Popup } from '../../pkgs-parser.sw'
-import type { Target } from './pkg-target.sw'
+import type { Manifest, Mode, Popup } from '../pkgs-parser.sw'
 
 export type Data = { name: string; dev: boolean; sources: Sources; manifest: Manifest }
 export type Fragment = { name: string; hash: string; popup: Popup }
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
+export type SourceFilter = { modes?: Mode[]; lang?: 'js' | 'css' }
 
 // TODO: update hash deps (assets, mode, smth else?)
 export class Pkg extends $sw.Unit {
-  private exporter = new $sw.PkgExporter(this)
   declare name: string
-  declare targets: $sw.PkgTarget[]
+  declare dev: boolean
   declare sources: Sources
   declare manifest: Manifest
-  declare dev: boolean
-  export = this.$.utils.link(this.exporter, 'export')
+  declare targets: $sw.PkgTarget[]
+  exporter = new $sw.PkgExporter(this)
 
   static async create(parent: $sw.Unit, data: Data, assets?: Assets) {
     const pkg = new Pkg(parent)
@@ -52,14 +51,15 @@ export class Pkg extends $sw.Unit {
     })
   }
 
-  matches(pattern: Pattern) {
-    return this.targets.some(target => target.matches(pattern))
+  test(uri: string) {
+    return this.targets.some(target => target.test(uri))
   }
 
-  getDefJs(pattern: Pattern) {
-    const js = this.getCode(pattern, ['normal', 'shadow'], 'js')
+  getDefJs(uri: string) {
+    const js = this.getCode(uri, { modes: ['normal', 'shadow'], lang: 'js' })
     if (!js) return ''
-    const shadowCss = this.getCode(pattern, ['shadow'], 'css')
+
+    const shadowCss = this.getCode(uri, { modes: ['shadow'], lang: 'css' })
     const layers = [
       ...['$gl', '$cs', '$ex', '$os', '$sw', '$vw'],
       ...['$exOs', '$exSw', '$osVw', '$swVw'],
@@ -77,46 +77,54 @@ export class Pkg extends $sw.Unit {
     ].join('')
   }
 
-  getCss(target: Target) {
-    return this.getCode(target, ['normal', 'lite'], 'css')
+  getCss(uri: string) {
+    return this.getCode(uri, { modes: ['normal', 'lite'], lang: 'css' })
   }
 
-  getLiteJs(target: Target) {
-    return this.getCode(target, ['lite'], 'js')
+  getLiteJs(uri: string) {
+    return this.getCode(uri, { modes: ['lite'], lang: 'js' })
   }
 
-  async getFragment(target: Target): Promise<Fragment | null> {
-    if (!this.matches(target)) return null
+  async getFragment(uri: string): Promise<Fragment | null> {
+    if (!this.test(uri)) return null
     return {
       name: this.name,
-      hash: await this.getHash(target),
+      hash: await this.calcHash(uri),
       popup: this.manifest.popup,
     }
   }
 
-  private getCode(target: Target, modes: Mode[], lang: 'js' | 'css') {
-    return this.getSources(target, modes, lang)
-      .map(source => this.read(source))
+  private getCode(uri: string, filter: SourceFilter) {
+    return this.getSourcePaths(uri, filter)
+      .map(path => this.getSource(path))
       .join('\n')
   }
 
-  private async getHash(target: Target) {
-    const sources = this.getSources(target).sort()
-    const snippets = sources.map(source => this.read(source))
+  private async calcHash(uri: string) {
+    const paths = this.getSourcePaths(uri).sort()
+    const snippets = paths.map(path => this.getSource(path))
     return await this.$.utils.hash([...snippets, this.manifest.popup])
   }
 
-  private getSources(target: Target, modes?: Mode[], lang?: 'js' | 'css') {
-    return this.bundles
-      .filter(b => (!modes || modes.includes(b.mode)) && b.matches(target))
-      .flatMap(bundle => bundle.src)
-      .filter(this.$.utils.unique.filter)
-      .filter(path => (lang ? path.endsWith(`.${lang}`) : true))
+  private getSourcePaths(uri: string, filter: SourceFilter = {}) {
+    return (
+      this.targets
+        // Filter targets by URI
+        .filter(target => target.test(uri))
+        // Filter targets by mode
+        .filter(target => !filter.modes || filter.modes.includes(target.mode))
+        // Extract source paths
+        .flatMap(target => target.load)
+        // Remove duplicates
+        .filter(this.$.utils.unique.filter)
+        // Filter source paths by language
+        .filter(path => !filter.lang || path.endsWith(`.${filter.lang}`))
+    )
   }
 
-  private read(path: string) {
-    if (path.endsWith('.js')) return `(async () => {\n${this.src[path]}\n})();`
-    if (path.endsWith('.css')) return this.src[path]
+  private getSource(path: string) {
+    if (path.endsWith('.js')) return `(async () => {\n${this.sources[path]}\n})();`
+    if (path.endsWith('.css')) return this.sources[path]
     throw this.never
   }
 }

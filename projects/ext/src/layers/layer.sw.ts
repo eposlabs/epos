@@ -8,13 +8,13 @@ import { Idb, type Idb as IdbType } from '../app/idb/idb.sw.ts'
 import { Libs, type Libs as LibsType } from '../app/libs/libs.sw.ts'
 import { Net, type Net as NetType } from '../app/net/net.sw.ts'
 import { Peer, type Peer as PeerType } from '../app/peer/peer.sw.ts'
+import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/_pkgs-updater.sw.ts'
 import { PkgExporter, type PkgExporter as PkgExporterType } from '../app/pkgs/pkg/pkg-exporter.sw.ts'
 import { PkgTarget, type PkgTarget as PkgTargetType } from '../app/pkgs/pkg/pkg-target.sw.ts'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.sw.ts'
 import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/pkgs/pkgs-installer.sw.ts'
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw.ts'
 import { PkgsParser, type PkgsParser as PkgsParserType } from '../app/pkgs/pkgs-parser.sw.ts'
-import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/pkgs-updater.sw.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw.ts'
 import { ToolsExtTest, type ToolsExtTest as ToolsExtTestType } from '../app/tools/tools-ext-test.sw.ts'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.sw.ts'
@@ -32,13 +32,13 @@ Object.assign($sw, {
   Libs,
   Net,
   Peer,
+  PkgsUpdater,
   PkgExporter,
   PkgTarget,
   Pkg,
   PkgsInstaller,
   PkgsLoader,
   PkgsParser,
-  PkgsUpdater,
   Pkgs,
   ToolsExtTest,
   ToolsExt,
@@ -60,13 +60,13 @@ declare global {
     Libs: typeof Libs
     Net: typeof Net
     Peer: typeof Peer
+    PkgsUpdater: typeof PkgsUpdater
     PkgExporter: typeof PkgExporter
     PkgTarget: typeof PkgTarget
     Pkg: typeof Pkg
     PkgsInstaller: typeof PkgsInstaller
     PkgsLoader: typeof PkgsLoader
     PkgsParser: typeof PkgsParser
-    PkgsUpdater: typeof PkgsUpdater
     Pkgs: typeof Pkgs
     ToolsExtTest: typeof ToolsExtTest
     ToolsExt: typeof ToolsExt
@@ -85,13 +85,13 @@ declare global {
     export type Libs = LibsType
     export type Net = NetType
     export type Peer = PeerType
+    export type PkgsUpdater = PkgsUpdaterType
     export type PkgExporter = PkgExporterType
     export type PkgTarget = PkgTargetType
     export type Pkg = PkgType
     export type PkgsInstaller = PkgsInstallerType
     export type PkgsLoader = PkgsLoaderType
     export type PkgsParser = PkgsParserType
-    export type PkgsUpdater = PkgsUpdaterType
     export type Pkgs = PkgsType
     export type ToolsExtTest = ToolsExtTestType
     export type ToolsExt = ToolsExtType

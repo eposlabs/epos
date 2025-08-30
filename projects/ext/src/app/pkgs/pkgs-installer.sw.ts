@@ -2,7 +2,6 @@ import type { Data, Assets } from './pkg/pkg.sw'
 
 export type Pack = { data: Data; assets: Assets }
 
-// TODO: throw if pkg already exists (installed)
 export class PkgsInstaller extends $sw.Unit {
   private $pkgs = this.up($sw.Pkgs)!
   private queue = new this.$.utils.Queue()
@@ -11,7 +10,6 @@ export class PkgsInstaller extends $sw.Unit {
     super(parent)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
-    this.$.bus.on('pkgs.install', this.install, this)
   }
 
   async install(input: string | Pack) {

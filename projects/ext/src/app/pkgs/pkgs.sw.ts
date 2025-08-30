@@ -10,7 +10,6 @@ export class Pkgs extends $sw.Unit {
   installer = new $sw.PkgsInstaller(this)
   loader = new $sw.PkgsLoader(this)
   parser = new $sw.PkgsParser(this)
-  updater = new $sw.PkgsUpdater(this)
 
   install = this.$.utils.link(this.installer, 'install')
   remove = this.$.utils.link(this.installer, 'remove')
@@ -36,13 +35,12 @@ export class Pkgs extends $sw.Unit {
     this.engine.full = await fetch('/ex.js').then(r => r.text())
     // this.engine.mini = await fetch('/ex-mini.js').then(r => r.text())
     await this.restorePkgsFromIdb()
-    this.updater.start()
   }
 
   async export(name: string) {
     const pkg = this.map[name]
     if (!pkg) throw new Error(`Package not found: "${name}"`)
-    return await pkg.export()
+    return await pkg.exporter.export()
   }
 
   matches(target: Target) {
