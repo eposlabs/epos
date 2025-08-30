@@ -1,5 +1,5 @@
-import type { Target } from './pkg/sw/pkg-target.sw'
-import type { Fragment } from './pkg/sw/pkg.sw'
+import type { Target } from './pkg/pkg-target.sw'
+import type { Fragment } from './pkg/pkg.sw'
 
 export type ActionMap = { [name: string]: string }
 export type FragmentMap = { [name: string]: Fragment }

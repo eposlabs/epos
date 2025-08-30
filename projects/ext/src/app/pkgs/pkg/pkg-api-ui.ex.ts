@@ -3,7 +3,7 @@ import type { useLocalObservable } from 'mobx-react-lite'
 import type { FC, ReactNode } from 'react'
 import type { Container } from 'react-dom/client'
 
-export class PkgUi extends $ex.Unit {
+export class PkgApiUi extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   private root: HTMLElement | null = null
   private shadow: HTMLElement | null = null

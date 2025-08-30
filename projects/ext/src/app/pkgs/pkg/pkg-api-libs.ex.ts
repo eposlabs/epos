@@ -1,6 +1,6 @@
 import type * as React from 'react'
 
-export class PkgLibs extends $ex.Unit {
+export class PkgApiLibs extends $ex.Unit {
   mobx = this.$.libs.mobx
   mobxReactLite = this.$.libs.mobxReactLite
   react = this.$.ui.react as typeof React

@@ -1,4 +1,4 @@
-export class PkgBus extends $ex.Unit {
+export class PkgApiBus extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   private bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
 

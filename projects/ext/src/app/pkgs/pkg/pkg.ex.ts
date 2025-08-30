@@ -32,15 +32,15 @@ export class Pkg extends $ex.Unit {
   }
 
   private createApi() {
-    const bus = new $ex.PkgBus(this)
-    const state = new $ex.PkgState(this)
-    const ui = new $ex.PkgUi(this)
-    const unit = new $ex.PkgUnit(this)
-    const tools = new $ex.PkgTools(this)
-    const storage = new $ex.PkgStorage(this)
-    const assets = new $ex.PkgAssets(this)
-    const env = new $ex.PkgEnv(this)
-    const libs = new $ex.PkgLibs(this)
+    const bus = new $ex.PkgApiBus(this)
+    const state = new $ex.PkgApiState(this)
+    const ui = new $ex.PkgApiUi(this)
+    const unit = new $ex.PkgApiUnit(this)
+    const tools = new $ex.PkgApiTools(this)
+    const storage = new $ex.PkgApiStorage(this)
+    const assets = new $ex.PkgApiAssets(this)
+    const env = new $ex.PkgApiEnv(this)
+    const libs = new $ex.PkgApiLibs(this)
 
     const epos = {
       // Bus

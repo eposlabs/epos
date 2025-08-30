@@ -1,4 +1,4 @@
-export class PkgStorage extends $ex.Unit {
+export class PkgApiStorage extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
 
   get = async (key: string, name?: string) => {

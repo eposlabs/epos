@@ -4,16 +4,16 @@ import { Boot, type Boot as BootType } from '../app/boot/boot.ex.ts'
 import { Dev, type Dev as DevType } from '../app/dev/dev.ex.ts'
 import { Idb, type Idb as IdbType } from '../app/idb/idb.ex.ts'
 import { Libs, type Libs as LibsType } from '../app/libs/libs.ex.ts'
-import { PkgAssets, type PkgAssets as PkgAssetsType } from '../app/pkgs/pkg/ex/pkg-assets.ex.ts'
-import { PkgBus, type PkgBus as PkgBusType } from '../app/pkgs/pkg/ex/pkg-bus.ex.ts'
-import { PkgEnv, type PkgEnv as PkgEnvType } from '../app/pkgs/pkg/ex/pkg-env.ex.ts'
-import { PkgLibs, type PkgLibs as PkgLibsType } from '../app/pkgs/pkg/ex/pkg-libs.ex.ts'
-import { PkgState, type PkgState as PkgStateType } from '../app/pkgs/pkg/ex/pkg-state.ex.ts'
-import { PkgStorage, type PkgStorage as PkgStorageType } from '../app/pkgs/pkg/ex/pkg-storage.ex.ts'
-import { PkgTools, type PkgTools as PkgToolsType } from '../app/pkgs/pkg/ex/pkg-tools.ex.ts'
-import { PkgUi, type PkgUi as PkgUiType } from '../app/pkgs/pkg/ex/pkg-ui.ex.ts'
-import { PkgUnit, type PkgUnit as PkgUnitType } from '../app/pkgs/pkg/ex/pkg-unit.ex.ts'
-import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/ex/pkg.ex.ts'
+import { PkgApiAssets, type PkgApiAssets as PkgApiAssetsType } from '../app/pkgs/pkg/pkg-api-assets.ex.ts'
+import { PkgApiBus, type PkgApiBus as PkgApiBusType } from '../app/pkgs/pkg/pkg-api-bus.ex.ts'
+import { PkgApiEnv, type PkgApiEnv as PkgApiEnvType } from '../app/pkgs/pkg/pkg-api-env.ex.ts'
+import { PkgApiLibs, type PkgApiLibs as PkgApiLibsType } from '../app/pkgs/pkg/pkg-api-libs.ex.ts'
+import { PkgApiState, type PkgApiState as PkgApiStateType } from '../app/pkgs/pkg/pkg-api-state.ex.ts'
+import { PkgApiStorage, type PkgApiStorage as PkgApiStorageType } from '../app/pkgs/pkg/pkg-api-storage.ex.ts'
+import { PkgApiTools, type PkgApiTools as PkgApiToolsType } from '../app/pkgs/pkg/pkg-api-tools.ex.ts'
+import { PkgApiUi, type PkgApiUi as PkgApiUiType } from '../app/pkgs/pkg/pkg-api-ui.ex.ts'
+import { PkgApiUnit, type PkgApiUnit as PkgApiUnitType } from '../app/pkgs/pkg/pkg-api-unit.ex.ts'
+import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.ex.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.ex.ts'
 import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.ex.ts'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.ex.ts'
@@ -27,15 +27,15 @@ Object.assign($ex, {
   Dev,
   Idb,
   Libs,
-  PkgAssets,
-  PkgBus,
-  PkgEnv,
-  PkgLibs,
-  PkgState,
-  PkgStorage,
-  PkgTools,
-  PkgUi,
-  PkgUnit,
+  PkgApiAssets,
+  PkgApiBus,
+  PkgApiEnv,
+  PkgApiLibs,
+  PkgApiState,
+  PkgApiStorage,
+  PkgApiTools,
+  PkgApiUi,
+  PkgApiUnit,
   Pkg,
   Pkgs,
   ToolsExt,
@@ -54,15 +54,15 @@ declare global {
     Dev: typeof Dev
     Idb: typeof Idb
     Libs: typeof Libs
-    PkgAssets: typeof PkgAssets
-    PkgBus: typeof PkgBus
-    PkgEnv: typeof PkgEnv
-    PkgLibs: typeof PkgLibs
-    PkgState: typeof PkgState
-    PkgStorage: typeof PkgStorage
-    PkgTools: typeof PkgTools
-    PkgUi: typeof PkgUi
-    PkgUnit: typeof PkgUnit
+    PkgApiAssets: typeof PkgApiAssets
+    PkgApiBus: typeof PkgApiBus
+    PkgApiEnv: typeof PkgApiEnv
+    PkgApiLibs: typeof PkgApiLibs
+    PkgApiState: typeof PkgApiState
+    PkgApiStorage: typeof PkgApiStorage
+    PkgApiTools: typeof PkgApiTools
+    PkgApiUi: typeof PkgApiUi
+    PkgApiUnit: typeof PkgApiUnit
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
     ToolsExt: typeof ToolsExt
@@ -78,15 +78,15 @@ declare global {
     export type Dev = DevType
     export type Idb = IdbType
     export type Libs = LibsType
-    export type PkgAssets = PkgAssetsType
-    export type PkgBus = PkgBusType
-    export type PkgEnv = PkgEnvType
-    export type PkgLibs = PkgLibsType
-    export type PkgState = PkgStateType
-    export type PkgStorage = PkgStorageType
-    export type PkgTools = PkgToolsType
-    export type PkgUi = PkgUiType
-    export type PkgUnit = PkgUnitType
+    export type PkgApiAssets = PkgApiAssetsType
+    export type PkgApiBus = PkgApiBusType
+    export type PkgApiEnv = PkgApiEnvType
+    export type PkgApiLibs = PkgApiLibsType
+    export type PkgApiState = PkgApiStateType
+    export type PkgApiStorage = PkgApiStorageType
+    export type PkgApiTools = PkgApiToolsType
+    export type PkgApiUi = PkgApiUiType
+    export type PkgApiUnit = PkgApiUnitType
     export type Pkg = PkgType
     export type Pkgs = PkgsType
     export type ToolsExt = ToolsExtType

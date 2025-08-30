@@ -1,4 +1,4 @@
-export class PkgEnv extends $ex.Unit {
+export class PkgApiEnv extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   tabId = this.$pkg.tabId
 

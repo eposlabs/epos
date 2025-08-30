@@ -3,7 +3,7 @@ export type Asset = {
   url: string | null
 }
 
-export class PkgAssets extends $ex.Unit {
+export class PkgApiAssets extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   private loaded: { [path: string]: Asset } = {}
 

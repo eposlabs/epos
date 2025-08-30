@@ -20,7 +20,7 @@ export class PkgsWatcher extends $exOsVw.Unit {
 
   async start(onUpdate: UpdateListener) {
     await this.update(onUpdate)
-    this.$.bus.on('pkgs.changed', () => this.update(onUpdate))
+    this.$.bus.on('pkgs.updated', () => this.update(onUpdate))
   }
 
   private async update(onUpdate: UpdateListener) {

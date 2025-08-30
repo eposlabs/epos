@@ -1,8 +1,8 @@
-import type { Data, Assets } from './pkg/sw/pkg.sw'
-import type { Manifest } from './pkgs-parser.sw'
+import type { Data, Assets } from './pkg/pkg.sw'
 
 export type Pack = { data: Data; assets: Assets }
 
+// TODO: throw if pkg already exists (installed)
 export class PkgsInstaller extends $sw.Unit {
   private $pkgs = this.up($sw.Pkgs)!
   private queue = new this.$.utils.Queue()
@@ -14,14 +14,22 @@ export class PkgsInstaller extends $sw.Unit {
     this.$.bus.on('pkgs.install', this.install, this)
   }
 
-  async install(target: string | Pack) {
-    if (this.$.is.object(target)) {
-      await this.installFromPack(target)
-    } else if (URL.canParse(target)) {
-      await this.installFromUrl(target)
+  async install(input: string | Pack) {
+    if (this.$.is.object(input)) {
+      await this.installFromPack(input)
+    } else if (URL.canParse(input)) {
+      await this.installFromUrl(input)
     } else {
-      await this.installByName(target)
+      await this.installByName(input)
     }
+
+    this.broadcastUpdated()
+  }
+
+  async remove(name: string) {
+    await this.$.idb.deleteDatabase(name)
+    delete this.$pkgs.map[name]
+    this.broadcastUpdated()
   }
 
   private async installByName(name: string) {
@@ -90,106 +98,10 @@ export class PkgsInstaller extends $sw.Unit {
       const pkg = await $sw.Pkg.create(this, pack.data, pack.assets)
       this.$pkgs.map[pack.data.name] = pkg
     }
-
-    this.broadcastPkgsChanged()
   }
 
-  async _install(nameOrData: string | PkgData) {
-    let data: PkgData
-    if (this.$.utils.is.string(nameOrData)) {
-      data = await this.fetchPkg(nameOrData)
-    } else {
-      data = nameOrData
-    }
-
-    const name = data.name
-    if (this.$pkgs.map[name]) {
-      const pkg = this.$pkgs.map[name]
-      await pkg.applyPack(data)
-    } else {
-      const pkg = await $sw.Pkg.create(this, data)
-      this.$pkgs.map[name] = pkg
-    }
-
-    this.notifyPkgsChanged()
-  }
-
-  async remove(name: string) {
-    await this.$.idb.deleteDatabase(name)
-    delete this.$pkgs.map[name]
-    this.notifyPkgsChanged()
-  }
-
-  private async fetchPkg(name: string): Promise<PkgData> {
-    // Find manifest
-    const { manifest, dev } = await this.findManifest(name)
-
-    // Prepare path resolver
-    const hub = this.$.env.url.hub(dev)
-    const resolve = (path: string) => new URL(`/@/${name}/${path}`, hub).href
-
-    // Fetch all assets
-    const assets: { [path: string]: Blob } = {}
-    for (const path of manifest.assets) {
-      if (assets[path]) continue
-      const url = resolve(path)
-      const [blob, error] = await this.$.utils.safe(() => fetch(url).then(r => r.blob()))
-      if (error) throw new Error(`Failed to fetch ${url}`)
-      assets[path] = blob
-    }
-
-    // Fetch all src
-    const src: { [path: string]: string } = {}
-    for (const bundle of manifest.bundles) {
-      for (const path of bundle.src) {
-        const url = resolve(path)
-        const [text, error] = await this.$.utils.safe(() => fetch(url).then(r => r.text()))
-        if (error) throw new Error(`Failed to fetch ${url}`)
-        src[path] = text.trim()
-      }
-    }
-
-    return { name, dev, src, assets, manifest }
-  }
-
-  private async findManifest(name: string) {
-    const devManifest = await this.fetchManifest(name, true)
-    if (devManifest) return { manifest: devManifest, dev: true }
-
-    const prodManifest = await this.fetchManifest(name, false)
-    if (prodManifest) return { manifest: prodManifest, dev: false }
-
-    throw new Error(`Package '${name}' not found`)
-  }
-
-  private async fetchManifest(name: string, dev = false) {
-    // Fetch manifest
-    const hub = this.$.env.url.hub(dev)
-    const url = new URL(`/@/${name}/epos.json`, hub).href
-    const [res] = await this.$.utils.safe(() => fetch(url))
-
-    // Failed to fetch? -> Return null for dev hub (no server running) or throw error
-    if (!res) {
-      if (dev) return null
-      throw new Error(`Failed to fetch ${url}`)
-    }
-
-    // Not found? -> Return null
-    if (!res.ok) return null
-
-    // Read manifest text
-    const [json] = await this.$.utils.safe(() => res.text())
-    if (!json) throw new Error(`Failed to fetch manifest ${url}`)
-
-    // Parse json
-    const [manifest] = this.$.utils.safe.sync(() => JSON.parse(json))
-    if (!manifest) throw new Error(`Failed to parse manifest ${url}`)
-
-    return manifest as Manifest
-  }
-
-  private broadcastPkgsChanged() {
-    async: this.$.bus.send('pkgs.changed')
-    async: this.$.bus.emit('pkgs.changed')
+  private broadcastUpdated() {
+    async: this.$.bus.send('pkgs.updated')
+    async: this.$.bus.emit('pkgs.updated')
   }
 }

@@ -197,7 +197,7 @@ export class Paralayer extends $utils.Unit {
     const imports = layerPaths
       .map(path => {
         const file = this.files[path]
-        if (!file) throw this.never
+        if (!file) return ''
         if (file.names.length === 0) return ''
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)

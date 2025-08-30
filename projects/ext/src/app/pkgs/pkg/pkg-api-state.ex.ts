@@ -1,6 +1,6 @@
 import type { Initial, Location, Versioner } from '../../../states/state/state.ex.sw'
 
-export class PkgState extends $ex.Unit {
+export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   autorun = this.$.utils.link(this.$.libs.mobx, 'autorun')
   reaction = this.$.utils.link(this.$.libs.mobx, 'reaction')

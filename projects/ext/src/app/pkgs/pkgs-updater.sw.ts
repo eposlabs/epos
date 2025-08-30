@@ -4,7 +4,7 @@ export class PkgsUpdater extends $sw.Unit {
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('pkgs.changed', () => this.actualizeConnection())
+    this.$.bus.on('pkgs.updated', () => this.actualizeConnection())
   }
 
   start() {

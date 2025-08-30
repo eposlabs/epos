@@ -1,4 +1,4 @@
-import type { PkgOpts } from './pkg/ex/pkg.ex'
+import type { PkgOpts } from './pkg/pkg.ex'
 
 export class Pkgs extends $ex.Unit {
   map: { [name: string]: $ex.Pkg } = {}
