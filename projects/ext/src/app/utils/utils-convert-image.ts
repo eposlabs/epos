@@ -24,7 +24,7 @@ export async function convertImage(this: $exOsSwVw.Unit, blob: Blob, opts: Opts)
     image.onload = () => ready$.resolve(true)
     image.onerror = () => ready$.reject(new Error('Failed to load image'))
     document.body.appendChild(image)
-    const [, error] = await this.$.safe(ready$.promise)
+    const [, error] = await this.$.utils.safe(ready$.promise)
     image.remove()
     if (error) throw error
   } else {

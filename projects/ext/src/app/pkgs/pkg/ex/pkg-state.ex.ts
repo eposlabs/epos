@@ -2,8 +2,8 @@ import type { Initial, Location, Versioner } from '../../../states/state/state.e
 
 export class PkgState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  autorun = this.$.bind(this.$.libs.mobx, 'autorun')
-  reaction = this.$.bind(this.$.libs.mobx, 'reaction')
+  autorun = this.$.utils.link(this.$.libs.mobx, 'autorun')
+  reaction = this.$.utils.link(this.$.libs.mobx, 'reaction')
 
   connect = async (...args: unknown[]) => {
     const [name, initial, versioner] = this.parseConnectArgs(args)

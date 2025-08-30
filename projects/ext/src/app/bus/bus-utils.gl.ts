@@ -26,7 +26,7 @@ export class BusUtils extends $gl.Unit {
     for (const promise of promises) {
       if (!promise) continue
       async: (async () => {
-        const [result, error] = await this.$.safe(promise)
+        const [result, error] = await this.$.utils.safe(promise)
         if (this.$.is.present(result)) {
           result$.resolve(result)
         } else if (error) {

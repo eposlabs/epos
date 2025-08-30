@@ -1,4 +1,4 @@
 export class PkgTools extends $ex.Unit {
-  fetch = this.$.bind(this.$.tools, 'fetch')
-  getExtApi = this.$.bind(this.$.tools, 'getExtApi')
+  fetch = this.$.utils.link(this.$.tools, 'fetch')
+  getExtApi = this.$.utils.link(this.$.tools, 'getExtApi')
 }

@@ -10,7 +10,7 @@ export class Peer extends $sw.Unit {
 
   async mutex(name: string, fn: () => Promise<void>) {
     await this.start(name, this.id)
-    const [, error] = await this.$.safe(fn)
+    const [, error] = await this.$.utils.safe(fn)
     await this.$.bus.emit(`peer.end[${name}][${this.id}]`)
     if (error) throw error
   }

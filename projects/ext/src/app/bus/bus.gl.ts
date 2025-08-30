@@ -13,13 +13,13 @@ export class Bus extends $gl.Unit {
   proxy = new $gl.BusProxy(this)
   api = new $gl.BusApi(this)
 
-  on = this.$.bind(this.api, 'on')
-  off = this.$.bind(this.api, 'off')
-  once = this.$.bind(this.api, 'once')
-  send = this.$.bind(this.api, 'send')
-  emit = this.$.bind(this.api, 'emit')
-  setSignal = this.$.bind(this.api, 'setSignal')
-  waitSignal = this.$.bind(this.api, 'waitSignal')
+  on = this.$.utils.link(this.api, 'on')
+  off = this.$.utils.link(this.api, 'off')
+  once = this.$.utils.link(this.api, 'once')
+  send = this.$.utils.link(this.api, 'send')
+  emit = this.$.utils.link(this.api, 'emit')
+  setSignal = this.$.utils.link(this.api, 'setSignal')
+  waitSignal = this.$.utils.link(this.api, 'waitSignal')
 
   create(id: string) {
     return new $gl.BusApi(this, id)

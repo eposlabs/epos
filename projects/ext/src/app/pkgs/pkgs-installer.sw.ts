@@ -47,11 +47,11 @@ export class PkgsInstaller extends $sw.Unit {
     }
 
     // Fetch epos.json
-    const [res] = await this.$.safe(() => fetch(url))
+    const [res] = await this.$.utils.safe(() => fetch(url))
     if (!res) throw new Error(`Failed to fetch ${url}`)
 
     // Read epos.json
-    const [data, error] = await this.$.safe(() => res.json())
+    const [data, error] = await this.$.utils.safe(() => res.json())
     if (error) throw new Error(`Failed to parse ${url}: ${error.message}`)
 
     // Parse manifest
@@ -134,7 +134,7 @@ export class PkgsInstaller extends $sw.Unit {
     for (const path of manifest.assets) {
       if (assets[path]) continue
       const url = resolve(path)
-      const [blob, error] = await this.$.safe(() => fetch(url).then(r => r.blob()))
+      const [blob, error] = await this.$.utils.safe(() => fetch(url).then(r => r.blob()))
       if (error) throw new Error(`Failed to fetch ${url}`)
       assets[path] = blob
     }
@@ -144,7 +144,7 @@ export class PkgsInstaller extends $sw.Unit {
     for (const bundle of manifest.bundles) {
       for (const path of bundle.src) {
         const url = resolve(path)
-        const [text, error] = await this.$.safe(() => fetch(url).then(r => r.text()))
+        const [text, error] = await this.$.utils.safe(() => fetch(url).then(r => r.text()))
         if (error) throw new Error(`Failed to fetch ${url}`)
         src[path] = text.trim()
       }
@@ -167,7 +167,7 @@ export class PkgsInstaller extends $sw.Unit {
     // Fetch manifest
     const hub = this.$.env.url.hub(dev)
     const url = new URL(`/@/${name}/epos.json`, hub).href
-    const [res] = await this.$.safe(() => fetch(url))
+    const [res] = await this.$.utils.safe(() => fetch(url))
 
     // Failed to fetch? -> Return null for dev hub (no server running) or throw error
     if (!res) {
@@ -179,11 +179,11 @@ export class PkgsInstaller extends $sw.Unit {
     if (!res.ok) return null
 
     // Read manifest text
-    const [json] = await this.$.safe(() => res.text())
+    const [json] = await this.$.utils.safe(() => res.text())
     if (!json) throw new Error(`Failed to fetch manifest ${url}`)
 
     // Parse json
-    const [manifest] = this.$.safe.sync(() => JSON.parse(json))
+    const [manifest] = this.$.utils.safe.sync(() => JSON.parse(json))
     if (!manifest) throw new Error(`Failed to parse manifest ${url}`)
 
     return manifest as Manifest

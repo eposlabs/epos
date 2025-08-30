@@ -37,7 +37,7 @@ export class BootMedium extends $swVw.Unit {
   async openPopup(tabId: number) {
     const path = this.$.env.url.view('popup', tabId)
     await this.$.browser.action.setPopup({ popup: path })
-    await this.$.safe(() => this.$.browser.action.openPopup())
+    await this.$.utils.safe(() => this.$.browser.action.openPopup())
     await this.$.browser.action.setPopup({ popup: '' })
   }
 

@@ -69,7 +69,7 @@ export class PkgsUpdater extends $sw.Unit {
 
   private async ping() {
     const devHubUrl = this.$.env.url.hub(true)
-    const [res] = await this.$.safe(() => fetch(devHubUrl))
+    const [res] = await this.$.utils.safe(() => fetch(devHubUrl))
     return !!res?.ok
   }
 

@@ -3,8 +3,6 @@ export class App extends $sw.Unit {
   libs = new $sw.Libs(this)
   utils = new $exOsSwVw.Utils(this)
   is = this.utils.is
-  safe = this.utils.safe
-  bind = this.utils.bind
   env = new $gl.Env(this)
   bus = new $gl.Bus(this)
   dev = new $sw.Dev(this)

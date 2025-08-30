@@ -8,7 +8,7 @@ export class Peer extends $exOs.Unit {
 
   async mutex(name: string, fn: () => Promise<void>) {
     await this.$.bus.send('peer.start', name, this.id)
-    const [, error] = await this.$.safe(fn)
+    const [, error] = await this.$.utils.safe(fn)
     await this.$.bus.send(`peer.end[${name}][${this.id}]`)
     if (error) throw error
   }

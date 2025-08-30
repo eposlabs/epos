@@ -151,7 +151,7 @@ export class ToolsExt extends $ex.Unit {
 
     // Request permissions
     const request = this.$.bus.send<PermissionsResult>('tools.requestPermissions', opts)
-    const [result, error] = await this.$.safe(request)
+    const [result, error] = await this.$.utils.safe(request)
 
     // Close permissions tab
     await this.$.bus.send('tools.closePermissions')

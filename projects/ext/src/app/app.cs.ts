@@ -2,8 +2,6 @@ export class App extends $cs.Unit {
   browser = chrome
   utils = new $cs.Utils(this)
   is = this.utils.is
-  safe = this.utils.safe
-  bind = this.utils.bind
   env = new $gl.Env(this)
   bus = new $gl.Bus(this)
 

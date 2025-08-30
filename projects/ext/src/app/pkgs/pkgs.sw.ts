@@ -12,8 +12,8 @@ export class Pkgs extends $sw.Unit {
   parser = new $sw.PkgsParser(this)
   updater = new $sw.PkgsUpdater(this)
 
-  install = this.$.bind(this.installer, 'install')
-  remove = this.$.bind(this.installer, 'remove')
+  install = this.$.utils.link(this.installer, 'install')
+  remove = this.$.utils.link(this.installer, 'remove')
 
   get list() {
     return Object.values(this.map)

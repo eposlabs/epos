@@ -1,10 +1,10 @@
 import { ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
-import { bind } from './utils-bind'
 import { convertImage } from './utils-convert-image'
 import { equal } from './utils-equal'
 import { get } from './utils-get'
 import { hash } from './utils-hash'
 import { id } from './utils-id'
+import { link } from './utils-link'
 import { merge } from './utils-merge'
 import { normalizeUrl } from './utils-normalize-url'
 import { set } from './utils-set'
@@ -15,11 +15,10 @@ import { unique } from './utils-unique'
 export class Utils extends $exOsSwVw.Unit {
   initOs() {
     this.$.bus.on('utils.convertImage', this.convertImage, this)
-    this.$.bus.on('utils.createObjectUrl', blob => URL.createObjectURL(blob))
-    this.$.bus.on('utils.revokeObjectUrl', url => URL.revokeObjectURL(url))
+    this.$.bus.on('utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))
+    this.$.bus.on('utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }
 
-  bind = bind
   convertImage = convertImage
   ensureArray = ensureArray
   equal = equal
@@ -27,6 +26,7 @@ export class Utils extends $exOsSwVw.Unit {
   hash = hash
   id = id
   is = is
+  link = link
   merge = merge
   normalizeUrl = normalizeUrl
   Queue = Queue

@@ -21,7 +21,7 @@ export class Pkg extends $sw.Unit {
   declare dev: boolean
   declare src: Src
   declare manifest: Manifest
-  export = this.$.bind(this.exporter, 'export')
+  export = this.$.utils.link(this.exporter, 'export')
 
   /** Creates new pkg from data. */
   static async create(parent: $sw.Unit, data: PkgData) {
