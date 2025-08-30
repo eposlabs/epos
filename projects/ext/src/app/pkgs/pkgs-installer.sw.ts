@@ -1,13 +1,7 @@
-import type { PkgData } from './pkg/sw/pkg.sw'
+import type { Data, Assets } from './pkg/sw/pkg.sw'
 import type { Manifest } from './pkgs-parser.sw'
 
-export type Pack = {
-  name: string
-  dev: boolean
-  manifest: Manifest
-  assets: Record<string, Blob>
-  sources: Record<string, string>
-}
+export type Pack = { data: Data; assets: Assets }
 
 export class PkgsInstaller extends $sw.Unit {
   private $pkgs = this.up($sw.Pkgs)!
@@ -83,16 +77,21 @@ export class PkgsInstaller extends $sw.Unit {
     }
 
     await this.installFromPack({
-      name: manifest.name,
-      dev: false,
-      manifest: manifest,
+      data: { name: manifest.name, dev: false, manifest, sources },
       assets: assets,
-      sources: sources,
     })
   }
 
   private async installFromPack(pack: Pack) {
-    this.log('PACK', pack)
+    if (this.$pkgs.map[pack.data.name]) {
+      const pkg = this.$pkgs.map[pack.data.name]
+      await pkg.update(pack.data, pack.assets)
+    } else {
+      const pkg = await $sw.Pkg.create(this, pack.data, pack.assets)
+      this.$pkgs.map[pack.data.name] = pkg
+    }
+
+    this.broadcastPkgsChanged()
   }
 
   async _install(nameOrData: string | PkgData) {
@@ -106,7 +105,7 @@ export class PkgsInstaller extends $sw.Unit {
     const name = data.name
     if (this.$pkgs.map[name]) {
       const pkg = this.$pkgs.map[name]
-      await pkg.applyData(data)
+      await pkg.applyPack(data)
     } else {
       const pkg = await $sw.Pkg.create(this, data)
       this.$pkgs.map[name] = pkg
@@ -189,7 +188,7 @@ export class PkgsInstaller extends $sw.Unit {
     return manifest as Manifest
   }
 
-  private notifyPkgsChanged() {
+  private broadcastPkgsChanged() {
     async: this.$.bus.send('pkgs.changed')
     async: this.$.bus.emit('pkgs.changed')
   }

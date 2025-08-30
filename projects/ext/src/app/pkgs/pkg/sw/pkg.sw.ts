@@ -1,75 +1,65 @@
-import type { Manifest, Mode, Popup } from '../../pkgs-parser.sw'
-import type { Target } from './pkg-bundle.sw'
+import type { Manifest, Mode, Pattern, Popup } from '../../pkgs-parser.sw'
+import type { Target } from './pkg-target.sw'
 
-export type Src = { [path: string]: string }
-export type Assets = { [path: string]: Blob }
+export type Data = { name: string; dev: boolean; sources: Sources; manifest: Manifest }
 export type Fragment = { name: string; hash: string; popup: Popup }
-
-export type PkgData = {
-  name: string
-  dev: boolean
-  src: Src
-  manifest: Manifest
-  assets?: Assets
-}
+export type Sources = Record<string, string>
+export type Assets = Record<string, Blob>
 
 // TODO: update hash deps (assets, mode, smth else?)
 export class Pkg extends $sw.Unit {
   private exporter = new $sw.PkgExporter(this)
   declare name: string
-  declare bundles: $sw.PkgBundle[]
-  declare dev: boolean
-  declare src: Src
+  declare targets: $sw.PkgTarget[]
+  declare sources: Sources
   declare manifest: Manifest
+  declare dev: boolean
   export = this.$.utils.link(this.exporter, 'export')
 
-  /** Creates new pkg from data. */
-  static async create(parent: $sw.Unit, data: PkgData) {
+  static async create(parent: $sw.Unit, data: Data, assets?: Assets) {
     const pkg = new Pkg(parent)
-    await pkg.applyData(data)
+    await pkg.update(data, assets)
     return pkg
   }
 
-  /** Restores pkg from IDB. */
   static async restore(parent: $sw.Unit, name: string) {
     const pkg = new Pkg(parent)
-    const data = await pkg.$.idb.get<PkgData>(name, ':pkg', ':default')
+    const data = await pkg.$.idb.get<Data>(name, ':pkg', ':default')
     if (!data) return null
-    pkg.applyData(data)
+    pkg.update(data)
     return pkg
   }
 
-  async applyData(data: PkgData) {
+  async update(data: Data, assets?: Assets) {
     this.name = data.name
     this.dev = data.dev
-    this.src = data.src
+    this.sources = data.sources
     this.manifest = data.manifest
-    this.bundles = data.manifest.bundles.map(bundle => new $sw.PkgBundle(this, bundle))
+    this.targets = data.manifest.targets.map(target => new $sw.PkgTarget(this, target))
 
-    // TODO: describe why assets might be absent
-    if (data.assets) {
+    if (assets) {
       await this.$.idb.deleteStore(this.name, ':assets')
-      for (const [path, blob] of Object.entries(data.assets)) {
+      for (const [path, blob] of Object.entries(assets)) {
         await this.$.idb.set(this.name, ':assets', path, blob)
       }
     }
 
-    await this.$.idb.set<PkgData>(this.name, ':pkg', ':default', {
+    await this.$.idb.set<Data>(this.name, ':pkg', ':default', {
       name: this.name,
       dev: this.dev,
-      src: this.src,
+      sources: this.sources,
       manifest: this.manifest,
     })
   }
 
-  matches(target: Target) {
-    return this.bundles.some(bundle => bundle.matches(target))
+  matches(pattern: Pattern) {
+    return this.targets.some(target => target.matches(pattern))
   }
 
-  getDefJs(target: Target) {
-    const js = this.getCode(target, ['normal', 'shadow'], 'js')
+  getDefJs(pattern: Pattern) {
+    const js = this.getCode(pattern, ['normal', 'shadow'], 'js')
     if (!js) return ''
-    const shadowCss = this.getCode(target, ['shadow'], 'css')
+    const shadowCss = this.getCode(pattern, ['shadow'], 'css')
     const layers = [
       ...['$gl', '$cs', '$ex', '$os', '$sw', '$vw'],
       ...['$exOs', '$exSw', '$osVw', '$swVw'],

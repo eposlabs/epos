@@ -8,8 +8,8 @@ import { Idb, type Idb as IdbType } from '../app/idb/idb.sw.ts'
 import { Libs, type Libs as LibsType } from '../app/libs/libs.sw.ts'
 import { Net, type Net as NetType } from '../app/net/net.sw.ts'
 import { Peer, type Peer as PeerType } from '../app/peer/peer.sw.ts'
-import { PkgBundle, type PkgBundle as PkgBundleType } from '../app/pkgs/pkg/sw/pkg-bundle.sw.ts'
 import { PkgExporter, type PkgExporter as PkgExporterType } from '../app/pkgs/pkg/sw/pkg-exporter.sw.ts'
+import { PkgTarget, type PkgTarget as PkgTargetType } from '../app/pkgs/pkg/sw/pkg-target.sw.ts'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/sw/pkg.sw.ts'
 import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/pkgs/pkgs-installer.sw.ts'
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw.ts'
@@ -32,8 +32,8 @@ Object.assign($sw, {
   Libs,
   Net,
   Peer,
-  PkgBundle,
   PkgExporter,
+  PkgTarget,
   Pkg,
   PkgsInstaller,
   PkgsLoader,
@@ -60,8 +60,8 @@ declare global {
     Libs: typeof Libs
     Net: typeof Net
     Peer: typeof Peer
-    PkgBundle: typeof PkgBundle
     PkgExporter: typeof PkgExporter
+    PkgTarget: typeof PkgTarget
     Pkg: typeof Pkg
     PkgsInstaller: typeof PkgsInstaller
     PkgsLoader: typeof PkgsLoader
@@ -85,8 +85,8 @@ declare global {
     export type Libs = LibsType
     export type Net = NetType
     export type Peer = PeerType
-    export type PkgBundle = PkgBundleType
     export type PkgExporter = PkgExporterType
+    export type PkgTarget = PkgTargetType
     export type Pkg = PkgType
     export type PkgsInstaller = PkgsInstallerType
     export type PkgsLoader = PkgsLoaderType

@@ -3,7 +3,7 @@ import type { Bundle, Mode, MatchPattern, RefPattern, UrlPattern } from '../../p
 export type Url = `<hub>${string}` | string
 export type Target = RefPattern | Url
 
-export class PkgBundle extends $sw.Unit {
+export class PkgTarget extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
   run: MatchPattern[]
   src: string[]
