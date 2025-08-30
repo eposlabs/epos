@@ -13,7 +13,6 @@ import { PkgExporter, type PkgExporter as PkgExporterType } from '../app/pkgs/pk
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/sw/pkg.sw.ts'
 import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/pkgs/pkgs-installer.sw.ts'
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw.ts'
-import { PkgsParserUtils, type PkgsParserUtils as PkgsParserUtilsType } from '../app/pkgs/pkgs-parser-utils.sw.ts'
 import { PkgsParser, type PkgsParser as PkgsParserType } from '../app/pkgs/pkgs-parser.sw.ts'
 import { PkgsUpdater, type PkgsUpdater as PkgsUpdaterType } from '../app/pkgs/pkgs-updater.sw.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw.ts'
@@ -38,7 +37,6 @@ Object.assign($sw, {
   Pkg,
   PkgsInstaller,
   PkgsLoader,
-  PkgsParserUtils,
   PkgsParser,
   PkgsUpdater,
   Pkgs,
@@ -67,7 +65,6 @@ declare global {
     Pkg: typeof Pkg
     PkgsInstaller: typeof PkgsInstaller
     PkgsLoader: typeof PkgsLoader
-    PkgsParserUtils: typeof PkgsParserUtils
     PkgsParser: typeof PkgsParser
     PkgsUpdater: typeof PkgsUpdater
     Pkgs: typeof Pkgs
@@ -93,7 +90,6 @@ declare global {
     export type Pkg = PkgType
     export type PkgsInstaller = PkgsInstallerType
     export type PkgsLoader = PkgsLoaderType
-    export type PkgsParserUtils = PkgsParserUtilsType
     export type PkgsParser = PkgsParserType
     export type PkgsUpdater = PkgsUpdaterType
     export type Pkgs = PkgsType

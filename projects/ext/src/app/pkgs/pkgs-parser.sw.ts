@@ -1,5 +1,5 @@
-export type Action = string | null
-export type Popup = { width?: number; height?: number }
+export type Action = string | true | null
+export type Popup = { width?: number; height?: number } | null
 export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
 export type Pattern = RefPattern | UrlPattern | `!${UrlPattern}`
 export type RefPattern = '<popup>' | '<panel>' | '<background>'
@@ -17,11 +17,9 @@ export type Manifest = {
 }
 
 export class PkgsParser extends $sw.Unit {
-  utils = new $sw.PkgsParserUtils(this)
-
   config = {
     keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets'],
-    name: { min: 2, max: 50, regex: /^[a-z0-9-]+$/i },
+    name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]+[a-z0-9]$/ },
     popup: {
       keys: ['width', 'height'],
       width: { min: 150, max: 800, default: 400 },
@@ -29,7 +27,7 @@ export class PkgsParser extends $sw.Unit {
     },
     target: {
       keys: ['matches', 'load', 'mode'],
-      mode: { variants: ['normal', 'shadow', 'lite'] },
+      mode: { variants: ['normal', 'shadow', 'lite'] satisfies Mode[] },
     },
   }
 
@@ -56,7 +54,6 @@ export class PkgsParser extends $sw.Unit {
 
     const name = manifest.name
     const { min, max, regex } = this.config.name
-
     if (!this.$.is.string(name)) throw new Error(`'name' must be a string`)
     if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
     if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
@@ -71,8 +68,8 @@ export class PkgsParser extends $sw.Unit {
     const icon = manifest.icon
     if (!this.$.is.string(icon)) throw new Error(`'icon' must be a string`)
 
-    const paths = this.parsePaths([icon])
-    return paths[0]
+    const iconPath = this.parsePaths([icon])[0]
+    return iconPath
   }
 
   private parseTitle(manifest: Obj): string | null {
@@ -87,6 +84,7 @@ export class PkgsParser extends $sw.Unit {
   private parseAction(manifest: Obj): Action {
     const action = manifest.action ?? null
     if (action === null) return null
+    if (action === true) return true
 
     if (!this.$.is.string(action)) throw new Error(`'action' must be a URL or true`)
     if (!this.isValidUrl(action)) throw new Error(`Invalid 'action' URL: ${JSON.stringify(action)}`)
@@ -95,7 +93,8 @@ export class PkgsParser extends $sw.Unit {
   }
 
   private parsePopup(manifest: Obj) {
-    const popup = manifest.popup ?? {}
+    const popup = structuredClone(manifest.popup ?? null)
+    if (popup === null) return null
     if (!this.$.is.object(popup)) throw new Error(`'popup' must be an object`)
 
     const { keys, width, height } = this.config.popup
@@ -116,23 +115,26 @@ export class PkgsParser extends $sw.Unit {
   }
 
   private parseAssets(manifest: Obj) {
-    const assets = manifest.assets ?? []
+    const assets = structuredClone(manifest.assets ?? [])
     if (!this.isArrayOfStrings(assets)) throw new Error(`'assets' must be an array of strings`)
-    // TODO: Ensure icon is included in assets
-    // if (icon && !assets.includes(icon)) assets.unshift(icon)
+
+    // Add icon to assets
+    const icon = this.parseIcon(manifest)
+    if (icon) assets.push(icon)
+
     return this.parsePaths(assets)
   }
 
   private parseTargets(manifest: Obj) {
-    const targets = manifest.targets ?? []
+    const targets = structuredClone(manifest.targets ?? [])
     if (!this.$.is.array(targets)) throw new Error(`'targets' must be an array`)
 
     // Move top-level target to 'targets'
     if ('matches' in manifest || 'load' in manifest || 'mode' in manifest) {
       targets.unshift({
-        matches: manifest.matches ?? [],
-        load: manifest.load ?? [],
-        mode: manifest.mode ?? 'normal',
+        matches: structuredClone(manifest.matches ?? []),
+        load: structuredClone(manifest.load ?? []),
+        mode: structuredClone(manifest.mode ?? 'normal'),
       })
     }
 
@@ -180,7 +182,7 @@ export class PkgsParser extends $sw.Unit {
     for (const path of loadPaths) {
       if (path.toLowerCase().endsWith('.js')) continue
       if (path.toLowerCase().endsWith('.css')) continue
-      throw new Error(`Invalid 'load' file: ${path}. Must be .js or .css.`)
+      throw new Error(`Invalid 'load' file, must be js or css: ${path}`)
     }
 
     return loadPaths
@@ -189,11 +191,8 @@ export class PkgsParser extends $sw.Unit {
   private parseMode(target: Obj) {
     const mode = target.mode ?? 'normal'
     if (!this.$.is.string(mode)) throw new Error(`'mode' must be a string`)
-
-    const { variants } = this.config.target.mode
-    if (!variants.includes(mode)) throw new Error(`Invalid 'mode' value: ${JSON.stringify(mode)}`)
-
-    return mode as Mode
+    if (!this.isValidMode(mode)) throw new Error(`Invalid 'mode' value: ${JSON.stringify(mode)}`)
+    return mode
   }
 
   private parsePaths(paths: string[]) {
@@ -225,6 +224,11 @@ export class PkgsParser extends $sw.Unit {
     const pattern = this.replaceHubPrefix(value)
     const [result] = this.$.utils.safe.sync(() => new URLPattern(pattern))
     return !!result
+  }
+
+  isValidMode(value: string): value is Mode {
+    const { variants } = this.config.target.mode
+    return (variants as string[]).includes(value)
   }
 
   replaceHubPrefix(str: string) {

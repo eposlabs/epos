@@ -1,6 +1,7 @@
 {
   "name": "learn-browser-api",
   "title": "[epos] Learn Browser API",
+  "assets": ["./src/fgs.js"],
   "targets": [
     {
       "matches": ["<panel>", "<hub>"],

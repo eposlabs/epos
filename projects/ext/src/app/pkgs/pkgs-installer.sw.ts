@@ -55,26 +55,29 @@ export class PkgsInstaller extends $sw.Unit {
     if (error) throw new Error(`Failed to parse ${url}: ${error.message}`)
 
     // Parse manifest
-    const manifest = await this.$pkgs.parser.parseManifest(data)
-    console.warn(manifest)
+    const manifest = this.$pkgs.parser.parseManifest(data)
 
     // Fetch assets
     const assets: Record<string, Blob> = {}
     for (const path of manifest.assets) {
       const assetUrl = new URL(path, url)
-      const [blob] = await this.$.utils.safe(fetch(assetUrl).then(r => r.blob()))
-      if (!blob) throw new Error(`Failed to fetch asset: ${assetUrl.href}`)
+      const [res] = await this.$.utils.safe(fetch(assetUrl))
+      if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
+      const [blob] = await this.$.utils.safe(res.blob())
+      if (!blob) throw new Error(`Failed to fetch: ${assetUrl.href}`)
       assets[path] = blob
     }
 
     // Fetch sources
     const sources: Record<string, string> = {}
-    for (const bundle of manifest.bundles) {
-      for (const path of bundle.files) {
+    for (const target of manifest.targets) {
+      for (const path of target.load) {
         if (path in sources) continue
-        const fileUrl = new URL(path, url)
-        const [text] = await this.$.utils.safe(fetch(fileUrl).then(r => r.text()))
-        if (!text) throw new Error(`Failed to fetch file: ${fileUrl.href}`)
+        const sourceUrl = new URL(path, url).href
+        const [res] = await this.$.utils.safe(fetch(sourceUrl))
+        if (!res?.ok) throw new Error(`Failed to fetch: ${sourceUrl}`)
+        const [text] = await this.$.utils.safe(res.text())
+        if (!text) throw new Error(`Failed to fetch: ${sourceUrl}`)
         sources[path] = text
       }
     }
@@ -89,7 +92,7 @@ export class PkgsInstaller extends $sw.Unit {
   }
 
   private async installFromPack(pack: Pack) {
-    this.log('install from pack', pack)
+    this.log('PACK', pack)
   }
 
   async _install(nameOrData: string | PkgData) {
