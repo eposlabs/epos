@@ -21,13 +21,13 @@ export class PkgsInstaller extends $sw.Unit {
       await this.installByName(input)
     }
 
-    this.broadcastUpdated()
+    this.broadcast('pkgs.updated')
   }
 
   async remove(name: string) {
     await this.$.idb.deleteDatabase(name)
     delete this.$pkgs.map[name]
-    this.broadcastUpdated()
+    this.broadcast('pkgs.updated')
   }
 
   private async installByName(name: string) {
@@ -78,7 +78,7 @@ export class PkgsInstaller extends $sw.Unit {
         if (!res?.ok) throw new Error(`Failed to fetch: ${sourceUrl}`)
         const [text] = await this.$.utils.safe(res.text())
         if (!text) throw new Error(`Failed to fetch: ${sourceUrl}`)
-        sources[path] = text
+        sources[path] = text.trim()
       }
     }
 
@@ -98,8 +98,8 @@ export class PkgsInstaller extends $sw.Unit {
     }
   }
 
-  private broadcastUpdated() {
-    async: this.$.bus.send('pkgs.updated')
-    async: this.$.bus.emit('pkgs.updated')
+  private broadcast(event: string) {
+    async: this.$.bus.send(event)
+    async: this.$.bus.emit(event)
   }
 }

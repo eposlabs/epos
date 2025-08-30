@@ -1,18 +1,15 @@
-import type { Target } from './pkg/pkg-target.sw'
 import type { Fragment } from './pkg/pkg.sw'
 
-export type ActionMap = { [name: string]: string }
+export type ActionMap = { [name: string]: string | true }
 export type FragmentMap = { [name: string]: Fragment }
 
+// TODO: engine.mini
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
   engine = { full: '', mini: '' }
-  installer = new $sw.PkgsInstaller(this)
   loader = new $sw.PkgsLoader(this)
   parser = new $sw.PkgsParser(this)
-
-  install = this.$.utils.link(this.installer, 'install')
-  remove = this.$.utils.link(this.installer, 'remove')
+  installer = new $sw.PkgsInstaller(this)
 
   get list() {
     return Object.values(this.map)
@@ -20,21 +17,19 @@ export class Pkgs extends $sw.Unit {
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('pkgs.matches', this.matches, this)
+    this.$.bus.on('pkgs.test', this.test, this)
     this.$.bus.on('pkgs.getJs', this.getJs, this)
     this.$.bus.on('pkgs.getCss', this.getCss, this)
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pkgs.getActions', this.getActions, this)
     this.$.bus.on('pkgs.getFragments', this.getFragments, this)
-
     this.$.bus.on('pkgs.export', this.export, this)
   }
 
   async init() {
     await this.loader.init()
     this.engine.full = await fetch('/ex.js').then(r => r.text())
-    // this.engine.mini = await fetch('/ex-mini.js').then(r => r.text())
-    await this.restorePkgsFromIdb()
+    await this.restoreFromIdb()
   }
 
   async export(name: string) {
@@ -43,8 +38,8 @@ export class Pkgs extends $sw.Unit {
     return await pkg.exporter.export()
   }
 
-  matches(target: Target) {
-    return this.list.some(pkg => pkg.matches(target))
+  test(uri: string) {
+    return this.list.some(pkg => pkg.test(uri))
   }
 
   getJs(url: string, tabId?: number, busToken?: string) {
@@ -56,7 +51,6 @@ export class Pkgs extends $sw.Unit {
     let engine = ''
     if (!url.startsWith('chrome-extension:')) {
       const hasReact = pkgDefs.some(js => this.hasReact(js))
-      // TODO: add engine.mini
       engine = hasReact ? this.engine.full : this.engine.full
     }
 
@@ -70,17 +64,17 @@ export class Pkgs extends $sw.Unit {
     ].join('\n')
   }
 
-  getCss(url: string) {
+  getCss(uri: string) {
     return this.list
-      .map(p => p.getCss(url))
+      .map(p => p.getCss(uri))
       .filter(Boolean)
       .join('\n')
       .trim()
   }
 
-  getLiteJs(url: string) {
+  getLiteJs(uri: string) {
     return this.list
-      .map(p => p.getLiteJs(url))
+      .map(p => p.getLiteJs(uri))
       .filter(Boolean)
       .join('\n')
       .trim()
@@ -97,12 +91,12 @@ export class Pkgs extends $sw.Unit {
     return actions
   }
 
-  private async getFragments(target: Target) {
+  private async getFragments(uri: string) {
     const fragments: FragmentMap = {}
 
     await Promise.all(
       this.list.map(async pkg => {
-        const fragment = await pkg.getFragment(target)
+        const fragment = await pkg.getFragment(uri)
         if (!fragment) return
         fragments[fragment.name] = fragment
       }),
@@ -111,7 +105,7 @@ export class Pkgs extends $sw.Unit {
     return fragments
   }
 
-  private async restorePkgsFromIdb() {
+  private async restoreFromIdb() {
     const names = await this.$.idb.listDatabases()
     for (const name of names) {
       const pkg = await $sw.Pkg.restore(this, name)

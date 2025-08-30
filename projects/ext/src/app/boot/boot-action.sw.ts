@@ -11,13 +11,13 @@ export class BootAction extends $sw.Unit {
       if (!tab.id) return
 
       // Has popup? -> Open popup
-      if (this.$.pkgs.matches('<popup>')) {
+      if (this.$.pkgs.test('<popup>')) {
         await this.$boot.medium.openPopup(tab.id)
         return
       }
 
       // Has panel? -> Toggle panel
-      if (this.$.pkgs.matches('<panel>')) {
+      if (this.$.pkgs.test('<panel>')) {
         await this.$boot.medium.togglePanel(tab.id)
         return
       }

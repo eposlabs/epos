@@ -238,8 +238,6 @@ export class Paralayer extends $utils.Unit {
   }
 
   private generateSetupContent(allLayers: string[]) {
-    const nocheck = '// @ts-nocheck'
-
     const layers = allLayers.toSorted((layer1, layer2) => {
       if (layer1.length !== layer2.length) return layer1.length - layer2.length
       return layer1.localeCompare(layer2)
@@ -247,19 +245,11 @@ export class Paralayer extends $utils.Unit {
 
     const vars = layers.map(layer => {
       const $layerName = this.getLayerName(layer, '$camel')
+      if (this.options.globalize) return `globalThis.${$layerName} = {}`
       return `const ${$layerName} = {}`
     })
 
-    let globals: string[] = []
-    if (this.options.globalize) {
-      globals = layers.map(layer => {
-        const $layerName = this.getLayerName(layer, '$camel')
-        return `globalThis.${$layerName} = ${$layerName}`
-      })
-      globals.unshift('')
-    }
-
-    return [nocheck, '', ...vars, ...globals, ''].join('\n')
+    return [...vars].join('\n')
   }
 
   private getLayer(path: string) {

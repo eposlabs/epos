@@ -13,7 +13,8 @@ export class BootInjector extends $sw.Unit {
   private injectToTabsOnNavigation() {
     this.$.browser.webNavigation.onCommitted.addListener(async details => {
       const { tabId, frameId, url } = details
-      if (frameId !== 0) return
+      const isMainFrame = frameId === 0
+      if (!isMainFrame) return
       if (url.startsWith('blob:')) return
       if (url.startsWith('chrome:')) return
       if (url.startsWith('devtools:')) return
@@ -24,9 +25,9 @@ export class BootInjector extends $sw.Unit {
     })
   }
 
-  private safeInjectToTab(tab: Tab) {
+  private async safeInjectToTab(tab: Tab) {
     try {
-      return this.injectToTab(tab)
+      await this.injectToTab(tab)
     } catch (error) {
       this.log.error(error)
     }
@@ -50,7 +51,7 @@ export class BootInjector extends $sw.Unit {
   }
 
   private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
-    // Origin is csp-protected? -> Skip
+    // Origin is CSP-protected? -> Skip
     const { origin } = new URL(tab.url)
     if (this.cspProtectedOrigins.has(origin)) return
 
@@ -112,15 +113,10 @@ export class BootInjector extends $sw.Unit {
       const origin = new URL(tab.url).origin
       await this.$.browser.browsingData.remove({ origins: [origin] }, { serviceWorkers: true })
       await this.$.browser.tabs.reload(tab.id)
-      // await this.execute(tab.id, 'MAIN', [], async () => {
-      //   const regs = await navigator.serviceWorker.getRegistrations()
-      //   await Promise.all(regs.map(r => r.unregister()))
-      //   location.reload()
-      // })
     }
 
-    // Already tried and still fails? -> Mark origin as csp-protected.
-    // This can happen if csp is set via meta tag (web.telegram.org).
+    // Already tried and still fails? -> Mark origin as CSP-protected.
+    // This can happen if CSP is set via meta tag (web.telegram.org).
     else {
       const { origin } = new URL(tab.url)
       this.cspFixTabIds.delete(tab.id)
@@ -137,6 +133,7 @@ export class BootInjector extends $sw.Unit {
       func: fn,
       injectImmediately: true,
     })
+
     return result as ReturnType<T>
   }
 }

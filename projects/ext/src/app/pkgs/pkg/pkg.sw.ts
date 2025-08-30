@@ -57,9 +57,10 @@ export class Pkg extends $sw.Unit {
 
   getDefJs(uri: string) {
     const js = this.getCode(uri, { modes: ['normal', 'shadow'], lang: 'js' })
-    if (!js) return ''
-
     const shadowCss = this.getCode(uri, { modes: ['shadow'], lang: 'css' })
+    if (!js && !shadowCss) return ''
+
+    // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
     const layers = [
       ...['$gl', '$cs', '$ex', '$os', '$sw', '$vw'],
       ...['$exOs', '$exSw', '$osVw', '$swVw'],

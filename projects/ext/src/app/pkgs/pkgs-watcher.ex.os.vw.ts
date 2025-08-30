@@ -28,7 +28,7 @@ export class PkgsWatcher extends $exOsVw.Unit {
 
     const actions = await this.$.bus.send<ActionMap>('pkgs.getActions')
     const fragments = await this.$.bus.send<FragmentMap>('pkgs.getFragments', url)
-    const hasPanel = await this.$.bus.send<boolean>('pkgs.matches', '<panel>')
+    const hasPanel = await this.$.bus.send<boolean>('pkgs.test', '<panel>')
 
     const f1 = this.fragments
     const f2 = fragments

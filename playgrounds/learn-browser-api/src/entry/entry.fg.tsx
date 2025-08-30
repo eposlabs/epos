@@ -1,3 +1,4 @@
+import './entry.fg.css'
 import './entry-globals'
 import './entry-units'
 import '../layers/index.gl'

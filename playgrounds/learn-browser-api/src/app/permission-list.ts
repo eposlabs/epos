@@ -1,5 +1,3 @@
-// <all_urls> for files? instead of filter
-
 export const permissionList: chrome.runtime.ManifestPermissions[] = [
   // 'accessibilityFeatures.modify',
   // 'accessibilityFeatures.read',

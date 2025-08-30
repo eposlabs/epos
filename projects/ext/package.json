@@ -27,7 +27,6 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
     "paralayer": "^1.0.0",
-    "rollup-plugin-livereload": "^2.0.5",
     "tailwindcss": "^4.1.12",
     "vite": "^7.1.3",
     "vite-plugin-rebundle": "^1.2.0"

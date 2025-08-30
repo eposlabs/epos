@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 const $cs = {}
 const $ex = {}
 const $gl = {}

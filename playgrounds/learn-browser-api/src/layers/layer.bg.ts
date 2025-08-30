@@ -1,4 +1,4 @@
-import { App, type App as AppType } from '../app/app.bg'
+import { App, type App as AppType } from '../app/app.bg.ts'
 
 Object.assign($bg, {
   App,

@@ -1,2 +1,2 @@
-import 'dropcap/types'
+import '@eposlabs/utils'
 import 'epos'

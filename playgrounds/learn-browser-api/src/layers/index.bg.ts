@@ -1,1 +1,1 @@
-import './layer.bg'
+import './layer.bg.ts'

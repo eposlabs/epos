@@ -1,5 +1,5 @@
-import { App, type App as AppType } from '../app/app.fg'
-import { Permission, type Permission as PermissionType } from '../app/permission/permission.fg'
+import { App, type App as AppType } from '../app/app.fg.tsx'
+import { Permission, type Permission as PermissionType } from '../app/permission/permission.fg.tsx'
 
 Object.assign($fg, {
   App,
