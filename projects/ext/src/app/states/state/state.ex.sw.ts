@@ -5,43 +5,47 @@ export type Location = [DbName, DbStore, DbKey]
 export type Initial = () => Obj
 export type Versioner = Record<number, (state: MObj) => void>
 export type Root = MObj & { ':version'?: number }
-
-/** Supported state values. */
 export type Value = undefined | null | boolean | number | string | Value[] | { [key: string]: Value }
 
-/**
- * #### How Sync Works
- * MobX → Local Yjs → (bus) → Remote Yjs → MobX
- */
+export type Opts = {
+  scope?: string
+  initial?: Initial
+  versioner?: Versioner
+}
+
 export class State extends $exSw.Unit {
   id: string
   root: Root | null = null
-  location: Location
   doc = new this.$.libs.yjs.Doc()
-  bus: ReturnType<typeof this.$.bus.create>
+  bus: $gl.BusApi
+  location: Location
+  scope: string
   initial: Initial | null
   versioner: Versioner | null
 
+  boot = new $exSw.StateBoot(this)
   idb = new $exSw.StateIdb(this)
   node = new $exSw.StateNode(this)
   observer = new $exSw.StateObserver(this)
-  setup = new $exSw.StateSetup(this)
 
-  constructor(parent: $exSw.Unit, location: Location, initial?: Initial, versioner?: Versioner) {
+  static async create(parent: $exSw.Unit, location: Location, opts: Opts) {
+    const state = new $exSw.State(parent, location, opts)
+    await state.boot.init()
+    return state
+  }
+
+  constructor(parent: $exSw.Unit, location: Location, opts: Opts) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
-    this.initial = initial ?? null
-    this.versioner = versioner ?? null
-  }
-
-  async init() {
-    await this.setup.init()
+    this.scope = opts.scope ?? ':default'
+    this.initial = opts.initial ?? null
+    this.versioner = opts.versioner ?? null
   }
 
   async cleanup() {
-    await this.setup.cleanup()
+    await this.boot.cleanup()
   }
 
   transaction(fn: () => void) {

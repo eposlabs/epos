@@ -1,5 +1,7 @@
 export class PkgApiUnit extends $ex.Unit {
-  Unit = this.$.states.units.Unit
-  register = this.$.utils.link(this.$.states.units, 'register')
-  units = () => this.$.states.units.map
+  private $pkg = this.up($ex.Pkg)!
+
+  Unit = this.$.units.Unit
+  register = this.$.units.register.bind(this.$.units, this.$pkg.name)
+  units = () => this.$.units.map[this.$pkg.name] ?? {}
 }

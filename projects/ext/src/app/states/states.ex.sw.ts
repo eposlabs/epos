@@ -3,8 +3,6 @@ import type { Initial, Location, Versioner } from './state/state.ex.sw'
 export class States extends $exSw.Unit {
   map: Record<string, $exSw.State> = {}
   local = new $exSw.StatesLocal(this)
-  units = new $exSw.StatesUnits(this)
-  utils = new $exSw.StatesUtils(this)
   private queue = new this.$.utils.Queue()
 
   get list() {
@@ -37,8 +35,7 @@ export class States extends $exSw.Unit {
     }
 
     // Connect state
-    const state = new $exSw.State(this, location, initial, versioner)
-    await state.init()
+    const state = await $exSw.State.create(this, location, initial, versioner)
     this.map[id] = state
 
     // Mark EX as connected
@@ -94,16 +91,7 @@ export class States extends $exSw.Unit {
     return id in this.map
   }
 
-  // up(target: unknown, check: (cursor: unknown) => boolean) {
-  //   // let cursor = $exSw.StateNode.getOwner(this)
-  //   // while (cursor) {
-  //   //   if (cursor instanceof Ancestor) return cursor
-  //   //   cursor = $exSw.StateNode.getOwner(cursor)
-  //   // }
-  //   // return null
-  // }
-
-  /** Automatically disconnect state if there are no EX connections to it */
+  /** Automatically disconnect state if there are no EX connections to it. */
   private initAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {

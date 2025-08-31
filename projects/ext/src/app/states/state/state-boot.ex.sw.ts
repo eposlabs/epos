@@ -1,6 +1,6 @@
 export type Origin = null | 'remote'
 
-export class StateSetup extends $exSw.Unit {
+export class StateBoot extends $exSw.Unit {
   private $state = this.up($exSw.State)!
   private ready = false
   private missedUpdates: Uint8Array[] = []
@@ -36,7 +36,7 @@ export class StateSetup extends $exSw.Unit {
     }
   }
 
-  /** Listen for remote updates and apply them to Yjs document */
+  /** Listen for remote updates and apply them to Yjs document. */
   private listenForRemoteUpdates() {
     this.$state.bus.on('update', (update: Uint8Array) => {
       if (this.ready) {
@@ -47,7 +47,7 @@ export class StateSetup extends $exSw.Unit {
     })
   }
 
-  /** Load state data and populate root */
+  /** Load state data and populate root. */
   private async initRoot() {
     // EX
     if (this.$.env.is.ex) {
@@ -65,17 +65,15 @@ export class StateSetup extends $exSw.Unit {
       // Read state data from IDB
       const data = await this.$.idb.get<Obj>(...this.$state.location)
 
-      // Create MobX state from IDB data. Yjs document will be filled automatically.
-      this.$state.root = this.$state.doc.transact(() => {
-        return this.$state.node.create(data ?? {})
-      })
+      // Create MobX root state from IDB data. Yjs document will be populated automatically.
+      this.$state.root = this.$state.doc.transact(() => this.$state.node.create(data ?? {}))
 
-      // Serve Yjs document as an update for EX
+      // Serve Yjs document
       this.$state.bus.on('swGetDoc', () => this.$.libs.yjs.encodeStateAsUpdate(this.$state.doc))
     }
   }
 
-  /** Listen for local Yjs updates and broadcast them to other peers */
+  /** Listen for local Yjs updates and broadcast them to other peers. */
   private broadcastLocalUpdates() {
     this.$state.doc.on('update', (update: Uint8Array, origin: Origin) => {
       if (origin === null) {
@@ -96,22 +94,24 @@ export class StateSetup extends $exSw.Unit {
       .sort((v1, v2) => v1 - v2)
 
     this.$state.transaction(() => {
-      // Fresh state? -> Apply initial state and set the latest version
+      // Fresh state?
       if (Object.keys(root).length === 0) {
+        // Apply initial state
         if (initial) {
           const data = initial()
-          const isObject = Object.getPrototypeOf(data) === Object.prototype
-          if (!isObject) throw new Error('State must be a regular object', { cause: data })
-          if ('@' in data) throw new Error('State must not contain "@" key')
+          const isRegularObject = Object.getPrototypeOf(data) === Object.prototype
+          if (!isRegularObject) throw new Error('State must be a regular js object')
+          if ('@' in data) throw new Error(`State must not contain '@' key`)
           Object.assign(root, data)
         }
 
+        // Set the latest version
         if (versions.length > 0) {
           root[':version'] = versions.at(-1)
         }
       }
 
-      // Not fresh? -> Apply versioner
+      // Not fresh state?
       else if (versioner && versions.length > 0) {
         // Start with v0
         root[':version'] ??= 0
@@ -126,7 +126,7 @@ export class StateSetup extends $exSw.Unit {
     })
   }
 
-  /** Apply Yjs updates that were received while state was populated */
+  /** Apply Yjs updates received while the state was populating. */
   private applyMissedUpdates() {
     if (this.missedUpdates.length === 0) return
     this.$state.transaction(() => {

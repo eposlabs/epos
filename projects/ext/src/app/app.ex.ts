@@ -16,6 +16,7 @@ export class App extends $ex.Unit {
   states = new $exSw.States(this)
   tools = new $ex.Tools(this)
   ui = new $ex.Ui(this)
+  units = new $exSw.Units(this)
 
   async init() {
     if (this.env.is.dev) self.$epos = this

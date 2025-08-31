@@ -1,6 +1,7 @@
 {
   "name": "ext",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' vite build --mode development",
     "build": "vite build --mode production",

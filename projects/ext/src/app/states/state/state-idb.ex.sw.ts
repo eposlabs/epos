@@ -19,12 +19,9 @@ export class StateIdb extends $exSw.Unit {
     self.clearTimeout(this.timeout)
 
     // Save to IDB
-    try {
-      const data = this.$.libs.mobx.toJS(this.$state.root)
-      await this.$.idb.set(...this.$state.location, data)
-    } catch (e) {
-      this.log.error('Failed to save state to IndexedDB', e)
-    }
+    const data = this.$.libs.mobx.toJS(this.$state.root)
+    const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.$state.location, data))
+    if (error) this.log.error('Failed to save state to IndexedDB', error)
 
     // Remove saving mark
     this.saving = false
@@ -32,7 +29,7 @@ export class StateIdb extends $exSw.Unit {
     // Pending? -> Save again
     if (this.pending) {
       this.pending = false
-      async: this.save()
+      await this.save()
     }
   }
 

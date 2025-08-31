@@ -6,6 +6,7 @@ export type PkgOpts = {
   tabId: number
 }
 
+// TODO: PkgApi (?)
 export class Pkg extends $ex.Unit {
   name: string
   icon: string | null

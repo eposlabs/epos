@@ -15,6 +15,7 @@ export class App extends $sw.Unit {
   pkgs = new $sw.Pkgs(this)
   states = new $exSw.States(this)
   tools = new $sw.Tools(this)
+  units = new $exSw.Units(this)
 
   async init() {
     self.$ = this
@@ -23,9 +24,9 @@ export class App extends $sw.Unit {
     await this.initContentScript()
     await this.initOffscreen()
     await this.dev.init()
-    self.add = (name: string) => this.pkgs.install(name)
-    self.remove = (name: string) => this.pkgs.remove(name)
-    self.eject = (name: string) => this.pkgs.export(name)
+    self.add = (name: string) => this.pkgs.installer.install(name)
+    self.remove = (name: string) => this.pkgs.installer.remove(name)
+    self.eject = (name: string) => this.pkgs.map[name].exporter.export()
   }
 
   private async initContentScript() {

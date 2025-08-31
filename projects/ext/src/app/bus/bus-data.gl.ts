@@ -176,7 +176,7 @@ export class BusData extends $gl.Unit {
 
     if (this.$.is.object(data)) {
       const object: Record<string, unknown> = {}
-      Object.keys(data).forEach(k => (object[k] = this.populate(data[k], storage)))
+      for (const key in data) object[key] = this.populate(data[key], storage)
       return object
     }
 

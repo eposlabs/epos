@@ -8,9 +8,12 @@ export type ArraySet = Pretty<IArrayWillChange<any>>
 export type ArraySplice = Pretty<IArrayWillSplice<any>>
 export type Change = ObjectSet | ObjectRemove | ArraySet | ArraySplice
 
+/**
+ * #### How Sync Works
+ * MobX → Local Yjs → (bus) → Remote Yjs → MobX
+ */
 export class StateObserver extends $exSw.Unit {
   private $state = this.up($exSw.State)!
-  private $states = this.up($exSw.States)!
   private applyingRemoteChanges = false // Yjs -> MobX
 
   observe(node: MNode, yNode: YNode) {
@@ -78,7 +81,7 @@ export class StateObserver extends $exSw.Unit {
 
     // Attach new value
     const mOwner = c.object
-    const newValue = this.$states.utils.raw(c.newValue)
+    const newValue = this.$state.node.raw(c.newValue)
     c.newValue = this.$state.node.create(newValue, mOwner)
 
     // Detach old value
@@ -113,7 +116,7 @@ export class StateObserver extends $exSw.Unit {
   private processArraySet(c: ArraySet) {
     // Attach new value
     const mOwner = c.object
-    const newValue = this.$states.utils.raw(c.newValue)
+    const newValue = this.$state.node.raw(c.newValue)
     c.newValue = this.$state.node.create(newValue, mOwner)
 
     // Detach old value
@@ -131,7 +134,7 @@ export class StateObserver extends $exSw.Unit {
   private processArraySplice(c: ArraySplice) {
     // Attach added items
     const mOwner = c.object
-    const added = this.$states.utils.raw(c.added)
+    const added = this.$state.node.raw(c.added)
     c.added = added.map(item => this.$state.node.create(item, mOwner))
 
     // Detach removed items

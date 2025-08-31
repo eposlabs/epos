@@ -52,7 +52,7 @@ export class ToolsExt extends $ex.Unit {
   // CALL METHOD
   // ---------------------------------------------------------------------------
 
-  // ℹ️ Do not make this method async, 'runtime.getURL' must be sync
+  // ! Do not make this method async, 'runtime.getURL' must be sync
   private callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
     // Handle special methods
     const getter = [...apiPath, methodName].join('.')

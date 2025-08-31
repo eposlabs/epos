@@ -23,19 +23,13 @@ export class Pkgs extends $sw.Unit {
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pkgs.getActions', this.getActions, this)
     this.$.bus.on('pkgs.getFragments', this.getFragments, this)
-    this.$.bus.on('pkgs.export', this.export, this)
+    // this.$.bus.on('pkgs.export', this.export, this)
   }
 
   async init() {
     await this.loader.init()
     this.engine.full = await fetch('/ex.js').then(r => r.text())
     await this.restoreFromIdb()
-  }
-
-  async export(name: string) {
-    const pkg = this.map[name]
-    if (!pkg) throw new Error(`Package not found: "${name}"`)
-    return await pkg.exporter.export()
   }
 
   test(uri: string) {

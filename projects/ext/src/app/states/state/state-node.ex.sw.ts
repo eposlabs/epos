@@ -23,9 +23,9 @@ export type Meta = {
   unobserve?: () => void
 }
 
+// TODO: see below
 export class StateNode extends $exSw.Unit {
   private $state = this.up($exSw.State)!
-  private $units = this.up($exSw.States)!.units
   static _meta_ = _meta_
   static _keys_ = _keys_
 
@@ -40,25 +40,39 @@ export class StateNode extends $exSw.Unit {
   create<T extends Value>(target: T, owner?: Owner): T
   create<T extends unknown>(target: T, owner?: Owner): never
   create<T>(target: T, owner: Owner = null) {
+    // Create from Yjs map
     if (target instanceof this.$.libs.yjs.Map) {
       return this.createFromYMap(target, owner)
-    } else if (target instanceof this.$.libs.yjs.Array) {
+    }
+
+    // Create from Yjs array
+    if (target instanceof this.$.libs.yjs.Array) {
       return this.createFromYArray(target, owner)
-    } else if (this.$.is.object(target)) {
+    }
+
+    // Create from object
+    if (this.$.is.object(target)) {
       return this.createFromObject(target, owner)
-    } else if (this.$.is.array(target)) {
+    }
+
+    // Create from array
+    if (this.$.is.array(target)) {
       return this.createFromArray(target, owner)
-    } else if (this.isSupportedPrimitive(target)) {
+    }
+
+    // Supported primitive? -> Use as is
+    if (this.isSupportedPrimitive(target)) {
       return target
     }
 
+    // Throw for unsupported types
     const type = Object.prototype.toString.call(target)
     throw new Error(`Unsupported value type: ${type}`)
   }
 
   detach(target: unknown) {
     const meta = this.getMeta(target)
-    const isUnit = this.$units.isUnit(target)
+    const isObservableUnit = this.$.units.isObservableUnit(target)
 
     if (meta) {
       if (!meta.unobserve) throw this.never
@@ -68,18 +82,26 @@ export class StateNode extends $exSw.Unit {
       delete meta.mNode._
       delete meta.yNode._
       delete meta.mNode.__
-      if (isUnit) this.$units.cleanup(target)
+      if (isObservableUnit) this.$.units.cleanup(target)
     }
 
-    if (isUnit) {
-      for (const key of this.$units.getKeys(target)) {
+    // Detach unit
+    if (isObservableUnit) {
+      const keys = this.$.units.getObservableKeys(target)
+      for (const key of keys) {
         this.detach((target as any)[key])
       }
-    } else if (this.$.is.object(target)) {
+    }
+
+    // Detach object
+    else if (this.$.is.object(target)) {
       for (const key in target) {
         this.detach(target[key])
       }
-    } else if (this.$.is.array(target)) {
+    }
+
+    // Detach array
+    else if (this.$.is.array(target)) {
       for (const item of target) {
         this.detach(item)
       }
@@ -92,16 +114,37 @@ export class StateNode extends $exSw.Unit {
     return meta.mNode as T extends YMap ? MNode : MArr
   }
 
-  getYNode<T extends MNode>(node: T) {
-    const meta = this.getMeta(node)
+  getYNode<T extends MNode>(mNode: T) {
+    const meta = this.getMeta(mNode)
     if (!meta) return null
     return meta.yNode as T extends MObj ? YMap : YArr
   }
 
-  getOwner<T extends MNode>(node: T): Owner {
+  getOwner<T extends MNode | YNode>(node: T): Owner {
     const meta = this.getMeta(node)
     if (!meta) return null
     return meta.owner
+  }
+
+  raw<T>(value: T): T {
+    if (this.$.units.isObservableUnit(value)) {
+      const object: Obj = {}
+      const keys = this.$.units.getObservableKeys(value)
+      for (const key of keys) object[key] = this.raw((value as Obj)[key])
+      return object as T
+    }
+
+    if (this.$.is.object(value)) {
+      const object: Obj = {}
+      for (const key in value) object[key] = this.raw(value[key])
+      return object as T
+    }
+
+    if (this.$.is.array(value)) {
+      return value.map(v => this.raw(v)) as T
+    }
+
+    return value
   }
 
   private getMeta(target: any): Meta | null {
@@ -111,16 +154,17 @@ export class StateNode extends $exSw.Unit {
   private createFromYMap(yMap: YMap, owner: Owner = null) {
     // Check if unit
     const spec = yMap.get('@')
-    const isUnit = this.$units.isUnitSpec(spec)
+    const isUnit = this.$.units.isUnitSpec(this.$state.scope, spec)
 
     // Create empty node
-    const mNode = isUnit ? this.createEmptyMobxUnit(spec, [...yMap.keys()]) : this.createEmptyMobxObject()
+    const keys = [...yMap.keys()]
+    const mNode = isUnit ? this.createEmptyMobxUnit(spec, keys) : this.createEmptyMobxObject()
 
     // Attach node
     this.attach(mNode, yMap, owner)
 
     // Fill recursively
-    for (const key of yMap.keys()) {
+    for (const key of keys) {
       mNode[key] = this.create(yMap.get(key), mNode)
     }
 
@@ -156,7 +200,7 @@ export class StateNode extends $exSw.Unit {
   private createFromObject(object: Obj, owner: Owner = null) {
     // Check if unit
     const spec = object['@']
-    const isUnit = this.$units.isUnitSpec(spec)
+    const isUnit = this.$.units.isUnitSpec(this.$state.scope, spec)
 
     // Create empty node
     const mNode = isUnit ? this.createEmptyMobxUnit(spec, Object.keys(object)) : this.createEmptyMobxObject()
@@ -225,17 +269,17 @@ export class StateNode extends $exSw.Unit {
   }
 
   private createEmptyMobxUnit(spec: string, keys: string[]) {
-    const unit = this.$units.createEmptyUnit(spec, keys)
+    const scope = this.$state.scope
+    const unit = this.$.units.createEmptyObservableUnit(scope, spec, keys)
     return unit as unknown as MObj
   }
 
   private setupUnit(unit: MObj) {
-    if (!this.$units.isUnit(unit)) throw this.never
-
-    // Why whenReady? When unit runs versioner, changes should be broadcasted
-    // to other peers, but broadcasting is enabled only after the state is ready.
-    this.$state.setup.whenReady(() => {
-      this.$units.setup(unit)
+    // Why 'when ready'? When unit runs versioner, changes should be broadcasted to other peers,
+    // but broadcasting is enabled only after the state is ready.
+    this.$state.boot.whenReady(() => {
+      if (!this.$.units.isObservableUnit(unit)) throw this.never
+      this.$.units.setup(unit)
     })
   }
 
@@ -258,32 +302,5 @@ export class StateNode extends $exSw.Unit {
     const meta = this.getMeta(mNode)
     if (!meta) throw this.never
     meta.unobserve = this.$state.observer.observe(mNode, meta.yNode)
-  }
-
-  private raw<T>(value: T): T {
-    // Should we check for isObservable here? Probably not, because now __ is attached only to
-    // observable units. Or still yes, because we don't remove __? Should we remove?
-    if (this.$units.isUnit(value)) {
-      const object: Obj = {}
-      const keys = this.$units.getKeys(value)
-      for (const key of keys) {
-        object[key] = this.raw((value as Obj)[key])
-      }
-      return object as T
-    }
-
-    if (this.$.is.object(value)) {
-      const object: Obj = {}
-      for (const key in value) {
-        object[key] = this.raw(value[key])
-      }
-      return object as T
-    }
-
-    if (this.$.is.array(value)) {
-      return value.map(v => this.raw(v)) as T
-    }
-
-    return value
   }
 }
