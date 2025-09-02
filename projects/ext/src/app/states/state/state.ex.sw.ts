@@ -8,9 +8,9 @@ export type Root = MObj & { ':version'?: number }
 export type Value = undefined | null | boolean | number | string | Value[] | { [key: string]: Value }
 
 export type Options = {
-  scope?: string
   initial?: Initial
   versioner?: Versioner
+  unitRegistry?: string
 }
 
 export class State extends $exSw.Unit {
@@ -19,9 +19,9 @@ export class State extends $exSw.Unit {
   doc = new this.$.libs.yjs.Doc()
   bus: $gl.BusApi
   location: Location
-  scope: string
   initial: Initial | null
   versioner: Versioner | null
+  unitRegistry: string
 
   boot = new $exSw.StateBoot(this)
   idb = new $exSw.StateIdb(this)
@@ -39,9 +39,9 @@ export class State extends $exSw.Unit {
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
-    this.scope = options.scope ?? ':default'
     this.initial = options.initial ?? null
     this.versioner = options.versioner ?? null
+    this.unitRegistry = options.unitRegistry ?? ':default'
   }
 
   async cleanup() {

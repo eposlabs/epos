@@ -1,4 +1,4 @@
-export type PkgOpts = {
+export type PkgDeclaration = {
   name: string
   icon: string | null
   title: string | null
@@ -6,23 +6,22 @@ export type PkgOpts = {
   tabId: number
 }
 
-// TODO: PkgApi (?)
 export class Pkg extends $ex.Unit {
   name: string
   icon: string | null
   title: string | null
-  shadowCss: string
   tabId: number
-  declare api: Awaited<ReturnType<Pkg['createApi']>>
+  shadowCss: string
+  declare api: Awaited<ReturnType<$ex.Pkg['createApi']>>
 
-  constructor(parent: $ex.Unit, opts: PkgOpts) {
+  constructor(parent: $ex.Unit, decl: PkgDeclaration) {
     super(parent)
 
-    this.name = opts.name
-    this.icon = opts.icon
-    this.title = opts.title
-    this.shadowCss = opts.shadowCss
-    this.tabId = opts.tabId
+    this.name = decl.name
+    this.icon = decl.icon
+    this.title = decl.title
+    this.tabId = decl.tabId
+    this.shadowCss = decl.shadowCss
     this.api = this.createApi()
 
     // Set title and favicon for hub page

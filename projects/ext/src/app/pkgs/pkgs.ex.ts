@@ -1,4 +1,4 @@
-import type { PkgOpts } from './pkg/pkg.ex'
+import type { PkgDeclaration } from './pkg/pkg.ex'
 
 export class Pkgs extends $ex.Unit {
   map: { [name: string]: $ex.Pkg } = {}
@@ -8,15 +8,15 @@ export class Pkgs extends $ex.Unit {
     await this.initDevHubAutoReload()
   }
 
-  create(opts: PkgOpts) {
-    if (this.map[opts.name]) throw this.never
-    const pkg = new $ex.Pkg(this, opts)
-    this.map[opts.name] = pkg
+  create(decl: PkgDeclaration) {
+    if (this.map[decl.name]) throw this.never
+    const pkg = new $ex.Pkg(this, decl)
+    this.map[decl.name] = pkg
     return pkg
   }
 
   private async initDevHubAutoReload() {
-    if (!this.$.env.is.exTabHubDev) return
+    if (!this.$.env.is.exTabHub) return
     await this.watcher.start(delta => {
       const names = Object.keys(this.map)
       const changed = delta.updated.some(name => names.includes(name))

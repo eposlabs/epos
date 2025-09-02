@@ -8,7 +8,7 @@ export class PkgApiState extends $ex.Unit {
   connect = async (...args: unknown[]) => {
     const [name, initial, versioner] = this.parseConnectArgs(args)
     const location = this.getLocation(name)
-    const state = await this.$.states.connect(location, initial, versioner)
+    const state = await this.$.states.connect(location, { initial, versioner, unitRegistry: name })
     return state
   }
 

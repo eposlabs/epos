@@ -4,12 +4,12 @@
   "targets": [
     {
       "matches": ["<panel>", "<hub>"],
-      "load": ["./dist/fg.js", "./dist/fg.css"],
+      "load": ["./fg.js", "./fg.css"],
       "mode": "shadow"
     },
     {
       "matches": ["<background>"],
-      "load": ["./dist/bg.js"]
+      "load": ["./bg.js"]
     }
   ]
 }

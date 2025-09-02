@@ -81,7 +81,7 @@ export class States extends $exSw.Unit {
       transact = () => state.transaction(() => previous())
     }
 
-    // Each 'state.transaction' is alreadys wrapped in MobX action,
+    // Each 'state.transaction' is already wrapped in MobX action,
     // yet we wrap here again to support non-state observables.
     this.$.libs.mobx.runInAction(() => transact())
   }

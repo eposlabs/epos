@@ -1,2 +1,2 @@
-import '@eposlabs/utils'
+import '@eposlabs/utils/globals'
 import 'epos'

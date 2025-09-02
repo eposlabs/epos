@@ -8,7 +8,7 @@ export const _observableKeys_ = Symbol('observableKeys')
 export type ObservableUnit = Unit & { __observable: true }
 
 export class Units extends $exSw.Unit {
-  map: { [scope: string]: { [name: string]: typeof Unit } } = {}
+  map: { [registry: string]: { [name: string]: typeof Unit } } = {}
   Unit = Unit
 
   static _disposers_ = _disposers_
@@ -19,13 +19,13 @@ export class Units extends $exSw.Unit {
     $ ??= this.$
   }
 
-  register(scope: string, Class: typeof Unit, aliases: string[] = []) {
+  register(registry: string, Class: typeof Unit, aliases: string[] = []) {
     const names = [Class.name, ...aliases]
-    const registry = this.map[scope] ?? {}
-    for (const name of names) registry[name] = Class
+    const classes = this.map[registry] ?? {}
+    for (const name of names) classes[name] = Class
   }
 
-  createEmptyObservableUnit(scope: string, spec: string, keys: string[]) {
+  createEmptyObservableUnit(registry: string, spec: string, keys: string[]) {
     // Create empty unit shape and construct MobX annotations
     const unit: Obj = {}
     const annotations: Record<string, IObservableFactory['ref']> = {}
@@ -41,7 +41,7 @@ export class Units extends $exSw.Unit {
     Reflect.defineProperty(unit, _observableKeys_, { configurable: true, get: () => keys })
 
     // Apply prototype
-    const Class = this.getClass(scope, spec)
+    const Class = this.getClass(registry, spec)
     if (!Class) throw this.never
     Reflect.setPrototypeOf(unit, Class.prototype)
 
@@ -70,16 +70,16 @@ export class Units extends $exSw.Unit {
     if (this.$.is.function(unit.cleanup)) unit.cleanup()
   }
 
-  isUnitSpec(scope: string, spec: unknown): spec is string {
-    const registry = this.map[scope]
-    if (!registry) return false
+  isUnitSpec(registry: string, spec: unknown): spec is string {
+    const classes = this.map[registry]
+    if (!classes) return false
     if (!this.$.is.string(spec)) return false
     const name = this.getSpecName(spec)
-    return name in registry
+    return name in classes
   }
 
   // ---------------------------------------------------------------------------
-  // SETUP
+  // UNIT SETUP
   // ---------------------------------------------------------------------------
 
   private setupUi(unit: ObservableUnit) {
@@ -220,8 +220,9 @@ export class Units extends $exSw.Unit {
   private getClass(registry: string, spec: string) {
     const name = this.getSpecName(spec)
     if (!(registry in this.map)) return null
-    if (!(name in this.map[registry])) return null
-    return this.map[registry][name]
+    const classes = this.map[registry]
+    if (!(name in classes)) return null
+    return classes[name]
   }
 
   private getRoot(unit: ObservableUnit): ObservableUnit | null {
