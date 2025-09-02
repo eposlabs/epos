@@ -176,7 +176,7 @@ export class Rebundle extends $utils.Unit {
     }
 
     // Notify about changed chunks
-    if (changedChunkNames.length > 0) {
+    if (ws && changedChunkNames.length > 0) {
       ws.clients.forEach(client => client.send(JSON.stringify(changedChunkNames)))
     }
   }
@@ -205,6 +205,8 @@ export class Rebundle extends $utils.Unit {
   private async ensureWs() {
     if (this.ws) return this.ws
     if (!this.port) throw this.never
+    if (!this.config) throw this.never
+    if (!this.config.build.watch) return null
     this.ws = new $ws.WebSocketServer({ port: this.port })
     return this.ws
   }

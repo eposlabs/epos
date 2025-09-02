@@ -6,8 +6,6 @@ A Vite plugin that guarantees **one standalone file per entry point**. Each entr
 
 Sometimes you need bundles without dynamic imports. Vite/Rollup don’t provide this option when building with multiple entries. This plugin solves it by rebundling Vite’s output with esbuild to enforce single-file output.
 
-> ℹ️ Useful when targeting environments that require standalone files (e.g., browser extensions, legacy systems, or file-based distribution).
-
 > ⚠️ This plugin runs **only during** `vite build`. It does not affect the Vite dev server.
 
 ## Installation
@@ -38,7 +36,7 @@ export default defineConfig({
 })
 ```
 
-### Options
+## Options
 
 You can provide **esbuild options per entry point**. This is useful, for example, to inject custom define variables into specific bundles:
 
