@@ -6,14 +6,6 @@ import rebundle from 'vite-plugin-rebundle'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => ({
-  resolve: {
-    alias: {
-      'react': 'preact/compat',
-      'react-dom': 'preact/compat',
-      'react/jsx-runtime': 'preact/jsx-runtime',
-    },
-  },
-
   define: define({
     'import.meta.env.DEV': mode === 'development',
     'import.meta.env.PROD': mode !== 'development',

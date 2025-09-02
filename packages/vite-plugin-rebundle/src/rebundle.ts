@@ -1,3 +1,4 @@
+import { filesize } from 'filesize'
 import * as $esbuild from 'esbuild'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
@@ -119,10 +120,12 @@ export class Rebundle extends $utils.Unit {
           if (result.errors.length > 0) return
 
           // Log successful build
+          const { size } = await $fs.stat(chunkPath)
           const _outDir_ = $chalk.dim(`${this.outDir}/`)
           const _fileName_ = $chalk.cyan(chunk.fileName)
-          const _rebundle_ = $chalk.dim.cyan('rebundle')
-          console.log(`${_outDir_}${_fileName_} ${_rebundle_}`)
+          const _rebundle_ = $chalk.dim.cyan('[rebundle]')
+          const _size_ = $chalk.bold.dim(`${filesize(size)}`)
+          console.log(`${_outDir_}${_fileName_} ${_rebundle_} ${_size_}`)
 
           // Mark chunk as changed
           changedChunkNames.push(chunk.name)
@@ -158,12 +161,12 @@ export class Rebundle extends $utils.Unit {
     // Remove all non-entry chunks
     for (const chunk of nonEntryChunks) {
       // Remove chunk
-      await $fs.unlink(this.outPath(chunk.fileName))
+      await $utils.safe($fs.unlink(this.outPath(chunk.fileName)))
       delete bundle[chunk.fileName]
 
       // Remove sourcemap
       if (chunk.sourcemapFileName) {
-        await $fs.unlink(this.outPath(chunk.sourcemapFileName))
+        await $utils.safe($fs.unlink(this.outPath(chunk.sourcemapFileName)))
         delete bundle[chunk.sourcemapFileName]
       }
 
