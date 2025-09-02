@@ -7,7 +7,7 @@ export type Versioner = Record<number, (state: MObj) => void>
 export type Root = MObj & { ':version'?: number }
 export type Value = undefined | null | boolean | number | string | Value[] | { [key: string]: Value }
 
-export type Opts = {
+export type Options = {
   scope?: string
   initial?: Initial
   versioner?: Versioner
@@ -28,20 +28,20 @@ export class State extends $exSw.Unit {
   node = new $exSw.StateNode(this)
   observer = new $exSw.StateObserver(this)
 
-  static async create(parent: $exSw.Unit, location: Location, opts: Opts) {
-    const state = new $exSw.State(parent, location, opts)
+  static async create(parent: $exSw.Unit, location: Location, options: Options) {
+    const state = new $exSw.State(parent, location, options)
     await state.boot.init()
     return state
   }
 
-  constructor(parent: $exSw.Unit, location: Location, opts: Opts) {
+  constructor(parent: $exSw.Unit, location: Location, options: Options) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
-    this.scope = opts.scope ?? ':default'
-    this.initial = opts.initial ?? null
-    this.versioner = opts.versioner ?? null
+    this.scope = options.scope ?? ':default'
+    this.initial = options.initial ?? null
+    this.versioner = options.versioner ?? null
   }
 
   async cleanup() {

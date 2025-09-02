@@ -10,9 +10,9 @@
     "@tailwindcss/vite": "^4.1.12",
     "epos": "^1.6.0",
     "epos-types": "^1.1.0",
-    "paralayer": "^1.0.0",
+    "paralayer": "^1.0.4",
     "tailwindcss": "^4.1.12",
-    "vite": "^7.1.3",
-    "vite-plugin-rebundle": "^1.2.0"
+    "vite": "^7.1.4",
+    "vite-plugin-rebundle": "^1.2.3"
   }
 }

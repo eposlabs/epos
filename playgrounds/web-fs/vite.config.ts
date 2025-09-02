@@ -6,7 +6,8 @@ import rebundle from 'vite-plugin-rebundle'
 import tailwind from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => ({
-  esbuild: {
+  oxc: {
+    jsx: {},
     keepNames: true,
   },
 

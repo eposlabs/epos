@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'rolldown-vite'
 import fs from 'node:fs/promises'
 import paralayer from 'paralayer/vite'
-import react from '@vitejs/plugin-react'
+import preact from '@preact/preset-vite'
 import rebundle from 'vite-plugin-rebundle'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -10,13 +10,8 @@ export default defineConfig(({ mode }) => ({
     alias: {
       'react': 'preact/compat',
       'react-dom': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime',
     },
-  },
-
-  esbuild: {
-    jsxFactory: 'h',
-    jsxFragment: 'Fragment',
-    keepNames: true,
   },
 
   define: define({
@@ -26,8 +21,9 @@ export default defineConfig(({ mode }) => ({
 
   build: {
     watch: mode === 'production' ? null : {},
-    minify: mode !== 'development',
+    minify: mode === 'development' ? false : 'terser',
     sourcemap: mode === 'development',
+    terserOptions: { keep_classnames: true },
     rollupOptions: {
       input: {
         'ex': './src/entry/entry.ex.ts',
@@ -44,7 +40,7 @@ export default defineConfig(({ mode }) => ({
   },
 
   plugins: [
-    react(),
+    preact(),
     tailwindcss(),
 
     paralayer({

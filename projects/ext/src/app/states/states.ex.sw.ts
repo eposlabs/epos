@@ -1,4 +1,4 @@
-import type { Initial, Location, Versioner } from './state/state.ex.sw'
+import type { Location, Options } from './state/state.ex.sw'
 
 export class States extends $exSw.Unit {
   map: Record<string, $exSw.State> = {}
@@ -24,7 +24,7 @@ export class States extends $exSw.Unit {
     }
   }
 
-  async connect(location: Location, initial?: Initial, versioner?: Versioner) {
+  async connect(location: Location, options: Options = {}) {
     // Already connected? -> Return connected state
     const id = location.join('/')
     if (this.map[id]) return this.map[id].root
@@ -35,7 +35,7 @@ export class States extends $exSw.Unit {
     }
 
     // Connect state
-    const state = await $exSw.State.create(this, location, initial, versioner)
+    const state = await $exSw.State.create(this, location, options)
     this.map[id] = state
 
     // Mark EX as connected

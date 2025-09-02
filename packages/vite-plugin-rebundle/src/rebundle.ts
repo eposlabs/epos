@@ -60,7 +60,7 @@ export class Rebundle extends $utils.Unit {
     // Save resolved config
     this.config = config
 
-    // Hide .js files from output logs
+    // Hide .js files from output logs (rollup only, not supported in rolldown)
     const info = this.config.logger.info
     this.config.logger.info = (message, options) => {
       const path = message.split(/\s+/)[0]
@@ -89,6 +89,10 @@ export class Rebundle extends $utils.Unit {
     await Promise.all(
       entryJsChunks.map(async chunk => {
         if (!this.config) throw this.never
+
+        // Delete chunk from bundle to hide log in vite-rolldown.
+        // Call for rollup as well for consistency.
+        delete bundle[chunk.fileName]
 
         const chunkPath = this.outPath(chunk.fileName)
         const chunkBuildOptions = options[chunk.name] ?? {}
