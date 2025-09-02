@@ -43,7 +43,6 @@ export default defineConfig(({ mode }) => ({
     rebundle(async () => {
       const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
       const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
-
       return {
         'ex': {
           sourcemap: false,

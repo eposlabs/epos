@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--inspect' vite build --mode development",
+    "dev": "vite build --mode development",
     "build": "vite build --mode production",
     "preview": "vite build --mode preview",
     "lint": "tsc --noEmit"
@@ -32,6 +32,6 @@
     "rolldown-vite": "^7.1.5",
     "tailwindcss": "^4.1.12",
     "terser": "^5.43.1",
-    "vite-plugin-rebundle": "^1.2.3"
+    "vite-plugin-rebundle": "^1.2.6"
   }
 }

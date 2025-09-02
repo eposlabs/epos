@@ -15,6 +15,6 @@
     "paralayer": "^1.0.4",
     "tailwindcss": "^4.1.12",
     "vite": "^7.1.4",
-    "vite-plugin-rebundle": "^1.2.3"
+    "vite-plugin-rebundle": "^1.2.6"
   }
 }
