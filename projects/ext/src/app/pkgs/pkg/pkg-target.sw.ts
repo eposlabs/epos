@@ -1,4 +1,4 @@
-import type { Mode, Pattern, RefPattern, Target, UrlPattern } from '../pkgs-parser.sw'
+import type { Mode, Pattern, PositivePattern, Target } from '../pkgs-parser.sw'
 
 export class PkgTarget extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
@@ -35,15 +35,15 @@ export class PkgTarget extends $sw.Unit {
     return ok
   }
 
-  private checkPattern(pattern: RefPattern | UrlPattern, url: string): boolean {
+  private checkPattern(pattern: PositivePattern, url: string): boolean {
     const extOrigin = location.origin
 
     if (['<popup>', '<panel>', '<background>'].includes(pattern)) {
       const { origin, searchParams } = new URL(url)
       if (origin !== extOrigin) return false
-      const urlRef = `<${searchParams.get('ref')}>`
-      const urlPkgName = searchParams.get('name')
-      return pattern === urlRef && (!urlPkgName || urlPkgName === this.$pkg.name)
+      const type = `<${searchParams.get('type')}>`
+      const pkgName = searchParams.get('name')
+      return pattern === type && (!pkgName || pkgName === this.$pkg.name)
     }
 
     if (pattern.startsWith('<hub>')) {

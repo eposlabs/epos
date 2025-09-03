@@ -17,7 +17,7 @@ export class Dev extends $sw.Unit {
     if (import.meta.env.PROD) return
 
     chrome.tabs.create({
-      url: this.$.browser.runtime.getURL('/view.html?ref=panel'),
+      url: this.$.browser.runtime.getURL('/view.html?type=panel'),
       active: true,
     })
   }

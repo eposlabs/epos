@@ -1,4 +1,4 @@
-import type { PermissionsResult } from './tools-browser.vw'
+import type { PermissionResult } from './tools-browser.vw'
 
 const _id_ = Symbol('id')
 
@@ -138,27 +138,26 @@ export class ToolsBrowser extends $ex.Unit {
     const alreadyGranted = await api.permissions.contains(opts)
     if (alreadyGranted) return true
 
-    // Prepare permissions url
-    let url = this.$.env.url.view('permissions')
-    url = api.runtime.getURL(url)
+    // Prepare permission url
+    const url = api.runtime.getURL(this.$.env.url.system('permission'))
 
     // Close all permission tabs
     const tabs = await api.tabs.query({ url })
     await Promise.all(tabs.map(tab => tab.id && api.tabs.remove(tab.id)))
 
-    // Create a new 'permissions' tab, and wait till it is ready for requesting
+    // Create new permission tab and wait till it is ready for requesting
     const ready$ = Promise.withResolvers()
-    this.$.bus.on('tools.permissionsReady', () => ready$.resolve(true))
+    this.$.bus.on('tools.permissionTabReady', () => ready$.resolve(true))
     await api.tabs.create({ url, active: false, pinned: true })
     await ready$.promise
-    this.$.bus.off('tools.permissionsReady')
+    this.$.bus.off('tools.permissionTabReady')
 
     // Request permissions
-    const request = this.$.bus.send<PermissionsResult>('tools.requestPermissions', opts)
+    const request = this.$.bus.send<PermissionResult>('tools.requestPermissions', opts)
     const [result, error] = await this.$.utils.safe(request)
 
-    // Close permissions tab
-    await this.$.bus.send('tools.closePermissionsTab')
+    // Close permission tab
+    await this.$.bus.send('tools.closePermissionTab')
 
     // Error? -> Throw
     if (error) throw error

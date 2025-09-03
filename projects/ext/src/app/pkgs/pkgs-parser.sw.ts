@@ -1,9 +1,9 @@
 export type Action = string | true | null
 export type Popup = { width?: number; height?: number } | null
 export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
-export type Pattern = RefPattern | UrlPattern | `!${UrlPattern}`
-export type RefPattern = '<popup>' | '<panel>' | '<background>'
-export type UrlPattern = `<hub>${string}` | string
+export type Pattern = PositivePattern | NegativePattern
+export type PositivePattern = '<popup>' | '<panel>' | '<background>' | `<hub>${string}` | string
+export type NegativePattern = `!<hub>${string}` | `!${string}`
 export type Mode = 'normal' | 'shadow' | 'lite'
 
 export type Manifest = {

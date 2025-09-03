@@ -1,12 +1,12 @@
 /**
  * #### Extension Pages
  * - offscreen - `/offscreen.html`
- * - permissions - `/system.html/?type=permissions`
- * - popup view - `/view.html/?ref=popup&tabId={tabId}`
- * - panel view  - `/view.html/?ref=panel&tabId={tabId}`
- * - popup frame - `/frame.html/?ref=popup&name={pkgName}&tabId={tabId}`
- * - panel frame - `/frame.html/?ref=panel&name={pkgName}&tabId={tabId}`
- * - background frame - `/frame.html/?ref=background&name={pkgName}&tabId={tabId}`
+ * - permission - `/system.html/?type=permission`
+ * - popup view - `/view.html/?type=popup&tabId={tabId}`
+ * - panel view  - `/view.html/?type=panel&tabId={tabId}`
+ * - popup frame - `/frame.html/?type=popup&name={pkgName}&tabId={tabId}`
+ * - panel frame - `/frame.html/?type=panel&name={pkgName}&tabId={tabId}`
+ * - background frame - `/frame.html/?type=background&name={pkgName}&tabId={tabId}`
  */
 export class Env extends $gl.Unit {
   bundle = BUNDLE
@@ -31,16 +31,21 @@ class EnvUrl extends $gl.Unit {
   web = 'https://epos.dev'
   offscreen = '/offscreen.html'
 
-  view(ref: 'popup' | 'panel' | 'permissions', tabId?: string | number) {
-    const q = new URLSearchParams({ ref, ...(tabId && { tabId: String(tabId) }) })
+  view(type: 'popup' | 'panel', tabId?: string | number) {
+    const q = new URLSearchParams({ type, ...(tabId && { tabId: String(tabId) }) })
     return `/view.html?${q}`
   }
 
   frame(name: string) {
-    const ref = this.$env.is.os ? 'background' : this.$env.params.ref
+    const type = this.$env.is.os ? 'background' : this.$env.params.type
     const tabId = this.$env.is.os ? null : this.$env.params.tabId
-    const q = new URLSearchParams({ ref, name, ...(tabId && { tabId }) })
+    const q = new URLSearchParams({ type, name, ...(tabId && { tabId }) })
     return `/frame.html?${q}`
+  }
+
+  system(type: 'permission') {
+    const q = new URLSearchParams({ type })
+    return `/system.html?${q}`
   }
 }
 
@@ -60,10 +65,10 @@ class EnvIs extends $gl.Unit {
   vw = this.$env.bundle === 'vw'
 
   // Variations of vw
-  vwPopup = this.vw && this.$env.params.ref === 'popup'
-  vwPanel = this.vw && this.$env.params.ref === 'panel'
+  vwPopup = this.vw && this.$env.params.type === 'popup'
+  vwPanel = this.vw && this.$env.params.type === 'panel'
   vwShell = this.vwPopup || this.vwPanel
-  vwPermissions = this.vw && this.$env.params.ref === 'permissions'
+  vwPermissions = this.vw && this.$env.params.type === 'permissions'
 
   // Variations of exTab
   exTabHub = this.ex && location.origin === this.$env.url.web
@@ -72,7 +77,7 @@ class EnvIs extends $gl.Unit {
 
   // Variations of exFrame
   exFrame = this.ex && !this.exTab
-  exFramePopup = this.exFrame && this.$env.params.ref === 'popup'
-  exFramePanel = this.exFrame && this.$env.params.ref === 'panel'
-  exFrameBackground = this.exFrame && this.$env.params.ref === 'background'
+  exFramePopup = this.exFrame && this.$env.params.type === 'popup'
+  exFramePanel = this.exFrame && this.$env.params.type === 'panel'
+  exFrameBackground = this.exFrame && this.$env.params.type === 'background'
 }
