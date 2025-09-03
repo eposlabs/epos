@@ -1,5 +1,6 @@
-import { Rebundle, type OptionsInput } from './rebundle.js'
+import { Rebundle, type Options } from './rebundle.js'
 
-export default function rebundle(options: OptionsInput = {}) {
-  return new Rebundle(options).vite
+export default function rebundle(options: Options = {}) {
+  const rb = new Rebundle(options)
+  return rb.vite
 }

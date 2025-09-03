@@ -1,102 +1,98 @@
+import preact from '@preact/preset-vite'
+import tailwindcss from '@tailwindcss/vite'
+import fs from 'node:fs/promises'
+import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
 import copy from 'rollup-plugin-copy'
-import fs from 'node:fs/promises'
-import paralayer from 'paralayer/vite'
-import preact from '@preact/preset-vite'
 import rebundle from 'vite-plugin-rebundle'
-import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(({ mode }) => ({
-  define: define({
-    'import.meta.env.DEV': mode === 'development',
-    'import.meta.env.PROD': mode !== 'development',
-  }),
+export default defineConfig(async ({ mode }) => {
+  const setup = await paralayer({
+    input: './src/app',
+    output: './src/layers',
+    watch: mode !== 'production',
+  })
 
-  build: {
-    watch: mode === 'production' ? null : {},
-    sourcemap: mode === 'development',
-    minify: false,
-    rollupOptions: {
-      input: {
-        'ex': './src/entry/entry.ex.ts', // execution
-        'ex-mini': './src/entry/entry.ex.ts', // execution without react
-        'cs': './src/entry/entry.cs.ts', // content script
-        'os': './src/entry/entry.os.ts', // offscreen
-        'sm': './src/entry/entry.sm.ts', // system
-        'sw': './src/entry/entry.sw.ts', // service worker
-        'vw': './src/entry/entry.vw.ts', // view
-      },
-      output: {
-        entryFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
+  return {
+    define: {
+      'import.meta.env.DEV': JSON.stringify(mode === 'development'),
+      'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
+    },
+
+    build: {
+      watch: mode === 'production' ? null : {},
+      sourcemap: mode === 'development',
+      minify: false,
+      rollupOptions: {
+        input: {
+          'ex': './src/entry/entry.ex.ts', // execution
+          'ex-mini': './src/entry/entry.ex.ts', // execution without react
+          'cs': './src/entry/entry.cs.ts', // content script
+          'os': './src/entry/entry.os.ts', // offscreen
+          'sm': './src/entry/entry.sm.ts', // system
+          'sw': './src/entry/entry.sw.ts', // service worker
+          'vw': './src/entry/entry.vw.ts', // view
+        },
+        output: {
+          entryFileNames: '[name].js',
+          assetFileNames: '[name].[ext]',
+          banner: setup,
+        },
       },
     },
-  },
 
-  plugins: [
-    preact(),
-    tailwindcss(),
+    plugins: [
+      preact(),
+      tailwindcss(),
 
-    copy({
-      targets: [
-        {
-          src: './public/*',
-          dest: './dist',
-        },
-      ],
-    }),
+      copy({
+        targets: [
+          {
+            src: './public/*',
+            dest: './dist',
+          },
+        ],
+      }),
 
-    paralayer({
-      input: './src/app',
-      output: './src/layers',
-    }),
-
-    rebundle(async () => {
-      const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
-      const options = {
-        minify: mode !== 'development',
-        keepNames: true,
-        banner: { js: setup },
-      }
-
-      return {
+      rebundle({
         'ex': {
-          ...options,
-          sourcemap: false,
-          define: define({ BUNDLE: 'ex' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          // sourcemap: false,
+          define: { BUNDLE: JSON.stringify('ex'), esbuildRequire: 'require' },
         },
         'ex-mini': {
-          ...options,
-          sourcemap: false,
-          define: define({ BUNDLE: 'ex-mini' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          // sourcemap: false,
+          define: { BUNDLE: JSON.stringify('ex-mini'), esbuildRequire: 'require' },
         },
         'cs': {
-          ...options,
-          define: define({ BUNDLE: 'cs' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          define: { BUNDLE: JSON.stringify('cs') },
         },
         'os': {
-          ...options,
-          define: define({ BUNDLE: 'os' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          define: { BUNDLE: JSON.stringify('os') },
         },
         'sm': {
-          ...options,
-          define: define({ BUNDLE: 'sm' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          define: { BUNDLE: JSON.stringify('sm') },
         },
         'sw': {
-          ...options,
-          define: define({ BUNDLE: 'sw' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          define: { BUNDLE: JSON.stringify('sw') },
         },
         'vw': {
-          ...options,
-          define: define({ BUNDLE: 'vw' }),
+          minify: mode !== 'development',
+          keepNames: true,
+          define: { BUNDLE: JSON.stringify('vw') },
         },
-      }
-    }),
-  ],
-}))
-
-function define(env: Record<string, any>) {
-  const result: Record<string, string> = {}
-  for (const key in env) result[key] = JSON.stringify(env[key])
-  return result
-}
+      }),
+    ],
+  }
+})

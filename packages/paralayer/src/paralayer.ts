@@ -3,7 +3,6 @@ import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
 import * as $utils from '@eposlabs/utils'
 
-import type { Plugin, ResolvedConfig } from 'vite'
 import type { FSWatcher } from 'chokidar'
 
 export type DirPath = string
@@ -16,6 +15,7 @@ export type File = {
 export type Options = {
   input: DirPath | DirPath[]
   output: DirPath
+  watch?: boolean
   /** Default layer name. If a file name does not have layer tags, default name will be used. */
   default?: string | null
   /** Whether the layer variables should be exposed globally. */
@@ -32,23 +32,13 @@ export class Paralayer extends $utils.Unit {
   private extensions = new Set(['.ts', '.tsx', '.js', '.jsx'])
   private previousLayers: string[] = []
   private watcher: FSWatcher | null = null
-  private viteConfig: ResolvedConfig | null = null
 
   constructor(options: Options) {
     super()
     this.options = options
   }
 
-  get vite(): Plugin {
-    return {
-      name: 'paralayer',
-      enforce: 'pre',
-      configResolved: this.onConfigResolved,
-      buildStart: this.onBuildStart,
-    }
-  }
-
-  start = async ({ watch = false } = {}) => {
+  start = async () => {
     if (this.started) return
     this.started = true
 
@@ -60,20 +50,12 @@ export class Paralayer extends $utils.Unit {
 
     await this.ready$.promise
     await this.queue.run(() => this.build())
-    if (!watch) await this.watcher.close()
+    if (!this.options.watch) await this.watcher.close()
   }
 
-  // ---------------------------------------------------------------------------
-  // VITE HOOKS
-  // ---------------------------------------------------------------------------
-
-  private onConfigResolved = (config: ResolvedConfig) => {
-    this.viteConfig = config
-  }
-
-  private onBuildStart = async () => {
-    if (!this.viteConfig) throw this.never
-    await this.start({ watch: !!this.viteConfig.build.watch })
+  async readSetupJs() {
+    const setupJsPath = $path.join(this.options.output, 'setup.js')
+    return await $fs.readFile(setupJsPath, 'utf-8')
   }
 
   // ---------------------------------------------------------------------------

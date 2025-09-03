@@ -8,6 +8,7 @@ export class App extends $sm.Unit {
   tools = new $sm.Tools(this)
 
   async init() {
+    self.$ = this
     await this.tools.init()
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
   }

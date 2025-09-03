@@ -25,7 +25,7 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
     "@tailwindcss/vite": "^4.1.12",
-    "@types/chrome": "^0.1.4",
+    "@types/chrome": "^0.1.6",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
@@ -33,6 +33,6 @@
     "rolldown-vite": "^7.1.5",
     "rollup-plugin-copy": "^3.5.0",
     "tailwindcss": "^4.1.12",
-    "vite-plugin-rebundle": "^1.2.6"
+    "vite-plugin-rebundle": "^1.2.8"
   }
 }

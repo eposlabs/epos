@@ -17,7 +17,7 @@ export class BootInjector extends $sw.Unit {
 
   async init() {
     this.engine.full = await fetch('/ex.js').then(r => r.text())
-    this.engine.mini = await fetch('/ex.js').then(r => r.text())
+    this.engine.mini = await fetch('/ex-mini.js').then(r => r.text())
   }
 
   private injectToTabsOnNavigation() {

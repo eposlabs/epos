@@ -19,10 +19,8 @@ export type Options = {
   [chunkName: string]: BuildOptions
 }
 
-export type OptionsInput = Options | (() => Options | Promise<Options>)
-
 export class Rebundle extends $utils.Unit {
-  private options: OptionsInput
+  private options: Options
   private config: ResolvedConfig | null = null
   private chunkFiles: Record<string, string> = {}
   private rebundledContent: Record<string, string> = {}
@@ -30,7 +28,7 @@ export class Rebundle extends $utils.Unit {
   private port: number | null = null
   private ws: WebSocketServer | null = null
 
-  constructor(options: OptionsInput) {
+  constructor(options: Options) {
     super()
     this.options = options
   }
@@ -117,9 +115,8 @@ export class Rebundle extends $utils.Unit {
     // Call for rollup as well for consistency.
     delete bundle[chunk.fileName]
 
-    const options = await this.getOptions()
     const chunkPath = this.resolve(chunk.fileName)
-    const chunkBuildOptions = options[chunk.name] ?? {}
+    const chunkBuildOptions = this.options[chunk.name] ?? {}
     const chunkFiles = await this.readChunkFiles(chunk)
     const chunkFilePaths = Object.keys(chunkFiles)
     const chunkChanged = chunkFilePaths.some(path => chunkFiles[path] !== this.chunkFiles[path])
@@ -237,11 +234,6 @@ export class Rebundle extends $utils.Unit {
     if (!this.port) throw this.never
     this.ws = new $ws.WebSocketServer({ port: this.port })
     return this.ws
-  }
-
-  private async getOptions() {
-    if (typeof this.options !== 'function') return this.options
-    return await this.options()
   }
 
   private async removeDirectoryIfEmpty(dir: string) {

@@ -23,6 +23,8 @@ declare global {
     moveBefore(movedNode: Node, referenceNode: Node | null): void
   }
 
+  var esbuildRequire: typeof require
+
   // Global constants injected via vite.config.ts
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
   var EX_MINI: boolean

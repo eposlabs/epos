@@ -1,10 +1,10 @@
 import minimist from 'minimist'
-import { Paralayer } from './paralayer.js'
+import { paralayer } from './index.js'
 
 const argv = minimist(process.argv.slice(2), {
   string: ['default'],
   boolean: ['watch', 'globalize'],
-  default: { default: null, watch: false, globalize: false },
+  default: { watch: false, default: null, globalize: false },
 })
 
 const paths = argv._
@@ -21,13 +21,10 @@ if (!output) {
   process.exit(1)
 }
 
-const paralayer = new Paralayer({
+await paralayer({
   input: input,
   output: output,
-  globalize: argv.globalize,
-  default: argv.default,
-})
-
-await paralayer.start({
   watch: argv.watch,
+  default: argv.default,
+  globalize: argv.globalize,
 })
