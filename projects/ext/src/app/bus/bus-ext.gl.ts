@@ -6,14 +6,14 @@ export type Req = {
   type: typeof REQUEST
   name: string
   argsJson: string
-  origin: 'cs' | 'os' | 'sw' | 'vw'
+  locus: 'service-worker' | 'content-script' | 'ext-page'
 }
 
 export type Interceptor = (sender: chrome.runtime.MessageSender, ...args: any[]) => unknown
 
 export class BusExt extends $gl.Unit {
   private $bus = this.up($gl.Bus)!
-  private supported = this.$bus.is('cs', 'os', 'sw', 'vw')
+  private supported = this.$bus.is('service-worker', 'content-script', 'ext-page')
   private interceptors: { [name: string]: Interceptor } = {}
   static REQUEST = REQUEST
 
@@ -74,10 +74,10 @@ export class BusExt extends $gl.Unit {
       }
 
       let actions = this.$bus.actions.list.filter(a => a.name === req.name)
-      if (req.origin === 'cs') {
+      if (req.locus === 'content-script') {
         const tabId = sender.tab?.id
         if (!tabId) throw this.never
-        actions = actions.filter(a => a.proxy !== `cs-${tabId}`)
+        actions = actions.filter(a => a.proxy !== `content-script-${tabId}`)
       }
 
       if (actions.length > 0) {
@@ -100,7 +100,7 @@ export class BusExt extends $gl.Unit {
       type: REQUEST,
       name: name,
       argsJson: this.$bus.data.serialize(args),
-      origin: this.$bus.origin as Req['origin'],
+      locus: this.$bus.locus as Req['locus'],
     }
   }
 

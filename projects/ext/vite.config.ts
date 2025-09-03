@@ -17,11 +17,12 @@ export default defineConfig(({ mode }) => ({
     minify: false,
     rollupOptions: {
       input: {
-        'ex': './src/entry/entry.ex.ts',
-        'cs': './src/entry/entry.cs.ts',
-        'os': './src/entry/entry.os.ts',
-        'sw': './src/entry/entry.sw.ts',
-        'vw': './src/entry/entry.vw.ts',
+        'ex': './src/entry/entry.ex.ts', // execution
+        'cs': './src/entry/entry.cs.ts', // content script
+        'os': './src/entry/entry.os.ts', // offscreen
+        'sm': './src/entry/entry.sm.ts', // system
+        'sw': './src/entry/entry.sw.ts', // service worker
+        'vw': './src/entry/entry.vw.ts', // view
       },
       output: {
         entryFileNames: '[name].js',
@@ -60,6 +61,10 @@ export default defineConfig(({ mode }) => ({
         'os': {
           ...options,
           define: define({ BUNDLE: 'os' }),
+        },
+        'sm': {
+          ...options,
+          define: define({ BUNDLE: 'sm' }),
         },
         'sw': {
           ...options,

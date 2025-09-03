@@ -18,10 +18,10 @@ export class BusData extends $gl.Unit {
   constructor(parent: $gl.Unit) {
     super(parent)
 
-    if (this.$bus.is('os')) {
-      this.setupOs()
-    } else if (this.$bus.is('sw')) {
-      this.setupSw()
+    if (this.$.env.is.os) {
+      this.setupOffscreen()
+    } else if (this.$bus.is('service-worker')) {
+      this.setupServiceWorker()
     }
   }
 
@@ -54,7 +54,7 @@ export class BusData extends $gl.Unit {
     return JSON.stringify(data, (_, value: unknown) => {
       // Serialize blob
       if (this.$.is.blob(value)) {
-        if (this.$bus.is('sw')) {
+        if (this.$bus.is('service-worker')) {
           const blobId = this.$bus.utils.id()
           this.blobs.set(blobId, value)
           setTimeout(() => this.blobs.delete(blobId), 60_000)
@@ -187,7 +187,7 @@ export class BusData extends $gl.Unit {
     return data
   }
 
-  private setupOs() {
+  private setupOffscreen() {
     const channel = new BroadcastChannel('bus')
 
     channel.addEventListener('message', async e => {
@@ -197,7 +197,7 @@ export class BusData extends $gl.Unit {
     })
   }
 
-  private setupSw() {
+  private setupServiceWorker() {
     const channel = new BroadcastChannel('bus')
 
     this.$bus.ext.intercept('bus.blobIdToObjectUrl', async (_, blobId: string) => {

@@ -2,6 +2,7 @@ const $cs = {}
 const $ex = {}
 const $gl = {}
 const $os = {}
+const $sm = {}
 const $sw = {}
 const $vw = {}
 const $exOs = {}

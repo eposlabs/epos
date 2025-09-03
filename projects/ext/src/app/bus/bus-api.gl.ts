@@ -30,11 +30,11 @@ export class BusApi extends $gl.Unit {
     const fullName = this.toFullName(name)
 
     let result
-    if (this.$bus.is('exFrame')) {
+    if (this.$bus.is('ext-frame')) {
       result = await this.$bus.page.sendToParent(fullName, ...args)
-    } else if (this.$bus.is('exTab')) {
+    } else if (this.$bus.is('injection')) {
       result = await this.$bus.page.send(fullName, ...args)
-    } else if (this.$bus.is('cs', 'os', 'vw', 'sw')) {
+    } else if (this.$bus.is('service-worker', 'content-script', 'ext-page')) {
       result = await this.$bus.utils.pick([
         this.$bus.ext.send(fullName, ...args),
         this.$bus.proxy.call(fullName, ...args),

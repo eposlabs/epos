@@ -1,16 +1,12 @@
-export type Bundle = 'ex' | 'cs' | 'os' | 'vw' | 'sw'
-
-// TODO: permissions view -> system
-
 /**
  * #### Extension Pages
  * - offscreen - `/offscreen.html`
+ * - permissions - `/system.html/?type=permissions`
  * - popup view - `/view.html/?ref=popup&tabId={tabId}`
  * - panel view  - `/view.html/?ref=panel&tabId={tabId}`
  * - popup frame - `/frame.html/?ref=popup&name={pkgName}&tabId={tabId}`
  * - panel frame - `/frame.html/?ref=panel&name={pkgName}&tabId={tabId}`
  * - background frame - `/frame.html/?ref=background&name={pkgName}&tabId={tabId}`
- * - permissions view - `/view.html/?ref=permissions`
  */
 export class Env extends $gl.Unit {
   bundle = BUNDLE
@@ -59,6 +55,7 @@ class EnvIs extends $gl.Unit {
   cs = this.$env.bundle === 'cs'
   ex = this.$env.bundle === 'ex'
   os = this.$env.bundle === 'os'
+  sm = this.$env.bundle === 'sm'
   sw = this.$env.bundle === 'sw'
   vw = this.$env.bundle === 'vw'
 

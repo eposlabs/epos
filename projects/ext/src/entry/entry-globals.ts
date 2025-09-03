@@ -24,7 +24,7 @@ declare global {
   }
 
   // Global constants injected via vite.config.ts
-  var BUNDLE: 'ex' | 'cs' | 'os' | 'vw' | 'sw'
+  var BUNDLE: 'cs' | 'ex' | 'os' | 'sm' | 'sw' | 'vw'
   var EX_MINI: boolean
 
   // App instance for CS, OS, SW and VW

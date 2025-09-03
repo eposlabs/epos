@@ -2,8 +2,9 @@ import { Unit } from '@eposlabs/utils'
 
 class UnitCs extends Unit<$cs.App> {}
 class UnitEx extends Unit<$ex.App> {}
-class UnitGl extends Unit<$cs.App | $ex.App | $os.App | $sw.App | $vw.App> {}
+class UnitGl extends Unit<$cs.App | $ex.App | $os.App | $sm.App | $sw.App | $vw.App> {}
 class UnitOs extends Unit<$os.App> {}
+class UnitSm extends Unit<$sm.App> {}
 class UnitSw extends Unit<$sw.App> {}
 class UnitVw extends Unit<$vw.App> {}
 class UnitExOs extends Unit<$ex.App | $os.App> {}
@@ -17,6 +18,7 @@ $cs.Unit = UnitCs
 $ex.Unit = UnitEx
 $gl.Unit = UnitGl
 $os.Unit = UnitOs
+$sm.Unit = UnitSm
 $sw.Unit = UnitSw
 $vw.Unit = UnitVw
 $exOs.Unit = UnitExOs
@@ -32,6 +34,7 @@ declare global {
   interface $Ex { Unit: typeof UnitEx }
   interface $Gl { Unit: typeof UnitGl }
   interface $Os { Unit: typeof UnitOs }
+  interface $Sm { Unit: typeof UnitSm }
   interface $Sw { Unit: typeof UnitSw }
   interface $Vw { Unit: typeof UnitVw }
   interface $ExOs { Unit: typeof UnitExOs }
@@ -45,6 +48,7 @@ declare global {
   namespace $ex { export type Unit = UnitEx }
   namespace $gl { export type Unit = UnitGl }
   namespace $os { export type Unit = UnitOs }
+  namespace $sm { export type Unit = UnitSm }
   namespace $sw { export type Unit = UnitSw }
   namespace $vw { export type Unit = UnitVw }
   namespace $exOs { export type Unit = UnitExOs }

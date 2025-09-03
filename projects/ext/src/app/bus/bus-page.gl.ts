@@ -12,7 +12,7 @@ export type Req = {
   args: unknown[]
   token: string | null
   frame: Frame | null
-  origin: 'exFrame' | 'exTab' | 'cs' | 'os' | 'vw'
+  locus: 'content-script' | 'ext-page' | 'ext-frame' | 'injection'
 }
 
 export type Res = {
@@ -25,10 +25,10 @@ export type Interceptor = (frame: Frame | null, ...args: any[]) => unknown
 
 export class BusPage extends $gl.Unit {
   private $bus = this.up($gl.Bus)!
-  private frame = this.$bus.origin === 'exFrame' ? self.name : null
-  private supported = this.$bus.is('exFrame', 'exTab', 'cs', 'os', 'vw')
+  private frame = this.$bus.locus === 'ext-frame' ? self.name : null
+  private supported = this.$bus.is('content-script', 'ext-page', 'ext-frame', 'injection')
   private interceptors: { [name: string]: Interceptor } = {}
-  /** Requires for secure EX_TAB <-> CS communication */
+  /** Requires for secure [injection] <-> [content-script] communication */
   private token: string | null = null
   static REQUEST = REQUEST
   static RESPONSE = RESPONSE
@@ -88,9 +88,9 @@ export class BusPage extends $gl.Unit {
   }
 
   private setupToken() {
-    if (this.$bus.is('cs')) {
+    if (this.$bus.is('content-script')) {
       this.token = crypto.randomUUID()
-    } else if (this.$bus.is('exTab')) {
+    } else if (this.$bus.is('injection')) {
       this.token = self.__epos.busToken
     } else {
       this.token = null
@@ -103,7 +103,7 @@ export class BusPage extends $gl.Unit {
       if (!isReq) return
       const req = e.data as Req
 
-      if (req.origin === this.$bus.origin) return
+      if (req.locus === this.$bus.locus) return
       if (this.token !== req.token) throw new Error('Invalid token')
 
       const interceptor = this.interceptors[req.name]
@@ -114,12 +114,12 @@ export class BusPage extends $gl.Unit {
       }
 
       let actions = this.$bus.actions.list.filter(a => a.name === req.name)
-      if (req.origin === 'exFrame') {
-        actions = actions.filter(h => h.proxy !== `exFrame-${req.frame}`)
+      if (req.locus === 'ext-frame') {
+        actions = actions.filter(h => h.proxy !== `ext-frame-${req.frame}`)
       }
 
       const promises = actions.map(async action => action.fn.call(action.this, ...req.args))
-      if (this.$bus.is('cs', 'os', 'vw')) {
+      if (this.$bus.is('content-script', 'ext-page')) {
         promises.push(this.$bus.ext.send(req.name, ...req.args))
       }
 
@@ -131,11 +131,11 @@ export class BusPage extends $gl.Unit {
   private respond(req: Req, result: unknown) {
     const res = this.createRes(req.id, result)
 
-    if (this.$bus.is('exFrame')) {
+    if (this.$bus.is('ext-frame')) {
       window.parent.postMessage(res, '*')
-    } else if (this.$bus.is('exTab', 'cs')) {
+    } else if (this.$bus.is('injection', 'content-script')) {
       window.postMessage(res, '*')
-    } else if (this.$bus.is('os', 'vw')) {
+    } else if (this.$bus.is('ext-page')) {
       const selector = `iframe[name="${req.frame}"]`
       const iframe = document.querySelector<HTMLIFrameElement>(selector)
       if (!iframe) return
@@ -154,7 +154,7 @@ export class BusPage extends $gl.Unit {
       args: this.$bus.data.sanitize(args) as unknown[],
       token: this.token,
       frame: this.frame,
-      origin: this.$bus.origin as Req['origin'],
+      locus: this.$bus.locus as Req['locus'],
     }
   }
 

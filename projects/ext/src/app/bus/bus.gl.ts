@@ -1,10 +1,10 @@
 export type Frame = string
 export type TabId = number
-export type Origin = 'exFrame' | 'exTab' | 'cs' | 'os' | 'sw' | 'vw'
-export type ProxyChild = `exFrame-${Frame}` | 'exTab' | `cs-${TabId}`
+export type Locus = 'service-worker' | 'content-script' | 'ext-page' | 'ext-frame' | 'injection'
+export type ProxyChild = `content-script-${TabId}` | `ext-frame-${Frame}` | 'injection'
 
 export class Bus extends $gl.Unit {
-  origin = this.getOrigin()
+  locus = this.getLocus()
   utils = new $gl.BusUtils(this)
   ext = new $gl.BusExt(this)
   page = new $gl.BusPage(this)
@@ -29,17 +29,16 @@ export class Bus extends $gl.Unit {
     return this.page.getToken()
   }
 
-  is(...origins: Origin[]) {
-    return origins.includes(this.origin)
+  is(...loci: Locus[]) {
+    return loci.includes(this.locus)
   }
 
-  private getOrigin(): Origin {
-    if (this.$.env.is.exTab) return 'exTab'
-    if (this.$.env.is.exFrame) return 'exFrame'
-    if (this.$.env.is.cs) return 'cs'
-    if (this.$.env.is.os) return 'os'
-    if (this.$.env.is.sw) return 'sw'
-    if (this.$.env.is.vw) return 'vw'
+  private getLocus(): Locus {
+    if (this.$.env.is.sw) return 'service-worker'
+    if (this.$.env.is.cs) return 'content-script'
+    if (this.$.env.is.exTab) return 'injection'
+    if (this.$.env.is.exFrame) return 'ext-frame'
+    if (this.$.env.is.os || this.$.env.is.vw || this.$.env.is.sm) return 'ext-page'
     throw this.never
   }
 }

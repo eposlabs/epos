@@ -5,7 +5,7 @@
   "action": true,
   "targets": [
     {
-      "matches": ["<hub>", "https://inssist.com/*"],
+      "matches": ["<hub>", "https://inssist.com/*", "<panel>"],
       "load": ["./fg.js", "./fg.css"],
       "mode": "shadow"
     }
