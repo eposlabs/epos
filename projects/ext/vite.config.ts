@@ -1,6 +1,5 @@
 import preact from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import fs from 'node:fs/promises'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
 import copy from 'rollup-plugin-copy'
@@ -36,7 +35,9 @@ export default defineConfig(async ({ mode }) => {
         output: {
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
-          banner: setup,
+        },
+        experimental: {
+          strictExecutionOrder: true,
         },
       },
     },
@@ -58,38 +59,45 @@ export default defineConfig(async ({ mode }) => {
         'ex': {
           minify: mode !== 'development',
           keepNames: true,
-          // sourcemap: false,
+          sourcemap: false,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('ex'), esbuildRequire: 'require' },
         },
         'ex-mini': {
           minify: mode !== 'development',
           keepNames: true,
-          // sourcemap: false,
+          sourcemap: false,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('ex-mini'), esbuildRequire: 'require' },
         },
         'cs': {
           minify: mode !== 'development',
           keepNames: true,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('cs') },
         },
         'os': {
           minify: mode !== 'development',
           keepNames: true,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('os') },
         },
         'sm': {
           minify: mode !== 'development',
           keepNames: true,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('sm') },
         },
         'sw': {
           minify: mode !== 'development',
           keepNames: true,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('sw') },
         },
         'vw': {
           minify: mode !== 'development',
           keepNames: true,
+          banner: { js: setup },
           define: { BUNDLE: JSON.stringify('vw') },
         },
       }),

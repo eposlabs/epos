@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -22,10 +22,6 @@
     ".": {
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./vite": {
-      "default": "./dist/vite.js",
-      "types": "./dist/vite.d.ts"
     }
   },
   "files": [
@@ -33,7 +29,7 @@
     "bin.js"
   ],
   "dependencies": {
-    "chalk": "^5.6.0",
+    "@eposlabs/utils": "^1.0.0",
     "chokidar": "^4.0.3",
     "minimist": "^1.2.8"
   },

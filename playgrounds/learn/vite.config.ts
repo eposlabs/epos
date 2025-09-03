@@ -1,49 +1,51 @@
-import { defineConfig } from 'vite'
-import copy from 'rollup-plugin-copy'
-import epos from 'epos/vite'
-import fs from 'node:fs/promises'
-import paralayer from 'paralayer/vite'
-import rebundle from 'vite-plugin-rebundle'
 import tailwindcss from '@tailwindcss/vite'
+import epos from 'epos/vite'
+import { paralayer } from 'paralayer'
+import { defineConfig } from 'rolldown-vite'
+import copy from 'rollup-plugin-copy'
+import rebundle from 'vite-plugin-rebundle'
 
-export default defineConfig(({ mode }) => ({
-  build: {
-    watch: mode === 'production' ? null : {},
-    sourcemap: mode === 'development',
-    minify: false,
-    rollupOptions: {
-      input: {
-        'fg': './src/entry/entry.fg.tsx',
-        'bg': './src/entry/entry.bg.ts',
-      },
-      output: {
-        entryFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
+export default defineConfig(async ({ mode }) => {
+  const setup = await paralayer({
+    input: './src/app',
+    output: './src/layers',
+    watch: mode !== 'production',
+  })
+
+  return {
+    build: {
+      watch: mode === 'production' ? null : {},
+      sourcemap: mode === 'development',
+      minify: false,
+      rolldownOptions: {
+        input: {
+          'fg': './src/entry/entry.fg.tsx',
+          'bg': './src/entry/entry.bg.ts',
+        },
+        output: {
+          entryFileNames: '[name].js',
+          assetFileNames: '[name].[ext]',
+        },
+        experimental: {
+          strictExecutionOrder: true,
+        },
       },
     },
-  },
 
-  plugins: [
-    epos(),
-    tailwindcss(),
+    plugins: [
+      epos(),
+      tailwindcss(),
 
-    copy({
-      targets: [
-        {
-          src: './public/*',
-          dest: './dist',
-        },
-      ],
-    }),
+      copy({
+        targets: [
+          {
+            src: './public/*',
+            dest: './dist',
+          },
+        ],
+      }),
 
-    paralayer({
-      input: './src/app',
-      output: './src/layers',
-    }),
-
-    rebundle(async () => {
-      const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
-      return {
+      rebundle({
         'fg': {
           keepNames: true,
           minify: mode !== 'development',
@@ -54,7 +56,7 @@ export default defineConfig(({ mode }) => ({
           minify: mode !== 'development',
           banner: { js: setup },
         },
-      }
-    }),
-  ],
-}))
+      }),
+    ],
+  }
+})
