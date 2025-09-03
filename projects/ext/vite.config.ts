@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         'ex': './src/entry/entry.ex.ts', // execution
+        'ex-mini': './src/entry/entry.ex.ts', // execution without react
         'cs': './src/entry/entry.cs.ts', // content script
         'os': './src/entry/entry.os.ts', // offscreen
         'sm': './src/entry/entry.sm.ts', // system
@@ -62,7 +63,12 @@ export default defineConfig(({ mode }) => ({
         'ex': {
           ...options,
           sourcemap: false,
-          define: define({ BUNDLE: 'ex', EX_MINI: false }),
+          define: define({ BUNDLE: 'ex' }),
+        },
+        'ex-mini': {
+          ...options,
+          sourcemap: false,
+          define: define({ BUNDLE: 'ex-mini' }),
         },
         'cs': {
           ...options,

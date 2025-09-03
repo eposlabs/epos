@@ -12,6 +12,9 @@ import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
 import type { WebSocketServer } from 'ws'
 
+export const _code_ = Symbol('rebundle:code')
+export const _sourcemap_ = Symbol('rebundle:sourcemap')
+
 export type Options = {
   [chunkName: string]: BuildOptions
 }
@@ -45,7 +48,7 @@ export class Rebundle extends $utils.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // HOOKS
+  // VITE HOOKS
   // ---------------------------------------------------------------------------
 
   private onConfig = async () => {
@@ -61,7 +64,7 @@ export class Rebundle extends $utils.Unit {
     // Save resolved config
     this.config = config
 
-    // Hide .js files from output logs (rollup only, not supported in rolldown)
+    // Hide js files from output logs (rollup only, not supported in rolldown)
     const info = this.config.logger.info
     this.config.logger.info = (message, options) => {
       const path = message.split(/\s+/)[0]
@@ -76,136 +79,162 @@ export class Rebundle extends $utils.Unit {
 
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
     if (this.hasError) return
+    if (!this.config) throw this.never
 
-    const ws = await this.ensureWs()
-    const options = await this.getOptions()
-    const changedChunkNames: string[] = []
+    const chunks = Object.values(bundle).filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
+    const entryChunks = chunks.filter(chunk => chunk.isEntry)
+    const nonEntryChunks = chunks.filter(chunk => !chunk.isEntry)
 
-    // Get entry js chunks
-    const entryJsChunks = Object.values(bundle)
-      .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
-      .filter(chunk => chunk.isEntry && $path.extname(chunk.fileName) === '.js')
-
-    // Rebundle entry js chunks with esbuild
+    // Rebundle entry chunks
+    const modifiedChunkNames: string[] = []
     await Promise.all(
-      entryJsChunks.map(async chunk => {
-        if (!this.config) throw this.never
-
-        // Delete chunk from bundle to hide log in vite-rolldown.
-        // Call for rollup as well for consistency.
-        delete bundle[chunk.fileName]
-
-        const chunkPath = this.outPath(chunk.fileName)
-        const chunkBuildOptions = options[chunk.name] ?? {}
-        const chunkFiles = await this.readChunkFiles(chunk)
-        const chunkFilePaths = Object.keys(chunkFiles)
-        const chunkChanged = chunkFilePaths.some(path => chunkFiles[path] !== this.chunkFiles[path])
-
-        // Update files cache
-        Object.assign(this.chunkFiles, chunkFiles)
-
-        // Modified? -> Rebundle
-        if (chunkChanged) {
-          // Build with esbuild
-          const result = await $esbuild.build({
-            sourcemap: Boolean(this.config.build.sourcemap),
-            ...chunkBuildOptions,
-            outfile: chunkPath,
-            entryPoints: [chunkPath],
-            bundle: true,
-            allowOverwrite: true,
-          })
-
-          if (result.errors.length > 0) return
-
-          // Log successful build
-          const { size } = await $fs.stat(chunkPath)
-          const _outDir_ = $chalk.dim(`${this.outDir}/`)
-          const _fileName_ = $chalk.cyan(chunk.fileName)
-          const _rebundle_ = $chalk.dim.cyan('[rebundle]')
-          const _size_ = $chalk.bold.dim(`${filesize(size)}`)
-          console.log(`${_outDir_}${_fileName_} ${_rebundle_} ${_size_}`)
-
-          // Mark chunk as changed
-          changedChunkNames.push(chunk.name)
-
-          // Save chunk content
-          this.rebundledContent[chunk.fileName] = await this.outRead(chunk.fileName)
-
-          // Save sourcemap content
-          if (chunk.sourcemapFileName) {
-            this.rebundledContent[chunk.sourcemapFileName] = await this.outRead(chunk.sourcemapFileName)
-          }
-        }
-
-        // Overwrite chunk
-        await this.outWrite(chunk.fileName, this.rebundledContent[chunk.fileName])
-        chunk.code = this.rebundledContent[chunk.fileName]
-
-        // Overwrite sourcemap
-        if (chunk.sourcemapFileName) {
-          const sourcemapAsset = bundle[chunk.sourcemapFileName]
-          if (sourcemapAsset.type !== 'asset') throw this.never
-          await this.outWrite(chunk.sourcemapFileName, this.rebundledContent[chunk.sourcemapFileName])
-          sourcemapAsset.source = this.rebundledContent[chunk.sourcemapFileName]
-        }
+      entryChunks.map(async chunk => {
+        const modified = await this.rebundleChunk(chunk, bundle)
+        if (modified) modifiedChunkNames.push(chunk.name)
       }),
     )
 
-    // Get non-entry chunks (.js, .js.map)
-    const nonEntryChunks = Object.values(bundle)
-      .filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
-      .filter(chunk => !chunk.isEntry)
-
-    // Remove all non-entry chunks
+    // Remove non-entry chunks
     for (const chunk of nonEntryChunks) {
-      // Remove chunk
-      await $utils.safe($fs.unlink(this.outPath(chunk.fileName)))
-      delete bundle[chunk.fileName]
+      await this.removeChunk(chunk, bundle)
+    }
 
-      // Remove sourcemap
+    // Notify about modified chunks
+    if (this.config.build.watch && modifiedChunkNames.length > 0) {
+      const ws = await this.ensureWs()
+      ws.clients.forEach(client => client.send(JSON.stringify(modifiedChunkNames)))
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // CHUNK METHODS
+  // ---------------------------------------------------------------------------
+
+  async rebundleChunk(chunk: OutputChunk, bundle: OutputBundle) {
+    if (!this.config) throw this.never
+
+    // Delete chunk from bundle to hide log for vite-rolldown.
+    // Call for rollup as well for consistency.
+    delete bundle[chunk.fileName]
+
+    const options = await this.getOptions()
+    const chunkPath = this.resolve(chunk.fileName)
+    const chunkBuildOptions = options[chunk.name] ?? {}
+    const chunkFiles = await this.readChunkFiles(chunk)
+    const chunkFilePaths = Object.keys(chunkFiles)
+    const chunkChanged = chunkFilePaths.some(path => chunkFiles[path] !== this.chunkFiles[path])
+
+    // Update files cache
+    Object.assign(this.chunkFiles, chunkFiles)
+
+    // Not modified? -> Use pervious content
+    if (!chunkChanged) {
+      // Overwrite vite's code
+      const code = this.rebundledContent[chunk.fileName]
+      await this.write(chunk.fileName, code)
+
+      // Overwrite vite's sourcemap
       if (chunk.sourcemapFileName) {
-        await $utils.safe($fs.unlink(this.outPath(chunk.sourcemapFileName)))
-        delete bundle[chunk.sourcemapFileName]
+        const sourcemap = this.rebundledContent[chunk.sourcemapFileName]
+        if (sourcemap) await this.write(chunk.sourcemapFileName, sourcemap)
       }
 
-      // Remove containing directory if empty (recursively)
-      const dir = $path.dirname(this.outPath(chunk.fileName))
-      await this.removeDirectoryIfEmpty(dir)
+      return false
     }
 
-    // Notify about changed chunks
-    if (ws && changedChunkNames.length > 0) {
-      ws.clients.forEach(client => client.send(JSON.stringify(changedChunkNames)))
+    // Build with esbuild
+    const result = await $esbuild.build({
+      sourcemap: Boolean(this.config.build.sourcemap),
+      ...chunkBuildOptions,
+      outfile: chunkPath,
+      entryPoints: [chunkPath],
+      bundle: true,
+      allowOverwrite: true,
+    })
+
+    // Errors? -> Ignore, esbuild will show errors in console
+    if (result.errors.length > 0) return
+
+    // Log successful build
+    const { size } = await $fs.stat(chunkPath)
+    const _dist_ = $chalk.dim(`${this.dist}/`)
+    const _fileName_ = $chalk.cyan(chunk.fileName)
+    const _rebundle_ = $chalk.dim.cyan('[rebundle]')
+    const _size_ = $chalk.bold.dim(`${filesize(size)}`)
+    console.log(`${_dist_}${_fileName_} ${_rebundle_} ${_size_}`)
+
+    // Save code
+    const code = await this.read(chunk.fileName)
+    if (!code) throw this.never
+    this.rebundledContent[chunk.fileName] = code
+
+    // Save sourcemap
+    if (chunk.sourcemapFileName) {
+      const sourcemap = await this.read(chunk.sourcemapFileName)
+      if (sourcemap) this.rebundledContent[chunk.sourcemapFileName] = sourcemap
     }
+
+    return true
+  }
+
+  private async removeChunk(chunk: OutputChunk, bundle: OutputBundle) {
+    await this.remove(chunk.fileName)
+    delete bundle[chunk.fileName]
+
+    if (chunk.sourcemapFileName) {
+      await this.remove(chunk.sourcemapFileName)
+      delete bundle[chunk.sourcemapFileName]
+    }
+
+    // Recursively remove containing directory if empty
+    const dir = $path.dirname(this.resolve(chunk.fileName))
+    await this.removeDirectoryIfEmpty(dir)
+  }
+
+  private async readChunkFiles(chunk: OutputChunk) {
+    const files: Record<string, string> = {}
+    const usedPaths = [chunk.fileName, ...chunk.imports]
+
+    await Promise.all(
+      usedPaths.map(async path => {
+        const content = await this.read(path)
+        if (!content) throw this.never
+        files[path] = content
+      }),
+    )
+
+    return files
   }
 
   // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private get outDir() {
+  private get dist() {
     if (!this.config) throw this.never
     return this.config.build.outDir
   }
 
-  private outPath(path: string) {
-    return $path.join(this.outDir, path)
+  private resolve(path: string) {
+    return $path.join(this.dist, path)
   }
 
-  private async outRead(path: string) {
-    return await $fs.readFile(this.outPath(path), 'utf-8')
+  private async read(path: string) {
+    const [content] = await $utils.safe($fs.readFile(this.resolve(path), 'utf-8'))
+    return content
   }
 
-  private async outWrite(path: string, content: string) {
-    await $fs.writeFile(this.outPath(path), content, 'utf-8')
+  private async write(path: string, content: string) {
+    await $fs.writeFile(this.resolve(path), content, 'utf-8')
+  }
+
+  private async remove(path: string) {
+    await $utils.safe($fs.unlink(this.resolve(path)))
   }
 
   private async ensureWs() {
     if (this.ws) return this.ws
     if (!this.port) throw this.never
-    if (!this.config) throw this.never
-    if (!this.config.build.watch) return null
     this.ws = new $ws.WebSocketServer({ port: this.port })
     return this.ws
   }
@@ -213,18 +242,6 @@ export class Rebundle extends $utils.Unit {
   private async getOptions() {
     if (typeof this.options !== 'function') return this.options
     return await this.options()
-  }
-
-  private async readChunkFiles(chunk: OutputChunk) {
-    const files: Record<string, string> = {}
-
-    await Promise.all(
-      [chunk.fileName, ...chunk.imports].map(async path => {
-        files[path] = await this.outRead(path)
-      }),
-    )
-
-    return files
   }
 
   private async removeDirectoryIfEmpty(dir: string) {

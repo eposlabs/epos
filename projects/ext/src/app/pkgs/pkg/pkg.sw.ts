@@ -75,7 +75,7 @@ export class Pkg extends $sw.Unit {
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
     const layers = [
-      ...['$gl', '$cs', '$ex', '$os', '$sw', '$vw'],
+      ...['$gl', '$cs', '$ex', '$os', '$sm', '$sw', '$vw'],
       ...['$exOs', '$exSw', '$osVw', '$swVw'],
       ...['$exOsVw', '$exOsSwVw'],
     ]

@@ -58,7 +58,7 @@ class EnvIs extends $gl.Unit {
 
   // Bundle
   cs = this.$env.bundle === 'cs'
-  ex = this.$env.bundle === 'ex'
+  ex = this.$env.bundle === 'ex' || this.$env.bundle === 'ex-mini'
   os = this.$env.bundle === 'os'
   sm = this.$env.bundle === 'sm'
   sw = this.$env.bundle === 'sw'
