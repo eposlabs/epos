@@ -113,7 +113,6 @@ export class Rebundle extends $utils.Unit {
             outfile: chunkPath,
             entryPoints: [chunkPath],
             bundle: true,
-            minify: false,
             allowOverwrite: true,
           })
 

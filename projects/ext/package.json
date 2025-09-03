@@ -32,7 +32,6 @@
     "paralayer": "^1.0.4",
     "rolldown-vite": "^7.1.5",
     "tailwindcss": "^4.1.12",
-    "terser": "^5.44.0",
     "vite-plugin-rebundle": "^1.2.6"
   }
 }

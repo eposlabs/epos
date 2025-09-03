@@ -9,8 +9,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => ({
   build: {
     watch: mode === 'production' ? null : {},
-    minify: mode !== 'development',
     sourcemap: mode === 'development',
+    minify: false,
     rollupOptions: {
       input: {
         'fg': './src/entry/entry.fg.tsx',
@@ -46,10 +46,12 @@ export default defineConfig(({ mode }) => ({
       return {
         'fg': {
           keepNames: true,
+          minify: mode !== 'development',
           banner: { js: setup },
         },
         'bg': {
           keepNames: true,
+          minify: mode !== 'development',
           banner: { js: setup },
         },
       }

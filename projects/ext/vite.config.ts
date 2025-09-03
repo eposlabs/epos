@@ -13,9 +13,8 @@ export default defineConfig(({ mode }) => ({
 
   build: {
     watch: mode === 'production' ? null : {},
-    minify: mode === 'development' ? false : 'terser',
     sourcemap: mode === 'development',
-    terserOptions: { keep_classnames: true },
+    minify: false,
     rollupOptions: {
       input: {
         'ex': './src/entry/entry.ex.ts',
@@ -42,31 +41,32 @@ export default defineConfig(({ mode }) => ({
 
     rebundle(async () => {
       const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
+      const options = {
+        minify: mode !== 'development',
+        keepNames: true,
+        banner: { js: setup },
+      }
+
       return {
         'ex': {
-          keepNames: true,
+          ...options,
           sourcemap: false,
-          banner: { js: setup },
           define: define({ BUNDLE: 'ex', EX_MINI: false }),
         },
         'cs': {
-          keepNames: true,
-          banner: { js: setup },
+          ...options,
           define: define({ BUNDLE: 'cs' }),
         },
         'os': {
-          keepNames: true,
-          banner: { js: setup },
+          ...options,
           define: define({ BUNDLE: 'os' }),
         },
         'sw': {
-          keepNames: true,
-          banner: { js: setup },
+          ...options,
           define: define({ BUNDLE: 'sw' }),
         },
         'vw': {
-          keepNames: true,
-          banner: { js: setup },
+          ...options,
           define: define({ BUNDLE: 'vw' }),
         },
       }
