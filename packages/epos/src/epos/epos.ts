@@ -47,7 +47,6 @@ declare class Unit<TRoot = unknown> {
   reaction: typeof mobx.reaction
   setTimeout: typeof self.setTimeout
   setInterval: typeof self.setInterval
-  static v: Record<number, (this: Unit, unit: Unit) => void>
 }
 
 export interface Epos {
@@ -79,27 +78,22 @@ export interface Epos {
   }
   /** Disconnect from the state. */
   disconnect(name?: string): void
+  /** Performs any state changes in a batch. */
+  transaction: (fn: () => void) => void
   /** Create local state (no sync). */
   local<T extends State = {}>(state?: T): T
   /** Get the list of all state names. */
   states(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
   /** Destroy state. */
   destroy(name?: string): Promise<void>
-  /** Performs any state changes in a batch. */
-  transaction: (fn: () => void) => void
-  /** @see https://mobx.js.org/reactions.html#autorun */
-  autorun: typeof mobx.autorun
-  /** @see https://mobx.js.org/reactions.html#reaction */
-  reaction: typeof mobx.reaction
 
   // ---------------------------------------------------------------------------
   // UI
   // ---------------------------------------------------------------------------
-  root: HTMLElement
-  shadow: HTMLElement
+  element: HTMLElement
   component: {
-    <P>(fn: react.FC<P>): typeof fn
-    <P>(name: string, fn: react.FC<P>): typeof fn
+    <P>(Component: react.FC<P>): typeof Component
+    <P>(name: string, Component: react.FC<P>): typeof Component
   }
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   portal: typeof reactDom.createPortal
@@ -120,6 +114,10 @@ export interface Epos {
   // ---------------------------------------------------------------------------
   fetch: typeof window.fetch
   browser: typeof chrome
+  /** @see https://mobx.js.org/reactions.html#autorun */
+  autorun: typeof mobx.autorun
+  /** @see https://mobx.js.org/reactions.html#reaction */
+  reaction: typeof mobx.reaction
 
   // ---------------------------------------------------------------------------
   // STORAGE

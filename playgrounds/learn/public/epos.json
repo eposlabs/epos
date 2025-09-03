@@ -1,9 +1,11 @@
 {
+  "$schema": "../../../packages/epos/epos.schema.json",
   "name": "learn",
   "title": "[epos] Learn Browser API",
+  "action": true,
   "targets": [
     {
-      "matches": ["<hub>", "<panel>", "https://inssist.com/*"],
+      "matches": ["<hub>", "https://inssist.com/*"],
       "load": ["./fg.js", "./fg.css"],
       "mode": "shadow"
     }

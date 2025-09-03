@@ -22,15 +22,23 @@ export class BootAction extends $sw.Unit {
         return
       }
 
-      // Has one action? -> Open tab with action url
-      const actions = Object.values(this.$.pkgs.getActions())
-      if (actions.length === 1) {
-        await this.$boot.medium.openTab(actions[0])
+      // Single action? -> Process that action
+      const actions = this.$.pkgs.getActions()
+      const actionCount = Object.keys(actions).length
+      if (actionCount === 1) {
+        const name = Object.keys(actions)[0]
+        const action = actions[name]
+        if (action === true) {
+          const bus = this.$.bus.create(`pkg[${name}]`)
+          await bus.send('action')
+        } else {
+          await this.$boot.medium.openTab(action)
+        }
         return
       }
 
       // Several actions? -> Open popup
-      if (actions.length > 1) {
+      if (actionCount > 1) {
         await this.$boot.medium.openPopup(tab.id)
         return
       }

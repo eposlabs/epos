@@ -117,7 +117,7 @@ export class Units extends $exSw.Unit {
     const Unit = this.getConstructor(unit)
 
     // Extract versions
-    const versions = Object.keys(Unit.v || {})
+    const versions = Object.keys(Unit.versioner || {})
       .map(Number)
       .filter(v => v >= 1)
       .sort((v1, v2) => v1 - v2)
@@ -139,7 +139,7 @@ export class Units extends $exSw.Unit {
     // Run versioning
     for (const version of versions) {
       if (this.version(unit) >= version) continue
-      Unit.v[version].call(unit, unit)
+      Unit.versioner[version].call(unit, unit)
       this.version(unit, version)
     }
 
@@ -245,10 +245,10 @@ class Unit {
   declare $: Obj | Unit
   declare log: Log
   declare init?: unknown
-  declare cleanup?: unknown
-  declare static v: Record<number, (this: Unit, unit: Unit) => void>;
-  declare [_observableKeys_]: string[];
-  declare [_disposers_]?: Fn[]
+  declare cleanup?: unknown;
+  declare [_disposers_]?: Fn[];
+  declare [_observableKeys_]: string[]
+  declare static versioner: Record<number, (this: Unit, unit: Unit) => void>
 
   up<T extends Unit>(Ancestor: Cls<T>): T | null {
     let cursor = $exSw.StateNode.getOwner(this as any)

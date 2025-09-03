@@ -16,8 +16,7 @@
   - epos.states
   - epos.destroy
 - **UI**
-  - epos.root
-  - epos.shadow
+  - epos.element
   - epos.component
   - epos.render
   - epos.portal
