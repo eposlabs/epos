@@ -1,4 +1,4 @@
-import type { Manifest, Mode, Popup } from '../pkgs-parser.sw'
+import type { Action, Manifest, Mode, Popup } from '../pkgs-parser.sw'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
@@ -23,6 +23,7 @@ export class Pkg extends $sw.Unit {
   declare dev: boolean
   declare sources: Sources
   declare manifest: Manifest
+  declare action: null | true | string
   declare targets: $sw.PkgTarget[]
   exporter = new $sw.PkgExporter(this)
 
@@ -45,6 +46,7 @@ export class Pkg extends $sw.Unit {
     this.dev = data.dev
     this.sources = data.sources
     this.manifest = data.manifest
+    this.action = this.prepareAction(data.manifest.action)
     this.targets = data.manifest.targets.map(target => new $sw.PkgTarget(this, target))
 
     if (assets) {
@@ -138,5 +140,12 @@ export class Pkg extends $sw.Unit {
     if (path.endsWith('.js')) return `(async () => {\n${this.sources[path]}\n})();`
     if (path.endsWith('.css')) return this.sources[path]
     throw this.never
+  }
+
+  private prepareAction(action: Action) {
+    if (action === null) return null
+    if (action === true) return true
+    if (!action.startsWith('<hub>')) return action
+    return action.replace('<hub>', `${this.$.env.url.web}/@${this.name}`)
   }
 }

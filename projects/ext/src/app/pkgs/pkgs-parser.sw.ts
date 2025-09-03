@@ -1,4 +1,4 @@
-export type Action = string | true | null
+export type Action = null | true | string
 export type Popup = { width?: number; height?: number } | null
 export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
 export type Pattern = PositivePattern | NegativePattern

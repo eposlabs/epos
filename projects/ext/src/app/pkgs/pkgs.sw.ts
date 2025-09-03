@@ -56,8 +56,8 @@ export class Pkgs extends $sw.Unit {
     const actions: ActionMap = {}
 
     for (const pkg of this.list) {
-      if (!pkg.manifest.action) continue
-      actions[pkg.name] = pkg.manifest.action
+      if (!pkg.action) continue
+      actions[pkg.name] = pkg.action
     }
 
     return actions
