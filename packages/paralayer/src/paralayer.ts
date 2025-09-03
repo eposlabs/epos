@@ -1,7 +1,7 @@
+import * as $utils from '@eposlabs/utils'
 import * as $chokidar from 'chokidar'
 import * as $fs from 'node:fs/promises'
 import * as $path from 'node:path'
-import * as $utils from '@eposlabs/utils'
 
 import type { FSWatcher } from 'chokidar'
 
