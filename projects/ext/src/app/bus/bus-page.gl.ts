@@ -1,6 +1,6 @@
 // TODO: add timeout for waitForResponse (?)
 
-import type { Frame, Origin } from './bus.gl'
+import type { Frame } from './bus.gl'
 
 const REQUEST = ':EPOS_BUS_REQUEST'
 const RESPONSE = ':EPOS_BUS_RESPONSE'
@@ -12,7 +12,7 @@ export type Req = {
   args: unknown[]
   token: string | null
   frame: Frame | null
-  origin: Subset<Origin, 'exFrame' | 'exTab' | 'cs' | 'os' | 'vw'>
+  origin: 'exFrame' | 'exTab' | 'cs' | 'os' | 'vw'
 }
 
 export type Res = {
@@ -26,9 +26,10 @@ export type Interceptor = (frame: Frame | null, ...args: any[]) => unknown
 export class BusPage extends $gl.Unit {
   private $bus = this.up($gl.Bus)!
   private frame = this.$bus.origin === 'exFrame' ? self.name : null
-  private token: string | null = null
   private supported = this.$bus.is('exFrame', 'exTab', 'cs', 'os', 'vw')
   private interceptors: { [name: string]: Interceptor } = {}
+  /** Requires for secure EX_TAB <-> CS communication */
+  private token: string | null = null
   static REQUEST = REQUEST
   static RESPONSE = RESPONSE
 
@@ -91,6 +92,8 @@ export class BusPage extends $gl.Unit {
       this.token = crypto.randomUUID()
     } else if (this.$bus.is('exTab')) {
       this.token = self.__epos.busToken
+    } else {
+      this.token = null
     }
   }
 
@@ -101,7 +104,7 @@ export class BusPage extends $gl.Unit {
       const req = e.data as Req
 
       if (req.origin === this.$bus.origin) return
-      if (req.token !== this.token) throw new Error('Invalid token')
+      if (this.token !== req.token) throw new Error('Invalid token')
 
       const interceptor = this.interceptors[req.name]
       if (interceptor) {

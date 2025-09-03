@@ -1,9 +1,9 @@
-export type PkgDeclaration = {
+export type Props = {
   name: string
   icon: string | null
   title: string | null
-  shadowCss: string
   tabId: number
+  shadowCss: string
 }
 
 export class Pkg extends $ex.Unit {
@@ -12,115 +12,22 @@ export class Pkg extends $ex.Unit {
   title: string | null
   tabId: number
   shadowCss: string
-  declare api: Awaited<ReturnType<$ex.Pkg['createApi']>>
+  api: $ex.PkgApi
 
-  constructor(parent: $ex.Unit, decl: PkgDeclaration) {
+  constructor(parent: $ex.Unit, props: Props) {
     super(parent)
-
-    this.name = decl.name
-    this.icon = decl.icon
-    this.title = decl.title
-    this.tabId = decl.tabId
-    this.shadowCss = decl.shadowCss
-    this.api = this.createApi()
-
-    // Set title and favicon for hub page
-    if (this.$.env.is.exTabHub) {
-      this.setPageTitle()
-      async: this.setPageFavicon()
-    }
+    this.name = props.name
+    this.icon = props.icon
+    this.title = props.title
+    this.tabId = props.tabId
+    this.shadowCss = props.shadowCss
+    this.api = new $ex.PkgApi(this)
+    if (this.$.env.is.exTabHub) async: this.initHub()
   }
 
-  private createApi() {
-    const bus = new $ex.PkgApiBus(this)
-    const state = new $ex.PkgApiState(this)
-    const ui = new $ex.PkgApiUi(this)
-    const unit = new $ex.PkgApiUnit(this)
-    const tools = new $ex.PkgApiTools(this)
-    const storage = new $ex.PkgApiStorage(this)
-    const assets = new $ex.PkgApiAssets(this)
-    const env = new $ex.PkgApiEnv(this)
-    const libs = new $ex.PkgApiLibs(this)
-
-    const epos = {
-      // Bus
-      on: bus.on,
-      off: bus.off,
-      once: bus.once,
-      send: bus.send,
-      emit: bus.emit,
-
-      // State
-      connect: state.connect,
-      disconnect: state.disconnect,
-      transaction: state.transaction,
-      local: state.local,
-      states: state.states,
-      destroy: state.destroy,
-      autorun: state.autorun,
-      reaction: state.reaction,
-
-      // UI
-      get root() {
-        return ui.ensureRoot()
-      },
-      get shadow() {
-        return ui.ensureShadow()
-      },
-      component: ui.component,
-      render: ui.render,
-      portal: ui.portal,
-      useState: ui.useState,
-      useAutorun: ui.useAutorun,
-      useReaction: ui.useReaction,
-
-      // Unit
-      Unit: unit.Unit,
-      register: unit.register,
-      units: unit.units,
-
-      // Tools
-      fetch: tools.fetch,
-      get browser() {
-        return tools.getExtApi()
-      },
-
-      // Storage
-      get: storage.get,
-      set: storage.set,
-      delete: storage.delete,
-      keys: storage.keys,
-      clear: storage.clear,
-      storage: storage.storage,
-      storages: storage.storages,
-
-      // Assets
-      url: assets.url,
-      load: assets.load,
-      unload: assets.unload,
-      assets: assets.assets,
-
-      // Env
-      tabId: env.tabId,
-      is: env.is,
-
-      // Libs
-      mobx: libs.mobx,
-      mobxReactLite: libs.mobxReactLite,
-      react: libs.react,
-      reactDom: libs.reactDom,
-      reactDomClient: libs.reactDomClient,
-      reactJsxRuntime: libs.reactJsxRuntime,
-      yjs: libs.yjs,
-
-      // TODO: change to package API
-      engine: this.$,
-    }
-
-    class Epos {}
-    Reflect.setPrototypeOf(epos, Epos.prototype)
-
-    return epos
+  private async initHub() {
+    this.setPageTitle()
+    await this.setPageFavicon()
   }
 
   async setPageTitle() {
@@ -128,7 +35,7 @@ export class Pkg extends $ex.Unit {
     let title = document.querySelector('title')
     if (title) title.remove()
 
-    // Create title
+    // Create new title
     title = document.createElement('title')
     title.textContent = this.title ?? this.name
     document.head.append(title)
@@ -136,17 +43,16 @@ export class Pkg extends $ex.Unit {
 
   private async setPageFavicon() {
     if (!this.icon) return
-
-    await this.api.load(this.icon)
+    await this.api.assets.load(this.icon)
 
     // Remove existing favicon
     let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
     if (favicon) favicon.remove()
 
-    // Create favicon
+    // Create new favicon
     favicon = document.createElement('link')
     favicon.rel = 'icon'
-    favicon.href = this.api.url(this.icon)
+    favicon.href = this.api.assets.url(this.icon)
     document.head.append(favicon)
   }
 }

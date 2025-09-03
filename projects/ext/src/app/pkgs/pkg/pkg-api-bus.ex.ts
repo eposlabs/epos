@@ -31,18 +31,12 @@ export class PkgApiBus extends $ex.Unit {
   }
 
   private validateName(name: string) {
-    if (!this.$.is.string(name)) {
-      throw new Error('Invalid event name, string expected')
-    } else if (name.length === 0) {
-      throw new Error('Invalid event name, non-empty string expected')
-    }
+    if (!this.$.is.string(name)) throw new Error('Invalid event name, string expected')
+    if (name.length === 0) throw new Error('Invalid event name, non-empty string expected')
   }
 
   private validateFn(fn: Fn | undefined, optional = false) {
     if (optional && this.$.is.undefined(fn)) return
-
-    if (!this.$.is.function(fn)) {
-      throw new Error('Invalid event handler, function expected')
-    }
+    if (!this.$.is.function(fn)) throw new Error('Invalid event handler, function expected')
   }
 }

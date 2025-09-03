@@ -1,14 +1,14 @@
 $: (() => {
-  initEposVar()
-  initEposGlobals()
-  initEposElement()
+  setupEposVar()
+  setupEposGlobals()
+  setupEposElement()
 })()
 
-function initEposVar() {
+function setupEposVar() {
   self.__epos = {}
 }
 
-function initEposGlobals() {
+function setupEposGlobals() {
   // Collect globals
   const values = {}
   const lettersOnly = /^[a-zA-Z]+$/
@@ -52,7 +52,7 @@ function initEposGlobals() {
   self.__epos.globals = globals
 }
 
-function initEposElement() {
+function setupEposElement() {
   const createEposElement = () => {
     // Create <epos/> element
     const eposElement = document.createElement('epos')

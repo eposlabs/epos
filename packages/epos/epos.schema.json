@@ -10,9 +10,9 @@
     "action": { "$ref": "#/definitions/Action" },
     "popup": { "$ref": "#/definitions/Popup" },
     "assets": { "$ref": "#/definitions/Assets" },
-    "bundles": { "$ref": "#/definitions/Bundles" },
-    "run": { "$ref": "#/definitions/Run" },
-    "src": { "$ref": "#/definitions/Src" },
+    "targets": { "$ref": "#/definitions/Targets" },
+    "matches": { "$ref": "#/definitions/Matches" },
+    "load": { "$ref": "#/definitions/Load" },
     "mode": { "$ref": "#/definitions/Mode" }
   },
   "required": ["name"],
@@ -35,7 +35,7 @@
     },
 
     "Action": {
-      "oneOf": [{ "type": "null" }, { "type": "string" }]
+      "oneOf": [{ "type": "null" }, { "type": "string" }, true]
     },
 
     "Popup": {
@@ -56,40 +56,40 @@
       "type": "string"
     },
 
-    "Bundles": {
+    "Targets": {
       "type": "array",
-      "items": { "$ref": "#/definitions/Bundle" }
+      "items": { "$ref": "#/definitions/Target" }
     },
 
-    "Bundle": {
+    "Target": {
       "type": "object",
       "properties": {
-        "run": { "$ref": "#/definitions/Run" },
-        "src": { "$ref": "#/definitions/Src" },
+        "matches": { "$ref": "#/definitions/Matches" },
+        "load": { "$ref": "#/definitions/Load" },
         "mode": { "$ref": "#/definitions/Mode" }
       },
       "additionalProperties": false
     },
 
-    "Run": {
+    "Matches": {
       "oneOf": [
-        { "$ref": "#/definitions/RunItem" },
-        { "type": "array", "items": { "$ref": "#/definitions/RunItem" } }
+        { "$ref": "#/definitions/Pattern" },
+        { "type": "array", "items": { "$ref": "#/definitions/Pattern" } }
       ]
     },
 
-    "RunItem": {
+    "Pattern": {
       "type": "string"
     },
 
-    "Src": {
+    "Load": {
       "oneOf": [
-        { "$ref": "#/definitions/SrcItem" },
-        { "type": "array", "items": { "$ref": "#/definitions/SrcItem" } }
+        { "$ref": "#/definitions/LoadItem" },
+        { "type": "array", "items": { "$ref": "#/definitions/LoadItem" } }
       ]
     },
 
-    "SrcItem": {
+    "LoadItem": {
       "type": "string",
       "pattern": "^.*\\.(css|js|[^.]+)$"
     },

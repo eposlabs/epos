@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.12",
-    "epos": "^1.6.0",
+    "epos": "^1.7.0",
     "epos-types": "^1.1.0",
     "paralayer": "^1.0.4",
     "tailwindcss": "^4.1.12",

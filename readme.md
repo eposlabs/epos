@@ -15,8 +15,6 @@
   - epos.local
   - epos.states
   - epos.destroy
-  - epos.autorun
-  - epos.reaction
 - **UI**
   - epos.root
   - epos.shadow
@@ -33,6 +31,8 @@
 - **Tools**
   - epos.fetch
   - epos.browser
+  - epos.autorun
+  - epos.reaction
 - **Storage**
   - epos.get
   - epos.set

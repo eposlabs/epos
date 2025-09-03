@@ -42,28 +42,32 @@ export default defineConfig(({ mode }) => ({
 
     rebundle(async () => {
       const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
-      const globals = await fs.readFile('./src/app/boot/boot-globals.ex.js', 'utf-8')
       return {
         'ex': {
+          keepNames: true,
           sourcemap: false,
+          banner: { js: setup },
           define: define({ BUNDLE: 'ex', EX_MINI: false }),
-          banner: { js: [setup, globals].join('\n') },
         },
         'cs': {
-          define: define({ BUNDLE: 'cs' }),
+          keepNames: true,
           banner: { js: setup },
+          define: define({ BUNDLE: 'cs' }),
         },
         'os': {
-          define: define({ BUNDLE: 'os' }),
+          keepNames: true,
           banner: { js: setup },
+          define: define({ BUNDLE: 'os' }),
         },
         'sw': {
-          define: define({ BUNDLE: 'sw' }),
+          keepNames: true,
           banner: { js: setup },
+          define: define({ BUNDLE: 'sw' }),
         },
         'vw': {
-          define: define({ BUNDLE: 'vw' }),
+          keepNames: true,
           banner: { js: setup },
+          define: define({ BUNDLE: 'vw' }),
         },
       }
     }),

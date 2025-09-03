@@ -18,6 +18,7 @@
     "preact": "^10.27.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "strip-json-comments": "^5.0.3",
     "valtio": "^2.1.7",
     "yjs": "^13.6.27"
   },
@@ -31,7 +32,7 @@
     "paralayer": "^1.0.4",
     "rolldown-vite": "^7.1.5",
     "tailwindcss": "^4.1.12",
-    "terser": "^5.43.1",
+    "terser": "^5.44.0",
     "vite-plugin-rebundle": "^1.2.6"
   }
 }

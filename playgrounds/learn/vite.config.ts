@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import copy from 'rollup-plugin-copy'
 import epos from 'epos/vite'
 import fs from 'node:fs/promises'
 import paralayer from 'paralayer/vite'
@@ -6,11 +7,6 @@ import rebundle from 'vite-plugin-rebundle'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => ({
-  esbuild: {
-    jsx: 'automatic',
-    keepNames: true,
-  },
-
   build: {
     watch: mode === 'production' ? null : {},
     minify: mode !== 'development',
@@ -31,6 +27,15 @@ export default defineConfig(({ mode }) => ({
     epos(),
     tailwindcss(),
 
+    copy({
+      targets: [
+        {
+          src: './public/*',
+          dest: './dist',
+        },
+      ],
+    }),
+
     paralayer({
       input: './src/app',
       output: './src/layers',
@@ -39,8 +44,14 @@ export default defineConfig(({ mode }) => ({
     rebundle(async () => {
       const setup = await fs.readFile('./src/layers/setup.js', 'utf-8')
       return {
-        'fg': { banner: { js: setup } },
-        'bg': { banner: { js: setup } },
+        'fg': {
+          keepNames: true,
+          banner: { js: setup },
+        },
+        'bg': {
+          keepNames: true,
+          banner: { js: setup },
+        },
       }
     }),
   ],

@@ -69,7 +69,7 @@ class EnvIs extends $gl.Unit {
   vwPermissions = this.vw && this.$env.params.ref === 'permissions'
 
   // Variations of exTab
-  exTabHub = location.origin === this.$env.url.web
+  exTabHub = this.ex && location.origin === this.$env.url.web
   exTabPage = this.ex && !this.exTabHub && !this.$env.isExtPage()
   exTab = this.exTabHub || this.exTabPage
 

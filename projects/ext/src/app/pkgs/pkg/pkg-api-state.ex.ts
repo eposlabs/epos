@@ -2,14 +2,16 @@ import type { Initial, Location, Versioner } from '../../states/state/state.ex.s
 
 export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  autorun = this.$.utils.link(this.$.libs.mobx, 'autorun')
-  reaction = this.$.utils.link(this.$.libs.mobx, 'reaction')
 
   connect = async (...args: unknown[]) => {
     const [name, initial, versioner] = this.parseConnectArgs(args)
     const location = this.getLocation(name)
-    const state = await this.$.states.connect(location, { initial, versioner, unitRegistry: name })
-    return state
+
+    return await this.$.states.connect(location, {
+      initial: initial,
+      versioner: versioner,
+      unitRegistry: this.$pkg.name,
+    })
   }
 
   disconnect = async (name?: string) => {
@@ -34,7 +36,7 @@ export class PkgApiState extends $ex.Unit {
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.states.has([this.$pkg.name, ':state', name]),
+        connected: this.$.states.isConnected([this.$pkg.name, ':state', name]),
       }))
       .filter(state => {
         if (this.$.is.undefined(opts.connected)) return true
@@ -102,51 +104,33 @@ export class PkgApiState extends $ex.Unit {
 
   private validateName(name: unknown): asserts name is undefined | string {
     if (this.$.is.undefined(name)) return
-
-    if (!this.$.is.string(name)) {
-      throw new Error('Invalid state name, string expected')
-    } else if (name.length === 0) {
-      throw new Error('Invalid state name, non-empty string expected')
-    } else if (name.startsWith(':')) {
-      throw new Error('Invalid state name, cannot start with ":"')
-    }
+    if (!this.$.is.string(name)) throw new Error('Invalid state name, string expected')
+    if (name.length === 0) throw new Error('Invalid state name, non-empty string expected')
+    if (name.startsWith(':')) throw new Error('Invalid state name, cannot start with ":"')
   }
 
   private validateInitial(initial: unknown): asserts initial is undefined | Fn {
     if (this.$.is.undefined(initial)) return
-
-    if (!this.$.is.function(initial)) {
-      throw new Error('Invalid state initializer, function expected')
-    }
+    if (!this.$.is.function(initial)) throw new Error('Invalid state initializer, function expected')
   }
 
   private validateVersioner(versioner?: unknown): asserts versioner is undefined | Versioner {
     if (this.$.is.undefined(versioner)) return
-
-    if (!this.$.is.object(versioner)) {
-      throw new Error('Invalid versioner, object expected')
-    }
+    if (!this.$.is.object(versioner)) throw new Error('Invalid versioner, object expected')
 
     const keys = Object.keys(versioner)
-    if (keys.some(k => !this.$.is.numeric(k))) {
-      throw new Error('Invalid versioner, keys must be numeric')
-    }
+    const badKey = keys.find(key => !this.$.is.numeric(key))
+    if (badKey) throw new Error(`Invalid versioner, keys must be numeric, but got: "${badKey}"`)
 
-    const values = Object.values(versioner)
-    if (values.some(v => !this.$.is.function(v))) {
-      throw new Error('Invalid versioner, values must be functions')
-    }
+    const badValueKey = keys.find(key => !this.$.is.function(versioner[key]))
+    if (badValueKey) throw new Error(`Invalid versioner, value for key "${badValueKey}" must be a function`)
   }
 
   private validateTransactionFn(fn: Fn) {
-    if (!this.$.is.function(fn)) {
-      throw new Error('Invalid transaction argument, function expected')
-    }
+    if (!this.$.is.function(fn)) throw new Error('Invalid transaction argument, function expected')
   }
 
   private validateState(state: unknown) {
-    if (!this.$.is.object(state)) {
-      throw new Error('Invalid state, object expected')
-    }
+    if (!this.$.is.object(state)) throw new Error('Invalid state, object expected')
   }
 }

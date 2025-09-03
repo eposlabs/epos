@@ -1,4 +1,4 @@
-import script from './boot-injector-raw.cs?raw'
+import script from './boot-injector-setup.cs?raw'
 
 /**
  * For tabs, there are three 'actors' for code execution:

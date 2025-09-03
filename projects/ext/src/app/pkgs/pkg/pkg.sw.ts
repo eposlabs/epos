@@ -1,10 +1,21 @@
 import type { Manifest, Mode, Popup } from '../pkgs-parser.sw'
 
-export type Data = { name: string; dev: boolean; sources: Sources; manifest: Manifest }
-export type Fragment = { name: string; hash: string; popup: Popup }
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
 export type SourceFilter = { modes?: Mode[]; lang?: 'js' | 'css' }
+
+export type Data = {
+  name: string
+  sources: Sources
+  manifest: Manifest
+  dev: boolean
+}
+
+export type Fragment = {
+  name: string
+  hash: string
+  popup: Popup
+}
 
 // TODO: update hash deps (assets, mode, smth else?)
 export class Pkg extends $sw.Unit {
@@ -45,9 +56,9 @@ export class Pkg extends $sw.Unit {
 
     await this.$.idb.set<Data>(this.name, ':pkg', ':default', {
       name: this.name,
-      dev: this.dev,
       sources: this.sources,
       manifest: this.manifest,
+      dev: this.dev,
     })
   }
 
@@ -55,10 +66,10 @@ export class Pkg extends $sw.Unit {
     return this.targets.some(target => target.test(uri))
   }
 
-  getDefJs(uri: string) {
+  getDef(uri: string) {
     const js = this.getCode(uri, { modes: ['normal', 'shadow'], lang: 'js' })
     const shadowCss = this.getCode(uri, { modes: ['shadow'], lang: 'css' })
-    if (!js && !shadowCss) return ''
+    if (!js && !shadowCss) return null
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
     const layers = [
@@ -75,7 +86,7 @@ export class Pkg extends $sw.Unit {
       `  shadowCss: ${JSON.stringify(shadowCss)},`,
       `  fn(epos, React = epos.react, ${layers.join(', ')}) { ${js} },`,
       `}`,
-    ].join('')
+    ].join('\n')
   }
 
   getCss(uri: string) {

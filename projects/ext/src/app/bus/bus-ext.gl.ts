@@ -1,4 +1,4 @@
-import type { Origin, TabId } from './bus.gl'
+import type { TabId } from './bus.gl'
 
 const REQUEST = ':EPOS_BUS_REQUEST'
 
@@ -6,7 +6,7 @@ export type Req = {
   type: typeof REQUEST
   name: string
   argsJson: string
-  origin: Subset<Origin, 'cs' | 'os' | 'sw' | 'vw'>
+  origin: 'cs' | 'os' | 'sw' | 'vw'
 }
 
 export type Interceptor = (sender: chrome.runtime.MessageSender, ...args: any[]) => unknown

@@ -86,7 +86,7 @@ export class States extends $exSw.Unit {
     this.$.libs.mobx.runInAction(() => transact())
   }
 
-  has(location: Location) {
+  isConnected(location: Location) {
     const id = location.join('/')
     return id in this.map
   }

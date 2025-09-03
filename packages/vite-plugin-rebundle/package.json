@@ -13,9 +13,7 @@
     "dev": "rm -rf dist && tsc --watch",
     "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
-    "release": "npm version patch && npm run release:raw",
-    "release:raw": "npm run build && npm publish",
-    "release:minor": "npm version minor && npm run release:raw"
+    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },
   "exports": {
     "import": "./dist/index.js"

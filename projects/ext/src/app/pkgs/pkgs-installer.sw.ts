@@ -47,12 +47,14 @@ export class PkgsInstaller extends $sw.Unit {
     }
 
     // Fetch epos.json
-    const [res] = await this.$.utils.safe(() => fetch(url))
+    const [res] = await this.$.utils.safe(fetch(url))
     if (!res) throw new Error(`Failed to fetch ${url}`)
 
     // Read epos.json
-    const [data, error] = await this.$.utils.safe(() => res.json())
-    if (error) throw new Error(`Failed to parse ${url}: ${error.message}`)
+    const [json, readError] = await this.$.utils.safe(res.text().then(this.$.libs.stripJsonComments))
+    if (readError) throw new Error(`Failed to parse ${url}: ${readError.message}`)
+    const [data, jsonError] = this.$.utils.safe.sync(() => JSON.parse(json))
+    if (jsonError) throw new Error(`Failed to parse ${url}: ${jsonError.message}`)
 
     // Parse manifest
     const manifest = this.$pkgs.parser.parseManifest(data)

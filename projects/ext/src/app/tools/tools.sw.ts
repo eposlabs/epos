@@ -1,4 +1,4 @@
 export class Tools extends $sw.Unit {
-  ext = new $sw.ToolsExt(this)
+  browser = new $sw.ToolsBrowser(this)
   fetcher = new $sw.ToolsFetcher(this)
 }

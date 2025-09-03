@@ -1,6 +1,4 @@
 $: {
-  if (location.protocol === 'chrome-extension:') break $
-
   const pageGlobals = self
   const originalGlobals = self.__epos.globals
   const methods = {}

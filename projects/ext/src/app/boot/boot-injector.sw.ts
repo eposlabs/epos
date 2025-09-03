@@ -1,13 +1,23 @@
+import globals from './boot-injector-globals.sw?raw'
+
 export type Tab = { id: number; url: string }
 export type JsInjectMode = 'script' | 'function'
 
 export class BootInjector extends $sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
+  private engine = { full: '', mini: '' }
+  private globals: string
 
   constructor(parent: $sw.Unit) {
     super(parent)
+    this.globals = globals
     this.injectToTabsOnNavigation()
+  }
+
+  async init() {
+    this.engine.full = await fetch('/ex.js').then(r => r.text())
+    this.engine.mini = await fetch('/ex.js').then(r => r.text())
   }
 
   private injectToTabsOnNavigation() {
@@ -34,20 +44,35 @@ export class BootInjector extends $sw.Unit {
   }
 
   private async injectToTab(tab: Tab) {
-    // Inject lite js ASAP
+    // Inject lite js asap
     const liteJs = this.$.pkgs.getLiteJs(tab.url)
     if (liteJs) async: this.injectJs(tab, liteJs, 'function')
 
     // Wait till CS is ready (creates self.__epos and generates bus token)
-    const { busToken } = await this.waitCsReady(tab)
+    const csData = await this.waitCsReady(tab)
 
     // Inject css
     const css = this.$.pkgs.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
 
-    // Inject js (includes shadow css)
-    const js = this.$.pkgs.getJs(tab.url, tab.id, busToken)
-    if (js) async: this.injectJs(tab, js, 'script')
+    // No pkg defs for the url? -> Done
+    const defs = this.$.pkgs.getDefs(tab.url)
+    if (defs.length === 0) return
+
+    // Prepare js
+    const engine = defs.some(def => this.hasReact(def)) ? this.engine.full : this.engine.mini
+    const js = [
+      `(() => {`,
+      `self.__epos.tabId = ${JSON.stringify(tab.id)}`,
+      `self.__epos.busToken = ${JSON.stringify(csData.busToken)}`,
+      `self.__epos.defs = [${defs.join(',')}]`,
+      this.globals,
+      engine,
+      `})()`,
+    ].join(';\n')
+
+    // Inject js
+    async: this.injectJs(tab, js, 'script')
   }
 
   private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
@@ -135,5 +160,9 @@ export class BootInjector extends $sw.Unit {
     })
 
     return result as ReturnType<T>
+  }
+
+  private hasReact(js: string) {
+    return js.includes('epos.reactJsxRuntime') || js.includes('React.createElement')
   }
 }

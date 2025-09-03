@@ -21,8 +21,8 @@ export class Units extends $exSw.Unit {
 
   register(registry: string, Class: typeof Unit, aliases: string[] = []) {
     const names = [Class.name, ...aliases]
-    const classes = this.map[registry] ?? {}
-    for (const name of names) classes[name] = Class
+    this.map[registry] ??= {}
+    for (const name of names) this.map[registry][name] = Class
   }
 
   createEmptyObservableUnit(registry: string, spec: string, keys: string[]) {
@@ -71,11 +71,10 @@ export class Units extends $exSw.Unit {
   }
 
   isUnitSpec(registry: string, spec: unknown): spec is string {
-    const classes = this.map[registry]
-    if (!classes) return false
+    if (!this.map[registry]) return false
     if (!this.$.is.string(spec)) return false
     const name = this.getSpecName(spec)
-    return name in classes
+    return name in this.map[registry]
   }
 
   // ---------------------------------------------------------------------------

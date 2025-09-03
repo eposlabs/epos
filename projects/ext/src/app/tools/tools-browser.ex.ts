@@ -1,11 +1,11 @@
-import type { PermissionsResult } from './tools-ext.vw'
+import type { PermissionsResult } from './tools-browser.vw'
 
 const _id_ = Symbol('id')
 
 export type Callback = Fn & { [_id_]?: string }
 
-export class ToolsExt extends $ex.Unit {
-  declare api: typeof chrome
+export class ToolsBrowser extends $ex.Unit {
+  api: typeof chrome | null = null
   private listenerIds = new Set<string>()
   static _id_ = _id_
 
@@ -121,6 +121,7 @@ export class ToolsExt extends $ex.Unit {
   // ---------------------------------------------------------------------------
 
   private 'runtime.getURL'(path: string) {
+    if (!this.api) throw this.never
     const base = `chrome-extension://${this.api.runtime.id}/`
     return new URL(path, base).href
   }
@@ -130,22 +131,25 @@ export class ToolsExt extends $ex.Unit {
   // ---------------------------------------------------------------------------
 
   private async 'permissions.request'(opts: chrome.permissions.Permissions) {
+    const api = this.api
+    if (!api) throw this.never
+
     // Check if permissions are already granted
-    const alreadyGranted = await this.api.permissions.contains(opts)
+    const alreadyGranted = await api.permissions.contains(opts)
     if (alreadyGranted) return true
 
     // Prepare permissions url
     let url = this.$.env.url.view('permissions')
-    url = this.api.runtime.getURL(url)
+    url = api.runtime.getURL(url)
 
     // Close all permissions tabs
-    const tabs = await this.api.tabs.query({ url })
-    await Promise.all(tabs.map(t => t.id && this.api.tabs.remove(t.id)))
+    const tabs = await api.tabs.query({ url })
+    await Promise.all(tabs.map(t => t.id && api.tabs.remove(t.id)))
 
     // Create a new 'permissions' tab, and wait till it is ready for requesting
     const ready$ = Promise.withResolvers()
     this.$.bus.on('tools.permissionsReady', () => ready$.resolve(true))
-    await this.api.tabs.create({ url, active: false, pinned: true })
+    await api.tabs.create({ url, active: false, pinned: true })
     await ready$.promise
     this.$.bus.off('tools.permissionsReady')
 
@@ -154,13 +158,13 @@ export class ToolsExt extends $ex.Unit {
     const [result, error] = await this.$.utils.safe(request)
 
     // Close permissions tab
-    await this.$.bus.send('tools.closePermissions')
+    await this.$.bus.send('tools.closePermissionsTab')
 
     // Error? -> Throw
     if (error) throw error
 
-    // Re-create API as new APIs might be added
-    if (result.granted) this.api = await this.createApi()
+    // Update API object as new APIs might be added
+    if (result.granted) Object.assign(api, await this.createApi())
 
     return result
   }

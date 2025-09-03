@@ -5,67 +5,11 @@ import type { Container } from 'react-dom/client'
 
 export class PkgApiUi extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  private root: HTMLElement | null = null
-  private shadow: HTMLElement | null = null
+  element: HTMLDivElement
 
-  ensureRoot() {
-    if (this.root) return this.root
-
-    const eposElement = document.querySelector('epos')
-    if (!eposElement) throw this.never
-
-    const root = document.createElement('div')
-    root.epos = true
-    root.setAttribute('package', this.$pkg.name)
-    eposElement.append(root)
-    this.root = root
-
-    return root
-  }
-
-  ensureShadow() {
-    if (this.shadow) return this.shadow
-
-    const eposElement = document.querySelector('epos')
-    if (!eposElement) throw this.never
-
-    // Create shadow host
-    const host = document.createElement('div')
-    host.epos = true
-    host.setAttribute('package', this.$pkg.name)
-    host.setAttribute('shadow', '')
-    const shadow = host.attachShadow({ mode: 'open' })
-    eposElement.append(host)
-    this.shadow = host
-
-    // Inject shadow css
-    if (this.$pkg.shadowCss) {
-      // Hoist @property rules to the root DOM
-      // (they don't work inside shadow DOM but are inherited from the root DOM)
-      const sheet = new CSSStyleSheet()
-      sheet.replaceSync(this.$pkg.shadowCss)
-      const rules = [...sheet.cssRules]
-      const propertyRules = rules.filter(r => r.cssText.startsWith('@property'))
-      if (propertyRules.length > 0) {
-        const propertyRulesCss = propertyRules.map(r => r.cssText).join('\n')
-        const blob = new Blob([propertyRulesCss], { type: 'text/css' })
-        const link = document.createElement('link')
-        link.epos = true
-        link.rel = 'stylesheet'
-        link.setAttribute('property-rules', '')
-        link.href = URL.createObjectURL(blob)
-        eposElement.prepend(link)
-      }
-
-      // Create <link/> for shadow CSS
-      const blob = new Blob([this.$pkg.shadowCss], { type: 'text/css' })
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = URL.createObjectURL(blob)
-      shadow.append(link)
-    }
-
-    return this.shadow
+  constructor(parent: $ex.Unit) {
+    super(parent)
+    this.element = this.createPkgElement()
   }
 
   component = (...args: any[]) => {
@@ -76,7 +20,7 @@ export class PkgApiUi extends $ex.Unit {
 
   render = (children: ReactNode, container?: Container) => {
     this.ensureReact('render')
-    container ??= this.$pkg.shadowCss ? this.ensureShadow().shadowRoot! : this.ensureRoot()
+    container ??= this.getContainer()
     const root = this.$.libs.reactDomClient!.createRoot(container)
     root.render(children)
   }
@@ -107,11 +51,75 @@ export class PkgApiUi extends $ex.Unit {
     }, [])
   }
 
-  private ensureReact(method: string) {
-    if (!this.$.libs.react) {
-      const reason = `React is not used by "${this.$pkg.name}"`
-      throw new Error(`epos.${method} is not available. ${reason}`)
+  private createPkgElement() {
+    const eposElement = document.querySelector('epos')
+    if (!eposElement) throw this.never
+
+    const pkgElement = document.createElement('div')
+    pkgElement.epos = true
+    pkgElement.setAttribute('package', this.$pkg.name)
+    eposElement.append(pkgElement)
+
+    this.attachRoot(pkgElement)
+    this.attachShadow(pkgElement)
+
+    return pkgElement
+  }
+
+  private attachRoot(target: HTMLElement | ShadowRoot) {
+    const root = document.createElement('div')
+    root.setAttribute('root', '')
+    target.append(root)
+  }
+
+  private attachShadow(element: HTMLElement) {
+    if (!this.$pkg.shadowCss) return
+    const shadow = element.attachShadow({ mode: 'open' })
+
+    // Hoist @property rules to the root DOM.
+    // They don't work inside shadow DOM but are inherited from the root DOM.
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(this.$pkg.shadowCss)
+    const rules = [...sheet.cssRules]
+    const propertyRules = rules.filter(r => r.cssText.startsWith('@property'))
+    if (propertyRules.length > 0) {
+      const propertyRulesCss = propertyRules.map(r => r.cssText).join('\n')
+      const blob = new Blob([propertyRulesCss], { type: 'text/css' })
+      const link = document.createElement('link')
+      link.epos = true
+      link.rel = 'stylesheet'
+      link.setAttribute('property-rules', '')
+      link.href = URL.createObjectURL(blob)
+      element.prepend(link)
     }
+
+    // Create <link/> for shadow CSS
+    const blob = new Blob([this.$pkg.shadowCss], { type: 'text/css' })
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = URL.createObjectURL(blob)
+    shadow.append(link)
+
+    // Add root element
+    this.attachRoot(shadow)
+  }
+
+  private getContainer() {
+    if (!this.$pkg.shadowCss) {
+      const root = this.element.querySelector('[root]')
+      if (!root) throw this.never
+      return root
+    } else {
+      if (!this.element.shadowRoot) throw this.never
+      const root = this.element.shadowRoot.querySelector('[root]')
+      if (!root) throw this.never
+      return root
+    }
+  }
+
+  private ensureReact(method: string) {
+    if (this.$.libs.react) return
+    throw new Error(`epos.${method} is not available, because React is not used by "${this.$pkg.name}"`)
   }
 
   private parseComponentArgs(args: unknown[]): [string | null, FC] {
@@ -132,15 +140,10 @@ export class PkgApiUi extends $ex.Unit {
   }
 
   private validateName(name: unknown): asserts name is string {
-    if (!this.$.is.string(name)) {
-      throw new Error('Invalid component name, string expected')
-    }
+    if (!this.$.is.string(name)) throw new Error('Invalid component name, string expected')
   }
 
   private validateRender(render: unknown): asserts render is FC {
-    if (!this.$.is.function(render)) {
-      console.warn(render)
-      throw new Error('Invalid component, function expected')
-    }
+    if (!this.$.is.function(render)) throw new Error('Invalid component, function expected')
   }
 }

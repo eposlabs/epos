@@ -1,0 +1,11 @@
+{
+  "name": "learn",
+  "title": "[epos] Learn Browser API",
+  "targets": [
+    {
+      "matches": ["<hub>", "<panel>", "https://inssist.com/*"],
+      "load": ["./fg.js", "./fg.css"],
+      "mode": "shadow"
+    }
+  ]
+}

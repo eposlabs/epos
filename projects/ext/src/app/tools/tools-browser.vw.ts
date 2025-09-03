@@ -1,12 +1,12 @@
 export type PermissionsResult = { id: string; granted: boolean }
 
-export class ToolsExt extends $vw.Unit {
+export class ToolsBrowser extends $vw.Unit {
   private id = this.$.utils.id()
 
   async init() {
     if (!this.$.env.is.vwPermissions) return
     this.$.bus.on('tools.requestPermissions', this.requestPermissions, this)
-    this.$.bus.on('tools.closePermissions', () => self.close())
+    this.$.bus.on('tools.closePermissionsTab', () => self.close())
     await this.$.bus.send('tools.permissionsReady')
   }
 

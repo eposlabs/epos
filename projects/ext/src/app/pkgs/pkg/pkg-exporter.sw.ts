@@ -1,4 +1,4 @@
-import type { PkgData } from './pkg.sw'
+import type { Definition } from './pkg.sw'
 
 export class PkgExporter extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
@@ -24,7 +24,7 @@ export class PkgExporter extends $sw.Unit {
       zip.file(path, blob)
     }
 
-    const pkg = await this.$.idb.get<PkgData>(this.$pkg.name, ':pkg', ':default')
+    const pkg = await this.$.idb.get<Definition>(this.$pkg.name, ':pkg', ':default')
     if (!pkg) throw this.never
     pkg.dev = false
     zip.file('pkg.json', JSON.stringify(pkg, null, 2))

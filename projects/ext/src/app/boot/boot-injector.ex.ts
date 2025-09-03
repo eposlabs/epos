@@ -9,17 +9,17 @@ export class BootInjector extends $ex.Unit {
     await this.$.waitReady()
 
     if (this.$.env.is.exTab) {
-      this.callPkgs()
+      this.initPkgs()
     } else if (this.$.env.is.exFrame) {
       this.initEposVar()
       this.initEposElement()
       await this.injectPackages()
-      this.callPkgs()
+      this.initPkgs()
     }
   }
 
   private async initEposVar() {
-    self.__epos = {} as EposExContext
+    self.__epos = {} as EposVar
   }
 
   private async initEposElement() {
@@ -37,9 +37,10 @@ export class BootInjector extends $ex.Unit {
     const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
     if (css) this.injectCss(css)
 
-    // Inject js (includes shadow css)
-    const js = await this.$.bus.send<string>('pkgs.getJs', location.href)
-    if (js) await this.injectJs(js)
+    // Inject pkg defs
+    const defs = await this.$.bus.send<string[]>('pkgs.getDefs', location.href)
+    if (defs.length === 0) return
+    await this.injectJs(`self.__epos.defs = [${defs.join(',')}]`)
   }
 
   private async injectJs(js: string) {
@@ -64,21 +65,24 @@ export class BootInjector extends $ex.Unit {
     self.__epos.element.prepend(link)
   }
 
-  private callPkgs() {
+  private initPkgs() {
+    const defs = self.__epos.defs
     const tabId = this.getTabId()
-    const pkgDefs = self.__epos.pkgDefs
-    Reflect.deleteProperty(self, '__epos')
+    // this.deleteEposVar()
 
-    for (const def of pkgDefs) {
+    for (const def of defs) {
+      // Create pkg
       const pkg = this.$.pkgs.create({
         name: def.name,
         icon: def.icon,
         title: def.title,
-        shadowCss: def.shadowCss,
         tabId: tabId,
+        shadowCss: def.shadowCss,
       })
 
-      def.fn.call(undefined, pkg.api)
+      // Execute def fn
+      const epos = pkg.api.create()
+      def.fn.call(undefined, epos)
     }
   }
 
@@ -86,5 +90,9 @@ export class BootInjector extends $ex.Unit {
     if (this.$.env.is.exFrame) return Number(this.$.env.params.tabId)
     if (!this.$.is.number(self.__epos.tabId)) throw this.never
     return self.__epos.tabId
+  }
+
+  private deleteEposVar() {
+    Reflect.deleteProperty(self, '__epos')
   }
 }

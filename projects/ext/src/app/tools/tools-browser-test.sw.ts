@@ -1,4 +1,4 @@
-export class ToolsExtTest extends $sw.Unit {
+export class ToolsBrowserTest extends $sw.Unit {
   constructor(parent: $sw.Unit) {
     super(parent)
     this.$.bus.on('tools.testApi', this.testApi, this)

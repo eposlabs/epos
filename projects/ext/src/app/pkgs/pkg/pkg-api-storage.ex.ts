@@ -55,20 +55,13 @@ export class PkgApiStorage extends $ex.Unit {
 
   private validateName(name?: string) {
     if (this.$.is.undefined(name)) return
-    if (!this.$.is.string(name)) {
-      throw new Error('Invalid storage name, string expected')
-    } else if (name.length === 0) {
-      throw new Error('Invalid storage name, non-empty string expected')
-    } else if (name.startsWith(':')) {
-      throw new Error('Invalid storage name, cannot start with ":"')
-    }
+    if (!this.$.is.string(name)) throw new Error('Invalid storage name, string expected')
+    if (name.length === 0) throw new Error('Invalid storage name, non-empty string expected')
+    if (name.startsWith(':')) throw new Error('Invalid storage name, cannot start with ":"')
   }
 
   private validateKey(key: string) {
-    if (!this.$.is.string(key)) {
-      throw new Error('Invalid storage key, string expected')
-    } else if (key.length === 0) {
-      throw new Error('Invalid storage key, non-empty string expected')
-    }
+    if (!this.$.is.string(key)) throw new Error('Invalid storage key, string expected')
+    if (key.length === 0) throw new Error('Invalid storage key, non-empty string expected')
   }
 }

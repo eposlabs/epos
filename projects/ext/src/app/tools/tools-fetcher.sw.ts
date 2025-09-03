@@ -43,8 +43,10 @@ export class ToolsFetcher extends $sw.Unit {
     const headers: Record<string, string | null> = {}
     res.headers.keys().forEach(k => (headers[k] = res.headers.get(k)))
 
-    // Save response + set auto-delete timer
+    // Save response
     this.responses[id] = res
+
+    // Set auto-delete timer
     setTimeout(() => delete this.responses[id], this.$.utils.time('15m'))
 
     return {

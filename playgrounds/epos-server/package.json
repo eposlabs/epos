@@ -12,9 +12,7 @@
     "paralayer:watch": "paralayer --watch --default gl --globalize ./src/app ./src/layers",
     "paralayer:build": "paralayer --default gl --globalize ./src/app ./src/layers",
     "lint": "tsc --noEmit",
-    "release": "npm version patch && npm run release:raw",
-    "release:raw": "npm run build && npm publish",
-    "release:minor": "npm version minor && npm run release:raw"
+    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },
   "bin": {
     "epos": "bin.js"

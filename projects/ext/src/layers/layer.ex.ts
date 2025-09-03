@@ -13,9 +13,10 @@ import { PkgApiStorage, type PkgApiStorage as PkgApiStorageType } from '../app/p
 import { PkgApiTools, type PkgApiTools as PkgApiToolsType } from '../app/pkgs/pkg/pkg-api-tools.ex.ts'
 import { PkgApiUi, type PkgApiUi as PkgApiUiType } from '../app/pkgs/pkg/pkg-api-ui.ex.ts'
 import { PkgApiUnit, type PkgApiUnit as PkgApiUnitType } from '../app/pkgs/pkg/pkg-api-unit.ex.ts'
+import { PkgApi, type PkgApi as PkgApiType } from '../app/pkgs/pkg/pkg-api.ex.ts'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.ex.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.ex.ts'
-import { ToolsExt, type ToolsExt as ToolsExtType } from '../app/tools/tools-ext.ex.ts'
+import { ToolsBrowser, type ToolsBrowser as ToolsBrowserType } from '../app/tools/tools-browser.ex.ts'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.ex.ts'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.ex.ts'
 import { Ui, type Ui as UiType } from '../app/ui/ui.ex.ts'
@@ -36,9 +37,10 @@ Object.assign($ex, {
   PkgApiTools,
   PkgApiUi,
   PkgApiUnit,
+  PkgApi,
   Pkg,
   Pkgs,
-  ToolsExt,
+  ToolsBrowser,
   ToolsFetcher,
   Tools,
   Ui,
@@ -63,9 +65,10 @@ declare global {
     PkgApiTools: typeof PkgApiTools
     PkgApiUi: typeof PkgApiUi
     PkgApiUnit: typeof PkgApiUnit
+    PkgApi: typeof PkgApi
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
-    ToolsExt: typeof ToolsExt
+    ToolsBrowser: typeof ToolsBrowser
     ToolsFetcher: typeof ToolsFetcher
     Tools: typeof Tools
     Ui: typeof Ui
@@ -87,9 +90,10 @@ declare global {
     export type PkgApiTools = PkgApiToolsType
     export type PkgApiUi = PkgApiUiType
     export type PkgApiUnit = PkgApiUnitType
+    export type PkgApi = PkgApiType
     export type Pkg = PkgType
     export type Pkgs = PkgsType
-    export type ToolsExt = ToolsExtType
+    export type ToolsBrowser = ToolsBrowserType
     export type ToolsFetcher = ToolsFetcherType
     export type Tools = ToolsType
     export type Ui = UiType

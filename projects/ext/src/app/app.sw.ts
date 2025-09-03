@@ -21,6 +21,7 @@ export class App extends $sw.Unit {
     self.$ = this
     await this.net.init()
     await this.pkgs.init()
+    await this.boot.init()
     await this.initContentScript()
     await this.initOffscreen()
     await this.dev.init()

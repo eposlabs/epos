@@ -23,7 +23,6 @@ export type Meta = {
   unobserve?: () => void
 }
 
-// TODO: see below
 export class StateNode extends $exSw.Unit {
   private $state = this.up($exSw.State)!
   static _meta_ = _meta_

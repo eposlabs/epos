@@ -1,3 +1,5 @@
+export type CsReadyData = { busToken: string }
+
 export class App extends $cs.Unit {
   browser = chrome
   utils = new $cs.Utils(this)
@@ -10,9 +12,13 @@ export class App extends $cs.Unit {
 
   async init() {
     self.$ = this
-    self.__eposCsReady$ ??= Promise.withResolvers<{ busToken: string }>()
+    self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
+    self.__eposCsReady$.resolve({ busToken: this.getBusToken() })
+  }
+
+  private getBusToken() {
     const busToken = this.bus.getPageToken()
     if (!this.$.is.string(busToken)) throw this.never
-    self.__eposCsReady$.resolve({ busToken })
+    return busToken
   }
 }
