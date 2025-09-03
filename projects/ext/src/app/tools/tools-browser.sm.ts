@@ -1,13 +1,11 @@
 export type PermissionResult = { id: string; granted: boolean }
 
-export class ToolsBrowser extends $vw.Unit {
+export class ToolsBrowser extends $sm.Unit {
   private id = this.$.utils.id()
 
   async init() {
-    if (!this.$.env.is.vwPermissions) return
     this.$.bus.on('tools.requestPermissions', this.requestPermissions, this)
     this.$.bus.on('tools.closePermissionTab', () => self.close())
-    await this.$.bus.send('tools.permissionTabReady')
   }
 
   async requestPermissions(opts: chrome.permissions.Permissions) {

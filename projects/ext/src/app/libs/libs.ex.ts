@@ -1,6 +1,5 @@
 import { createLog } from '@eposlabs/utils'
 import * as mobx from 'mobx'
-import * as nanoid from 'nanoid'
 import * as yjs from 'yjs'
 
 type MobxReactLite = typeof import('mobx-react-lite') | null
@@ -21,7 +20,6 @@ export class Libs extends $ex.Unit {
   createLog = createLog
   mobx = mobx
   mobxReactLite = mobxReactLite
-  nanoid = nanoid
   react = react
   reactDom = reactDom
   reactDomClient = reactDomClient

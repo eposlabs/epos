@@ -10,11 +10,9 @@ export class App extends $vw.Unit {
   dev = new $vw.Dev(this)
   pkgs = new $vw.Pkgs(this)
   shell = new $vw.Shell(this)
-  tools = new $vw.Tools(this)
 
   async init() {
     self.$ = this
-    await this.tools.init()
     await this.pkgs.init()
     await this.shell.init()
   }

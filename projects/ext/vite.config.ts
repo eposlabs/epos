@@ -1,4 +1,5 @@
 import { defineConfig } from 'rolldown-vite'
+import copy from 'rollup-plugin-copy'
 import fs from 'node:fs/promises'
 import paralayer from 'paralayer/vite'
 import preact from '@preact/preset-vite'
@@ -34,6 +35,15 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     preact(),
     tailwindcss(),
+
+    copy({
+      targets: [
+        {
+          src: './public/*',
+          dest: './dist',
+        },
+      ],
+    }),
 
     paralayer({
       input: './src/app',

@@ -4,8 +4,6 @@ import { Dev, type Dev as DevType } from '../app/dev/dev.vw.ts'
 import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.vw.tsx'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.vw.tsx'
 import { Shell, type Shell as ShellType } from '../app/shell/shell.vw.tsx'
-import { ToolsBrowser, type ToolsBrowser as ToolsBrowserType } from '../app/tools/tools-browser.vw.ts'
-import { Tools, type Tools as ToolsType } from '../app/tools/tools.vw.ts'
 
 Object.assign($vw, {
   App,
@@ -14,8 +12,6 @@ Object.assign($vw, {
   Pkg,
   Pkgs,
   Shell,
-  ToolsBrowser,
-  Tools,
 })
 
 declare global {
@@ -28,8 +24,6 @@ declare global {
     Pkg: typeof Pkg
     Pkgs: typeof Pkgs
     Shell: typeof Shell
-    ToolsBrowser: typeof ToolsBrowser
-    Tools: typeof Tools
   }
 
   namespace $vw {
@@ -39,7 +33,5 @@ declare global {
     export type Pkg = PkgType
     export type Pkgs = PkgsType
     export type Shell = ShellType
-    export type ToolsBrowser = ToolsBrowserType
-    export type Tools = ToolsType
   }
 }

@@ -5,7 +5,6 @@ export class Shell extends $vw.Unit {
   }
 
   async init() {
-    if (!this.$.env.is.vwShell) return
     const root = document.createElement('div')
     root.id = 'root'
     document.body.append(root)

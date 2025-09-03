@@ -67,8 +67,6 @@ class EnvIs extends $gl.Unit {
   // Variations of vw
   vwPopup = this.vw && this.$env.params.type === 'popup'
   vwPanel = this.vw && this.$env.params.type === 'panel'
-  vwShell = this.vwPopup || this.vwPanel
-  vwPermissions = this.vw && this.$env.params.type === 'permissions'
 
   // Variations of exTab
   exTabHub = this.ex && location.origin === this.$env.url.web

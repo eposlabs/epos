@@ -21,7 +21,6 @@ export class Pkgs extends $vw.Unit {
   watcher = new $exOsVw.PkgsWatcher(this)
 
   async init() {
-    if (!this.$.env.is.vwShell) return
     await this.initWatcher()
   }
 

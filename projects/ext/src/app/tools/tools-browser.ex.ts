@@ -1,4 +1,4 @@
-import type { PermissionResult } from './tools-browser.vw'
+import type { PermissionResult } from './tools-browser.sm'
 
 const _id_ = Symbol('id')
 
@@ -76,7 +76,7 @@ export class ToolsBrowser extends $ex.Unit {
 
   private addListener(apiPath: string[], cb?: Callback) {
     if (!cb) return
-    cb[_id_] ??= this.$.utils.id(12)
+    cb[_id_] ??= this.$.utils.id()
 
     const listenerId = this.buildListenerId(apiPath, cb)
     if (this.listenerIds.has(listenerId)) return
@@ -146,11 +146,8 @@ export class ToolsBrowser extends $ex.Unit {
     await Promise.all(tabs.map(tab => tab.id && api.tabs.remove(tab.id)))
 
     // Create new permission tab and wait till it is ready for requesting
-    const ready$ = Promise.withResolvers()
-    this.$.bus.on('tools.permissionTabReady', () => ready$.resolve(true))
     await api.tabs.create({ url, active: false, pinned: true })
-    await ready$.promise
-    this.$.bus.off('tools.permissionTabReady')
+    await this.$.bus.waitSignal('app.ready[system:permission]')
 
     // Request permissions
     const request = this.$.bus.send<PermissionResult>('tools.requestPermissions', opts)
