@@ -181,7 +181,7 @@ export class BusData extends $gl.Unit {
     }
 
     if (this.$.is.array(data)) {
-      return data.map(d => this.populate(d, storage))
+      return data.map(item => this.populate(item, storage))
     }
 
     return data

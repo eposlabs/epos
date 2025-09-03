@@ -53,7 +53,7 @@ export class BusApi extends $gl.Unit {
   async emit<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
     const fullName = this.toFullName(name)
     const actions = this.$bus.actions.list.filter(a => a.name === fullName && !a.proxy)
-    const promises = actions.map(async a => a.fn.call(a.this, ...args))
+    const promises = actions.map(async action => action.fn.call(action.this, ...args))
     const result = await this.$bus.utils.pick(promises)
     return result as T
   }

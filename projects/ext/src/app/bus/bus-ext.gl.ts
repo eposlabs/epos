@@ -84,7 +84,7 @@ export class BusExt extends $gl.Unit {
         async: (async () => {
           const args = await this.$bus.data.deserialize(req.argsJson)
           if (!this.$.is.array(args)) throw this.never
-          const promises = actions.map(async a => a.fn.call(a.this, ...args))
+          const promises = actions.map(async action => action.fn.call(action.this, ...args))
           const result = await this.$bus.utils.pick(promises)
           const resultJson = this.$bus.data.serialize(result)
           respond(resultJson)

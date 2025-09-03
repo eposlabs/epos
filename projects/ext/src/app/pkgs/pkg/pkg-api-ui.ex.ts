@@ -81,9 +81,9 @@ export class PkgApiUi extends $ex.Unit {
     const sheet = new CSSStyleSheet()
     sheet.replaceSync(this.$pkg.shadowCss)
     const rules = [...sheet.cssRules]
-    const propertyRules = rules.filter(r => r.cssText.startsWith('@property'))
+    const propertyRules = rules.filter(rule => rule.cssText.startsWith('@property'))
     if (propertyRules.length > 0) {
-      const propertyRulesCss = propertyRules.map(r => r.cssText).join('\n')
+      const propertyRulesCss = propertyRules.map(rule => rule.cssText).join('\n')
       const blob = new Blob([propertyRulesCss], { type: 'text/css' })
       const link = document.createElement('link')
       link.epos = true

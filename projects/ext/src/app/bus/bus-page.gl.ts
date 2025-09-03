@@ -118,7 +118,7 @@ export class BusPage extends $gl.Unit {
         actions = actions.filter(h => h.proxy !== `exFrame-${req.frame}`)
       }
 
-      const promises = actions.map(async a => a.fn.call(a.this, ...req.args))
+      const promises = actions.map(async action => action.fn.call(action.this, ...req.args))
       if (this.$bus.is('cs', 'os', 'vw')) {
         promises.push(this.$bus.ext.send(req.name, ...req.args))
       }

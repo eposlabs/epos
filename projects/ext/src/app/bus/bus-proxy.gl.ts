@@ -17,7 +17,7 @@ export class BusProxy extends $gl.Unit {
 
   async call(name: string, ...args: unknown[]) {
     const proxyActions = this.$bus.actions.list.filter(a => a.name === name && a.proxy)
-    const promises = proxyActions.map(async a => a.fn.call(a.this, ...args))
+    const promises = proxyActions.map(async action => action.fn.call(action.this, ...args))
     return await this.$bus.utils.pick(promises)
   }
 

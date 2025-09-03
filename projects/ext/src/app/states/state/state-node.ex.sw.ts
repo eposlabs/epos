@@ -140,7 +140,7 @@ export class StateNode extends $exSw.Unit {
     }
 
     if (this.$.is.array(value)) {
-      return value.map(v => this.raw(v)) as T
+      return value.map(item => this.raw(item)) as T
     }
 
     return value

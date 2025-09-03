@@ -107,9 +107,9 @@ export class Pkg extends $sw.Unit {
   }
 
   private getCode(uri: string, filter: SourceFilter) {
-    return this.getSourcePaths(uri, filter)
-      .map(path => this.getSource(path))
-      .join('\n')
+    const sourcePaths = this.getSourcePaths(uri, filter)
+    if (sourcePaths.length === 0) return null
+    return sourcePaths.map(path => this.getSource(path)).join('\n')
   }
 
   private async calcHash(uri: string) {

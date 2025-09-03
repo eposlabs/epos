@@ -135,7 +135,7 @@ export class Idb extends $sw.Unit {
   /** Returns a list of all database names. */
   async listDatabases() {
     const dbs = await indexedDB.databases()
-    return dbs.map(d => d.name).filter(this.$.is.present)
+    return dbs.map(db => db.name).filter(this.$.is.present)
   }
 
   /** Deletes the store from the database. */

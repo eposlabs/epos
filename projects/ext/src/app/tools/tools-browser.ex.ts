@@ -142,9 +142,9 @@ export class ToolsBrowser extends $ex.Unit {
     let url = this.$.env.url.view('permissions')
     url = api.runtime.getURL(url)
 
-    // Close all permissions tabs
+    // Close all permission tabs
     const tabs = await api.tabs.query({ url })
-    await Promise.all(tabs.map(t => t.id && api.tabs.remove(t.id)))
+    await Promise.all(tabs.map(tab => tab.id && api.tabs.remove(tab.id)))
 
     // Create a new 'permissions' tab, and wait till it is ready for requesting
     const ready$ = Promise.withResolvers()

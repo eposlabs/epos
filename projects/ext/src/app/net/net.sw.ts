@@ -9,7 +9,7 @@ export class Net extends $sw.Unit {
   private async cleanup() {
     const rules = await this.$.browser.declarativeNetRequest.getSessionRules()
     if (rules.length === 0) return
-    const removeRuleIds = rules.map(r => r.id)
+    const removeRuleIds = rules.map(rule => rule.id)
     await this.$.browser.declarativeNetRequest.updateSessionRules({ removeRuleIds })
   }
 

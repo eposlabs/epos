@@ -66,7 +66,7 @@ async function toCanonicalStringAsync(value: unknown): Promise<string> {
 
   // Arrays
   if (Array.isArray(value)) {
-    const items = await Promise.all(value.map(v => toCanonicalStringAsync(v)))
+    const items = await Promise.all(value.map(item => toCanonicalStringAsync(item)))
     return `array:[${items.join(',')}]`
   }
 
@@ -77,9 +77,9 @@ async function toCanonicalStringAsync(value: unknown): Promise<string> {
     const object = value as Obj
     const keys = Object.keys(object).sort()
     const pairs = await Promise.all(
-      keys.map(async k => {
-        const valStr = await toCanonicalStringAsync(object[k])
-        return `${k}:${valStr}`
+      keys.map(async key => {
+        const valStr = await toCanonicalStringAsync(object[key])
+        return `${key}:${valStr}`
       }),
     )
     return `object:{${pairs.join(',')}}`

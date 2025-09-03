@@ -146,7 +146,7 @@ export class StateObserver extends $exSw.Unit {
     this.$state.doc.transact(() => {
       const yOwner = this.$state.node.getYNode(mOwner)
       if (!yOwner) throw this.never
-      const yAdded = added.map((v, i) => this.$state.node.getYNode(c.added[i]) ?? v)
+      const yAdded = added.map((value, index) => this.$state.node.getYNode(c.added[index]) ?? value)
       yOwner.delete(c.index, c.removedCount)
       yOwner.insert(c.index, yAdded)
     })
@@ -230,7 +230,7 @@ export class StateObserver extends $exSw.Unit {
         // Insert operation? -> Create new items
         else if (operation.insert) {
           if (!this.$.is.array(operation.insert)) throw this.never
-          const added = operation.insert.map(i => this.$state.node.create(i, mNode))
+          const added = operation.insert.map(item => this.$state.node.create(item, mNode))
           mNode.splice(offset, 0, ...added)
           offset += added.length
         }

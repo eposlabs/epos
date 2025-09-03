@@ -38,16 +38,16 @@ export class Pkgs extends $sw.Unit {
 
   getCss(uri: string) {
     return this.list
-      .map(p => p.getCss(uri))
-      .filter(Boolean)
+      .map(pkg => pkg.getCss(uri))
+      .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
 
   getLiteJs(uri: string) {
     return this.list
-      .map(p => p.getLiteJs(uri))
-      .filter(Boolean)
+      .map(pkg => pkg.getLiteJs(uri))
+      .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
