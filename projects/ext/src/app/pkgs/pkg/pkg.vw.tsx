@@ -4,6 +4,7 @@ export class Pkg extends $vw.Unit {
   dev: Fragment['dev']
   name: Fragment['name']
   hash: Fragment['hash']
+  title: Fragment['title']
   popup: Fragment['popup']
 
   constructor(parent: $vw.Unit, fragment: Fragment) {
@@ -11,6 +12,7 @@ export class Pkg extends $vw.Unit {
     this.dev = fragment.dev
     this.name = fragment.name
     this.hash = fragment.hash
+    this.title = fragment.title
     this.popup = fragment.popup
   }
 
@@ -21,23 +23,25 @@ export class Pkg extends $vw.Unit {
   }
 
   ui = () => {
-    const onClick = () => {
-      this.$.shell.transaction(state => {
-        state.selectedPkgName = this.name
-      })
-    }
+    const state = this.$.libs.preact.useContext(this.$.shell.context)
+    const selected = state.selectedPkgName === this.name
+    const active = state.activePkgNames.has(this.name)
 
     return (
       <div>
-        <button onClick={onClick} className="bg-amber-200">
-          CLICK [{this.$.shell.state.selectedPkgName}]
-        </button>
         <iframe
           name={this.name}
-          src={this.$.env.url.frame(this.name, this.dev)}
-          className="m-40 h-[100vh] w-[100vw] border border-black"
+          src={active ? this.$.env.url.frame(this.name, this.dev) : 'about:blank'}
+          className={this.cx([
+            '_h-[100vh] _w-[100vw] m-40 h-[600px] w-[600px] border border-black',
+            !selected && 'hidden',
+          ])}
         />
       </div>
     )
+  }
+
+  cx(classNames: unknown[]) {
+    return classNames.filter(this.$.is.string).join(' ')
   }
 }

@@ -1,27 +1,23 @@
 import type { Dispatch, StateUpdater } from 'preact/hooks'
-import type { Actions, Fragments } from '../pkgs/pkgs.sw'
+import type { Actions } from '../pkgs/pkgs.sw'
 
 export type State = {
-  /** Selected package name. */
-  name: string | null
+  selectedPkgName: string | null
+  activePkgNames: Set<string>
   actions: Actions
-  fragments: Fragments
   hasPanel: boolean
 }
 
 export class Shell extends $vw.Unit {
-  private setRenderId: Dispatch<StateUpdater<string>> | null = null
-
-  state: State = {
-    name: null,
+  private setState: Dispatch<StateUpdater<State>> | null = null
+  private state: State = {
+    selectedPkgName: null,
+    activePkgNames: new Set(),
     actions: {},
-    fragments: {},
     hasPanel: false,
   }
 
-  constructor(parent: $vw.Unit) {
-    super(parent)
-  }
+  context = this.$.libs.preact.createContext<State>(this.state)
 
   async init() {
     const root = document.createElement('div')
@@ -30,21 +26,30 @@ export class Shell extends $vw.Unit {
     this.$.libs.preact.render(<this.ui />, root)
   }
 
-  async transaction(fn: (state: State) => Promise<void> | void) {
-    await fn(this.state)
-    if (!this.setRenderId) return
-    this.setRenderId(this.$.utils.id())
+  update(modifier: (state: State) => void) {
+    const state = structuredClone(this.state)
+    modifier(state)
+
+    if (this.setState) {
+      this.setState(state)
+    } else {
+      this.state = state
+    }
   }
 
   ui = () => {
-    const [_, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.id())
-    this.setRenderId = setRenderId
+    const Provider = this.context.Provider as any
+    const [state, setState] = this.$.libs.preact.useState<State>(this.state)
+    this.state = state
+    this.setState = setState
 
     return (
-      <div>
-        {/* <this.$.pkgs.Select /> */}
-        <this.$.pkgs.ui />
-      </div>
+      <Provider value={state}>
+        <div>
+          <this.$.pkgs.Dock />
+          <this.$.pkgs.ui />
+        </div>
+      </Provider>
     )
   }
 }

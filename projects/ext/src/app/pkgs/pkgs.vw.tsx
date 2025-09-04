@@ -1,8 +1,4 @@
-export type State = {
-  selectedPkgName: string | null
-  // actions: Actions
-  // hasPanel: boolean
-}
+import type { ChangeEvent } from 'react'
 
 export class Pkgs extends $vw.Unit {
   map: { [name: string]: $vw.Pkg } = {}
@@ -10,6 +6,10 @@ export class Pkgs extends $vw.Unit {
 
   get list() {
     return Object.values(this.map)
+  }
+
+  get sortedByName() {
+    return this.list.toSorted((pkg1, pkg2) => pkg1.name.localeCompare(pkg2.name))
   }
 
   async init() {
@@ -39,11 +39,21 @@ export class Pkgs extends $vw.Unit {
         delete this.map[name]
       }
 
-      console.warn('UPDATE', data)
+      // Close view if nothing to show
+      const noPkgs = this.list.length === 0
+      const noActions = Object.keys(data.actions).length === 0
+      if (noPkgs && noActions) {
+        self.close()
+      }
 
-      this.$.shell.transaction(state => {
+      // Update shell state
+      this.$.shell.update(state => {
+        const firstPkgName = this.sortedByName[0].name
+        state.selectedPkgName = firstPkgName
+        state.activePkgNames.add(firstPkgName)
         state.actions = data.actions
         state.hasPanel = data.hasPanel
+        delta.removed.forEach(name => state.activePkgNames.delete(name))
       })
     })
   }
@@ -51,10 +61,34 @@ export class Pkgs extends $vw.Unit {
   ui = () => {
     return (
       <div>
-        {this.$.shell.state.hasPanel ? 'HAS PANEL' : 'NO PANEL'}
         {this.list.map(pkg => {
           return <pkg.ui key={pkg.name} />
         })}
+      </div>
+    )
+  }
+
+  Dock = () => {
+    const state = this.$.libs.preact.useContext(this.$.shell.context)
+    if (!state.selectedPkgName) return null
+
+    const onChange = (e: ChangeEvent<HTMLSelectElement>) => {
+      this.$.shell.update(state => {
+        const pkgName = e.target.value
+        state.selectedPkgName = pkgName
+        state.activePkgNames.add(pkgName)
+      })
+    }
+
+    return (
+      <div>
+        <select value={state.selectedPkgName} onChange={onChange}>
+          {this.sortedByName.map(pkg => (
+            <option key={pkg.name} value={pkg.name}>
+              {pkg.title ?? pkg.name}
+            </option>
+          ))}
+        </select>
       </div>
     )
   }
@@ -66,13 +100,8 @@ export class Pkgs extends $vw.Unit {
   private byName = (pkg1: $vw.Pkg, pkg2: $vw.Pkg) => {
     return pkg1.name.localeCompare(pkg2.name)
   }
-  state = {
-    selectedName: null,
-    hasPanel: false,
-    actions: {},
-  }
 
-  update() {
+  __update() {
     if (!this.state.selectedName || !this.state.map[this.state.selectedName]) {
       this.state.selectedName = Object.keys(this.state.map)[0] ?? null
       const pkg = this.state.map[this.state.selectedName]
@@ -115,7 +144,7 @@ export class Pkgs extends $vw.Unit {
     )
   }
 
-  Select = () => {
+  _Select = () => {
     const state = this.$.libs.valtio.useSnapshot(this.state) as State
     if (!state.selectedName) return null
 

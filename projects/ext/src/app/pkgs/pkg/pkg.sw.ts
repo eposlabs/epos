@@ -20,6 +20,7 @@ export type Fragment = {
   dev: boolean
   name: string
   hash: string
+  title: string | null
   popup: Popup
 }
 
@@ -113,6 +114,7 @@ export class Pkg extends $sw.Unit {
       dev: this.dev,
       name: this.name,
       hash: await this.getHash(uri),
+      title: this.manifest.title,
       popup: this.manifest.popup,
     }
   }
