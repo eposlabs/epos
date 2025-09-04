@@ -4,20 +4,25 @@ export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
 export type SourceFilter = { modes?: Mode[]; lang?: 'js' | 'css' }
 
-export type Data = {
+export type Spec = {
+  dev: boolean
   name: string
   sources: Sources
   manifest: Manifest
+}
+
+export type Payload = {
   dev: boolean
+  script: string
 }
 
 export type Fragment = {
+  dev: boolean
   name: string
   hash: string
   popup: Popup
 }
 
-// TODO: update hash deps (assets, mode, smth else?)
 export class Pkg extends $sw.Unit {
   declare name: string
   declare dev: boolean
@@ -27,27 +32,27 @@ export class Pkg extends $sw.Unit {
   declare targets: $sw.PkgTarget[]
   exporter = new $sw.PkgExporter(this)
 
-  static async create(parent: $sw.Unit, data: Data, assets?: Assets) {
+  static async create(parent: $sw.Unit, spec: Spec, assets?: Assets) {
     const pkg = new Pkg(parent)
-    await pkg.update(data, assets)
+    await pkg.update(spec, assets)
     return pkg
   }
 
   static async restore(parent: $sw.Unit, name: string) {
     const pkg = new Pkg(parent)
-    const data = await pkg.$.idb.get<Data>(name, ':pkg', ':default')
-    if (!data) return null
-    pkg.update(data)
+    const spec = await pkg.$.idb.get<Spec>(name, ':pkg', ':default')
+    if (!spec) return null
+    pkg.update(spec)
     return pkg
   }
 
-  async update(data: Data, assets?: Assets) {
-    this.name = data.name
-    this.dev = data.dev
-    this.sources = data.sources
-    this.manifest = data.manifest
-    this.action = this.prepareAction(data.manifest.action)
-    this.targets = data.manifest.targets.map(target => new $sw.PkgTarget(this, target))
+  async update(spec: Spec, assets?: Assets) {
+    this.name = spec.name
+    this.dev = spec.dev
+    this.sources = spec.sources
+    this.manifest = spec.manifest
+    this.action = this.prepareAction(spec.manifest.action)
+    this.targets = spec.manifest.targets.map(target => new $sw.PkgTarget(this, target))
 
     if (assets) {
       await this.$.idb.deleteStore(this.name, ':assets')
@@ -56,7 +61,7 @@ export class Pkg extends $sw.Unit {
       }
     }
 
-    await this.$.idb.set<Data>(this.name, ':pkg', ':default', {
+    await this.$.idb.set<Spec>(this.name, ':pkg', ':default', {
       name: this.name,
       sources: this.sources,
       manifest: this.manifest,
@@ -68,7 +73,15 @@ export class Pkg extends $sw.Unit {
     return this.targets.some(target => target.test(uri))
   }
 
-  getDef(uri: string) {
+  getCss(uri: string) {
+    return this.getCode(uri, { modes: ['normal', 'lite'], lang: 'css' })
+  }
+
+  getLiteJs(uri: string) {
+    return this.getCode(uri, { modes: ['lite'], lang: 'js' })
+  }
+
+  getPayload(uri: string): Payload | null {
     const js = this.getCode(uri, { modes: ['normal', 'shadow'], lang: 'js' })
     const shadowCss = this.getCode(uri, { modes: ['shadow'], lang: 'css' })
     if (!js && !shadowCss) return null
@@ -80,30 +93,26 @@ export class Pkg extends $sw.Unit {
       ...['$exOsVw', '$exOsSwVw'],
     ]
 
-    return [
-      `{`,
-      `  name: ${JSON.stringify(this.name)},`,
-      `  icon: ${JSON.stringify(this.manifest.icon)},`,
-      `  title: ${JSON.stringify(this.manifest.title)},`,
-      `  shadowCss: ${JSON.stringify(shadowCss)},`,
-      `  fn(epos, React = epos.react, ${layers.join(', ')}) { ${js} },`,
-      `}`,
-    ].join('\n')
-  }
-
-  getCss(uri: string) {
-    return this.getCode(uri, { modes: ['normal', 'lite'], lang: 'css' })
-  }
-
-  getLiteJs(uri: string) {
-    return this.getCode(uri, { modes: ['lite'], lang: 'js' })
+    return {
+      dev: this.dev,
+      script: [
+        `{`,
+        `  name: ${JSON.stringify(this.name)},`,
+        `  icon: ${JSON.stringify(this.manifest.icon)},`,
+        `  title: ${JSON.stringify(this.manifest.title)},`,
+        `  shadowCss: ${JSON.stringify(shadowCss)},`,
+        `  fn(epos, React = epos.react, ${layers.join(', ')}) { ${js} },`,
+        `}`,
+      ].join('\n'),
+    }
   }
 
   async getFragment(uri: string): Promise<Fragment | null> {
     if (!this.test(uri)) return null
     return {
+      dev: this.dev,
       name: this.name,
-      hash: await this.calcHash(uri),
+      hash: await this.getHash(uri),
       popup: this.manifest.popup,
     }
   }
@@ -114,10 +123,16 @@ export class Pkg extends $sw.Unit {
     return sourcePaths.map(path => this.getSource(path)).join('\n')
   }
 
-  private async calcHash(uri: string) {
+  private async getHash(uri: string) {
+    // TODO: use targets directly
     const paths = this.getSourcePaths(uri).sort()
-    const snippets = paths.map(path => this.getSource(path))
-    return await this.$.utils.hash([...snippets, this.manifest.popup])
+    return await this.$.utils.hash({
+      dev: this.dev,
+      popup: this.manifest.popup,
+      assets: this.manifest.assets,
+      snippets: paths.map(path => this.getSource(path)),
+      targets: this.targets.map(target => ({ mode: target.mode })),
+    })
   }
 
   private getSourcePaths(uri: string, filter: SourceFilter = {}) {

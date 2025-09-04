@@ -5,9 +5,7 @@ export class BootMedium extends $swVw.Unit {
     if (this.$.env.is.vwPopup) {
       this.$.bus.on('boot.isPopupOpen', () => true)
       this.$.bus.on('boot.closePopup', () => window.close())
-    }
-
-    if (this.$.env.is.vwPanel) {
+    } else if (this.$.env.is.vwPanel) {
       const tabId = this.$.env.params.tabId
       this.$.bus.on(`boot.isPanelOpen[${tabId}]`, () => true)
     }

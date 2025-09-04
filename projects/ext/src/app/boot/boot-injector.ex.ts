@@ -1,3 +1,5 @@
+import type { Payload } from '../pkgs/pkg/pkg.sw'
+
 export class BootInjector extends $ex.Unit {
   constructor(parent: $ex.Unit) {
     super(parent)
@@ -37,10 +39,11 @@ export class BootInjector extends $ex.Unit {
     const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
     if (css) this.injectCss(css)
 
-    // Inject pkg defs
-    const defs = await this.$.bus.send<string[]>('pkgs.getDefs', location.href)
-    if (defs.length === 0) return
-    await this.injectJs(`self.__epos.defs = [${defs.join(',')}]`)
+    // Inject pkg payloads
+    const payloads = await this.$.bus.send<Payload[]>('pkgs.getPayloads', location.href)
+    if (payloads.length === 0) return
+    const js = `self.__epos.defs = [${payloads.map(payload => payload.script).join(',')}]`
+    await this.injectJs(js)
   }
 
   private async injectJs(js: string) {
@@ -68,7 +71,7 @@ export class BootInjector extends $ex.Unit {
   private initPkgs() {
     const defs = self.__epos.defs
     const tabId = this.getTabId()
-    // this.deleteEposVar()
+    this.deleteEposVar()
 
     for (const def of defs) {
       // Create pkg

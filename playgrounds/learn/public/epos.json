@@ -5,9 +5,13 @@
   "action": "<hub>",
   "targets": [
     {
-      "matches": ["<hub>", "https://inssist.com/*"],
+      "matches": ["<hub>", "https://inssist.com/*", "<panel>"],
       "load": ["./fg.js", "./fg.css"],
       "mode": "shadow"
+    },
+    {
+      "matches": "<background>",
+      "load": ["./bg.js"]
     }
   ]
 }

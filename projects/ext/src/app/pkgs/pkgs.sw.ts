@@ -16,10 +16,10 @@ export class Pkgs extends $sw.Unit {
   constructor(parent: $sw.Unit) {
     super(parent)
     this.$.bus.on('pkgs.test', this.test, this)
-    this.$.bus.on('pkgs.getDefs', this.getDefs, this)
     this.$.bus.on('pkgs.getCss', this.getCss, this)
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pkgs.getActions', this.getActions, this)
+    this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
     this.$.bus.on('pkgs.getFragments', this.getFragments, this)
   }
 
@@ -30,10 +30,6 @@ export class Pkgs extends $sw.Unit {
 
   test(uri: string) {
     return this.list.some(pkg => pkg.test(uri))
-  }
-
-  getDefs(uri: string) {
-    return this.list.map(pkg => pkg.getDef(uri)).filter(this.$.is.present)
   }
 
   getCss(uri: string) {
@@ -53,14 +49,14 @@ export class Pkgs extends $sw.Unit {
   }
 
   getActions() {
-    const actions: ActionMap = {}
+    return this.list.reduce((actions, pkg) => {
+      if (pkg.action) actions[pkg.name] = pkg.action
+      return actions
+    }, {} as ActionMap)
+  }
 
-    for (const pkg of this.list) {
-      if (!pkg.action) continue
-      actions[pkg.name] = pkg.action
-    }
-
-    return actions
+  getPayloads(uri: string) {
+    return this.list.map(pkg => pkg.getPayload(uri)).filter(this.$.is.present)
   }
 
   private async getFragments(uri: string) {

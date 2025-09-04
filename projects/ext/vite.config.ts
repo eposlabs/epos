@@ -5,28 +5,47 @@ import { defineConfig } from 'rolldown-vite'
 import copy from 'rollup-plugin-copy'
 import rebundle from 'vite-plugin-rebundle'
 
+import { BuildOptions } from 'vite-plugin-rebundle'
+
 export default defineConfig(async ({ mode }) => {
+  const env = mode === 'development' ? 'development' : 'production'
+
   const setup = await paralayer({
     input: './src/app',
     output: './src/layers',
     watch: mode !== 'production',
   })
 
+  const bundle = (name: string, options: BuildOptions = {}) => ({
+    minify: mode !== 'development',
+    keepNames: true,
+    banner: { js: setup },
+    ...options,
+    define: {
+      'BUNDLE': json(name),
+      'process.env.NODE_ENV': json(env),
+      ...options.define,
+    },
+  })
+
   return {
     define: {
-      'import.meta.env.DEV': JSON.stringify(mode === 'development'),
-      'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
+      'import.meta.env.DEV': json(mode === 'development'),
+      'import.meta.env.PROD': json(mode !== 'development'),
+      'process.env.NODE_ENV': 'process.env.NODE_ENV',
     },
 
     build: {
       watch: mode === 'production' ? null : {},
       sourcemap: mode === 'development',
       minify: false,
-      rollupOptions: {
+      rolldownOptions: {
         input: {
-          'ex': './src/entry/entry.ex.ts', // execution
-          'ex-mini': './src/entry/entry.ex.ts', // execution without react
           'cs': './src/entry/entry.cs.ts', // content script
+          'ex': './src/entry/entry.ex.ts', // execution
+          'ex-dev': './src/entry/entry.ex.ts', // ex with forced NODE_ENV=development
+          'ex-mini': './src/entry/entry.ex.ts', // ex without react
+          'ex-mini-dev': './src/entry/entry.ex.ts', // ex-mini with forced NODE_ENV=development
           'os': './src/entry/entry.os.ts', // offscreen
           'sm': './src/entry/entry.sm.ts', // system
           'sw': './src/entry/entry.sw.ts', // service worker
@@ -59,51 +78,30 @@ export default defineConfig(async ({ mode }) => {
       }),
 
       rebundle({
-        'ex': {
-          minify: mode !== 'development',
-          keepNames: true,
+        'cs': bundle('cs'),
+        'ex': bundle('ex', {
           sourcemap: false,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('ex') },
-        },
-        'ex-mini': {
-          minify: mode !== 'development',
-          keepNames: true,
+        }),
+        'ex-dev': bundle('ex', {
           sourcemap: false,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('ex-mini') },
-        },
-        'cs': {
-          minify: mode !== 'development',
-          keepNames: true,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('cs') },
-        },
-        'os': {
-          minify: mode !== 'development',
-          keepNames: true,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('os') },
-        },
-        'sm': {
-          minify: mode !== 'development',
-          keepNames: true,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('sm') },
-        },
-        'sw': {
-          minify: mode !== 'development',
-          keepNames: true,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('sw') },
-        },
-        'vw': {
-          minify: mode !== 'development',
-          keepNames: true,
-          banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('vw') },
-        },
+          define: { 'process.env.NODE_ENV': json('development') },
+        }),
+        'ex-mini': bundle('ex-mini', {
+          sourcemap: false,
+        }),
+        'ex-mini-dev': bundle('ex-mini', {
+          sourcemap: false,
+          define: { 'process.env.NODE_ENV': json('development') },
+        }),
+        'os': bundle('os'),
+        'sm': bundle('sm'),
+        'sw': bundle('sw'),
+        'vw': bundle('vw'),
       }),
     ],
   }
 })
+
+function json(value: unknown) {
+  return JSON.stringify(value)
+}

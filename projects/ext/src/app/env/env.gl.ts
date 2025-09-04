@@ -1,7 +1,7 @@
 /**
  * #### Extension Pages
- * - offscreen - `/offscreen.html`
  * - permission - `/system.html/?type=permission`
+ * - offscreen - `/offscreen.html?type=background`
  * - popup view - `/view.html/?type=popup&tabId={tabId}`
  * - panel view  - `/view.html/?type=panel&tabId={tabId}`
  * - popup frame - `/frame.html/?type=popup&name={pkgName}&tabId={tabId}`
@@ -29,17 +29,17 @@ class EnvUrl extends $gl.Unit {
   private $env = this.up(Env)!
 
   web = 'https://epos.dev'
-  offscreen = '/offscreen.html'
+  offscreen = '/offscreen.html?type=background'
 
   view(type: 'popup' | 'panel', tabId?: string | number) {
     const q = new URLSearchParams({ type, ...(tabId && { tabId: String(tabId) }) })
     return `/view.html?${q}`
   }
 
-  frame(name: string) {
+  frame(name: string, dev: boolean) {
     const type = this.$env.is.os ? 'background' : this.$env.params.type
     const tabId = this.$env.is.os ? null : this.$env.params.tabId
-    const q = new URLSearchParams({ type, name, ...(tabId && { tabId }) })
+    const q = new URLSearchParams({ type, name, ...(tabId && { tabId }), ...(dev && { dev: 'true' }) })
     return `/frame.html?${q}`
   }
 

@@ -1,4 +1,4 @@
-import script from './boot-injector-setup.cs?raw'
+import setupJs from './boot-injector-setup.cs?raw'
 
 /**
  * For tabs, there are three 'actors' for code execution:
@@ -17,7 +17,7 @@ import script from './boot-injector-setup.cs?raw'
 export class BootInjector extends $cs.Unit {
   constructor(parent: $cs.Unit) {
     super(parent)
-    this.execute(script)
+    this.execute(setupJs)
   }
 
   private execute(code: string) {

@@ -14,6 +14,7 @@ export class Pkgs extends $os.Unit {
         this.map[name] = new $os.Pkg(this, {
           name: fragment.name,
           hash: fragment.hash,
+          dev: fragment.dev,
         })
       }
 
@@ -22,6 +23,7 @@ export class Pkgs extends $os.Unit {
         const fragment = data.fragments[name]
         if (!pkg || !fragment) throw this.never
         pkg.hash = fragment.hash
+        pkg.dev = fragment.dev
         pkg.reloadFrame()
       }
 

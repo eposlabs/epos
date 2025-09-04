@@ -11,12 +11,12 @@ export type State = {
 }
 
 export class Pkgs extends $vw.Unit {
-  state = this.$.libs.valtio.proxy<State>({
+  state = {
     map: {},
     selectedName: null,
     hasPanel: false,
     actions: {},
-  })
+  }
 
   watcher = new $exOsVw.PkgsWatcher(this)
 
@@ -37,6 +37,7 @@ export class Pkgs extends $vw.Unit {
           name: fragment.name,
           hash: fragment.hash,
           popup: fragment.popup,
+          dev: fragment.dev,
         })
       }
 
@@ -46,6 +47,7 @@ export class Pkgs extends $vw.Unit {
         if (!pkg || !fragment) throw this.never
         pkg.hash = fragment.hash
         pkg.popup = fragment.popup
+        pkg.dev = fragment.dev
       }
 
       for (const name of delta.removed) {
@@ -81,7 +83,7 @@ export class Pkgs extends $vw.Unit {
   }
 
   ui = () => {
-    const state = this.$.libs.valtio.useSnapshot(this.state) as State
+    const state = this.state
     const pkgs = Object.values(state.map).sort(this.byName)
 
     // const onSelect = () => {

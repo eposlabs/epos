@@ -1,23 +1,31 @@
-import globals from './boot-injector-globals.sw?raw'
+import globalsJs from './boot-injector-globals.sw?raw'
 
 export type Tab = { id: number; url: string }
-export type JsInjectMode = 'script' | 'function'
+export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 
 export class BootInjector extends $sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
-  private engine = { full: '', mini: '' }
-  private globals: string
+  private engine = {
+    dev: { full: '', mini: '' },
+    prod: { full: '', mini: '' },
+  }
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.globals = globals
     this.injectToTabsOnNavigation()
   }
 
   async init() {
-    this.engine.full = await fetch('/ex.js').then(r => r.text())
-    this.engine.mini = await fetch('/ex-mini.js').then(r => r.text())
+    // Dev versions are absent for exported packages
+    const [exDev] = await this.$.utils.safe(fetch('/ex-dev.js').then(r => r.text()))
+    const [exDevMini] = await this.$.utils.safe(fetch('/ex-dev-mini.js').then(r => r.text()))
+    this.engine.dev.full = exDev ?? ''
+    this.engine.dev.mini = exDevMini ?? ''
+
+    // Prod versions are always present
+    this.engine.prod.full = await fetch('/ex.js').then(r => r.text())
+    this.engine.prod.mini = await fetch('/ex-mini.js').then(r => r.text())
   }
 
   private injectToTabsOnNavigation() {
@@ -55,24 +63,30 @@ export class BootInjector extends $sw.Unit {
     const css = this.$.pkgs.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
 
-    // No pkg defs for the url? -> Done
-    const defs = this.$.pkgs.getDefs(tab.url)
-    if (defs.length === 0) return
+    // No pkg payloads for the url? -> Done
+    const payloads = this.$.pkgs.getPayloads(tab.url)
+    if (payloads.length === 0) return
+
+    // Check if dev packages are used
+    const hasDevPkg = payloads.some(payload => payload.dev)
+
+    // Prepare engine
+    const engine = hasDevPkg ? this.engine.dev : this.engine.prod
+    const engineJs = payloads.some(payload => this.hasReact(payload.script)) ? engine.full : engine.mini
 
     // Prepare js
-    const engine = defs.some(def => this.hasReact(def)) ? this.engine.full : this.engine.mini
     const js = [
       `(() => {`,
       `self.__epos.tabId = ${JSON.stringify(tab.id)}`,
       `self.__epos.busToken = ${JSON.stringify(csData.busToken)}`,
-      `self.__epos.defs = [${defs.join(',')}]`,
-      this.globals,
-      engine,
+      `self.__epos.defs = [${payloads.map(payload => payload.script).join(',')}]`,
+      globalsJs,
+      engineJs,
       `})()`,
     ].join(';\n')
 
     // Inject js
-    async: this.injectJs(tab, js, 'script')
+    async: this.injectJs(tab, js, hasDevPkg ? 'script' : 'script-auto-revoke')
   }
 
   private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
@@ -83,16 +97,16 @@ export class BootInjector extends $sw.Unit {
     // Inject js
     const result = await this.execute(tab.id, 'MAIN', [js, mode], (js, mode) => {
       try {
-        if (mode === 'script') {
+        if (mode === 'function') {
+          new Function(js)()
+        } else if (mode === 'script' || mode === 'script-auto-revoke') {
           const blob = new Blob([js], { type: 'application/javascript' })
           const url = URL.createObjectURL(blob)
           const script = document.createElement('script')
           script.epos = true
           script.src = url
-          script.onload = () => URL.revokeObjectURL(url)
+          if (mode === 'script-auto-revoke') script.onload = () => URL.revokeObjectURL(url)
           self.__epos.element.prepend(script)
-        } else if (mode === 'function') {
-          new Function(js)()
         }
         return { error: null }
       } catch (e) {

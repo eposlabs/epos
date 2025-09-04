@@ -25,7 +25,7 @@ export class App extends $sw.Unit {
     await this.initContentScript()
     await this.initOffscreen()
     await this.dev.init()
-    self.add = (name: string) => this.pkgs.installer.install(name)
+    self.add = (name: string, dev = false) => this.pkgs.installer.install(name, dev)
     self.remove = (name: string) => this.pkgs.installer.remove(name)
     self.eject = (name: string) => this.pkgs.map[name].exporter.export()
   }
