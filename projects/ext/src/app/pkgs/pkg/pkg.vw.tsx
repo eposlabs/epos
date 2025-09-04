@@ -1,27 +1,43 @@
-import type { Popup } from '../pkgs-parser.sw'
+import type { Fragment } from './pkg.sw'
 
 export class Pkg extends $vw.Unit {
-  name: string
-  dev: boolean
-  hash: string
-  popup: Popup
-  visited = false
+  dev: Fragment['dev']
+  name: Fragment['name']
+  hash: Fragment['hash']
+  popup: Fragment['popup']
 
-  constructor(parent: $vw.Unit, opts: { name: string; hash: string; popup: Popup; dev: boolean }) {
+  constructor(parent: $vw.Unit, fragment: Fragment) {
     super(parent)
-    this.name = opts.name
-    this.dev = opts.dev
-    this.hash = opts.hash
-    this.popup = opts.popup
+    this.dev = fragment.dev
+    this.name = fragment.name
+    this.hash = fragment.hash
+    this.popup = fragment.popup
+  }
+
+  update(fragment: Omit<Fragment, 'name'>) {
+    this.dev = fragment.dev
+    this.hash = fragment.hash
+    this.popup = fragment.popup
   }
 
   ui = () => {
+    const onClick = () => {
+      this.$.shell.transaction(state => {
+        state.selectedPkgName = this.name
+      })
+    }
+
     return (
-      <iframe
-        className="h-[100vh] w-[100vw]"
-        src={this.$.env.url.frame(this.name, this.dev)}
-        name={this.name}
-      />
+      <div>
+        <button onClick={onClick} className="bg-amber-200">
+          CLICK [{this.$.shell.state.selectedPkgName}]
+        </button>
+        <iframe
+          name={this.name}
+          src={this.$.env.url.frame(this.name, this.dev)}
+          className="m-40 h-[100vh] w-[100vw] border border-black"
+        />
+      </div>
     )
   }
 }

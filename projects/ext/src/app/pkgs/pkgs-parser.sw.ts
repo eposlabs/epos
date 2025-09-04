@@ -19,7 +19,7 @@ export type Manifest = {
 export class PkgsParser extends $sw.Unit {
   config = {
     keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets'],
-    name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]+[a-z0-9]$/ },
+    name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
     popup: {
       keys: ['width', 'height'],
       width: { min: 150, max: 800, default: 400 },

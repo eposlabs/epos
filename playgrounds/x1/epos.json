@@ -1,0 +1,12 @@
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "x1",
+  "title": "x1 - test package",
+  "targets": [
+    {
+      "matches": ["<hub>", "<popup>", "https://inssist.com/*"],
+      "load": ["./x1.js"],
+      "mode": "shadow"
+    }
+  ]
+}

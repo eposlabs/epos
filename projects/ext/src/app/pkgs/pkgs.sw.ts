@@ -1,7 +1,7 @@
 import type { Fragment } from './pkg/pkg.sw'
 
-export type ActionMap = { [name: string]: string | true }
-export type FragmentMap = { [name: string]: Fragment }
+export type Actions = { [name: string]: string | true }
+export type Fragments = { [name: string]: Fragment }
 
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
@@ -18,8 +18,8 @@ export class Pkgs extends $sw.Unit {
     this.$.bus.on('pkgs.test', this.test, this)
     this.$.bus.on('pkgs.getCss', this.getCss, this)
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('pkgs.getActions', this.getActions, this)
     this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
+    this.$.bus.on('pkgs.getActions', this.getActions, this)
     this.$.bus.on('pkgs.getFragments', this.getFragments, this)
   }
 
@@ -48,27 +48,27 @@ export class Pkgs extends $sw.Unit {
       .trim()
   }
 
-  getActions() {
-    return this.list.reduce((actions, pkg) => {
-      if (pkg.action) actions[pkg.name] = pkg.action
-      return actions
-    }, {} as ActionMap)
-  }
-
   getPayloads(uri: string) {
     return this.list.map(pkg => pkg.getPayload(uri)).filter(this.$.is.present)
   }
 
-  private async getFragments(uri: string) {
-    const fragments: FragmentMap = {}
+  getActions() {
+    const actions: Actions = {}
+    for (const pkg of this.list) {
+      if (!pkg.action) continue
+      actions[pkg.name] = pkg.action
+    }
 
-    await Promise.all(
-      this.list.map(async pkg => {
-        const fragment = await pkg.getFragment(uri)
-        if (!fragment) return
-        fragments[fragment.name] = fragment
-      }),
-    )
+    return actions
+  }
+
+  private async getFragments(uri: string) {
+    const fragments: Fragments = {}
+    for (const pkg of this.list) {
+      const fragment = await pkg.getFragment(uri)
+      if (!fragment) continue
+      fragments[pkg.name] = fragment
+    }
 
     return fragments
   }

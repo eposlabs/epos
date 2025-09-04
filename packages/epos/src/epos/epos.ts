@@ -161,15 +161,15 @@ export interface Epos {
     hub: boolean
     /** True if running on any page except hub. */
     page: boolean
-    /** True if running in a popup or in side panel (<popup> or <panel>). */
+    /** True if running in a popup or side panel (`<popup>` or `<panel>`). */
     shell: boolean
-    /** True if running in a popup (<popup>). */
+    /** True if running in a popup (`<popup>`). */
     popup: boolean
-    /** True if running in a side panel (<panel>). */
+    /** True if running in a side panel (`<panel>`). */
     panel: boolean
-    /** True if running in background (<background>). */
+    /** True if running in the background (`<background>`). */
     background: boolean
-    /** True if running in foreground */
+    /** True if running in the foreground. */
     foreground: boolean
   }
 

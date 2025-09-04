@@ -9,7 +9,7 @@ $: (async () => {
   Object.values($fg).forEach(u => epos.register(u))
   const state = await epos.connect(() => ({ app: new $fg.App() }))
 
-  if (epos.is.panel || epos.is.hub) {
+  if (epos.is.shell || epos.is.hub) {
     epos.render(
       <epos.react.StrictMode>
         <state.app.ui />

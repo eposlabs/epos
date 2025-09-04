@@ -1,15 +1,22 @@
+import type { Fragment } from './pkg.sw'
+
 export class Pkg extends $os.Unit {
-  name: string
-  hash: string
-  dev: boolean
+  dev: Fragment['dev']
+  name: Fragment['name']
+  hash: Fragment['hash']
   frame: HTMLIFrameElement
 
-  constructor(parent: $os.Unit, opts: { name: string; hash: string; dev: boolean }) {
+  constructor(parent: $os.Unit, fragment: Omit<Fragment, 'popup'>) {
     super(parent)
-    this.name = opts.name
-    this.hash = opts.hash
-    this.dev = opts.dev
+    this.dev = fragment.dev
+    this.name = fragment.name
+    this.hash = fragment.hash
     this.frame = this.createFrame()
+  }
+
+  update(fragment: Omit<Fragment, 'name' | 'popup'>) {
+    this.dev = fragment.dev
+    this.hash = fragment.hash
   }
 
   reloadFrame() {

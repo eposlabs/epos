@@ -1,65 +1,75 @@
-import type { ActionMap } from './pkgs.sw'
-
-// TODO: probably don't put 'map' in state, because it is not easy to reason about,
-// state is 'old-school', just raw dynamic data and we update these data manually
-
 export type State = {
-  map: { [name: string]: $vw.Pkg }
-  selectedName: string | null
-  actions: ActionMap
-  hasPanel: boolean
+  selectedPkgName: string | null
+  // actions: Actions
+  // hasPanel: boolean
 }
 
 export class Pkgs extends $vw.Unit {
-  state = {
-    map: {},
-    selectedName: null,
-    hasPanel: false,
-    actions: {},
-  }
-
+  map: { [name: string]: $vw.Pkg } = {}
   watcher = new $exOsVw.PkgsWatcher(this)
+
+  get list() {
+    return Object.values(this.map)
+  }
 
   async init() {
     await this.initWatcher()
   }
 
-  private byName = (pkg1: $vw.Pkg, pkg2: $vw.Pkg) => {
-    return pkg1.name.localeCompare(pkg2.name)
-  }
-
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
+      // Add packages
       for (const name of delta.added) {
         const fragment = data.fragments[name]
         if (!fragment) throw this.never
-        this.state.map[fragment.name] = new $vw.Pkg(this, {
-          name: fragment.name,
-          hash: fragment.hash,
-          popup: fragment.popup,
-          dev: fragment.dev,
-        })
+        this.map[fragment.name] = new $vw.Pkg(this, fragment)
       }
 
+      // Update packages
       for (const name of delta.updated) {
-        const pkg = this.state.map[name]
+        const pkg = this.map[name]
         const fragment = data.fragments[name]
         if (!pkg || !fragment) throw this.never
-        pkg.hash = fragment.hash
-        pkg.popup = fragment.popup
-        pkg.dev = fragment.dev
+        pkg.update(fragment)
       }
 
+      // Remove packages
       for (const name of delta.removed) {
-        if (!this.state.map[name]) throw this.never
-        delete this.state.map[name]
+        if (!this.map[name]) throw this.never
+        delete this.map[name]
       }
 
-      this.state.actions = data.actions
-      this.state.hasPanel = data.hasPanel
+      console.warn('UPDATE', data)
 
-      this.update()
+      this.$.shell.transaction(state => {
+        state.actions = data.actions
+        state.hasPanel = data.hasPanel
+      })
     })
+  }
+
+  ui = () => {
+    return (
+      <div>
+        {this.$.shell.state.hasPanel ? 'HAS PANEL' : 'NO PANEL'}
+        {this.list.map(pkg => {
+          return <pkg.ui key={pkg.name} />
+        })}
+      </div>
+    )
+  }
+
+  // ---------------------------------------------------------------------------
+  // OLD
+  // ---------------------------------------------------------------------------
+
+  private byName = (pkg1: $vw.Pkg, pkg2: $vw.Pkg) => {
+    return pkg1.name.localeCompare(pkg2.name)
+  }
+  state = {
+    selectedName: null,
+    hasPanel: false,
+    actions: {},
   }
 
   update() {
@@ -82,7 +92,7 @@ export class Pkgs extends $vw.Unit {
     }
   }
 
-  ui = () => {
+  _ui = () => {
     const state = this.state
     const pkgs = Object.values(state.map).sort(this.byName)
 
