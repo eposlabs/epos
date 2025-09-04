@@ -43,8 +43,11 @@ export default defineConfig(async ({ mode }) => {
     },
 
     plugins: [
-      preact(),
       tailwindcss(),
+
+      preact({
+        reactAliasesEnabled: false,
+      }),
 
       copy({
         targets: [
@@ -61,14 +64,14 @@ export default defineConfig(async ({ mode }) => {
           keepNames: true,
           sourcemap: false,
           banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('ex'), esbuildRequire: 'require' },
+          define: { BUNDLE: JSON.stringify('ex') },
         },
         'ex-mini': {
           minify: mode !== 'development',
           keepNames: true,
           sourcemap: false,
           banner: { js: setup },
-          define: { BUNDLE: JSON.stringify('ex-mini'), esbuildRequire: 'require' },
+          define: { BUNDLE: JSON.stringify('ex-mini') },
         },
         'cs': {
           minify: mode !== 'development',

@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../packages/epos/epos.schema.json",
+  "$schema": "https://epos.dev/schema.json",
   "name": "learn",
   "title": "[epos] Learn Browser API",
   "action": "<hub>",

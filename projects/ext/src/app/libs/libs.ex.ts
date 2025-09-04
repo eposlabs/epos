@@ -8,11 +8,11 @@ type ReactDom = typeof import('react-dom') | null
 type ReactDomClient = typeof import('react-dom/client') | null
 type ReactJsxRuntime = typeof import('react/jsx-runtime') | null
 
-const mobxReactLite: MobxReactLite = BUNDLE === 'ex' ? esbuildRequire('mobx-react-lite') : null
-const react: React = BUNDLE === 'ex' ? esbuildRequire('react') : null
-const reactDom: ReactDom = BUNDLE === 'ex' ? esbuildRequire('react-dom') : null
-const reactDomClient: ReactDomClient = BUNDLE === 'ex' ? esbuildRequire('react-dom/client') : null
-const reactJsxRuntime: ReactJsxRuntime = BUNDLE === 'ex' ? esbuildRequire('react/jsx-runtime') : null
+const mobxReactLite: MobxReactLite = BUNDLE === 'ex' ? require('mobx-react-lite') : null
+const react: React = BUNDLE === 'ex' ? require('react') : null
+const reactDom: ReactDom = BUNDLE === 'ex' ? require('react-dom') : null
+const reactDomClient: ReactDomClient = BUNDLE === 'ex' ? require('react-dom/client') : null
+const reactJsxRuntime: ReactJsxRuntime = BUNDLE === 'ex' ? require('react/jsx-runtime') : null
 
 mobx.configure({ enforceActions: 'never' })
 
