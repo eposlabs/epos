@@ -11,16 +11,16 @@ export class App extends $ex.Unit {
   boot = new $ex.Boot(this)
   dev = new $ex.Dev(this)
   idb = new $ex.Idb(this)
+  kit = new $ex.Kit(this)
   peer = new $exOs.Peer(this)
   pkgs = new $ex.Pkgs(this)
   states = new $exSw.States(this)
-  tools = new $ex.Tools(this)
   ui = new $ex.Ui(this)
   units = new $exSw.Units(this)
 
   async init() {
     if (this.env.is.dev) self.$epos = this
-    await this.tools.init()
+    await this.kit.init()
     await this.dev.init()
     this.ready$.resolve()
   }

@@ -10,11 +10,11 @@ export class App extends $sw.Unit {
   alive = new $sw.Alive(this)
   boot = new $sw.Boot(this)
   idb = new $sw.Idb(this)
+  kit = new $sw.Kit(this)
   net = new $sw.Net(this)
   peer = new $sw.Peer(this)
   pkgs = new $sw.Pkgs(this)
   states = new $exSw.States(this)
-  tools = new $sw.Tools(this)
   units = new $exSw.Units(this)
 
   async init() {

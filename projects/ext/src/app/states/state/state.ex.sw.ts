@@ -10,7 +10,7 @@ export type Value = undefined | null | boolean | number | string | Value[] | { [
 export type Options = {
   initial?: Initial
   versioner?: Versioner
-  unitRegistry?: string
+  unitScope?: string
 }
 
 export class State extends $exSw.Unit {
@@ -21,7 +21,7 @@ export class State extends $exSw.Unit {
   location: Location
   initial: Initial | null
   versioner: Versioner | null
-  unitRegistry: string
+  unitScope: string
 
   boot = new $exSw.StateBoot(this)
   idb = new $exSw.StateIdb(this)
@@ -41,7 +41,7 @@ export class State extends $exSw.Unit {
     this.location = location
     this.initial = options.initial ?? null
     this.versioner = options.versioner ?? null
-    this.unitRegistry = options.unitRegistry ?? ':default'
+    this.unitScope = options.unitScope ?? ':default'
   }
 
   async cleanup() {

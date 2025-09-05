@@ -1,13 +1,20 @@
-export class ToolsBrowser extends $sw.Unit {
+export type UpdateRuleOptions = {
+  addRules?: Omit<chrome.declarativeNetRequest.Rule, 'id'>[] | undefined
+  removeRuleIds?: chrome.declarativeNetRequest.UpdateRuleOptions['removeRuleIds']
+}
+
+export class KitBrowser extends $sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
-  test = new $sw.ToolsBrowserTest(this)
+  test = new $sw.KitBrowserTest(this)
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('tools.getApiTree', () => this.getApiTree(this.$.browser))
-    this.$.bus.on('tools.callMethod', this.callMethod, this)
-    this.$.bus.on('tools.registerListener', this.registerListener, this)
-    this.$.bus.on('tools.unregisterListener', this.unregisterListener, this)
+    this.$.bus.on('kit.getBrowserApiTree', () => this.getApiTree(this.$.browser))
+    this.$.bus.on('kit.callMethod', this.callMethod, this)
+    this.$.bus.on('kit.registerListener', this.registerListener, this)
+    this.$.bus.on('kit.unregisterListener', this.unregisterListener, this)
+    this.$.bus.on('kit.updateSessionRules', this.updateSessionRules, this)
+    this.$.bus.on('kit.updateDynamicRules', this.updateDynamicRules, this)
   }
 
   private getApiTree(value: unknown) {
@@ -75,5 +82,23 @@ export class ToolsBrowser extends $sw.Unit {
 
   private unregisterListener(listenerId: string) {
     this.disposers[listenerId]?.()
+  }
+
+  private updateSessionRules(options: UpdateRuleOptions) {
+    const fullOptions = {
+      ...options,
+      addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
+    }
+
+    this.$.browser.declarativeNetRequest.updateSessionRules(fullOptions)
+  }
+
+  private updateDynamicRules(options: UpdateRuleOptions) {
+    const fullOptions = {
+      ...options,
+      addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
+    }
+
+    this.$.browser.declarativeNetRequest.updateDynamicRules(fullOptions)
   }
 }

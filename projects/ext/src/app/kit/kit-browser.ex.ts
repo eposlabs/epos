@@ -1,10 +1,14 @@
-import type { PermissionResult } from './tools-browser.sm'
+import type { PermissionResult } from './kit-browser.sm'
+// import type { UpdateRuleOptions } from './kit-browser.sw'
 
 const _id_ = Symbol('id')
 
 export type Callback = Fn & { [_id_]?: string }
 
-export class ToolsBrowser extends $ex.Unit {
+// this.$.kit.browsers
+// TODO: kit.browser does not create api by itself, it provides method to create api binded with some "scope"
+// (package name). Also provides cleanup method which is called on package removal.
+export class KitBrowser extends $ex.Unit {
   api: typeof chrome | null = null
   private listenerIds = new Set<string>()
   static _id_ = _id_
@@ -14,7 +18,7 @@ export class ToolsBrowser extends $ex.Unit {
   }
 
   private async createApi() {
-    const apiTree = await this.$.bus.send('tools.getApiTree')
+    const apiTree = await this.$.bus.send('kit.getBrowserApiTree')
     if (!this.$.is.object(apiTree)) throw this.never
     return this.buildApi(apiTree) as typeof chrome
   }
@@ -22,52 +26,25 @@ export class ToolsBrowser extends $ex.Unit {
   private buildApi(value: any, path: string[] = []) {
     if (this.$.is.object(value)) {
       const api: Obj = {}
-      for (const key in value) {
-        api[key] = this.buildApi(value[key], [...path, key])
-      }
+      for (const key in value) api[key] = this.buildApi(value[key], [...path, key])
       return api
     }
 
     if (this.$.is.string(value) && value.startsWith('<')) {
       const apiPath = path.slice(0, -1)
+
+      if (value === '<addListener>') return this.addListener.bind(this, apiPath)
+      if (value === '<hasListener>') return this.hasListener.bind(this, apiPath)
+      if (value === '<hasListeners>') return this.hasListeners.bind(this, apiPath)
+      if (value === '<removeListener>') return this.removeListener.bind(this, apiPath)
+
       if (value === '<method>') {
         const methodName = path.at(-1) as string
         return this.callMethod.bind(this, apiPath, methodName)
-      } else if (value === '<addListener>') {
-        const apiPath = path.slice(0, -1)
-        return this.addListener.bind(this, apiPath)
-      } else if (value === '<hasListener>') {
-        return this.hasListener.bind(this, apiPath)
-      } else if (value === '<hasListeners>') {
-        return this.hasListeners.bind(this, apiPath)
-      } else if (value === '<removeListener>') {
-        return this.removeListener.bind(this, apiPath)
       }
     }
 
     return value
-  }
-
-  // ---------------------------------------------------------------------------
-  // CALL METHOD
-  // ---------------------------------------------------------------------------
-
-  // ! Do not make this method async, 'runtime.getURL' must be sync
-  private callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
-    // Handle special methods
-    const getter = [...apiPath, methodName].join('.')
-
-    // It is important to have runtime.getURL as sync
-    if (getter === 'runtime.getURL') {
-      const path = args[0] as string
-      return this['runtime.getURL'](path)
-    } else if (getter === 'permissions.request') {
-      const permissions = args[0] as chrome.permissions.Permissions
-      return this['permissions.request'](permissions)
-    }
-
-    // Call method via SW
-    return this.$.bus.send('tools.callMethod', apiPath, methodName, ...args)
   }
 
   // ---------------------------------------------------------------------------
@@ -83,7 +60,7 @@ export class ToolsBrowser extends $ex.Unit {
 
     this.listenerIds.add(listenerId)
     this.$.bus.on(`ext.listener[${listenerId}]`, cb)
-    async: this.$.bus.send('tools.registerListener', this.$.peer.id, listenerId, apiPath)
+    async: this.$.bus.send('kit.registerListener', this.$.peer.id, listenerId, apiPath)
   }
 
   private hasListener(apiPath: string[], cb: Callback) {
@@ -103,9 +80,9 @@ export class ToolsBrowser extends $ex.Unit {
     const listenerId = this.buildListenerId(apiPath, cb)
     if (!this.listenerIds.has(listenerId)) return
 
-    this.$.bus.off(`tools.listener[${listenerId}]`)
+    this.$.bus.off(`kit.listener[${listenerId}]`)
     this.listenerIds.delete(listenerId)
-    async: this.$.bus.send('tools.unregisterListener', listenerId)
+    async: this.$.bus.send('kit.unregisterListener', listenerId)
   }
 
   private buildListenerId(apiPath: string[], cb: Callback) {
@@ -117,7 +94,36 @@ export class ToolsBrowser extends $ex.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // runtime.getURL
+  // CALL METHOD
+  // ---------------------------------------------------------------------------
+
+  // Do not make this method async, 'runtime.getURL' must be sync
+  private callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
+    // Handle special methods
+    const getter = [...apiPath, methodName].join('.')
+
+    // It is important to have runtime.getURL as sync
+    if (getter === 'runtime.getURL') {
+      const path = args[0] as string
+      return this['runtime.getURL'](path)
+    } else if (getter === 'permissions.request') {
+      const permissions = args[0] as chrome.permissions.Permissions
+      return this['permissions.request'](permissions)
+    }
+    // else if (getter === 'declarativeNetRequest.updateSessionRules') {
+    //   const options = args[0] as UpdateRuleOptions
+    //   return this.$.bus.send('kit.updateSessionRules', options)
+    // } else if (getter === 'declarativeNetRequest.updateDynamicRules') {
+    //   const options = args[0] as UpdateRuleOptions
+    //   return this.$.bus.send('kit.updateDynamicRules', options)
+    // }
+
+    // Call method via SW
+    return this.$.bus.send('kit.callMethod', apiPath, methodName, ...args)
+  }
+
+  // ---------------------------------------------------------------------------
+  // BROWSER API OVERWRITES
   // ---------------------------------------------------------------------------
 
   private 'runtime.getURL'(path: string) {
@@ -125,10 +131,6 @@ export class ToolsBrowser extends $ex.Unit {
     const base = `chrome-extension://${this.api.runtime.id}/`
     return new URL(path, base).href
   }
-
-  // ---------------------------------------------------------------------------
-  // permissions.request
-  // ---------------------------------------------------------------------------
 
   private async 'permissions.request'(opts: chrome.permissions.Permissions) {
     const api = this.api
@@ -150,11 +152,11 @@ export class ToolsBrowser extends $ex.Unit {
     await this.$.bus.waitSignal('app.ready[system:permission]')
 
     // Request permissions
-    const request = this.$.bus.send<PermissionResult>('tools.requestPermissions', opts)
+    const request = this.$.bus.send<PermissionResult>('kit.requestPermissions', opts)
     const [result, error] = await this.$.utils.safe(request)
 
     // Close permission tab
-    await this.$.bus.send('tools.closePermissionTab')
+    await this.$.bus.send('kit.closePermissionTab')
 
     // Error? -> Throw
     if (error) throw error

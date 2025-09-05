@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
-  "name": "[epos] Browser Augmentations",
+  "name": "[epos]",
   "version": "1.0",
   "manifest_version": 3,
   "action": { "default_title": "epos" },

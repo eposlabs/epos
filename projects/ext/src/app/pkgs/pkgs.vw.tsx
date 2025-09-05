@@ -114,6 +114,7 @@ export class Pkgs extends $vw.Unit {
         ])}
       >
         <this.Select />
+        <this.ActionButton />
         <this.SidePanelButton />
       </div>
     )
@@ -137,51 +138,84 @@ export class Pkgs extends $vw.Unit {
       }
     }
 
+    if (this.list.length === 1) return null
+
     return (
       <div>
         {/* Select UI */}
         <div class="flex h-full items-center gap-6 pr-8 pl-12">
           <div class="text-[12px]/[1]">{selectedPkg.label}</div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="size-14"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          {this.list.length > 1 && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="size-14"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          )}
         </div>
 
         {/* Native select */}
-        <select
-          value={this.selectedPkgName}
-          onChange={onChange}
-          class="absolute inset-0 opacity-0 outline-none"
-        >
-          {this.listSortedByName.map(pkg => (
-            <this.$.libs.preact.Fragment key={pkg.name}>
-              <option value={pkg.name}>{pkg.label}</option>
-              {this.actions[pkg.name] && (
-                <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
-                  {pkg.label} →
-                </option>
-              )}
-            </this.$.libs.preact.Fragment>
-          ))}
-        </select>
+        {this.list.length > 1 && (
+          <select
+            value={this.selectedPkgName}
+            onChange={onChange}
+            class="absolute inset-0 opacity-0 outline-none"
+          >
+            {this.listSortedByName.map(pkg => (
+              <this.$.libs.preact.Fragment key={pkg.name}>
+                <option value={pkg.name}>{pkg.label}</option>
+                {this.actions[pkg.name] && (
+                  <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
+                    {pkg.label} →
+                  </option>
+                )}
+              </this.$.libs.preact.Fragment>
+            ))}
+          </select>
+        )}
       </div>
     )
   }
 
+  private ActionButton = () => {
+    if (!this.selectedPkgName) return null
+
+    return (
+      <button
+        onClick={() => this.processAction(this.selectedPkgName)}
+        class="z-10 flex size-30 items-center justify-center"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-14"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </button>
+    )
+  }
+
   private SidePanelButton = () => {
-    if (!this.$.env.is.vwPopup) return null
-    if (!this.hasPanel) return null
+    // if (!this.$.env.is.vwPopup) return null
+    // if (!this.hasPanel) return null
 
     return (
       <button onClick={() => this.openPanel()} class="z-10 flex size-30 items-center justify-center">

@@ -5,6 +5,11 @@ import { BootInjector, type BootInjector as BootInjectorType } from '../app/boot
 import { Boot, type Boot as BootType } from '../app/boot/boot.sw.ts'
 import { Dev, type Dev as DevType } from '../app/dev/dev.sw.ts'
 import { Idb, type Idb as IdbType } from '../app/idb/idb.sw.ts'
+import { KitBrowserTest, type KitBrowserTest as KitBrowserTestType } from '../app/kit/kit-browser-test.sw.ts'
+import { KitBrowser, type KitBrowser as KitBrowserType } from '../app/kit/kit-browser.sw.ts'
+import { KitFetcher, type KitFetcher as KitFetcherType } from '../app/kit/kit-fetcher.sw.ts'
+import { KitLogger, type KitLogger as KitLoggerType } from '../app/kit/kit-logger.sw.ts'
+import { Kit, type Kit as KitType } from '../app/kit/kit.sw.ts'
 import { Libs, type Libs as LibsType } from '../app/libs/libs.sw.ts'
 import { Net, type Net as NetType } from '../app/net/net.sw.ts'
 import { Peer, type Peer as PeerType } from '../app/peer/peer.sw.ts'
@@ -15,11 +20,6 @@ import { PkgsInstaller, type PkgsInstaller as PkgsInstallerType } from '../app/p
 import { PkgsLoader, type PkgsLoader as PkgsLoaderType } from '../app/pkgs/pkgs-loader.sw.ts'
 import { PkgsParser, type PkgsParser as PkgsParserType } from '../app/pkgs/pkgs-parser.sw.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw.ts'
-import { ToolsBrowserTest, type ToolsBrowserTest as ToolsBrowserTestType } from '../app/tools/tools-browser-test.sw.ts'
-import { ToolsBrowser, type ToolsBrowser as ToolsBrowserType } from '../app/tools/tools-browser.sw.ts'
-import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.sw.ts'
-import { ToolsLogger, type ToolsLogger as ToolsLoggerType } from '../app/tools/tools-logger.sw.ts'
-import { Tools, type Tools as ToolsType } from '../app/tools/tools.sw.ts'
 
 Object.assign($sw, {
   Alive,
@@ -29,6 +29,11 @@ Object.assign($sw, {
   Boot,
   Dev,
   Idb,
+  KitBrowserTest,
+  KitBrowser,
+  KitFetcher,
+  KitLogger,
+  Kit,
   Libs,
   Net,
   Peer,
@@ -39,11 +44,6 @@ Object.assign($sw, {
   PkgsLoader,
   PkgsParser,
   Pkgs,
-  ToolsBrowserTest,
-  ToolsBrowser,
-  ToolsFetcher,
-  ToolsLogger,
-  Tools,
 })
 
 declare global {
@@ -57,6 +57,11 @@ declare global {
     Boot: typeof Boot
     Dev: typeof Dev
     Idb: typeof Idb
+    KitBrowserTest: typeof KitBrowserTest
+    KitBrowser: typeof KitBrowser
+    KitFetcher: typeof KitFetcher
+    KitLogger: typeof KitLogger
+    Kit: typeof Kit
     Libs: typeof Libs
     Net: typeof Net
     Peer: typeof Peer
@@ -67,11 +72,6 @@ declare global {
     PkgsLoader: typeof PkgsLoader
     PkgsParser: typeof PkgsParser
     Pkgs: typeof Pkgs
-    ToolsBrowserTest: typeof ToolsBrowserTest
-    ToolsBrowser: typeof ToolsBrowser
-    ToolsFetcher: typeof ToolsFetcher
-    ToolsLogger: typeof ToolsLogger
-    Tools: typeof Tools
   }
 
   namespace $sw {
@@ -82,6 +82,11 @@ declare global {
     export type Boot = BootType
     export type Dev = DevType
     export type Idb = IdbType
+    export type KitBrowserTest = KitBrowserTestType
+    export type KitBrowser = KitBrowserType
+    export type KitFetcher = KitFetcherType
+    export type KitLogger = KitLoggerType
+    export type Kit = KitType
     export type Libs = LibsType
     export type Net = NetType
     export type Peer = PeerType
@@ -92,10 +97,5 @@ declare global {
     export type PkgsLoader = PkgsLoaderType
     export type PkgsParser = PkgsParserType
     export type Pkgs = PkgsType
-    export type ToolsBrowserTest = ToolsBrowserTestType
-    export type ToolsBrowser = ToolsBrowserType
-    export type ToolsFetcher = ToolsFetcherType
-    export type ToolsLogger = ToolsLoggerType
-    export type Tools = ToolsType
   }
 }

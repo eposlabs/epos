@@ -24,15 +24,15 @@ export type ReqInit = {
   referrerPolicy: RequestInit['referrerPolicy']
 }
 
-export class ToolsFetcher extends $sw.Unit {
+export class KitFetcher extends $sw.Unit {
   private responses: { [id: string]: Response } = {}
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('tools.fetch', this.fetch, this)
-    this.$.bus.on('tools.readAsText', this.readAsText, this)
-    this.$.bus.on('tools.readAsJson', this.readAsJson, this)
-    this.$.bus.on('tools.readAsBlob', this.readAsBlob, this)
+    this.$.bus.on('kit.fetch', this.fetch, this)
+    this.$.bus.on('kit.readAsText', this.readAsText, this)
+    this.$.bus.on('kit.readAsJson', this.readAsJson, this)
+    this.$.bus.on('kit.readAsBlob', this.readAsBlob, this)
   }
 
   async fetch(url: string, init?: ReqInit): Promise<ResData> {

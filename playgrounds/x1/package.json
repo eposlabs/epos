@@ -1,0 +1,7 @@
+{
+  "name": "x1",
+  "type": "module",
+  "dependencies": {
+    "epos": "^1.7.1"
+  }
+}

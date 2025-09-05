@@ -10,7 +10,7 @@ export class PkgApiState extends $ex.Unit {
     return await this.$.states.connect(location, {
       initial: initial,
       versioner: versioner,
-      unitRegistry: this.$pkg.name,
+      unitScope: this.$pkg.name,
     })
   }
 

@@ -153,7 +153,7 @@ export class StateNode extends $exSw.Unit {
   private createFromYMap(yMap: YMap, owner: Owner = null) {
     // Check if unit
     const spec = yMap.get('@')
-    const isUnit = this.$.units.isUnitSpec(this.$state.unitRegistry, spec)
+    const isUnit = this.$.units.isUnitSpec(this.$state.unitScope, spec)
 
     // Create empty node
     const keys = [...yMap.keys()]
@@ -199,7 +199,7 @@ export class StateNode extends $exSw.Unit {
   private createFromObject(object: Obj, owner: Owner = null) {
     // Check if unit
     const spec = object['@']
-    const isUnit = this.$.units.isUnitSpec(this.$state.unitRegistry, spec)
+    const isUnit = this.$.units.isUnitSpec(this.$state.unitScope, spec)
 
     // Create empty node
     const mNode = isUnit ? this.createEmptyMobxUnit(spec, Object.keys(object)) : this.createEmptyMobxObject()
@@ -268,7 +268,7 @@ export class StateNode extends $exSw.Unit {
   }
 
   private createEmptyMobxUnit(spec: string, keys: string[]) {
-    const unit = this.$.units.createEmptyObservableUnit(this.$state.unitRegistry, spec, keys)
+    const unit = this.$.units.createEmptyObservableUnit(this.$state.unitScope, spec, keys)
     return unit as unknown as MObj
   }
 

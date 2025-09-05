@@ -1,7 +1,7 @@
-export class ToolsBrowserTest extends $sw.Unit {
+export class KitBrowserTest extends $sw.Unit {
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('tools.testApi', this.testApi, this)
+    this.$.bus.on('kit.testApi', this.testApi, this)
   }
 
   private async testApi(name: string) {
@@ -11,8 +11,6 @@ export class ToolsBrowserTest extends $sw.Unit {
       await this.testNotifications()
     } else if (name === 'cookies') {
       await this.testCookies()
-    } else {
-      // throw new Error(`Testing for permission "${name}" is not implemented`)
     }
   }
 

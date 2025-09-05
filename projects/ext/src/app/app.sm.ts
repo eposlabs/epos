@@ -5,11 +5,11 @@ export class App extends $sm.Unit {
   env = new $gl.Env(this)
   bus = new $gl.Bus(this)
 
-  tools = new $sm.Tools(this)
+  kit = new $sm.Kit(this)
 
   async init() {
     self.$ = this
-    await this.tools.init()
+    await this.kit.init()
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
   }
 }

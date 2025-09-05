@@ -1,3 +1,5 @@
+console.warn('background')
+
 export class App extends $gl.App {
   async init() {
     await epos.browser.contextMenus.removeAll()

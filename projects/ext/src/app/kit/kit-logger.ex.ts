@@ -1,10 +1,6 @@
-export type Message = {
-  type: 'log' | 'warn' | 'error'
-  name: string
-  args: unknown[]
-}
+import type { Message } from './kit-logger.sw'
 
-export class ToolsLogger extends $ex.Unit {
+export class KitLogger extends $ex.Unit {
   constructor(parent: $ex.Unit) {
     super(parent)
 
@@ -22,20 +18,20 @@ export class ToolsLogger extends $ex.Unit {
 
     console.log = (...args: unknown[]) => {
       log(...args)
-      const message: Message = { type: 'log', name, args }
-      async: this.$.bus.send('tools.log', message)
+      const message: Message = { type: 'info', name, args }
+      async: this.$.bus.send('kit.print', message)
     }
 
     console.warn = (...args: unknown[]) => {
       warn(...args)
       const message: Message = { type: 'warn', name, args }
-      async: this.$.bus.send('tools.log', message)
+      async: this.$.bus.send('kit.print', message)
     }
 
     console.error = (...args: unknown[]) => {
       error(...args)
       const message: Message = { type: 'error', name, args }
-      async: this.$.bus.send('tools.log', message)
+      async: this.$.bus.send('kit.print', message)
     }
   }
 
@@ -44,7 +40,7 @@ export class ToolsLogger extends $ex.Unit {
       const name = this.$.env.params.name
       const args = [e.reason.stack]
       const message: Message = { type: 'error', name, args }
-      await this.$.bus.send('tools.log', message)
+      await this.$.bus.send('kit.print', message)
     })
   }
 }

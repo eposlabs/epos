@@ -1,11 +1,12 @@
 export const REF = ':EPOS_BUS_REF'
+export type ErrorRef = { [REF]: 'error'; message: string; stack: string | undefined }
 export type BlobIdRef = { [REF]: 'blobId'; id: string }
 export type BlobUrlRef = { [REF]: 'blobUrl'; url: string }
 export type UndefinedRef = { [REF]: 'undefined' }
 export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
 export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
 export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
-export type Ref = BlobIdRef | BlobUrlRef | UndefinedRef | Uint8Ref | Uint16Ref | Uint32Ref
+export type Ref = ErrorRef | BlobIdRef | BlobUrlRef | UndefinedRef | Uint8Ref | Uint16Ref | Uint32Ref
 
 export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
 export type Storage = Map<string, unknown>
@@ -32,6 +33,7 @@ export class BusData extends $gl.Unit {
       // Sanitize supported non-json values as storage links
       if (
         this.$.is.blob(value) ||
+        this.$.is.error(value) ||
         this.$.is.undefined(value) ||
         this.$.is.uint8Array(value) ||
         this.$.is.uint16Array(value) ||
@@ -52,37 +54,42 @@ export class BusData extends $gl.Unit {
   serialize(data: unknown) {
     // Serialize data
     return JSON.stringify(data, (_, value: unknown) => {
+      // Serialize error
+      if (this.$.is.error(value)) {
+        return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
+      }
+
       // Serialize blob
       if (this.$.is.blob(value)) {
         if (this.$bus.is('service-worker')) {
           const blobId = this.$bus.utils.id()
           this.blobs.set(blobId, value)
           setTimeout(() => this.blobs.delete(blobId), 60_000)
-          return { [REF]: 'blobId', id: blobId } as BlobIdRef
+          return { [REF]: 'blobId', id: blobId } satisfies BlobIdRef
         } else {
           const url = this.$bus.utils.createTempObjectUrl(value)
-          return { [REF]: 'blobUrl', url } as BlobUrlRef
+          return { [REF]: 'blobUrl', url } satisfies BlobUrlRef
         }
       }
 
       // Serialize undefined
       if (this.$.is.undefined(value)) {
-        return { [REF]: 'undefined' } as UndefinedRef
+        return { [REF]: 'undefined' } satisfies UndefinedRef
       }
 
       // Serialize Uint8Array
       if (this.$.is.uint8Array(value)) {
-        return { [REF]: 'uint8', integers: Array.from(value) } as Uint8Ref
+        return { [REF]: 'uint8', integers: Array.from(value) } satisfies Uint8Ref
       }
 
       // Serialize Uint16Array
       if (this.$.is.uint16Array(value)) {
-        return { [REF]: 'uint16', integers: Array.from(value) } as Uint16Ref
+        return { [REF]: 'uint16', integers: Array.from(value) } satisfies Uint16Ref
       }
 
       // Serialize Uint32Array
       if (this.$.is.uint32Array(value)) {
-        return { [REF]: 'uint32', integers: Array.from(value) } as Uint32Ref
+        return { [REF]: 'uint32', integers: Array.from(value) } satisfies Uint32Ref
       }
 
       return value
@@ -97,6 +104,13 @@ export class BusData extends $gl.Unit {
     const data = JSON.parse(json, (_, value: unknown) => {
       // Regular value? -> Use as is
       if (!this.isRef(value)) return value
+
+      // Deserialize error
+      if (value[REF] === 'error') {
+        const error = new Error(value.message)
+        if (value.stack) error.stack = value.stack
+        return error
+      }
 
       // Deserialize blob by id
       if (value[REF] === 'blobId') {

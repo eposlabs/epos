@@ -1,4 +1,4 @@
-import type { ReqInit, ResData } from './tools-fetcher.sw'
+import type { ReqInit, ResData } from './kit-fetcher.sw'
 
 export type Res = {
   ok: Response['ok']
@@ -17,10 +17,10 @@ export type Res = {
   }
 }
 
-export class ToolsFetcher extends $ex.Unit {
+export class KitFetcher extends $ex.Unit {
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
     url = String(url)
-    const res = await this.$.bus.send<ResData>('tools.fetch', url, init)
+    const res = await this.$.bus.send<ResData>('kit.fetch', url, init)
     return {
       ok: res.ok,
       url: res.url,
@@ -28,9 +28,9 @@ export class ToolsFetcher extends $ex.Unit {
       status: res.status,
       statusText: res.statusText,
       redirected: res.redirected,
-      text: () => this.$.bus.send<string>('tools.readAsText', res.id),
-      json: () => this.$.bus.send<unknown>('tools.readAsJson', res.id),
-      blob: () => this.$.bus.send<Blob>('tools.readAsBlob', res.id),
+      text: () => this.$.bus.send<string>('kit.readAsText', res.id),
+      json: () => this.$.bus.send<unknown>('kit.readAsJson', res.id),
+      blob: () => this.$.bus.send<Blob>('kit.readAsBlob', res.id),
       headers: {
         get: (key: string) => res.headers[key.toLowerCase()] ?? null,
         has: (key: string) => key.toLowerCase() in res.headers,
