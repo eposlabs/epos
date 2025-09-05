@@ -4,8 +4,8 @@ export class KitBrowser extends $sm.Unit {
   private id = this.$.utils.id()
 
   async init() {
-    this.$.bus.on('kit.requestPermissions', this.requestPermissions, this)
-    this.$.bus.on('kit.closePermissionTab', () => self.close())
+    this.$.bus.on('kit.browser.requestPermissions', this.requestPermissions, this)
+    this.$.bus.on('kit.browser.closePermissionTab', () => self.close())
   }
 
   async requestPermissions(opts: chrome.permissions.Permissions) {

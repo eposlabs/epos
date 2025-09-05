@@ -29,8 +29,8 @@ export class Bus extends $gl.Unit {
     return this.page.getToken()
   }
 
-  is(...loci: Locus[]) {
-    return loci.includes(this.locus)
+  is(...locusList: Locus[]) {
+    return locusList.includes(this.locus)
   }
 
   private getLocus(): Locus {

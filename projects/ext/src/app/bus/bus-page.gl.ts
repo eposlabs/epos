@@ -112,10 +112,15 @@ export class BusPage extends $gl.Unit {
         this.respond(req, result)
         return
       }
+      
+      let actions = this.$bus.actions.list.filter(action => action.name === req.name)
 
-      let actions = this.$bus.actions.list.filter(a => a.name === req.name)
+      if (req.locus === 'injection') {
+        actions = actions.filter(action => action.proxy !== 'injection')
+      }
+      
       if (req.locus === 'ext-frame') {
-        actions = actions.filter(h => h.proxy !== `ext-frame-${req.frame}`)
+        actions = actions.filter(action => action.proxy !== `ext-frame-${req.frame}`)
       }
 
       const promises = actions.map(async action => action.fn.call(action.this, ...req.args))

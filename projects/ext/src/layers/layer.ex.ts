@@ -3,6 +3,7 @@ import { BootInjector, type BootInjector as BootInjectorType } from '../app/boot
 import { Boot, type Boot as BootType } from '../app/boot/boot.ex.ts'
 import { Dev, type Dev as DevType } from '../app/dev/dev.ex.ts'
 import { Idb, type Idb as IdbType } from '../app/idb/idb.ex.ts'
+import { KitBrowserApi, type KitBrowserApi as KitBrowserApiType } from '../app/kit/kit-browser-api.ex.ts'
 import { KitBrowser, type KitBrowser as KitBrowserType } from '../app/kit/kit-browser.ex.ts'
 import { KitFetcher, type KitFetcher as KitFetcherType } from '../app/kit/kit-fetcher.ex.ts'
 import { KitLogger, type KitLogger as KitLoggerType } from '../app/kit/kit-logger.ex.ts'
@@ -28,6 +29,7 @@ Object.assign($ex, {
   Boot,
   Dev,
   Idb,
+  KitBrowserApi,
   KitBrowser,
   KitFetcher,
   KitLogger,
@@ -57,6 +59,7 @@ declare global {
     Boot: typeof Boot
     Dev: typeof Dev
     Idb: typeof Idb
+    KitBrowserApi: typeof KitBrowserApi
     KitBrowser: typeof KitBrowser
     KitFetcher: typeof KitFetcher
     KitLogger: typeof KitLogger
@@ -83,6 +86,7 @@ declare global {
     export type Boot = BootType
     export type Dev = DevType
     export type Idb = IdbType
+    export type KitBrowserApi = KitBrowserApiType
     export type KitBrowser = KitBrowserType
     export type KitFetcher = KitFetcherType
     export type KitLogger = KitLoggerType

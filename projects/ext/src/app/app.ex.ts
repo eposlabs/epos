@@ -20,7 +20,6 @@ export class App extends $ex.Unit {
 
   async init() {
     if (this.env.is.dev) self.$epos = this
-    await this.kit.init()
     await this.dev.init()
     this.ready$.resolve()
   }

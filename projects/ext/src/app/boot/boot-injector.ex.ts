@@ -11,12 +11,12 @@ export class BootInjector extends $ex.Unit {
     await this.$.waitReady()
 
     if (this.$.env.is.exTab) {
-      this.initPkgs()
+      await this.initPkgs()
     } else if (this.$.env.is.exFrame) {
       this.initEposVar()
       this.initEposElement()
       await this.injectPackages()
-      this.initPkgs()
+      await this.initPkgs()
     }
   }
 
@@ -68,14 +68,14 @@ export class BootInjector extends $ex.Unit {
     self.__epos.element.prepend(link)
   }
 
-  private initPkgs() {
+  private async initPkgs() {
     const defs = self.__epos.defs
     const tabId = this.getTabId()
     this.deleteEposVar()
 
     for (const def of defs) {
       // Create pkg
-      const pkg = this.$.pkgs.create({
+      const pkg = await this.$.pkgs.create({
         name: def.name,
         icon: def.icon,
         title: def.title,
@@ -84,8 +84,8 @@ export class BootInjector extends $ex.Unit {
       })
 
       // Execute def fn
-      const epos = pkg.api.create()
-      def.fn.call(undefined, epos)
+      if (!pkg.api.epos) throw this.never
+      def.fn.call(undefined, pkg.api.epos)
     }
   }
 

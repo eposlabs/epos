@@ -21,11 +21,12 @@ export class Pkg extends $ex.Unit {
     this.title = props.title
     this.tabId = props.tabId
     this.shadowCss = props.shadowCss
-
-    // Should be assigned after props
     this.api = new $ex.PkgApi(this)
+  }
 
-    if (this.$.env.is.exTabHub) async: this.initHub()
+  async init() {
+    await this.api.init()
+    if (this.$.env.is.exTabHub) await this.initHub()
   }
 
   private async initHub() {

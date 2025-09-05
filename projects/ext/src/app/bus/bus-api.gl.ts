@@ -67,7 +67,7 @@ export class BusApi extends $gl.Unit {
   async waitSignal(name: string, timeout?: number) {
     // Setup listener
     const listener$ = Promise.withResolvers<unknown>()
-    const listener = (v: unknown) => listener$.resolve(v)
+    const listener = (value: unknown) => listener$.resolve(value)
     this.on(name, listener)
 
     // Setup timer

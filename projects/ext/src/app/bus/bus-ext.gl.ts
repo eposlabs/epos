@@ -74,6 +74,7 @@ export class BusExt extends $gl.Unit {
       }
 
       let actions = this.$bus.actions.list.filter(a => a.name === req.name)
+
       if (req.locus === 'content-script') {
         const tabId = sender.tab?.id
         if (!tabId) throw this.never

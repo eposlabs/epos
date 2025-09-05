@@ -5,16 +5,15 @@ export type UpdateRuleOptions = {
 
 export class KitBrowser extends $sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
-  test = new $sw.KitBrowserTest(this)
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('kit.getBrowserApiTree', () => this.getApiTree(this.$.browser))
-    this.$.bus.on('kit.callMethod', this.callMethod, this)
-    this.$.bus.on('kit.registerListener', this.registerListener, this)
-    this.$.bus.on('kit.unregisterListener', this.unregisterListener, this)
-    this.$.bus.on('kit.updateSessionRules', this.updateSessionRules, this)
-    this.$.bus.on('kit.updateDynamicRules', this.updateDynamicRules, this)
+    this.$.bus.on('kit.browser.getApiTree', () => this.getApiTree(this.$.browser))
+    this.$.bus.on('kit.browser.callMethod', this.callMethod, this)
+    this.$.bus.on('kit.browser.registerListener', this.registerListener, this)
+    this.$.bus.on('kit.browser.unregisterListener', this.unregisterListener, this)
+    this.$.bus.on('kit.browser.updateSessionRules', this.updateSessionRules, this)
+    this.$.bus.on('kit.browser.updateDynamicRules', this.updateDynamicRules, this)
   }
 
   private getApiTree(value: unknown) {
@@ -57,7 +56,7 @@ export class KitBrowser extends $sw.Unit {
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
-      return await this.$.bus.send(`ext.listener[${listenerId}]`, ...args)
+      return await this.$.bus.send(`kit.browser.listener[${listenerId}]`, ...args)
     }
 
     // Add listener

@@ -12,7 +12,7 @@ export class Permission extends $gl.Unit {
   }
 
   async test() {
-    await (epos as any).engine.bus.send('tools.testApi', this.name)
+    await (epos as any).engine.bus.send('dev.testApi', this.name)
   }
 
   async request() {

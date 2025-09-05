@@ -67,13 +67,13 @@ export class BusProxy extends $gl.Unit {
   }
 
   private setupContentScript() {
-    // Remove cs proxies left over from the previous cs.
+    // Remove CS proxies left over from the previous CS.
     // This happens on tab refresh or navigation.
     async: this.sendToParent('bus.removeAllCsProxy')
 
     this.$bus.page.intercept('bus.registerProxy', (_, name: string) => {
       const proxy: ProxyChild = 'injection'
-      const fn = (...a: unknown[]) => this.$bus.page.send(name, ...a)
+      const fn = (...args: unknown[]) => this.$bus.page.send(name, ...args)
       this.$bus.actions.register({ name, proxy, fn })
     })
 
@@ -87,7 +87,7 @@ export class BusProxy extends $gl.Unit {
     this.$bus.page.intercept('bus.registerProxy', (frame, name: string) => {
       if (!frame) throw this.never
       const proxy: ProxyChild = `ext-frame-${frame}`
-      const fn = (...a: unknown[]) => this.$bus.page.sendToFrame(frame, name, ...a)
+      const fn = (...args: unknown[]) => this.$bus.page.sendToFrame(frame, name, ...args)
       this.$bus.actions.register({ name, proxy, fn })
     })
 
@@ -107,7 +107,7 @@ export class BusProxy extends $gl.Unit {
       const tabId = sender.tab?.id
       if (!tabId) throw this.never
       const proxy: ProxyChild = `content-script-${tabId}`
-      const fn = (...a: unknown[]) => this.$bus.ext.sendToTab(tabId, name, ...a)
+      const fn = (...args: unknown[]) => this.$bus.ext.sendToTab(tabId, name, ...args)
       this.$bus.actions.register({ name, proxy, fn })
     })
 

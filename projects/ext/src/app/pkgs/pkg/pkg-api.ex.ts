@@ -8,8 +8,14 @@ export class PkgApi extends $ex.Unit {
   assets = new $ex.PkgApiAssets(this)
   env = new $ex.PkgApiEnv(this)
   libs = new $ex.PkgApiLibs(this)
+  epos: ReturnType<$ex.PkgApi['createEpos']> | null = null
 
-  create() {
+  async init() {
+    await this.tools.init()
+    this.epos = this.createEpos()
+  }
+
+  createEpos() {
     const epos = {
       // Bus
       on: this.bus.on,

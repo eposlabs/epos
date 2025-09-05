@@ -16,7 +16,6 @@
     "contextMenus",
     "cookies",
     "declarativeNetRequest",
-    "downloads",
     "notifications",
     "offscreen",
     "scripting",
@@ -29,5 +28,6 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';",
     "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"
-  }
+  },
+  "optional_permissions": ["downloads"]
 }
