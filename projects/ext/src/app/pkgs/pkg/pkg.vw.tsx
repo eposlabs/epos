@@ -6,6 +6,7 @@ export class Pkg extends $vw.Unit {
   hash: Fragment['hash']
   title: Fragment['title']
   popup: Fragment['popup']
+  active = false
 
   constructor(parent: $vw.Unit, fragment: Fragment) {
     super(parent)
@@ -19,13 +20,14 @@ export class Pkg extends $vw.Unit {
   update(fragment: Omit<Fragment, 'name'>) {
     this.dev = fragment.dev
     this.hash = fragment.hash
+    this.title = fragment.title
     this.popup = fragment.popup
   }
 
   ui = () => {
-    const state = this.$.libs.preact.useContext(this.$.shell.context)
-    const selected = state.selectedPkgName === this.name
-    const active = state.activePkgNames.has(this.name)
+    this.$.libs.preact.useContext(this.$.shell.context)
+    const selected = this.$.pkgs.selectedPkgName === this.name
+    if (!this.active) this.active = selected
 
     let width: number | string
     let height: number | string
@@ -35,14 +37,17 @@ export class Pkg extends $vw.Unit {
     } else if (this.$.env.is.vwPanel) {
       width = '100vw'
       height = '100vh'
-    } else {
-      throw this.never
+    } else throw this.never
+
+    let src = 'about:blank'
+    if (this.active) {
+      src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
     }
 
     return (
       <iframe
         name={this.name}
-        src={active ? this.$.env.url.frame(this.name, this.dev) : 'about:blank'}
+        src={src}
         style={{ width, height }}
         className={this.cx([!selected && 'hidden'])}
       />

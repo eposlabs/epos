@@ -6,7 +6,6 @@ export type OnUpdate = (delta: Delta, data: Data) => void
 export type Delta = {
   added: PkgName[]
   removed: PkgName[]
-  updated: PkgName[]
 }
 
 export type Data = {
@@ -28,18 +27,15 @@ export class PkgsWatcher extends $exOsVw.Unit {
     const fragments = await this.$.bus.send<Fragments>('pkgs.getFragments', location.href)
     const hasPanel = await this.$.bus.send<boolean>('pkgs.test', '<panel>')
 
-    const f1 = this.fragments
-    const f2 = fragments
-
-    const names1 = Object.keys(f1)
-    const names2 = Object.keys(f2)
-
-    const added = names2.filter(name => !f1[name])
-    const removed = names1.filter(name => !f2[name])
-    const updated = names2.filter(name => f1[name] && f1[name].hash !== f2[name]!.hash)
+    const fragments1 = this.fragments
+    const fragments2 = fragments
+    const names1 = Object.keys(fragments1)
+    const names2 = Object.keys(fragments2)
+    const added = names2.filter(name => !fragments1[name])
+    const removed = names1.filter(name => !fragments2[name])
 
     const data: Data = { actions, fragments, hasPanel }
-    const delta: Delta = { added, removed, updated }
+    const delta: Delta = { added, removed }
     this.fragments = fragments
 
     onUpdate(delta, data)

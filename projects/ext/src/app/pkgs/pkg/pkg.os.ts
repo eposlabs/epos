@@ -17,10 +17,11 @@ export class Pkg extends $os.Unit {
   update(fragment: Omit<Fragment, 'name' | 'popup'>) {
     this.dev = fragment.dev
     this.hash = fragment.hash
-  }
-
-  reloadFrame() {
-    this.frame.src = this.$.env.url.frame(this.name, this.dev)
+    this.frame.src = this.$.env.url.frame({
+      name: this.name,
+      hash: this.hash,
+      dev: this.dev,
+    })
   }
 
   removeFrame() {
@@ -29,7 +30,7 @@ export class Pkg extends $os.Unit {
 
   private createFrame() {
     const frame = document.createElement('iframe')
-    frame.src = this.$.env.url.frame(this.name, this.dev)
+    frame.src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
     frame.name = this.name
     document.body.append(frame)
     return frame

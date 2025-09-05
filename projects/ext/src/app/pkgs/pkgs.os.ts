@@ -8,20 +8,18 @@ export class Pkgs extends $os.Unit {
 
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
+      // Update packages
+      for (const fragment of Object.values(data.fragments)) {
+        const pkg = this.map[fragment.name]
+        if (!pkg) continue
+        pkg.update(fragment)
+      }
+
       // Add packages
       for (const name of delta.added) {
         const fragment = data.fragments[name]
         if (!fragment) throw this.never
         this.map[name] = new $os.Pkg(this, fragment)
-      }
-
-      // Update packages
-      for (const name of delta.updated) {
-        const pkg = this.map[name]
-        const fragment = data.fragments[name]
-        if (!pkg || !fragment) throw this.never
-        pkg.update(fragment)
-        pkg.reloadFrame()
       }
 
       // Remove packages

@@ -1,23 +1,8 @@
 import type { Dispatch, StateUpdater } from 'preact/hooks'
-import type { Actions } from '../pkgs/pkgs.sw'
-
-export type State = {
-  selectedPkgName: string | null
-  activePkgNames: Set<string>
-  actions: Actions
-  hasPanel: boolean
-}
 
 export class Shell extends $vw.Unit {
-  private setState: Dispatch<StateUpdater<State>> | null = null
-  private state: State = {
-    selectedPkgName: null,
-    activePkgNames: new Set(),
-    actions: {},
-    hasPanel: false,
-  }
-
-  context = this.$.libs.preact.createContext<State>(this.state)
+  private setRenderId: Dispatch<StateUpdater<string>> | null = null
+  context = this.$.libs.preact.createContext<string>(this.$.utils.id())
 
   async init() {
     const root = document.createElement('div')
@@ -26,30 +11,22 @@ export class Shell extends $vw.Unit {
     this.$.libs.preact.render(<this.ui />, root)
   }
 
-  update(modifier: (state: State) => void) {
-    const state = structuredClone(this.state)
-    modifier(state)
-
-    if (this.setState) {
-      this.setState(state)
-    } else {
-      this.state = state
-    }
+  rerender() {
+    if (!this.setRenderId) return
+    this.setRenderId(this.$.utils.id())
   }
 
   ui = () => {
-    const Provider = this.context.Provider as any
-    const [state, setState] = this.$.libs.preact.useState<State>(this.state)
-    this.state = state
-    this.setState = setState
+    const [renderId, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.id())
+    this.setRenderId = setRenderId
 
     return (
-      <Provider value={state}>
+      <this.context.Provider value={renderId}>
         <div>
           <this.$.pkgs.Dock />
           <this.$.pkgs.ui />
         </div>
-      </Provider>
+      </this.context.Provider>
     )
   }
 }

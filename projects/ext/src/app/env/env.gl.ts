@@ -36,10 +36,13 @@ class EnvUrl extends $gl.Unit {
     return `/view.html?${q}`
   }
 
-  frame(name: string, dev: boolean) {
+  frame(params: { name: string; hash: string; dev: boolean }) {
     const type = this.$env.is.os ? 'background' : this.$env.params.type
     const tabId = this.$env.is.os ? null : this.$env.params.tabId
-    const q = new URLSearchParams({ type, name, ...(tabId && { tabId }), ...(dev && { dev: 'true' }) })
+    const q = new URLSearchParams({ type, name: params.name })
+    if (tabId) q.set('tabId', String(tabId))
+    if (params.dev) q.set('dev', 'true')
+    if (params.hash) q.set('hash', params.hash)
     return `/frame.html?${q}`
   }
 

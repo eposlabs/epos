@@ -13,18 +13,18 @@ async function stringify(value: unknown): Promise<string> {
 
   const type = typeof value
   if (type === 'undefined') return 'undefined'
-  if (type === 'string') return `string:${value}`
-  if (type === 'number') return `number:${value}`
   if (type === 'boolean') return `boolean:${value}`
+  if (type === 'number') return `number:${value}`
+  if (type === 'string') return `string:${value}`
 
   if (is.array(value)) {
-    const items = value.map(item => stringify(item))
+    const items = await Promise.all(value.map(item => stringify(item)))
     return `array:[${items.join(',')}]`
   }
 
   if (is.object(value)) {
     const keys = Object.keys(value).sort()
-    const pairs = keys.map(key => `${key}:${stringify(value[key])}`)
+    const pairs = await Promise.all(keys.map(async key => `${key}:${await stringify(value[key])}`))
     return `object:{${pairs.join(',')}}`
   }
 

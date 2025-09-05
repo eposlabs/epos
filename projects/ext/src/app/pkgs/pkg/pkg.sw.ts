@@ -19,9 +19,9 @@ export type Payload = {
 export type Fragment = {
   dev: boolean
   name: string
-  hash: string
   title: string | null
   popup: Popup
+  hash: string
 }
 
 export class Pkg extends $sw.Unit {
@@ -113,9 +113,9 @@ export class Pkg extends $sw.Unit {
     return {
       dev: this.dev,
       name: this.name,
-      hash: await this.getHash(uri),
       title: this.manifest.title,
       popup: this.manifest.popup,
+      hash: await this.getHash(uri),
     }
   }
 
@@ -125,15 +125,14 @@ export class Pkg extends $sw.Unit {
     return sourcePaths.map(path => this.getSource(path)).join('\n')
   }
 
-  private async getHash(uri: string) {
-    // TODO: use targets directly
-    const paths = this.getSourcePaths(uri).sort()
+  /** Used to determine if package must be reloaded. */
+  async getHash(uri: string) {
+    const usedSourcePaths = this.getSourcePaths(uri).sort()
     return await this.$.utils.hash({
       dev: this.dev,
-      popup: this.manifest.popup,
       assets: this.manifest.assets,
-      snippets: paths.map(path => this.getSource(path)),
       targets: this.targets.map(target => ({ mode: target.mode })),
+      snippets: usedSourcePaths.map(path => this.getSource(path)),
     })
   }
 
