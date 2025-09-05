@@ -8,7 +8,7 @@ export class App extends $gl.App {
       contexts: ['all'],
     })
 
-    epos.browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    epos.browser.contextMenus.onClicked.addListener(async info => {
       if (info.menuItemId === 'open') {
         await epos.browser.tabs.create({ url: 'https://epos.dev', active: true })
       }

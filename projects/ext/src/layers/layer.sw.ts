@@ -18,6 +18,7 @@ import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.sw.ts'
 import { ToolsBrowserTest, type ToolsBrowserTest as ToolsBrowserTestType } from '../app/tools/tools-browser-test.sw.ts'
 import { ToolsBrowser, type ToolsBrowser as ToolsBrowserType } from '../app/tools/tools-browser.sw.ts'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.sw.ts'
+import { ToolsLogger, type ToolsLogger as ToolsLoggerType } from '../app/tools/tools-logger.sw.ts'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.sw.ts'
 
 Object.assign($sw, {
@@ -41,6 +42,7 @@ Object.assign($sw, {
   ToolsBrowserTest,
   ToolsBrowser,
   ToolsFetcher,
+  ToolsLogger,
   Tools,
 })
 
@@ -68,6 +70,7 @@ declare global {
     ToolsBrowserTest: typeof ToolsBrowserTest
     ToolsBrowser: typeof ToolsBrowser
     ToolsFetcher: typeof ToolsFetcher
+    ToolsLogger: typeof ToolsLogger
     Tools: typeof Tools
   }
 
@@ -92,6 +95,7 @@ declare global {
     export type ToolsBrowserTest = ToolsBrowserTestType
     export type ToolsBrowser = ToolsBrowserType
     export type ToolsFetcher = ToolsFetcherType
+    export type ToolsLogger = ToolsLoggerType
     export type Tools = ToolsType
   }
 }

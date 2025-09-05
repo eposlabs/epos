@@ -18,6 +18,7 @@ import { Pkg, type Pkg as PkgType } from '../app/pkgs/pkg/pkg.ex.ts'
 import { Pkgs, type Pkgs as PkgsType } from '../app/pkgs/pkgs.ex.ts'
 import { ToolsBrowser, type ToolsBrowser as ToolsBrowserType } from '../app/tools/tools-browser.ex.ts'
 import { ToolsFetcher, type ToolsFetcher as ToolsFetcherType } from '../app/tools/tools-fetcher.ex.ts'
+import { ToolsLogger, type ToolsLogger as ToolsLoggerType } from '../app/tools/tools-logger.ex.ts'
 import { Tools, type Tools as ToolsType } from '../app/tools/tools.ex.ts'
 import { Ui, type Ui as UiType } from '../app/ui/ui.ex.ts'
 
@@ -42,6 +43,7 @@ Object.assign($ex, {
   Pkgs,
   ToolsBrowser,
   ToolsFetcher,
+  ToolsLogger,
   Tools,
   Ui,
 })
@@ -70,6 +72,7 @@ declare global {
     Pkgs: typeof Pkgs
     ToolsBrowser: typeof ToolsBrowser
     ToolsFetcher: typeof ToolsFetcher
+    ToolsLogger: typeof ToolsLogger
     Tools: typeof Tools
     Ui: typeof Ui
   }
@@ -95,6 +98,7 @@ declare global {
     export type Pkgs = PkgsType
     export type ToolsBrowser = ToolsBrowserType
     export type ToolsFetcher = ToolsFetcherType
+    export type ToolsLogger = ToolsLoggerType
     export type Tools = ToolsType
     export type Ui = UiType
   }
