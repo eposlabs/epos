@@ -3,6 +3,7 @@
   "name": "learn",
   "title": "[epos] Learn Browser API",
   "action": "<hub>",
+  "popup": { "width": 600, "height": 400 },
   "targets": [
     {
       "matches": ["<hub>", "<popup>", "https://inssist.com/*"],

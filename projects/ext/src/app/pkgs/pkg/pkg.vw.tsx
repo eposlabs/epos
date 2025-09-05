@@ -27,21 +27,29 @@ export class Pkg extends $vw.Unit {
     const selected = state.selectedPkgName === this.name
     const active = state.activePkgNames.has(this.name)
 
+    let width: number | string
+    let height: number | string
+    if (this.$.env.is.vwPopup) {
+      width = this.popup?.width ?? 380
+      height = this.popup?.height ?? 600
+    } else if (this.$.env.is.vwPanel) {
+      width = '100vw'
+      height = '100vh'
+    } else {
+      throw this.never
+    }
+
     return (
-      <div>
-        <iframe
-          name={this.name}
-          src={active ? this.$.env.url.frame(this.name, this.dev) : 'about:blank'}
-          className={this.cx([
-            '_h-[100vh] _w-[100vw] m-40 h-[600px] w-[600px] border border-black',
-            !selected && 'hidden',
-          ])}
-        />
-      </div>
+      <iframe
+        name={this.name}
+        src={active ? this.$.env.url.frame(this.name, this.dev) : 'about:blank'}
+        style={{ width, height }}
+        className={this.cx([!selected && 'hidden'])}
+      />
     )
   }
 
-  cx(classNames: unknown[]) {
+  private cx(classNames: unknown[]) {
     return classNames.filter(this.$.is.string).join(' ')
   }
 }

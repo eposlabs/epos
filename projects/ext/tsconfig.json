@@ -3,6 +3,7 @@
   "include": ["src"],
   "compilerOptions": {
     "allowImportingTsExtensions": true,
+    "jsxImportSource": "preact",
     "noEmit": true
   }
 }

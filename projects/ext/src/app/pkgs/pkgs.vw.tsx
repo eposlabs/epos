@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react'
+import type { TargetedEvent } from 'preact/compat'
 
 export class Pkgs extends $vw.Unit {
   map: { [name: string]: $vw.Pkg } = {}
@@ -48,9 +48,11 @@ export class Pkgs extends $vw.Unit {
 
       // Update shell state
       this.$.shell.update(state => {
-        const firstPkgName = this.sortedByName[0].name
-        state.selectedPkgName = firstPkgName
-        state.activePkgNames.add(firstPkgName)
+        if (!state.selectedPkgName || !this.map[state.selectedPkgName]) {
+          state.selectedPkgName = this.sortedByName[0].name
+        }
+
+        state.activePkgNames.add(state.selectedPkgName)
         state.actions = data.actions
         state.hasPanel = data.hasPanel
         delta.removed.forEach(name => state.activePkgNames.delete(name))
@@ -61,9 +63,9 @@ export class Pkgs extends $vw.Unit {
   ui = () => {
     return (
       <div>
-        {this.list.map(pkg => {
-          return <pkg.ui key={pkg.name} />
-        })}
+        {this.sortedByName.map(pkg => (
+          <pkg.ui key={pkg.name} />
+        ))}
       </div>
     )
   }
@@ -72,22 +74,30 @@ export class Pkgs extends $vw.Unit {
     const state = this.$.libs.preact.useContext(this.$.shell.context)
     if (!state.selectedPkgName) return null
 
-    const onChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const onChange = (e: TargetedEvent<HTMLSelectElement>) => {
       this.$.shell.update(state => {
-        const pkgName = e.target.value
+        const pkgName = e.currentTarget.value
         state.selectedPkgName = pkgName
         state.activePkgNames.add(pkgName)
       })
     }
 
     return (
-      <div>
-        <select value={state.selectedPkgName} onChange={onChange}>
-          {this.sortedByName.map(pkg => (
-            <option key={pkg.name} value={pkg.name}>
-              {pkg.title ?? pkg.name}
-            </option>
-          ))}
+      <div class="fixed top-0 right-0 z-10 rounded-bl-xl bg-[#e9ff01] p-8">
+        <select value={state.selectedPkgName} onChange={onChange} class="outline-none">
+          {this.sortedByName.map(pkg => {
+            const label = pkg.title ?? pkg.name
+            return (
+              <this.$.libs.preact.Fragment key={pkg.name}>
+                <option value={pkg.name}>{label}</option>
+                {state.actions[pkg.name] && (
+                  <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
+                    {label} →
+                  </option>
+                )}
+              </this.$.libs.preact.Fragment>
+            )
+          })}
         </select>
       </div>
     )
