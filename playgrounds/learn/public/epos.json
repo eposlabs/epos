@@ -1,7 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "learn",
-  "title": "[epos] Learn Browser API",
+  "title": "Browser API",
   "action": "<hub>",
   "popup": { "width": 600, "height": 400 },
   "targets": [

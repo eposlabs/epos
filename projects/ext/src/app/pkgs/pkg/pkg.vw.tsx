@@ -8,6 +8,10 @@ export class Pkg extends $vw.Unit {
   popup: Fragment['popup']
   active = false
 
+  get label() {
+    return this.title ?? this.name
+  }
+
   constructor(parent: $vw.Unit, fragment: Fragment) {
     super(parent)
     this.dev = fragment.dev
@@ -49,12 +53,8 @@ export class Pkg extends $vw.Unit {
         name={this.name}
         src={src}
         style={{ width, height }}
-        className={this.cx([!selected && 'hidden'])}
+        class={this.$.utils.cx([!selected && 'hidden'])}
       />
     )
-  }
-
-  private cx(classNames: unknown[]) {
-    return classNames.filter(this.$.is.string).join(' ')
   }
 }

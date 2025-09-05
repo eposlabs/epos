@@ -1,12 +1,12 @@
 import type { TargetedEvent } from 'preact/compat'
+import type { Actions } from './pkgs.sw'
 
 export class Pkgs extends $vw.Unit {
   map: { [name: string]: $vw.Pkg } = {}
   watcher = new $exOsVw.PkgsWatcher(this)
   selectedPkgName: string | null = null
-  // activePkgNames: new Set(),
-  // actions: {},
-  // hasPanel: false,
+  private actions: Actions = {}
+  private hasPanel = false
 
   get list() {
     return Object.values(this.map)
@@ -55,9 +55,39 @@ export class Pkgs extends $vw.Unit {
         this.selectedPkgName = this.listSortedByName[0].name
       }
 
-      // Re-render shell
-      this.$.shell.rerender()
+      // Update data
+      this.actions = data.actions
+      this.hasPanel = data.hasPanel
+
+      // Refresh shell
+      this.$.shell.refresh()
     })
+  }
+
+  private selectPkg(pkgName: string) {
+    this.selectedPkgName = pkgName
+    this.$.shell.refresh()
+  }
+
+  private async processAction(pkgName: string) {
+    const action = this.actions[pkgName]
+    if (!action) throw this.never
+
+    if (this.$.is.boolean(action)) {
+      const bus = this.$.bus.create(`pkg[${pkgName}]`)
+      await bus.send('action')
+    } else {
+      await this.$.boot.medium.openTab(action)
+    }
+
+    self.close()
+  }
+
+  private openPanel() {
+    const tabId = Number(this.$.env.params.tabId)
+    if (!tabId) throw this.never
+    this.$.boot.medium.openPanel(tabId)
+    self.close()
   }
 
   ui = () => {
@@ -75,130 +105,102 @@ export class Pkgs extends $vw.Unit {
 
   Dock = () => {
     this.$.libs.preact.useContext(this.$.shell.context)
-    if (!this.selectedPkgName) return null
 
-    const onChange = (e: TargetedEvent<HTMLSelectElement>) => {
-      this.selectedPkgName = e.currentTarget.value
-      this.$.shell.rerender()
+    return (
+      <div
+        class={this.$.utils.cx([
+          'fixed top-0 right-0 z-10 flex h-30 rounded-bl-lg bg-brand',
+          'font-mono font-medium',
+        ])}
+      >
+        <this.Select />
+        <this.SidePanelButton />
+      </div>
+    )
+  }
+
+  private Select = () => {
+    if (this.list.length === 0) return null
+    if (!this.selectedPkgName) return null
+    const selectedPkg = this.map[this.selectedPkgName]
+    if (!selectedPkg) return null
+
+    const onChange = async (e: TargetedEvent<HTMLSelectElement>) => {
+      const value = e.currentTarget.value
+      const isAction = value.startsWith('action:')
+      const pkgName = isAction ? value.replace('action:', '') : value
+
+      if (isAction) {
+        await this.processAction(pkgName)
+      } else {
+        this.selectPkg(pkgName)
+      }
     }
 
     return (
-      <div class="fixed top-0 right-0 z-10 rounded-bl-xl bg-[#e9ff01] p-8">
-        <select value={this.selectedPkgName} onChange={onChange} class="outline-none">
-          {this.listSortedByName.map(pkg => {
-            const label = pkg.title ?? pkg.name
-            return (
-              <this.$.libs.preact.Fragment key={pkg.name}>
-                <option value={pkg.name}>{label}</option>
-                {/* {state.actions[pkg.name] && (
-                  <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
-                    {label} →
-                  </option>
-                )} */}
-              </this.$.libs.preact.Fragment>
-            )
-          })}
+      <div>
+        {/* Select UI */}
+        <div class="flex h-full items-center gap-6 pr-8 pl-12">
+          <div class="text-[12px]/[1]">{selectedPkg.label}</div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-14"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+
+        {/* Native select */}
+        <select
+          value={this.selectedPkgName}
+          onChange={onChange}
+          class="absolute inset-0 opacity-0 outline-none"
+        >
+          {this.listSortedByName.map(pkg => (
+            <this.$.libs.preact.Fragment key={pkg.name}>
+              <option value={pkg.name}>{pkg.label}</option>
+              {this.actions[pkg.name] && (
+                <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
+                  {pkg.label} →
+                </option>
+              )}
+            </this.$.libs.preact.Fragment>
+          ))}
         </select>
       </div>
     )
   }
 
-  // private byName = (pkg1: $vw.Pkg, pkg2: $vw.Pkg) => {
-  //   return pkg1.name.localeCompare(pkg2.name)
-  // }
+  private SidePanelButton = () => {
+    if (!this.$.env.is.vwPopup) return null
+    if (!this.hasPanel) return null
 
-  // __update() {
-  //   if (!this.state.selectedName || !this.state.map[this.state.selectedName]) {
-  //     this.state.selectedName = Object.keys(this.state.map)[0] ?? null
-  //     const pkg = this.state.map[this.state.selectedName]
-  //     if (pkg) pkg.visited = true
-  //   }
-
-  //   if (Object.keys(this.state.map).length === 0 && Object.keys(this.state.actions).length <= 1) {
-  //     self.close()
-  //   }
-
-  //   if (this.$.env.is.vwPopup) {
-  //     if (!this.state.selectedName) return
-  //     const pkg = this.state.map[this.state.selectedName]
-  //     if (!pkg) return
-  //     document.documentElement.style.width = `${pkg.popup.width}px`
-  //     document.documentElement.style.height = `${pkg.popup.height}px`
-  //   }
-  // }
-
-  // _ui = () => {
-  //   const state = this.state
-  //   const pkgs = Object.values(state.map).sort(this.byName)
-
-  //   // const onSelect = () => {
-  //   //   this.state.selectedName = pkgs[0]?.name ?? null
-  //   // }
-
-  //   return (
-  //     <div className="">
-  //       {pkgs.map(pkg => {
-  //         return <pkg.ui key={pkg.name} />
-  //         // if (state.selectedName !== pkg.name) return null
-  //         // return (
-  //         //   <div className="m-2 border-2 border-amber-500">
-  //         //     <pkg.ui key={pkg.hash} />
-  //         //   </div>
-  //         // )
-  //       })}
-  //     </div>
-  //   )
-  // }
-
-  // _Select = () => {
-  //   const state = this.$.libs.valtio.useSnapshot(this.state) as State
-  //   if (!state.selectedName) return null
-
-  //   return (
-  //     <div className="fixed top-0 right-0 flex items-center gap-4 rounded-bl-xl bg-[#e9ff01] py-4 pr-8 pl-8 font-mono">
-  //       <div className="font-[12px]">{state.selectedName}</div>
-  //       <svg className="size-[10px]" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-  //         <path
-  //           d="M3.5 5.25L7 8.75L10.5 5.25"
-  //           stroke="#181D27"
-  //           stroke-width="2"
-  //           stroke-linecap="round"
-  //           stroke-linejoin="round"
-  //         />
-  //       </svg>
-
-  //       <select
-  //         className="absolute top-0 right-0 bottom-0 left-0 opacity-0"
-  //         value={state.selectedName}
-  //         onChange={e => {
-  //           if (e.target.value.startsWith('action-')) {
-  //             const name = e.target.value.replace('action-', '')
-  //             const url = state.actions[name]
-  //             if (!url) throw new Error(`Action ${name} not found`)
-  //             self.open(url, '_blank')
-  //             return
-  //           }
-  //           this.state.selectedName = e.target.value
-  //           this.update()
-  //         }}
-  //       >
-  //         {Object.values(state.map)
-  //           .sort(this.byName)
-  //           .map(pkg => (
-  //             <option key={pkg.name} value={pkg.name}>
-  //               {pkg.name}
-  //             </option>
-  //           ))}
-
-  //         <option disabled>———</option>
-
-  //         {Object.keys(state.actions).map(name => (
-  //           <option key={name} value={`action-${name}`}>
-  //             ↗ {name}
-  //           </option>
-  //         ))}
-  //       </select>
-  //     </div>
-  //   )
-  // }
+    return (
+      <button onClick={() => this.openPanel()} class="z-10 flex size-30 items-center justify-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-14"
+        >
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M15 3v18" />
+        </svg>
+      </button>
+    )
+  }
 }

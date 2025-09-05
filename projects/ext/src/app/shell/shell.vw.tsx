@@ -11,7 +11,7 @@ export class Shell extends $vw.Unit {
     this.$.libs.preact.render(<this.ui />, root)
   }
 
-  rerender() {
+  refresh() {
     if (!this.setRenderId) return
     this.setRenderId(this.$.utils.id())
   }

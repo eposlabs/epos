@@ -1,5 +1,6 @@
 import { ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
 import { convertImage } from './utils-convert-image'
+import { cx } from './utils-cx'
 import { equal } from './utils-equal'
 import { get } from './utils-get'
 import { hash } from './utils-hash'
@@ -20,6 +21,7 @@ export class Utils extends $exOsSwVw.Unit {
   }
 
   convertImage = convertImage
+  cx = cx
   ensureArray = ensureArray
   equal = equal
   get = get
