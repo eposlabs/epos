@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite'
 import epos from 'epos/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import copy from 'rollup-plugin-copy'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import rebundle from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
@@ -36,7 +36,7 @@ export default defineConfig(async ({ mode }) => {
       epos(),
       tailwindcss(),
 
-      copy({
+      viteStaticCopy({
         targets: [
           {
             src: './public/*',

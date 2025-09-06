@@ -7,12 +7,12 @@
     "preview": "vite build --mode preview"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.12",
-    "epos": "^1.7.0",
+    "@tailwindcss/vite": "^4.1.13",
+    "epos": "^1.7.1",
     "epos-types": "^1.1.0",
-    "paralayer": "^1.0.4",
-    "tailwindcss": "^4.1.12",
+    "paralayer": "^1.0.5",
+    "tailwindcss": "^4.1.13",
     "vite": "^7.1.4",
-    "vite-plugin-rebundle": "^1.2.8"
+    "vite-plugin-rebundle": "^1.2.10"
   }
 }

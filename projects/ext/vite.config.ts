@@ -2,10 +2,10 @@ import preact from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import copy from 'rollup-plugin-copy'
 import rebundle from 'vite-plugin-rebundle'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
-import { BuildOptions } from 'vite-plugin-rebundle'
+import type { BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
@@ -68,7 +68,7 @@ export default defineConfig(async ({ mode }) => {
         reactAliasesEnabled: false,
       }),
 
-      copy({
+      viteStaticCopy({
         targets: [
           {
             src: './public/*',

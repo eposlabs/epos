@@ -5,26 +5,16 @@ export class PkgsDock extends $vw.Unit {
   private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
   private selectedPkg: $vw.Pkg | null = null
-  private showTimeout: number | null = null
-  private hideTimeout: number | null = null
   private hidden = true
 
   show() {
-    if (this.showTimeout) self.clearTimeout(this.showTimeout)
-    if (this.hideTimeout) self.clearTimeout(this.hideTimeout)
-    this.showTimeout = self.setTimeout(() => {
-      this.hidden = false
-      this.$.shell.refresh()
-    }, 50)
+    this.hidden = false
+    this.$.shell.refresh()
   }
 
-  hide(delay = 350) {
-    if (this.showTimeout) self.clearTimeout(this.showTimeout)
-    if (this.hideTimeout) self.clearTimeout(this.hideTimeout)
-    this.hideTimeout = self.setTimeout(() => {
-      this.hidden = true
-      this.$.shell.refresh()
-    }, delay)
+  hide() {
+    this.hidden = true
+    this.$.shell.refresh()
   }
 
   ui = () => {
@@ -39,7 +29,7 @@ export class PkgsDock extends $vw.Unit {
         onMouseEnter={() => this.show()}
         class={this.$.utils.cx([
           'fixed top-0 right-0 z-10 h-28 bg-brand font-mono font-semibold text-black',
-          'transition duration-200 select-none',
+          'transition delay-30 duration-200 select-none',
           this.hidden && 'transform-[translate(calc(100%-min(100%,32px)),calc(-100%+7px))] text-transparent',
         ])}
       >
@@ -67,7 +57,7 @@ export class PkgsDock extends $vw.Unit {
         self.close()
       } else {
         this.$pkgs.select(pkgName)
-        this.hide(450)
+        this.hide()
       }
     }
 
