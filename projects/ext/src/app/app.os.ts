@@ -17,13 +17,3 @@ export class App extends $os.Unit {
     await this.pkgs.init()
   }
 }
-
-// await this.peer.mutex('start', async () => {
-//   await this.alive.init()
-//   await this.kick.init()
-//   this._setupUtils()
-// })
-
-// _setupUtils() {
-//   this.$.bus.on('utils.convertImage', this.$.utils.convertImage)
-// }

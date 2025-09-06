@@ -2,9 +2,7 @@ $: {
   const pageGlobals = self
   const originalGlobals = self.__epos.globals
   const methods = {}
-  const isMethod = (name, value) => {
-    return typeof value === 'function' && name[0].toLowerCase() === name[0]
-  }
+  const isMethod = (name, value) => typeof value === 'function' && name[0].toLowerCase() === name[0]
 
   const proxy = new self.Proxy(pageGlobals, {
     get(_, key) {

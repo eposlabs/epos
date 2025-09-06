@@ -12,7 +12,7 @@ export class Pkgs extends $vw.Unit {
     return Object.values(this.map)
   }
 
-  get listSortedByName() {
+  private get listSortedByName() {
     return this.list.toSorted((pkg1, pkg2) => pkg1.name.localeCompare(pkg2.name))
   }
 
@@ -105,14 +105,10 @@ export class Pkgs extends $vw.Unit {
 
   Dock = () => {
     this.$.libs.preact.useContext(this.$.shell.context)
+    if (!this.selectedPkgName) return null
 
     return (
-      <div
-        class={this.$.utils.cx([
-          'fixed top-0 right-0 z-10 flex h-30 rounded-bl-lg bg-brand',
-          'font-mono font-medium',
-        ])}
-      >
+      <div class="fixed top-0 right-0 z-10 flex h-28 bg-brand font-mono font-semibold select-none">
         <this.Select />
         <this.ActionButton />
         <this.SidePanelButton />
@@ -121,10 +117,10 @@ export class Pkgs extends $vw.Unit {
   }
 
   private Select = () => {
-    if (this.list.length === 0) return null
+    this.$.libs.preact.useContext(this.$.shell.context)
     if (!this.selectedPkgName) return null
+    if (this.list.length === 1) return null
     const selectedPkg = this.map[this.selectedPkgName]
-    if (!selectedPkg) return null
 
     const onChange = async (e: TargetedEvent<HTMLSelectElement>) => {
       const value = e.currentTarget.value
@@ -138,102 +134,60 @@ export class Pkgs extends $vw.Unit {
       }
     }
 
-    if (this.list.length === 1) return null
-
     return (
-      <div>
-        {/* Select UI */}
-        <div class="flex h-full items-center gap-6 pr-8 pl-12">
-          <div class="text-[12px]/[1]">{selectedPkg.label}</div>
-          {this.list.length > 1 && (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-14"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          )}
-        </div>
+      <div class="relative flex h-full items-center gap-5 pr-8 pl-9">
+        <div class="text-[12px]">{selectedPkg.label}</div>
+        <div class="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
 
         {/* Native select */}
-        {this.list.length > 1 && (
-          <select
-            value={this.selectedPkgName}
-            onChange={onChange}
-            class="absolute inset-0 opacity-0 outline-none"
-          >
-            {this.listSortedByName.map(pkg => (
-              <this.$.libs.preact.Fragment key={pkg.name}>
-                <option value={pkg.name}>{pkg.label}</option>
-                {this.actions[pkg.name] && (
-                  <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
-                    {pkg.label} →
-                  </option>
-                )}
-              </this.$.libs.preact.Fragment>
-            ))}
-          </select>
-        )}
+        <select
+          value={this.selectedPkgName}
+          onChange={onChange}
+          class="absolute inset-0 opacity-0 outline-none"
+        >
+          {this.listSortedByName.map(pkg => (
+            <this.$.libs.preact.Fragment key={pkg.name}>
+              <option value={pkg.name}>{pkg.label}</option>
+              {this.actions[pkg.name] && (
+                <option key={`action:${pkg.name}`} value={`action:${pkg.name}`}>
+                  {pkg.label} →
+                </option>
+              )}
+            </this.$.libs.preact.Fragment>
+          ))}
+        </select>
       </div>
     )
   }
 
   private ActionButton = () => {
-    if (!this.selectedPkgName) return null
+    this.$.libs.preact.useContext(this.$.shell.context)
+    if (this.list.length > 1) return null
+    const selectedPkgName = this.selectedPkgName
+    if (!selectedPkgName) return null
+    if (!this.actions[selectedPkgName]) return null
 
     return (
       <button
-        onClick={() => this.processAction(this.selectedPkgName)}
-        class="z-10 flex size-30 items-center justify-center"
+        onClick={() => this.processAction(selectedPkgName)}
+        class="flex h-full w-28 items-center justify-center not-only:pl-3 only:box-content only:px-2"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="size-14"
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
+        <div class="text-[14px]">→</div>
       </button>
     )
   }
 
   private SidePanelButton = () => {
-    // if (!this.$.env.is.vwPopup) return null
-    // if (!this.hasPanel) return null
+    this.$.libs.preact.useContext(this.$.shell.context)
+    if (!this.$.env.is.vwPopup) return null
+    if (!this.hasPanel) return null
 
     return (
-      <button onClick={() => this.openPanel()} class="z-10 flex size-30 items-center justify-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="size-14"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M15 3v18" />
-        </svg>
+      <button
+        onClick={() => this.openPanel()}
+        class="flex h-full w-28 items-center justify-center only:box-content only:px-2 not-only:nth-of-type-2:pr-3"
+      >
+        <div class="-translate-y-1 text-[16px]">◨</div>
       </button>
     )
   }

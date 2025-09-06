@@ -1,37 +1,29 @@
 $: (() => {
-  setupEposVar()
+  self.__epos = {}
   setupEposGlobals()
   setupEposElement()
 })()
 
-function setupEposVar() {
-  self.__epos = {}
-}
-
 function setupEposGlobals() {
   // Collect globals
-  const values = {}
+  const globals = {}
   const lettersOnly = /^[a-zA-Z]+$/
   Object.getOwnPropertyNames(self).forEach(name => {
     if (name === 'self') return
     if (name === 'window') return
     if (name === 'globalThis') return
     if (!lettersOnly.test(name)) return
-    values[name] = self[name]
+    globals[name] = self[name]
   })
-  const globals = Object.assign(values, {
-    postMessage: self.postMessage,
+  Object.assign(globals, {
     addEventListener: self.addEventListener,
     removeEventListener: self.removeEventListener,
   })
 
   // Prevent globals being non-configurable.
   // If some website has code like this:
-  // > Object.defineProperty(self, 'addEventListener', {
-  // >   value: self.addEventListener,
-  // >   configurable: false,
-  // > })
-  // then we can't use global proxy (boot-globals.ex.ts).
+  // > Object.defineProperty(self, 'addEventListener', { value: self.addEventListener, configurable: false })
+  // then we can't use global proxy (boot-injector-globals.sw.ts).
   // Example: https://www.pausecollection.co.uk/.
   const objectDefineProperty = Object.defineProperty.bind(Object)
   Object.defineProperty = (target, key, attrs) => {

@@ -33,9 +33,7 @@ export class App extends $sw.Unit {
   private async initContentScript() {
     // Unregister previous content script if any
     const contentScripts = await this.$.browser.scripting.getRegisteredContentScripts()
-    await this.$.browser.scripting.unregisterContentScripts({
-      ids: contentScripts.map(contentScript => contentScript.id),
-    })
+    await this.$.browser.scripting.unregisterContentScripts({ ids: contentScripts.map(cs => cs.id) })
 
     // Register new content script
     await this.$.browser.scripting.registerContentScripts([
@@ -60,25 +58,3 @@ export class App extends $sw.Unit {
     })
   }
 }
-
-// setTimeout(() => {
-//   chrome.tabs.create({
-//     url: 'chrome-extension://mmnaolanbicijjnlkbpgbbamblkkdghc/view.html',
-//     active: true,
-//   })
-// }, 20)
-
-// await this.peer.mutex('start', async () => {
-//   await this.allowHub()
-// })
-
-// private async allowHub() {
-//   await this.$.net.register({
-//     urlFilter: `${this.$.env.url.hubDev}/*`,
-//     responseHeaders: { 'Access-Control-Allow-Origin': '*' },
-//   })
-//   await this.$.net.register({
-//     urlFilter: `${this.$.env.url.hubProd}/*`,
-//     responseHeaders: { 'Access-Control-Allow-Origin': '*' },
-//   })
-// }

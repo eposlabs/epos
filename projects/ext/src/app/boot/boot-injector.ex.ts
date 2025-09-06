@@ -20,7 +20,7 @@ export class BootInjector extends $ex.Unit {
     }
   }
 
-  private async initEposVar() {
+  private initEposVar() {
     self.__epos = {} as EposVar
   }
 

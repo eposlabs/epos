@@ -30,10 +30,10 @@ declare global {
   var EX_MINI: boolean
 
   // App instance for CS, OS, SW and VW
-  var $: unknown | undefined
+  var $: any
 
   // App instance for EX, dev-only
-  var $epos: unknown | undefined
+  var $epos: any
 
   // Global epos variable for EX
   var __epos: EposVar

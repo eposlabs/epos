@@ -6,7 +6,7 @@
   "popup": { "width": 600, "height": 400 },
   "targets": [
     {
-      "matches": ["<hub>", "<popup>", "https://inssist.com/*"],
+      "matches": ["<hub>", "<popup>", "<panel>", "https://inssist.com/*"],
       "load": ["./fg.js", "./fg.css"],
       "mode": "shadow"
     },
