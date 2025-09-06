@@ -1,37 +1,33 @@
-import type { Fragment } from './pkg.sw'
+import type { InvokeShard } from './pkg.sw'
 
 export class Pkg extends $vw.Unit {
-  dev: Fragment['dev']
-  name: Fragment['name']
-  hash: Fragment['hash']
-  title: Fragment['title']
-  popup: Fragment['popup']
-  active = false
+  dev: InvokeShard['dev']
+  name: InvokeShard['name']
+  hash: InvokeShard['hash']
+  title: InvokeShard['title']
+  popup: InvokeShard['popup']
+  invoked = false
 
-  get label() {
-    return this.title ?? this.name
-  }
-
-  constructor(parent: $vw.Unit, fragment: Fragment) {
+  constructor(parent: $vw.Unit, data: InvokeShard) {
     super(parent)
-    this.dev = fragment.dev
-    this.name = fragment.name
-    this.hash = fragment.hash
-    this.title = fragment.title
-    this.popup = fragment.popup
+    this.dev = data.dev
+    this.name = data.name
+    this.hash = data.hash
+    this.title = data.title
+    this.popup = data.popup
   }
 
-  update(fragment: Omit<Fragment, 'name'>) {
-    this.dev = fragment.dev
-    this.hash = fragment.hash
-    this.title = fragment.title
-    this.popup = fragment.popup
+  update(data: Omit<InvokeShard, 'name'>) {
+    this.dev = data.dev
+    this.hash = data.hash
+    this.title = data.title
+    this.popup = data.popup
   }
 
   ui = () => {
     this.$.libs.preact.useContext(this.$.shell.context)
     const selected = this.$.pkgs.selectedPkgName === this.name
-    if (!this.active) this.active = selected
+    if (!this.invoked) this.invoked = selected
 
     let width: number | string
     let height: number | string
@@ -41,12 +37,12 @@ export class Pkg extends $vw.Unit {
     } else if (this.$.env.is.vwPanel) {
       width = '100vw'
       height = '100vh'
-    } else throw this.never
+    } else {
+      throw this.never
+    }
 
     let src = 'about:blank'
-    if (this.active) {
-      src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
-    }
+    if (this.invoked) src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
 
     return (
       <iframe

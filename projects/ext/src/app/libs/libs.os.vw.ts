@@ -1,6 +1,6 @@
 import { render, createContext, Fragment } from 'preact'
-import { useState, useContext } from 'preact/hooks'
+import { useState, useContext, useEffect } from 'preact/hooks'
 
 export class Libs extends $osVw.Unit {
-  preact = { render, createContext, useState, useContext, Fragment }
+  preact = { render, createContext, useState, useContext, useEffect, Fragment }
 }

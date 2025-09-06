@@ -23,7 +23,7 @@ export class Shell extends $vw.Unit {
     return (
       <this.context.Provider value={renderId}>
         <div>
-          <this.$.pkgs.Dock />
+          <this.$.pkgs.dock.ui />
           <this.$.pkgs.ui />
         </div>
       </this.context.Provider>

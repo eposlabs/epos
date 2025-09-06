@@ -1,4 +1,4 @@
-import type { Action, Manifest, Mode, Popup } from '../pkgs-parser.sw'
+import type { Action, Manifest, Mode } from '../pkgs-parser.sw'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
@@ -16,11 +16,17 @@ export type Payload = {
   script: string
 }
 
-export type Fragment = {
+export type ActionShard = {
+  name: string
+  title: Manifest['title']
+  action: Exclude<Action, null>
+}
+
+export type InvokeShard = {
   dev: boolean
   name: string
-  title: string | null
-  popup: Popup
+  title: Manifest['title']
+  popup: Manifest['popup']
   hash: string
 }
 
@@ -108,14 +114,23 @@ export class Pkg extends $sw.Unit {
     }
   }
 
-  async getFragment(uri: string): Promise<Fragment | null> {
+  getActionShard(): ActionShard | null {
+    if (!this.action) return null
+    return {
+      name: this.name,
+      title: this.manifest.title,
+      action: this.action,
+    }
+  }
+
+  async getInvokeShard(uri: string): Promise<InvokeShard | null> {
     if (!this.test(uri)) return null
     return {
       dev: this.dev,
       name: this.name,
       title: this.manifest.title,
       popup: this.manifest.popup,
-      hash: await this.getHash(uri),
+      hash: await this.getInvokeHash(uri),
     }
   }
 
@@ -126,7 +141,7 @@ export class Pkg extends $sw.Unit {
   }
 
   /** Used to determine if package must be reloaded. */
-  async getHash(uri: string) {
+  async getInvokeHash(uri: string) {
     const usedSourcePaths = this.getSourcePaths(uri).sort()
     return await this.$.utils.hash({
       dev: this.dev,

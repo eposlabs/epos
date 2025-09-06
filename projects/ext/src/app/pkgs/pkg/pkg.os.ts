@@ -1,22 +1,22 @@
-import type { Fragment } from './pkg.sw'
+import type { InvokeShard } from './pkg.sw'
 
 export class Pkg extends $os.Unit {
-  dev: Fragment['dev']
-  name: Fragment['name']
-  hash: Fragment['hash']
+  dev: InvokeShard['dev']
+  name: InvokeShard['name']
+  hash: InvokeShard['hash']
   frame: HTMLIFrameElement
 
-  constructor(parent: $os.Unit, fragment: Omit<Fragment, 'popup'>) {
+  constructor(parent: $os.Unit, data: Omit<InvokeShard, 'popup'>) {
     super(parent)
-    this.dev = fragment.dev
-    this.name = fragment.name
-    this.hash = fragment.hash
+    this.dev = data.dev
+    this.name = data.name
+    this.hash = data.hash
     this.frame = this.createFrame()
   }
 
-  update(fragment: Omit<Fragment, 'name' | 'popup'>) {
-    this.dev = fragment.dev
-    this.hash = fragment.hash
+  update(data: Omit<InvokeShard, 'name' | 'popup'>) {
+    this.dev = data.dev
+    this.hash = data.hash
     this.frame.src = this.$.env.url.frame({
       name: this.name,
       hash: this.hash,

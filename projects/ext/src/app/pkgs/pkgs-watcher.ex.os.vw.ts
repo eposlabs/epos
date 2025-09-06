@@ -1,4 +1,4 @@
-import type { Actions, Fragments } from './pkgs.sw'
+import type { ActionShards, InvokeShards } from './pkgs.sw'
 
 export type PkgName = string
 export type OnUpdate = (delta: Delta, data: Data) => void
@@ -9,13 +9,13 @@ export type Delta = {
 }
 
 export type Data = {
-  actions: Actions
-  fragments: Fragments
+  actionShards: ActionShards
+  invokeShards: InvokeShards
   hasPanel: boolean
 }
 
 export class PkgsWatcher extends $exOsVw.Unit {
-  private fragments: Fragments = {}
+  private invokeShards: InvokeShards = {}
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
@@ -23,20 +23,20 @@ export class PkgsWatcher extends $exOsVw.Unit {
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actions = await this.$.bus.send<Actions>('pkgs.getActions')
-    const fragments = await this.$.bus.send<Fragments>('pkgs.getFragments', location.href)
+    const actionShards = await this.$.bus.send<ActionShards>('pkgs.getActionShards')
+    const invokeShards = await this.$.bus.send<InvokeShards>('pkgs.getInvokeShards', location.href)
     const hasPanel = await this.$.bus.send<boolean>('pkgs.test', '<panel>')
 
-    const fragments1 = this.fragments
-    const fragments2 = fragments
-    const names1 = Object.keys(fragments1)
-    const names2 = Object.keys(fragments2)
-    const added = names2.filter(name => !fragments1[name])
-    const removed = names1.filter(name => !fragments2[name])
+    const invoke1 = this.invokeShards
+    const invoke2 = invokeShards
+    const names1 = Object.keys(invoke1)
+    const names2 = Object.keys(invoke2)
+    const added = names2.filter(name => !invoke1[name])
+    const removed = names1.filter(name => !invoke2[name])
 
-    const data: Data = { actions, fragments, hasPanel }
+    const data: Data = { actionShards, invokeShards, hasPanel }
     const delta: Delta = { added, removed }
-    this.fragments = fragments
+    this.invokeShards = invokeShards
 
     onUpdate(delta, data)
   }

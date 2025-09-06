@@ -26,8 +26,8 @@ $: (async () => {
 
   document.body.innerHTML = `
     <div style="background">
-      THIS IS x1
-      // <iframe src="https://inssist.com" style="width: 500px; height: 500px;"></iframe>
+      test x1 package
+      <!-- <iframe src="https://inssist.com" style="width: 500px; height: 500px;"></iframe> -->
     </div>
   `
 })()

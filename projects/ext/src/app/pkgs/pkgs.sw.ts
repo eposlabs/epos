@@ -1,7 +1,7 @@
-import type { Fragment } from './pkg/pkg.sw'
+import type { ActionShard, InvokeShard } from './pkg/pkg.sw'
 
-export type Actions = { [name: string]: string | true }
-export type Fragments = { [name: string]: Fragment }
+export type ActionShards = { [name: string]: ActionShard }
+export type InvokeShards = { [name: string]: InvokeShard }
 
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
@@ -19,8 +19,8 @@ export class Pkgs extends $sw.Unit {
     this.$.bus.on('pkgs.getCss', this.getCss, this)
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
-    this.$.bus.on('pkgs.getActions', this.getActions, this)
-    this.$.bus.on('pkgs.getFragments', this.getFragments, this)
+    this.$.bus.on('pkgs.getActionShards', this.getActionShards, this)
+    this.$.bus.on('pkgs.getInvokeShards', this.getInvokeShards, this)
   }
 
   async init() {
@@ -52,25 +52,26 @@ export class Pkgs extends $sw.Unit {
     return this.list.map(pkg => pkg.getPayload(uri)).filter(this.$.is.present)
   }
 
-  getActions() {
-    const actions: Actions = {}
+  getActionShards() {
+    const shards: ActionShards = {}
     for (const pkg of this.list) {
-      if (!pkg.action) continue
-      actions[pkg.name] = pkg.action
+      const shard = pkg.getActionShard()
+      if (!shard) continue
+      shards[pkg.name] = shard
     }
 
-    return actions
+    return shards
   }
 
-  private async getFragments(uri: string) {
-    const fragments: Fragments = {}
+  private async getInvokeShards(uri: string) {
+    const shards: InvokeShards = {}
     for (const pkg of this.list) {
-      const fragment = await pkg.getFragment(uri)
-      if (!fragment) continue
-      fragments[pkg.name] = fragment
+      const shard = await pkg.getInvokeShard(uri)
+      if (!shard) continue
+      shards[pkg.name] = shard
     }
 
-    return fragments
+    return shards
   }
 
   private async restoreFromIdb() {
