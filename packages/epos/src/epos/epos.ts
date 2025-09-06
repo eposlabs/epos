@@ -191,7 +191,6 @@ declare global {
   namespace React {
     interface HTMLAttributes<T> {
       class?: ClassName
-      [key: `$${string}`]: boolean
     }
   }
 }
