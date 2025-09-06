@@ -40,7 +40,7 @@ export default defineConfig(async ({ mode }) => {
         targets: [
           {
             src: './public/*',
-            dest: './dist',
+            dest: './',
           },
         ],
       }),

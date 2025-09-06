@@ -61,7 +61,7 @@ export class BootMedium extends $swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openPanel(tabId: number) {
-    const path = this.$.env.url.view('panel', String(tabId))
+    const path = this.$.env.url.view('panel', tabId)
     async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
   }

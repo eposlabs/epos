@@ -31,18 +31,19 @@ class EnvUrl extends $gl.Unit {
   web = 'https://epos.dev'
   offscreen = '/offscreen.html?type=background'
 
-  view(type: 'popup' | 'panel', tabId?: string | number) {
-    const q = new URLSearchParams({ type, ...(tabId && { tabId: String(tabId) }) })
+  view(type: 'popup' | 'panel', tabId?: number) {
+    const q = new URLSearchParams({ type })
+    if (tabId) q.set('tabId', String(tabId))
     return `/view.html?${q}`
   }
 
-  frame(params: { name: string; hash: string; dev: boolean }) {
+  frame(name: string, hash: string, dev: boolean) {
     const type = this.$env.is.os ? 'background' : this.$env.params.type
     const tabId = this.$env.is.os ? null : this.$env.params.tabId
-    const q = new URLSearchParams({ type, name: params.name })
+    const q = new URLSearchParams({ type, name })
     if (tabId) q.set('tabId', String(tabId))
-    if (params.dev) q.set('dev', 'true')
-    if (params.hash) q.set('hash', params.hash)
+    q.set('dev', String(dev))
+    q.set('hash', hash)
     return `/frame.html?${q}`
   }
 

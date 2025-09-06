@@ -17,11 +17,7 @@ export class Pkg extends $os.Unit {
   update(data: Omit<InvokeShard, 'name' | 'popup'>) {
     this.dev = data.dev
     this.hash = data.hash
-    this.frame.src = this.$.env.url.frame({
-      name: this.name,
-      hash: this.hash,
-      dev: this.dev,
-    })
+    this.frame.src = this.$.env.url.frame(this.name, this.hash, this.dev)
   }
 
   removeFrame() {
@@ -30,7 +26,7 @@ export class Pkg extends $os.Unit {
 
   private createFrame() {
     const frame = document.createElement('iframe')
-    frame.src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
+    frame.src = this.$.env.url.frame(this.name, this.hash, this.dev)
     frame.name = this.name
     document.body.append(frame)
     return frame

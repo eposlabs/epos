@@ -42,7 +42,7 @@ export class Pkg extends $vw.Unit {
     }
 
     let src = 'about:blank'
-    if (this.invoked) src = this.$.env.url.frame({ name: this.name, hash: this.hash, dev: this.dev })
+    if (this.invoked) src = this.$.env.url.frame(this.name, this.hash, this.dev)
 
     return (
       <iframe

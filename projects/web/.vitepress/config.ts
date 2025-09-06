@@ -20,6 +20,11 @@ export default defineConfig({
       },
     ],
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/eposlabs/epos' }],
+    socialLinks: [
+      {
+        icon: 'github',
+        link: 'https://github.com/eposlabs/epos',
+      },
+    ],
   },
 })
