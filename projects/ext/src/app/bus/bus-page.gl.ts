@@ -91,7 +91,7 @@ export class BusPage extends $gl.Unit {
     if (this.$bus.is('content-script')) {
       this.token = crypto.randomUUID()
     } else if (this.$bus.is('injection')) {
-      this.token = self.__epos.busToken
+      this.token = self.__eposBusToken
     } else {
       this.token = null
     }
@@ -112,13 +112,13 @@ export class BusPage extends $gl.Unit {
         this.respond(req, result)
         return
       }
-      
+
       let actions = this.$bus.actions.list.filter(action => action.name === req.name)
 
       if (req.locus === 'injection') {
         actions = actions.filter(action => action.proxy !== 'injection')
       }
-      
+
       if (req.locus === 'ext-frame') {
         actions = actions.filter(action => action.proxy !== `ext-frame-${req.frame}`)
       }

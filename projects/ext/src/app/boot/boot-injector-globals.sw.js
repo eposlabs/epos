@@ -1,7 +1,7 @@
 $: {
   const pageGlobals = self
-  const originalGlobals = self.__epos.globals
-  const isTop = self.__epos.isTop
+  const originalGlobals = self.__eposGlobals
+  const isTop = self.__eposIsTop
   const methods = {}
   const isMethod = (name, value) => typeof value === 'function' && name[0].toLowerCase() === name[0]
 

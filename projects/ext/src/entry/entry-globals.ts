@@ -10,39 +10,32 @@ type PkgDef = {
 }
 
 declare global {
-  type EposVar = {
-    element: HTMLElement
-    globals: Record<string, unknown>
-    tabId: number | null
-    busToken: string | null
-    defs: PkgDef[]
-  }
-
-  interface Node {
-    epos?: boolean
-    moveBefore(movedNode: Node, referenceNode: Node | null): void
-  }
-
-  var esbuildRequire: typeof require
-
-  // Global constants injected via vite.config.ts
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
-  var EX_MINI: boolean
 
-  // App instance for CS, OS, SW and VW
-  var $: any
+  // Global variables injected to [ex]
+  var __eposIsTop: boolean
+  var __eposGlobals: Record<string, unknown>
+  var __eposElement: HTMLElement
+  var __eposTabId: number | null
+  var __eposBusToken: string | null
+  var __eposPkgDefs: PkgDef[]
+  var __eposInjected: boolean
 
-  // App instance for EX, dev-only
-  var $epos: any
-
-  // Global epos variable for EX
-  var __epos: EposVar
-
-  // Ready flag for CS
+  // Ready flag for [cs]
   var __eposCsReady$: PromiseWithResolvers<CsReadyData> | undefined
 
-  // Global methods for SW
+  // App instance for [cs], [os], [sw] and [vw]
+  var $: any
+
+  // App instance for [ex], dev-only
+  var $epos: any
+
+  // Global methods for [sw]
   var add: any
   var remove: any
   var eject: any
+
+  interface Node {
+    epos?: boolean
+  }
 }

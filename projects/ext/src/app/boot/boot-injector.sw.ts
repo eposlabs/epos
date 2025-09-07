@@ -77,9 +77,9 @@ export class BootInjector extends $sw.Unit {
     // Prepare js
     const js = [
       `(() => {`,
-      `self.__epos.tabId = ${JSON.stringify(tab.id)}`,
-      `self.__epos.busToken = ${JSON.stringify(csData.busToken)}`,
-      `self.__epos.defs = [${payloads.map(payload => payload.script).join(',')}]`,
+      `self.__eposTabId = ${JSON.stringify(tab.id)}`,
+      `self.__eposBusToken = ${JSON.stringify(csData.busToken)}`,
+      `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
       globalsJs,
       engineJs,
       `})()`,
@@ -106,7 +106,7 @@ export class BootInjector extends $sw.Unit {
           script.epos = true
           script.src = url
           if (mode === 'script-auto-revoke') script.onload = () => URL.revokeObjectURL(url)
-          self.__epos.element.prepend(script)
+          self.__eposElement.prepend(script)
         }
         return { error: null }
       } catch (e) {
@@ -133,7 +133,7 @@ export class BootInjector extends $sw.Unit {
       link.epos = true
       link.rel = 'stylesheet'
       link.href = URL.createObjectURL(blob)
-      self.__epos.element.prepend(link)
+      self.__eposElement.prepend(link)
     })
   }
 

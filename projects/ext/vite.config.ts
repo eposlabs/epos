@@ -9,6 +9,7 @@ import type { BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
+  const defineDevNodeEnv = { 'process.env.NODE_ENV': json('development') }
 
   const setup = await paralayer({
     input: './src/app',
@@ -63,36 +64,14 @@ export default defineConfig(async ({ mode }) => {
 
     plugins: [
       tailwindcss(),
-
-      preact({
-        reactAliasesEnabled: false,
-      }),
-
-      viteStaticCopy({
-        targets: [
-          {
-            src: './public/*',
-            dest: './',
-          },
-        ],
-      }),
-
+      preact({ reactAliasesEnabled: false }),
+      viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
       rebundle({
         'cs': bundle('cs'),
-        'ex': bundle('ex', {
-          sourcemap: false,
-        }),
-        'ex-dev': bundle('ex', {
-          sourcemap: false,
-          define: { 'process.env.NODE_ENV': json('development') },
-        }),
-        'ex-mini': bundle('ex-mini', {
-          sourcemap: false,
-        }),
-        'ex-mini-dev': bundle('ex-mini', {
-          sourcemap: false,
-          define: { 'process.env.NODE_ENV': json('development') },
-        }),
+        'ex': bundle('ex', { sourcemap: false }),
+        'ex-dev': bundle('ex', { sourcemap: false, define: defineDevNodeEnv }),
+        'ex-mini': bundle('ex-mini', { sourcemap: false }),
+        'ex-mini-dev': bundle('ex-mini', { sourcemap: false, define: defineDevNodeEnv }),
         'os': bundle('os'),
         'sm': bundle('sm'),
         'sw': bundle('sw'),

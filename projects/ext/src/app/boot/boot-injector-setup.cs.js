@@ -1,23 +1,19 @@
 $: (() => {
-  self.__epos = {}
   setupEposGlobals()
   setupEposElement()
 })()
 
 function setupEposGlobals() {
-  // Collect globals
   const globals = {}
-  self.__epos.isTop = self === top
   const keys = [...Object.getOwnPropertyNames(self), 'addEventListener', 'removeEventListener']
-  for (const key of keys) {
-    if (key === '__epos') continue
-    globals[key] = self[key]
-  }
+  for (const key of keys) globals[key] = self[key]
+  self.__eposIsTop = self === top
+  self.__eposGlobals = globals
 
   // Prevent globals being non-configurable.
   // If some website has code like this:
   // > Object.defineProperty(self, 'addEventListener', { value: self.addEventListener, configurable: false })
-  // then we can't use global proxy (boot-injector-globals.sw.ts).
+  // then global proxy won't work (boot-injector-globals.sw.ts).
   // Example: https://www.pausecollection.co.uk/.
   const objectDefineProperty = Object.defineProperty.bind(Object)
   Object.defineProperty = (target, key, attrs) => {
@@ -29,15 +25,15 @@ function setupEposGlobals() {
     if (target === self && key in globals && attrs && !attrs.configurable) attrs.configurable = true
     return reflectDefineProperty(target, key, attrs)
   }
-
-  // Save globals
-  self.__epos.globals = globals
 }
 
 function setupEposElement() {
-  const createEposElement = () => {
+  let eposElement
+  const ensureEposElement = () => {
+    if (eposElement) return eposElement
+
     // Create <epos/> element
-    const eposElement = document.createElement('epos')
+    eposElement = document.createElement('epos')
     document.documentElement.prepend(eposElement)
 
     // Watch <html/>: <epos/> removed? -> Re-attach
@@ -76,7 +72,7 @@ function setupEposElement() {
       for (const mutation of mutations) {
         for (const addedNode of mutation.addedNodes) {
           if (!addedNode.epos) {
-            const root = document.head || document.documentElement
+            const root = document.head ?? document.documentElement
             root.moveBefore(addedNode, null)
           }
         }
@@ -86,11 +82,8 @@ function setupEposElement() {
     return eposElement
   }
 
-  let element
-  Reflect.defineProperty(self.__epos, 'element', {
-    get() {
-      element ??= createEposElement()
-      return element
-    },
+  Reflect.defineProperty(self, '__eposElement', {
+    configurable: true,
+    get: () => ensureEposElement(),
   })
 }
