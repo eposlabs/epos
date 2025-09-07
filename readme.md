@@ -48,8 +48,6 @@
 - **Environment**
   - epos.tabId
   - epos.is.tab
-  - epos.is.hub
-  - epos.is.page
   - epos.is.shell
   - epos.is.popup
   - epos.is.panel

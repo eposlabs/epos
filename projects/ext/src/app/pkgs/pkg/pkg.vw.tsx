@@ -41,8 +41,15 @@ export class Pkg extends $vw.Unit {
       throw this.never
     }
 
-    let src = 'about:blank'
-    if (this.invoked) src = this.$.env.url.frame(this.name, this.hash, this.dev)
+    if (!this.invoked) return null
+
+    const src = this.$.env.url.frame({
+      type: this.$.env.params.type as 'popup' | 'panel',
+      tabId: this.$.env.params.tabId,
+      name: this.name,
+      hash: this.hash,
+      dev: String(this.dev),
+    })
 
     return (
       <iframe

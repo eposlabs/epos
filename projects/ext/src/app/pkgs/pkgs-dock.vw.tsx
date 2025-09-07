@@ -54,7 +54,6 @@ export class PkgsDock extends $vw.Unit {
 
       if (isAction) {
         await this.processAction(pkgName)
-        self.close()
       } else {
         this.$pkgs.select(pkgName)
         this.hide()
@@ -136,6 +135,8 @@ export class PkgsDock extends $vw.Unit {
     } else if (this.$.is.string(shard.action)) {
       await this.$.boot.medium.openTab(shard.action)
     }
+
+    self.close()
   }
 
   private openPanel() {

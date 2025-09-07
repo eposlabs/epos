@@ -2,7 +2,7 @@ export type Props = {
   name: string
   icon: string | null
   title: string | null
-  tabId: number
+  tabId: number | null
   shadowCss: string
 }
 
@@ -10,7 +10,7 @@ export class Pkg extends $ex.Unit {
   name: string
   icon: string | null
   title: string | null
-  tabId: number
+  tabId: number | null
   shadowCss: string
   api: $ex.PkgApi
 
@@ -26,10 +26,12 @@ export class Pkg extends $ex.Unit {
 
   async init() {
     await this.api.init()
-    if (this.$.env.is.exTabHub) await this.initHub()
+    await this.initHub()
   }
 
   private async initHub() {
+    const isHub = location.href.startsWith(`${this.$.env.url.web}/@${this.name}`)
+    if (!isHub) return
     this.setPageTitle()
     await this.setPageFavicon()
   }

@@ -9,6 +9,10 @@
       "matches": ["<hub>", "<popup>", "<panel>", "https://inssist.com/*"],
       "load": ["./x1.js", "./x1.css"],
       "mode": "shadow"
+    },
+    {
+      "matches": "<background>",
+      "load": "./x1-bg.js"
     }
   ]
 }

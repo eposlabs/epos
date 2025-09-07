@@ -85,6 +85,7 @@ export class BootInjector extends $ex.Unit {
   }
 
   private getTabId() {
+    if (this.$.env.is.exFrameBackground) return null
     if (this.$.env.is.exFrame) return Number(this.$.env.params.tabId)
     if (!this.$.is.number(self.__eposTabId)) throw this.never
     return self.__eposTabId

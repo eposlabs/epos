@@ -33,7 +33,7 @@ export class BootMedium extends $swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openPopup(tabId: number) {
-    const path = this.$.env.url.view('popup', tabId)
+    const path = this.$.env.url.view({ type: 'popup', tabId: String(tabId) })
     await this.$.browser.action.setPopup({ popup: path })
     await this.$.utils.safe(() => this.$.browser.action.openPopup())
     await this.$.browser.action.setPopup({ popup: '' })
@@ -61,8 +61,8 @@ export class BootMedium extends $swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openPanel(tabId: number) {
-    const path = this.$.env.url.view('panel', tabId)
-    async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
+    const path = this.$.env.url.view({ type: 'panel', tabId: String(tabId) })
+    await this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
   }
 

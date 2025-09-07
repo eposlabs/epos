@@ -149,7 +149,7 @@ export class KitBrowserApi extends $ex.Unit {
     if (alreadyGranted) return true
 
     // Prepare permission url
-    const url = root.runtime.getURL(this.$.env.url.system('permission'))
+    const url = root.runtime.getURL(this.$.env.url.system({ type: 'permission' }))
 
     // Close all permission tabs
     const tabs = await root.tabs.query({ url })

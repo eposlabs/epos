@@ -1,55 +1,35 @@
-/**
- * #### Extension Pages
- * - permission - `/system.html/?type=permission`
- * - offscreen - `/offscreen.html?type=background`
- * - popup view - `/view.html/?type=popup&tabId={tabId}`
- * - panel view  - `/view.html/?type=panel&tabId={tabId}`
- * - popup frame - `/frame.html/?type=popup&name={pkgName}&tabId={tabId}`
- * - panel frame - `/frame.html/?type=panel&name={pkgName}&tabId={tabId}`
- * - background frame - `/frame.html/?type=background&name={pkgName}&tabId={tabId}`
- */
 export class Env extends $gl.Unit {
-  bundle = BUNDLE
   params = this.getParams()
   url = new EnvUrl(this)
   is = new EnvIs(this)
 
-  isExtPage() {
-    return location.protocol === 'chrome-extension:'
-  }
-
   private getParams() {
-    if (!this.isExtPage()) return {}
+    if (location.protocol !== 'chrome-extension:') return {}
     const url = new URL(location.href)
     return Object.fromEntries(url.searchParams)
   }
 }
 
 class EnvUrl extends $gl.Unit {
-  private $env = this.up(Env)!
-
   web = 'https://epos.dev'
   offscreen = '/offscreen.html?type=background'
 
-  view(type: 'popup' | 'panel', tabId?: number) {
-    const q = new URLSearchParams({ type })
-    if (tabId) q.set('tabId', String(tabId))
-    return `/view.html?${q}`
+  system(params: { type: 'permission' }) {
+    return `/system.html?${new URLSearchParams(params)}`
   }
 
-  frame(name: string, hash: string, dev: boolean) {
-    const type = this.$env.is.os ? 'background' : this.$env.params.type
-    const tabId = this.$env.is.os ? null : this.$env.params.tabId
-    const q = new URLSearchParams({ type, name })
-    if (tabId) q.set('tabId', String(tabId))
-    q.set('dev', String(dev))
-    q.set('hash', hash)
-    return `/frame.html?${q}`
+  view(params: { type: 'popup' | 'panel'; tabId: string }) {
+    return `/view.html?${new URLSearchParams(params)}`
   }
 
-  system(type: 'permission') {
-    const q = new URLSearchParams({ type })
-    return `/system.html?${q}`
+  frame(params: {
+    type: 'popup' | 'panel' | 'background'
+    tabId?: string
+    name: string
+    hash: string
+    dev: string
+  }) {
+    return `/frame.html?${new URLSearchParams(params)}`
   }
 }
 
@@ -61,24 +41,20 @@ class EnvIs extends $gl.Unit {
   prod = import.meta.env.PROD
 
   // Bundle
-  cs = this.$env.bundle === 'cs'
-  ex = this.$env.bundle === 'ex' || this.$env.bundle === 'ex-mini'
-  os = this.$env.bundle === 'os'
-  sm = this.$env.bundle === 'sm'
-  sw = this.$env.bundle === 'sw'
-  vw = this.$env.bundle === 'vw'
+  cs = BUNDLE === 'cs'
+  ex = BUNDLE === 'ex' || BUNDLE === 'ex-mini'
+  os = BUNDLE === 'os'
+  sm = BUNDLE === 'sm'
+  sw = BUNDLE === 'sw'
+  vw = BUNDLE === 'vw'
 
-  // Variations of vw
+  // vw variations
   vwPopup = this.vw && this.$env.params.type === 'popup'
   vwPanel = this.vw && this.$env.params.type === 'panel'
 
-  // Variations of exTab
-  exTabHub = this.ex && location.origin === this.$env.url.web
-  exTabPage = this.ex && !this.exTabHub && !this.$env.isExtPage()
-  exTab = this.exTabHub || this.exTabPage
-
-  // Variations of exFrame
-  exFrame = this.ex && !this.exTab
+  // ex variations
+  exTab = this.ex && self === top
+  exFrame = this.ex && self !== top
   exFramePopup = this.exFrame && this.$env.params.type === 'popup'
   exFramePanel = this.exFrame && this.$env.params.type === 'panel'
   exFrameBackground = this.exFrame && this.$env.params.type === 'background'
