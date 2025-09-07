@@ -7,18 +7,12 @@ $: (() => {
 function setupEposGlobals() {
   // Collect globals
   const globals = {}
-  const lettersOnly = /^[a-zA-Z]+$/
-  Object.getOwnPropertyNames(self).forEach(name => {
-    if (name === 'self') return
-    if (name === 'window') return
-    if (name === 'globalThis') return
-    if (!lettersOnly.test(name)) return
-    globals[name] = self[name]
-  })
-  Object.assign(globals, {
-    addEventListener: self.addEventListener,
-    removeEventListener: self.removeEventListener,
-  })
+  self.__epos.isTop = self === top
+  const keys = [...Object.getOwnPropertyNames(self), 'addEventListener', 'removeEventListener']
+  for (const key of keys) {
+    if (key === '__epos') continue
+    globals[key] = self[key]
+  }
 
   // Prevent globals being non-configurable.
   // If some website has code like this:
@@ -27,16 +21,12 @@ function setupEposGlobals() {
   // Example: https://www.pausecollection.co.uk/.
   const objectDefineProperty = Object.defineProperty.bind(Object)
   Object.defineProperty = (target, key, attrs) => {
-    if (target === self && key in globals && attrs && !attrs.configurable) {
-      attrs.configurable = true
-    }
+    if (target === self && key in globals && attrs && !attrs.configurable) attrs.configurable = true
     return objectDefineProperty(target, key, attrs)
   }
   const reflectDefineProperty = Reflect.defineProperty.bind(Reflect)
   Reflect.defineProperty = (target, key, attrs) => {
-    if (target === self && key in globals && attrs && !attrs.configurable) {
-      attrs.configurable = true
-    }
+    if (target === self && key in globals && attrs && !attrs.configurable) attrs.configurable = true
     return reflectDefineProperty(target, key, attrs)
   }
 
