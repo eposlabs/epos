@@ -1,4 +1,4 @@
-import { colorHash, ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
+import { ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
 import { convertImage } from './utils-convert-image'
 import { cx } from './utils-cx'
 import { equal } from './utils-equal'
@@ -20,7 +20,6 @@ export class Utils extends $exOsSwVw.Unit {
     this.$.bus.on('utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }
 
-  colorHash = colorHash
   convertImage = convertImage
   cx = cx
   ensureArray = ensureArray

@@ -38,8 +38,7 @@ export class KitLogger extends $ex.Unit {
   private handleRejections() {
     self.addEventListener('unhandledrejection', async e => {
       const name = this.$.env.params.name
-      const args = [e.reason.stack]
-      const message: Message = { type: 'error', name, args }
+      const message: Message = { type: 'rejection', name, args: [e.reason.message] }
       await this.$.bus.send('kit.print', message)
     })
   }
