@@ -24,12 +24,13 @@ export type Res = {
 export type Interceptor = (frame: Frame | null, ...args: any[]) => unknown
 
 export class BusPage extends $gl.Unit {
+  /** Requires for secure [injection] <-> [content-script] communication */
+  token: string | null = null
+
   private $bus = this.up($gl.Bus)!
   private frame = this.$bus.locus === 'ext-frame' ? self.name : null
   private supported = this.$bus.is('content-script', 'ext-page', 'ext-frame', 'injection')
   private interceptors: { [name: string]: Interceptor } = {}
-  /** Requires for secure [injection] <-> [content-script] communication */
-  private token: string | null = null
   static REQUEST = REQUEST
   static RESPONSE = RESPONSE
 
@@ -38,10 +39,6 @@ export class BusPage extends $gl.Unit {
     if (!this.supported) return
     this.setupToken()
     this.setupMessageListener()
-  }
-
-  getToken() {
-    return this.token
   }
 
   intercept(name: string, fn: Interceptor) {

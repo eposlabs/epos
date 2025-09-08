@@ -25,10 +25,6 @@ export class Bus extends $gl.Unit {
     return new $gl.BusApi(this, id)
   }
 
-  getPageToken() {
-    return this.page.getToken()
-  }
-
   is(...locusList: Locus[]) {
     return locusList.includes(this.locus)
   }

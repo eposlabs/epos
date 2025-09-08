@@ -1,4 +1,4 @@
-import globalsJs from './boot-injector-globals.sw?raw'
+import patchGlobalsJs from './boot-injector-patch-globals.sw?raw'
 
 export type Target = { tabId: number; frameId: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
@@ -7,7 +7,7 @@ export class BootInjector extends $sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
-  private engine = {
+  private ex = {
     dev: { full: '', mini: '' },
     prod: { full: '', mini: '' },
   }
@@ -30,12 +30,12 @@ export class BootInjector extends $sw.Unit {
     // Dev versions are absent for exported packages
     const [exDev] = await this.$.utils.safe(fetch('/ex-dev.js').then(r => r.text()))
     const [exDevMini] = await this.$.utils.safe(fetch('/ex-dev-mini.js').then(r => r.text()))
-    this.engine.dev.full = exDev ?? ''
-    this.engine.dev.mini = exDevMini ?? ''
+    this.ex.dev.full = exDev ?? ''
+    this.ex.dev.mini = exDevMini ?? ''
 
     // Prod versions are always present
-    this.engine.prod.full = await fetch('/ex.js').then(r => r.text())
-    this.engine.prod.mini = await fetch('/ex-mini.js').then(r => r.text())
+    this.ex.prod.full = await fetch('/ex.js').then(r => r.text())
+    this.ex.prod.mini = await fetch('/ex-mini.js').then(r => r.text())
   }
 
   private injectOnNavigation() {
@@ -135,16 +135,16 @@ export class BootInjector extends $sw.Unit {
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)
-    const engine = dev ? this.engine.dev : this.engine.prod
-    const engineJs = payloads.some(payload => this.hasReact(payload.script)) ? engine.full : engine.mini
+    const ex = dev ? this.ex.dev : this.ex.prod
+    const exJs = payloads.some(payload => this.hasReact(payload.script)) ? ex.full : ex.mini
 
     const js = [
       `(() => {`,
       `self.__eposTabId = ${JSON.stringify(target.tabId)}`,
       `self.__eposBusToken = ${JSON.stringify(busToken)}`,
       `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
-      globalsJs,
-      engineJs,
+      patchGlobalsJs,
+      exJs,
       `})()`,
     ].join(';\n')
 

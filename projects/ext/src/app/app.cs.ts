@@ -17,8 +17,8 @@ export class App extends $cs.Unit {
   }
 
   private getBusToken() {
-    const busToken = this.bus.getPageToken()
-    if (!this.$.is.string(busToken)) throw this.never
-    return busToken
+    const token = this.bus.page.token
+    if (!token) throw this.never
+    return token
   }
 }

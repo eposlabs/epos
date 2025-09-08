@@ -22,7 +22,7 @@ declare global {
   var __eposInjected: boolean
 
   // Ready flag for [cs]
-  var __eposCsReady$: PromiseWithResolvers<CsReadyData> | undefined
+  var __eposCsReady$: PromiseWithResolvers<CsReadyData>
 
   // App instance for [cs], [os], [sw] and [vw]
   var $: any

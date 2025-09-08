@@ -1,9 +1,9 @@
 import setupJs from './boot-injector-setup.cs?raw'
 
 /**
- * For tabs, there are three 'actors' for code execution:
- * 1. ContentScript: executes code by BootInjector [cs]
- * 2. Injection: injected by BootInjector [sw]
+ * For tabs, there are three 'actors' that execute code:
+ * 1. ContentScript: executes code by BootInjector [cs] (globals + <epos/>)
+ * 2. Injection: injected by BootInjector [sw] (ex.js + pkgs)
  * 3. Page: site's own code
  *
  * Execution order is not guaranteed, but possible variations are:
@@ -11,12 +11,14 @@ import setupJs from './boot-injector-setup.cs?raw'
  * - ContentScript → Injection → Page
  * - Injection → ContentScript → Page
  *
- * ContentScript always runs _before_ Page, so globals interception and epos element
+ * ContentScript always runs _before_ Page, that's why globals interception and <epos/> element
  * creation are implemented in ContentScript (not Injection).
  */
 export class BootInjector extends $cs.Unit {
   constructor(parent: $cs.Unit) {
     super(parent)
+
+    // Setup self.__eposGlobals and self.__eposElement
     this.execute(setupJs)
   }
 

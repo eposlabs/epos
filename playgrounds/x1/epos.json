@@ -6,13 +6,24 @@
   "popup": { "width": 500, "height": 600 },
   "targets": [
     {
-      "matches": ["<hub>", "<popup>", "<panel>", "https://inssist.com/*"],
-      "load": ["./x1.js", "./x1.css"],
-      "mode": "shadow"
+      "matches": ["<hub>", "https://x.com"],
+      "load": ["./x1-hub.js"]
     },
     {
-      "matches": "<background>",
+      "matches": ["frame:https://epos.dev/@x1-frame"],
+      "load": "./x1-frame.js"
+    },
+    {
+      "matches": ["frame:https://epos.dev/@x1-frame-2"],
+      "load": "./x1-frame-2.js"
+    },
+    {
+      "matches": ["<background>"],
       "load": "./x1-bg.js"
+    },
+    {
+      "matches": ["<popup>"],
+      "load": "./x1-popup.js"
     }
   ]
 }

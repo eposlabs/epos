@@ -33,7 +33,7 @@ export class PkgsDock extends $vw.Unit {
           this.hidden && 'transform-[translate(calc(100%-min(100%,32px)),calc(-100%+7px))] text-transparent',
         ])}
       >
-        <div class="absolute -inset-x-12 -inset-y-6 z-0" />
+        <div data-hitbox class="absolute -inset-x-8 -inset-y-6 z-0" />
         <div class="relative flex h-full">
           <this.Select />
           <this.ActionButton />

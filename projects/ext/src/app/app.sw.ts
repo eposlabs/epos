@@ -39,7 +39,7 @@ export class App extends $sw.Unit {
   }
 
   private async setupContentScript() {
-    // Unregister previous content script if any
+    // Unregister previous content script
     const contentScripts = await this.$.browser.scripting.getRegisteredContentScripts()
     await this.$.browser.scripting.unregisterContentScripts({ ids: contentScripts.map(cs => cs.id) })
 
