@@ -9,12 +9,12 @@ export class PkgsDock extends $vw.Unit {
 
   show() {
     this.hidden = false
-    this.$.shell.refresh()
+    this.$.refresh()
   }
 
   hide() {
     this.hidden = true
-    this.$.shell.refresh()
+    this.$.refresh()
   }
 
   ui = () => {

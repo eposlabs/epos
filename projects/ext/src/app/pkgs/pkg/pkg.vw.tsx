@@ -25,7 +25,6 @@ export class Pkg extends $vw.Unit {
   }
 
   ui = () => {
-    this.$.libs.preact.useContext(this.$.shell.context)
     const selected = this.$.pkgs.selectedPkgName === this.name
     if (!this.invoked) this.invoked = selected
 

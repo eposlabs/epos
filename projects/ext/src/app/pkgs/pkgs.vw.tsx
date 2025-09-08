@@ -20,7 +20,7 @@ export class Pkgs extends $vw.Unit {
   select(name: string) {
     if (!this.map[name]) throw this.never
     this.selectedPkgName = name
-    this.$.shell.refresh()
+    this.$.refresh()
     localStorage.setItem('shell.selectedPkgName', name)
   }
 
@@ -68,7 +68,7 @@ export class Pkgs extends $vw.Unit {
       }
 
       // Refresh shell
-      this.$.shell.refresh()
+      this.$.refresh()
     })
   }
 

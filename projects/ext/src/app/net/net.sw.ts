@@ -1,5 +1,5 @@
 export class Net extends $sw.Unit {
-  private ruleId = 0
+  private ruleId = 1
 
   async init() {
     await this.cleanup()
@@ -17,7 +17,7 @@ export class Net extends $sw.Unit {
     await this.$.browser.declarativeNetRequest.updateSessionRules({
       addRules: [
         {
-          id: ++this.ruleId,
+          id: this.ruleId++,
           priority: 1,
           condition: {
             urlFilter: '*://*/*',

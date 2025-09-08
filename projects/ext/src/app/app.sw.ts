@@ -22,15 +22,23 @@ export class App extends $sw.Unit {
     await this.net.init()
     await this.pkgs.init()
     await this.boot.init()
-    await this.initContentScript()
-    await this.initOffscreen()
+    await this.setupOffscreen()
+    await this.setupContentScript()
+    this.defineGlobalMethods()
     await this.dev.init()
-    self.add = (name: string, dev = false) => this.pkgs.installer.install(name, dev)
-    self.remove = (name: string) => this.pkgs.installer.remove(name)
-    self.eject = (name: string) => this.pkgs.map[name].exporter.export()
   }
 
-  private async initContentScript() {
+  private async setupOffscreen() {
+    const exists = await this.$.browser.offscreen.hasDocument()
+    if (exists) await this.$.browser.offscreen.closeDocument()
+    await this.$.browser.offscreen.createDocument({
+      url: this.$.env.url.offscreen,
+      reasons: ['BLOBS'],
+      justification: 'URL.createObjectURL',
+    })
+  }
+
+  private async setupContentScript() {
     // Unregister previous content script if any
     const contentScripts = await this.$.browser.scripting.getRegisteredContentScripts()
     await this.$.browser.scripting.unregisterContentScripts({ ids: contentScripts.map(cs => cs.id) })
@@ -48,13 +56,9 @@ export class App extends $sw.Unit {
     ])
   }
 
-  private async initOffscreen() {
-    const exists = await this.$.browser.offscreen.hasDocument()
-    if (exists) await this.$.browser.offscreen.closeDocument()
-    await this.$.browser.offscreen.createDocument({
-      url: this.$.env.url.offscreen,
-      reasons: ['BLOBS'],
-      justification: 'URL.createObjectURL',
-    })
+  private defineGlobalMethods() {
+    self.add = (name: string, dev = false) => this.pkgs.installer.install(name, dev)
+    self.remove = (name: string) => this.pkgs.installer.remove(name)
+    self.eject = (name: string) => this.pkgs.map[name].exporter.export()
   }
 }
