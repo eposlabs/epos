@@ -43,7 +43,7 @@ export class App extends $sw.Unit {
         js: ['/cs.js'],
         runAt: 'document_start',
         world: 'ISOLATED',
-        allFrames: false,
+        allFrames: true,
       },
     ])
   }
