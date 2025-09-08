@@ -21,7 +21,7 @@ export class PkgApi extends $ex.Unit {
     this.epos = this.createEpos()
   }
 
-  createEpos() {
+  private createEpos() {
     const epos = {
       // Bus
       on: this.bus.on,

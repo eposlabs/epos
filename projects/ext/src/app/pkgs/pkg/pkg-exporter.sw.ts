@@ -7,16 +7,16 @@ export class PkgExporter extends $sw.Unit {
     const zip = new this.$.libs.Zip()
 
     const engineFiles = [
-      'vw.css',
       'cs.js',
       'ex-mini.js',
       'ex.js',
       'os.js',
       'sw.js',
+      'vw.css',
       'vw.js',
+      'view.html',
       'frame.html',
       'offscreen.html',
-      'view.html',
     ]
 
     for (const path of engineFiles) {

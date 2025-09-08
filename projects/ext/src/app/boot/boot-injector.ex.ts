@@ -44,7 +44,7 @@ export class BootInjector extends $ex.Unit {
     const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
     if (css) this.injectCss(css)
 
-    // Inject pkg payloads
+    // Inject pkgs defs
     const payloads = await this.$.bus.send<Payload[]>('pkgs.getPayloads', location.href)
     if (payloads.length === 0) return
     const js = `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`
@@ -79,7 +79,7 @@ export class BootInjector extends $ex.Unit {
     this.deleteEposVars()
 
     for (const def of defs) {
-      // Create pkg
+      // Create package
       const pkg = await this.$.pkgs.create({
         name: def.name,
         icon: def.icon,
@@ -88,7 +88,7 @@ export class BootInjector extends $ex.Unit {
         shadowCss: def.shadowCss,
       })
 
-      // Execute def fn
+      // Execute package
       def.fn.call(undefined, pkg.api.epos)
     }
   }
