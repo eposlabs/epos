@@ -165,6 +165,7 @@ export class Paralayer extends $utils.Unit {
   // ---------------------------------------------------------------------------
 
   private extractExportedClassNames(content: string) {
+    if (content.includes('paralayer-ignore')) return []
     return content
       .split('export class ')
       .slice(1)
