@@ -1,12 +1,12 @@
-import type { InvokeShard } from './pkg.sw'
+import type { ExecutionMeta } from './pkg.sw'
 
 export class Pkg extends $os.Unit {
-  dev: InvokeShard['dev']
-  name: InvokeShard['name']
-  hash: InvokeShard['hash']
+  dev: ExecutionMeta['dev']
+  name: ExecutionMeta['name']
+  hash: ExecutionMeta['hash']
   frame: HTMLIFrameElement
 
-  constructor(parent: $os.Unit, data: Omit<InvokeShard, 'popup'>) {
+  constructor(parent: $os.Unit, data: Omit<ExecutionMeta, 'popup'>) {
     super(parent)
     this.dev = data.dev
     this.name = data.name
@@ -14,7 +14,7 @@ export class Pkg extends $os.Unit {
     this.frame = this.createFrame()
   }
 
-  update(data: Omit<InvokeShard, 'name' | 'popup'>) {
+  update(data: Omit<ExecutionMeta, 'name' | 'popup'>) {
     this.dev = data.dev
     this.hash = data.hash
     this.frame.src = this.getFrameUrl()

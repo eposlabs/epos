@@ -1,7 +1,7 @@
-import type { ActionShard, InvokeShard } from './pkg/pkg.sw'
+import type { ActionMeta, ExecutionMeta } from './pkg/pkg.sw'
 
-export type ActionShards = { [name: string]: ActionShard }
-export type InvokeShards = { [name: string]: InvokeShard }
+export type ActionData = { [name: string]: ActionMeta }
+export type ExecutionData = { [name: string]: ExecutionMeta }
 
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
@@ -15,12 +15,13 @@ export class Pkgs extends $sw.Unit {
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('pkgs.test', this.test, this)
+    this.$.bus.on('pkgs.hasPopup', this.hasPopup, this)
+    this.$.bus.on('pkgs.hasPanel', this.hasPanel, this)
     this.$.bus.on('pkgs.getCss', this.getCss, this)
     this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
-    this.$.bus.on('pkgs.getActionShards', this.getActionShards, this)
-    this.$.bus.on('pkgs.getInvokeShards', this.getInvokeShards, this)
+    this.$.bus.on('pkgs.getActionData', this.getActionData, this)
+    this.$.bus.on('pkgs.getExecutionData', this.getExecutionData, this)
   }
 
   async init() {
@@ -28,50 +29,54 @@ export class Pkgs extends $sw.Unit {
     await this.restoreFromIdb()
   }
 
-  test(uri: string) {
-    return this.list.some(pkg => pkg.test(uri))
+  hasPopup() {
+    return this.list.some(pkg => pkg.targets.some(target => target.matches.includes('<popup>')))
   }
 
-  getCss(uri: string) {
+  hasPanel() {
+    return this.list.some(pkg => pkg.targets.some(target => target.matches.includes('<panel>')))
+  }
+
+  getCss(url: string) {
     return this.list
-      .map(pkg => pkg.getCss(uri))
+      .map(pkg => pkg.getCss(url))
       .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
 
-  getLiteJs(uri: string) {
+  getLiteJs(url: string) {
     return this.list
-      .map(pkg => pkg.getLiteJs(uri))
+      .map(pkg => pkg.getLiteJs(url))
       .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
 
-  getPayloads(uri: string) {
-    return this.list.map(pkg => pkg.getPayload(uri)).filter(this.$.is.present)
+  getPayloads(url: string) {
+    return this.list.map(pkg => pkg.getPayload(url)).filter(this.$.is.present)
   }
 
-  getActionShards() {
-    const shards: ActionShards = {}
+  getActionData() {
+    const data: ActionData = {}
     for (const pkg of this.list) {
-      const shard = pkg.getActionShard()
-      if (!shard) continue
-      shards[pkg.name] = shard
+      const meta = pkg.getActionMeta()
+      if (!meta) continue
+      data[pkg.name] = meta
     }
 
-    return shards
+    return data
   }
 
-  private async getInvokeShards(uri: string) {
-    const shards: InvokeShards = {}
+  private async getExecutionData(url: string) {
+    const data: ExecutionData = {}
     for (const pkg of this.list) {
-      const shard = await pkg.getInvokeShard(uri)
-      if (!shard) continue
-      shards[pkg.name] = shard
+      const meta = await pkg.getExecutionMeta(url)
+      if (!meta) continue
+      data[pkg.name] = meta
     }
 
-    return shards
+    return data
   }
 
   private async restoreFromIdb() {

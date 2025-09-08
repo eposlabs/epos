@@ -117,23 +117,23 @@ export class PkgsDock extends $vw.Unit {
         value: pkg.name,
         label: pkg.title ?? pkg.name,
       })),
-      ...Object.values(this.$pkgs.actionShards).map(shard => ({
-        name: shard.name,
-        value: `action:${shard.name}`,
-        label: `${shard.title ?? shard.name} →`,
+      ...Object.values(this.$pkgs.actionData).map(meta => ({
+        name: meta.name,
+        value: `action:${meta.name}`,
+        label: `${meta.title ?? meta.name} →`,
       })),
     ].sort((item1, item2) => item1.label.localeCompare(item2.label))
   }
 
   private async processAction(pkgName: string) {
-    const shard = this.$pkgs.actionShards[pkgName]
-    if (!shard) throw this.never
+    const meta = this.$pkgs.actionData[pkgName]
+    if (!meta) throw this.never
 
-    if (this.$.is.boolean(shard.action)) {
+    if (this.$.is.boolean(meta.action)) {
       const bus = this.$.bus.create(`pkg[${pkgName}]`)
       await bus.send('action')
-    } else if (this.$.is.string(shard.action)) {
-      await this.$.boot.medium.openTab(shard.action)
+    } else if (this.$.is.string(meta.action)) {
+      await this.$.boot.medium.openTab(meta.action)
     }
 
     self.close()

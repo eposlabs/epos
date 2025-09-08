@@ -1,9 +1,9 @@
-import type { ActionShards } from './pkgs.sw'
+import type { ActionData } from './pkgs.sw'
 
 export class Pkgs extends $vw.Unit {
   map: { [name: string]: $vw.Pkg } = {}
   hasPanel = false
-  actionShards: ActionShards = {}
+  actionData: ActionData = {}
   selectedPkgName: string | null = localStorage.getItem('shell.selectedPkgName')
   dock = new $vw.PkgsDock(this)
   watcher = new $exOsVw.PkgsWatcher(this)
@@ -31,17 +31,17 @@ export class Pkgs extends $vw.Unit {
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
       // Update packages
-      for (const shard of Object.values(data.invokeShards)) {
-        const pkg = this.map[shard.name]
+      for (const meta of Object.values(data.execution)) {
+        const pkg = this.map[meta.name]
         if (!pkg) continue
-        pkg.update(shard)
+        pkg.update(meta)
       }
 
       // Add packages
       for (const name of delta.added) {
-        const shard = data.invokeShards[name]
-        if (!shard) throw this.never
-        this.map[shard.name] = new $vw.Pkg(this, shard)
+        const meta = data.execution[name]
+        if (!meta) throw this.never
+        this.map[meta.name] = new $vw.Pkg(this, meta)
       }
 
       // Remove packages
@@ -52,11 +52,11 @@ export class Pkgs extends $vw.Unit {
 
       // Update data
       this.hasPanel = data.hasPanel
-      this.actionShards = data.actionShards
+      this.actionData = data.action
 
       // Close view if nothing to show
       const noPkgs = this.list.length === 0
-      const noActions = Object.keys(this.actionShards).length === 0
+      const noActions = Object.keys(this.actionData).length === 0
       if (noPkgs && noActions) {
         self.close()
         return

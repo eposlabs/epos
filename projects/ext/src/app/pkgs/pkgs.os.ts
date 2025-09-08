@@ -9,17 +9,17 @@ export class Pkgs extends $os.Unit {
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
       // Update packages
-      for (const shard of Object.values(data.invokeShards)) {
-        const pkg = this.map[shard.name]
+      for (const meta of Object.values(data.execution)) {
+        const pkg = this.map[meta.name]
         if (!pkg) continue
-        pkg.update(shard)
+        pkg.update(meta)
       }
 
       // Add packages
       for (const name of delta.added) {
-        const shard = data.invokeShards[name]
-        if (!shard) throw this.never
-        this.map[name] = new $os.Pkg(this, shard)
+        const meta = data.execution[name]
+        if (!meta) throw this.never
+        this.map[name] = new $os.Pkg(this, meta)
       }
 
       // Remove packages

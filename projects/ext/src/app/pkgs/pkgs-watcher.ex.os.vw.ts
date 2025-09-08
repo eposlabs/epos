@@ -1,4 +1,4 @@
-import type { ActionShards, InvokeShards } from './pkgs.sw'
+import type { ActionData, ExecutionData } from './pkgs.sw'
 
 export type PkgName = string
 export type OnUpdate = (delta: Delta, data: Data) => void
@@ -9,13 +9,13 @@ export type Delta = {
 }
 
 export type Data = {
-  actionShards: ActionShards
-  invokeShards: InvokeShards
+  action: ActionData
+  execution: ExecutionData
   hasPanel: boolean
 }
 
 export class PkgsWatcher extends $exOsVw.Unit {
-  private invokeShards: InvokeShards = {}
+  private executionData: ExecutionData = {}
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
@@ -23,20 +23,20 @@ export class PkgsWatcher extends $exOsVw.Unit {
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actionShards = await this.$.bus.send<ActionShards>('pkgs.getActionShards')
-    const invokeShards = await this.$.bus.send<InvokeShards>('pkgs.getInvokeShards', location.href)
-    const hasPanel = await this.$.bus.send<boolean>('pkgs.test', '<panel>')
+    const actionData = await this.$.bus.send<ActionData>('pkgs.getActionData')
+    const executionData = await this.$.bus.send<ExecutionData>('pkgs.getExecutionData', location.href)
+    const hasPanel = await this.$.bus.send<boolean>('pkgs.hasPanel')
 
-    const invoke1 = this.invokeShards
-    const invoke2 = invokeShards
-    const names1 = Object.keys(invoke1)
-    const names2 = Object.keys(invoke2)
-    const added = names2.filter(name => !invoke1[name])
-    const removed = names1.filter(name => !invoke2[name])
+    const executionData1 = this.executionData
+    const executionData2 = executionData
+    const names1 = Object.keys(executionData1)
+    const names2 = Object.keys(executionData2)
+    const added = names2.filter(name => !executionData1[name])
+    const removed = names1.filter(name => !executionData2[name])
 
-    const data: Data = { actionShards, invokeShards, hasPanel }
+    const data: Data = { action: actionData, execution: executionData, hasPanel }
     const delta: Delta = { added, removed }
-    this.invokeShards = invokeShards
+    this.executionData = executionData
 
     onUpdate(delta, data)
   }

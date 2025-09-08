@@ -13,14 +13,7 @@ export class PkgTarget extends $sw.Unit {
     this.mode = target.mode
   }
 
-  test(uri: string) {
-    if (uri === '<popup>') return this.matches.includes('<popup>')
-    if (uri === '<panel>') return this.matches.includes('<panel>')
-    if (uri === '<background>') return this.matches.includes('<background>')
-    return this.testUrl(uri)
-  }
-
-  private testUrl(url: string) {
+  matchesUrl(url: string) {
     let ok = false
     for (const pattern of this.matches) {
       if (pattern.startsWith('!')) {

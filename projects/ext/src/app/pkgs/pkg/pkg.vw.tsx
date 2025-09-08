@@ -1,14 +1,14 @@
-import type { InvokeShard } from './pkg.sw'
+import type { ExecutionMeta } from './pkg.sw'
 
 export class Pkg extends $vw.Unit {
-  dev: InvokeShard['dev']
-  name: InvokeShard['name']
-  hash: InvokeShard['hash']
-  title: InvokeShard['title']
-  popup: InvokeShard['popup']
+  dev: ExecutionMeta['dev']
+  name: ExecutionMeta['name']
+  hash: ExecutionMeta['hash']
+  title: ExecutionMeta['title']
+  popup: ExecutionMeta['popup']
   invoked = false
 
-  constructor(parent: $vw.Unit, data: InvokeShard) {
+  constructor(parent: $vw.Unit, data: ExecutionMeta) {
     super(parent)
     this.dev = data.dev
     this.name = data.name
@@ -17,7 +17,7 @@ export class Pkg extends $vw.Unit {
     this.popup = data.popup
   }
 
-  update(data: Omit<InvokeShard, 'name'>) {
+  update(data: Omit<ExecutionMeta, 'name'>) {
     this.dev = data.dev
     this.hash = data.hash
     this.title = data.title
