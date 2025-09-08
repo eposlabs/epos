@@ -5,27 +5,34 @@ export class App extends $sw.Unit {
   is = this.utils.is
   env = new $gl.Env(this)
   bus = new $gl.Bus(this)
-  dev = new $sw.Dev(this)
 
   alive = new $sw.Alive(this)
-  boot = new $sw.Boot(this)
   idb = new $sw.Idb(this)
   kit = new $sw.Kit(this)
-  net = new $sw.Net(this)
   peer = new $sw.Peer(this)
-  pkgs = new $sw.Pkgs(this)
   states = new $exSw.States(this)
   units = new $exSw.Units(this)
 
-  async init() {
+  boot!: $sw.Boot
+  dev!: $sw.Dev
+  net!: $sw.Net
+  pkgs!: $sw.Pkgs
+
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     self.$ = this
-    await this.net.init()
-    await this.pkgs.init()
-    await this.boot.init()
+    this.net = await $sw.Net.create(this)
+    this.pkgs = await $sw.Pkgs.create(this)
+    this.boot = await $sw.Boot.create(this)
     await this.setupOffscreen()
     await this.setupContentScript()
     this.defineGlobalMethods()
-    await this.dev.init()
+    this.dev = await $sw.Dev.create(this)
   }
 
   private async setupOffscreen() {

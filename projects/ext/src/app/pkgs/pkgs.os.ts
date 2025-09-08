@@ -2,7 +2,13 @@ export class Pkgs extends $os.Unit {
   map: { [name: string]: $os.Pkg } = {}
   watcher = new $exOsVw.PkgsWatcher(this)
 
-  async init() {
+  static async create(parent: $os.Unit) {
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
+  }
+
+  private async init() {
     await this.initWatcher()
   }
 

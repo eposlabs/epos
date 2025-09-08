@@ -7,7 +7,6 @@ export class App extends $ex.Unit {
   bus = new $gl.Bus(this)
 
   boot = new $ex.Boot(this)
-  dev = new $ex.Dev(this)
   idb = new $ex.Idb(this)
   kit = new $ex.Kit(this)
   peer = new $exOs.Peer(this)
@@ -16,9 +15,17 @@ export class App extends $ex.Unit {
   ui = new $ex.Ui(this)
   units = new $exSw.Units(this)
 
-  async init() {
+  dev!: $ex.Dev
+
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     if (this.env.is.dev) self.$epos = this
-    await this.dev.init()
+    this.dev = await $ex.Dev.create(this)
     await this.boot.injector.inject()
   }
 }

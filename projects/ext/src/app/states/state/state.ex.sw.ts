@@ -23,14 +23,14 @@ export class State extends $exSw.Unit {
   versioner: Versioner | null
   unitScope: string
 
-  boot = new $exSw.StateBoot(this)
   idb = new $exSw.StateIdb(this)
   node = new $exSw.StateNode(this)
   observer = new $exSw.StateObserver(this)
+  boot!: $exSw.StateBoot
 
   static async create(parent: $exSw.Unit, location: Location, options: Options) {
     const state = new $exSw.State(parent, location, options)
-    await state.boot.init()
+    await state.init()
     return state
   }
 
@@ -42,6 +42,10 @@ export class State extends $exSw.Unit {
     this.initial = options.initial ?? null
     this.versioner = options.versioner ?? null
     this.unitScope = options.unitScope ?? ':default'
+  }
+
+  private async init() {
+    this.boot = await $exSw.StateBoot.create(this)
   }
 
   async cleanup() {

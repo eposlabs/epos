@@ -9,11 +9,17 @@ export class App extends $os.Unit {
   alive = new $os.Alive(this)
   dev = new $os.Dev(this)
   peer = new $exOs.Peer(this)
-  pkgs = new $os.Pkgs(this)
+  pkgs!: $os.Pkgs
 
-  async init() {
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     self.$ = this
     this.utils.initOs()
-    await this.pkgs.init()
+    this.pkgs = await $os.Pkgs.create(this)
   }
 }

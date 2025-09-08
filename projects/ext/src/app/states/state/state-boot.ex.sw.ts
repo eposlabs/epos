@@ -6,7 +6,13 @@ export class StateBoot extends $exSw.Unit {
   private missedUpdates: Uint8Array[] = []
   private afterReadyFns: Fn[] = []
 
-  async init() {
+  static async create(parent: $exSw.State) {
+    const boot = new $exSw.StateBoot(parent)
+    await boot.init()
+    return boot
+  }
+
+  private async init() {
     await this.$.peer.mutex(`state[${this.$state.id}]`, async () => {
       this.listenForRemoteUpdates()
       await this.initRoot()

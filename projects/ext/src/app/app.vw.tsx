@@ -13,11 +13,18 @@ export class App extends $vw.Unit {
 
   boot = new $vw.Boot(this)
   dev = new $vw.Dev(this)
-  pkgs = new $vw.Pkgs(this)
 
-  async init() {
+  pkgs!: $vw.Pkgs
+
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     self.$ = this
-    await this.pkgs.init()
+    this.pkgs = await $vw.Pkgs.create(this)
     this.render()
   }
 

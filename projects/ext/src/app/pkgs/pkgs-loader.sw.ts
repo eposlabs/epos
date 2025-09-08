@@ -1,5 +1,11 @@
 export class PkgsLoader extends $sw.Unit {
-  async init() {
+  static async create(parent: $sw.Unit) {
+    const loader = new PkgsLoader(parent)
+    await loader.init()
+    return loader
+  }
+
+  private async init() {
     const dbNames = await this.$.idb.listDatabases()
     if (dbNames.length > 0) return
 

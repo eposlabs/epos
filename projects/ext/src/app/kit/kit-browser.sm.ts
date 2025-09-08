@@ -3,7 +3,8 @@ export type PermissionResult = { id: string; granted: boolean }
 export class KitBrowser extends $sm.Unit {
   private id = this.$.utils.id()
 
-  async init() {
+  constructor(parent: $sm.Unit) {
+    super(parent)
     this.$.bus.on('kit.browser.requestPermissions', this.requestPermissions, this)
     this.$.bus.on('kit.browser.closePermissionTab', () => self.close())
   }

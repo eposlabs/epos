@@ -6,7 +6,7 @@ import '../layers/index.sw'
 
 $: (async () => {
   try {
-    await new $sw.App().init()
+    await $sw.App.create()
   } catch (e) {
     console.error(e)
   }

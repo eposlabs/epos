@@ -5,7 +5,7 @@ import '../layers/index.sm'
 
 $: (async () => {
   try {
-    await new $sm.App().init()
+    await $sm.App.create()
   } catch (e) {
     console.error(e)
   }

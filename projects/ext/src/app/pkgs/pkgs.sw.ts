@@ -5,16 +5,21 @@ export type ExecutionData = { [name: string]: ExecutionMeta }
 
 export class Pkgs extends $sw.Unit {
   map: { [name: string]: $sw.Pkg } = {}
-  loader = new $sw.PkgsLoader(this)
   parser = new $sw.PkgsParser(this)
   installer = new $sw.PkgsInstaller(this)
+  loader!: $sw.PkgsLoader
 
   get list() {
     return Object.values(this.map)
   }
 
-  constructor(parent: $sw.Unit) {
-    super(parent)
+  static async create(parent: $sw.Unit) {
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
+  }
+
+  private async init() {
     this.$.bus.on('pkgs.hasPopup', this.hasPopup, this)
     this.$.bus.on('pkgs.hasPanel', this.hasPanel, this)
     this.$.bus.on('pkgs.getCss', this.getCss, this)
@@ -22,10 +27,7 @@ export class Pkgs extends $sw.Unit {
     this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
     this.$.bus.on('pkgs.getActionData', this.getActionData, this)
     this.$.bus.on('pkgs.getExecutionData', this.getExecutionData, this)
-  }
-
-  async init() {
-    await this.loader.init()
+    this.loader = await $sw.PkgsLoader.create(this)
     await this.restoreFromIdb()
   }
 

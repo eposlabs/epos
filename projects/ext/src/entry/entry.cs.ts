@@ -5,7 +5,7 @@ import '../layers/index.cs'
 
 $: (async () => {
   try {
-    await new $cs.App().init()
+    await $cs.App.create()
   } catch (e) {
     console.error(e)
   }

@@ -1,5 +1,11 @@
 export class Dev extends $sw.Unit {
-  async init() {
+  static async create(parent: $sw.Unit) {
+    const dev = new Dev(parent)
+    await dev.init()
+    return dev
+  }
+
+  private async init() {
     if (!import.meta.env.DEV) return
 
     this.$.bus.on('dev.testApi', this.testApi, this)

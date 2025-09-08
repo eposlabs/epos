@@ -10,7 +10,13 @@ export class App extends $cs.Unit {
   boot = new $cs.Boot(this)
   dev = new $cs.Dev(this)
 
-  async init() {
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     self.$ = this
     self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
     self.__eposCsReady$.resolve({ busToken: this.getBusToken() })

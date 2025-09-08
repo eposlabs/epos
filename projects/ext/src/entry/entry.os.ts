@@ -5,7 +5,7 @@ import '../layers/index.os'
 
 $: (async () => {
   try {
-    await new $os.App().init()
+    await $os.App.create()
   } catch (e) {
     console.error(e)
   }

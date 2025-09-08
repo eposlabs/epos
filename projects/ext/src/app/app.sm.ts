@@ -7,9 +7,14 @@ export class App extends $sm.Unit {
 
   kit = new $sm.Kit(this)
 
-  async init() {
+  static async create() {
+    const app = new App()
+    await app.init()
+    return app
+  }
+
+  private async init() {
     self.$ = this
-    await this.kit.init()
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
   }
 }

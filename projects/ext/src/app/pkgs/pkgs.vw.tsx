@@ -12,6 +12,16 @@ export class Pkgs extends $vw.Unit {
     return Object.values(this.map)
   }
 
+  static async create(parent: $vw.Unit) {
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
+  }
+
+  private async init() {
+    await this.initWatcher()
+  }
+
   getSelected() {
     if (!this.selectedPkgName) return null
     return this.map[this.selectedPkgName] ?? null
@@ -22,10 +32,6 @@ export class Pkgs extends $vw.Unit {
     this.selectedPkgName = name
     this.$.refresh()
     localStorage.setItem('shell.selectedPkgName', name)
-  }
-
-  async init() {
-    await this.initWatcher()
   }
 
   private async initWatcher() {

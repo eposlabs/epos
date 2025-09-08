@@ -12,7 +12,13 @@ export class Pkg extends $ex.Unit {
   title: string | null
   tabId: number | null
   shadowCss: string
-  api: $ex.PkgApi
+  api!: $ex.PkgApi
+
+  static async create(parent: $ex.Unit, props: Props) {
+    const pkg = new Pkg(parent, props)
+    await pkg.init()
+    return pkg
+  }
 
   constructor(parent: $ex.Unit, props: Props) {
     super(parent)
@@ -21,11 +27,10 @@ export class Pkg extends $ex.Unit {
     this.title = props.title
     this.tabId = props.tabId
     this.shadowCss = props.shadowCss
-    this.api = new $ex.PkgApi(this)
   }
 
-  async init() {
-    await this.api.init()
+  private async init() {
+    this.api = await $ex.PkgApi.create(this)
     await this.initHub()
   }
 

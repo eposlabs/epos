@@ -3,15 +3,21 @@ export class PkgApi extends $ex.Unit {
   state = new $ex.PkgApiState(this)
   ui = new $ex.PkgApiUi(this)
   unit = new $ex.PkgApiUnit(this)
-  tools = new $ex.PkgApiTools(this)
   storage = new $ex.PkgApiStorage(this)
   assets = new $ex.PkgApiAssets(this)
   env = new $ex.PkgApiEnv(this)
   libs = new $ex.PkgApiLibs(this)
-  epos: ReturnType<$ex.PkgApi['createEpos']> | null = null
+  tools!: $ex.PkgApiTools
+  epos!: ReturnType<$ex.PkgApi['createEpos']>
 
-  async init() {
-    await this.tools.init()
+  static async create(parent: $ex.Unit) {
+    const api = new PkgApi(parent)
+    await api.init()
+    return api
+  }
+
+  private async init() {
+    this.tools = await $ex.PkgApiTools.create(this)
     this.epos = this.createEpos()
   }
 

@@ -5,9 +5,7 @@ export class Pkgs extends $ex.Unit {
   watcher = new $exOsVw.PkgsWatcher(this)
 
   async create(props: Props) {
-    if (this.map[props.name]) throw this.never
-    const pkg = new $ex.Pkg(this, props)
-    await pkg.init()
+    const pkg = await $ex.Pkg.create(this, props)
     this.map[props.name] = pkg
     return pkg
   }

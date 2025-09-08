@@ -89,7 +89,6 @@ export class BootInjector extends $ex.Unit {
       })
 
       // Execute def fn
-      if (!pkg.api.epos) throw this.never
       def.fn.call(undefined, pkg.api.epos)
     }
   }

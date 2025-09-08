@@ -6,7 +6,7 @@ import '../app/app.vw.css'
 
 $: (async () => {
   try {
-    await new $vw.App().init()
+    await $vw.App.create()
   } catch (e) {
     console.error(e)
   }

@@ -1,7 +1,13 @@
 export class Net extends $sw.Unit {
   private ruleId = 1
 
-  async init() {
+  static async create(parent: $sw.Unit) {
+    const net = new Net(parent)
+    await net.init()
+    return net
+  }
+
+  private async init() {
     await this.cleanup()
     await this.disableCsp()
   }

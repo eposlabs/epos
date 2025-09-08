@@ -6,7 +6,8 @@ export type Root = typeof chrome
 export type Callback = Fn & { [_id_]?: string }
 
 export class KitBrowserApi extends $ex.Unit {
-  declare root: Root
+  root!: Root
+  // @ts-ignore
   private scope: string
   private listenerIds = new Set<string>()
   static _id_ = _id_
