@@ -1,31 +1,41 @@
 import type { Payload } from '../pkgs/pkg/pkg.sw'
 
 export class BootInjector extends $ex.Unit {
-  constructor(parent: $ex.Unit) {
-    super(parent)
-    async: this.init()
-  }
-
-  private async init() {
-    // Wait till engine is ready
-    await this.$.waitReady()
-
+  async inject() {
+    // For [exTab]:
+    // - [cs] already injected globals + <epos/>
+    // - [sw] already injected ex.js + pkgs
     if (this.$.env.is.exTab) {
-      await this.initPkgs()
-    } else if (this.$.env.is.exFrame) {
-      this.initEposElement()
-      await this.injectPackages()
-      await this.initPkgs()
+      await this.executePkgs()
+      return
+    }
+
+    // For [exFrameExt]:
+    // - No need for globals patching
+    // - Need to create <epos/> ([cs] is absent)
+    // - Need to inject pkgs code ([sw] can't inject to frame.html)
+    if (this.$.env.is.exFrameExt) {
+      this.createEposElement()
+      await this.injectCode()
+      await this.executePkgs()
+      return
+    }
+
+    // For [exFrameWeb]:
+    // - Not implemented
+    if (this.$.env.is.exFrameWeb) {
+      this.log.error('exFrameWeb is not implemented')
+      return
     }
   }
 
-  private async initEposElement() {
+  private async createEposElement() {
     const element = document.createElement('epos')
     document.documentElement.prepend(element)
     self.__eposElement = element
   }
 
-  private async injectPackages() {
+  private async injectCode() {
     // Inject lite js
     const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href)
     if (liteJs) await this.injectJs(liteJs)
@@ -63,7 +73,7 @@ export class BootInjector extends $ex.Unit {
     self.__eposElement.prepend(link)
   }
 
-  private async initPkgs() {
+  private async executePkgs() {
     const defs = self.__eposPkgDefs
     const tabId = this.getTabId()
     this.deleteEposVars()
@@ -85,10 +95,19 @@ export class BootInjector extends $ex.Unit {
   }
 
   private getTabId() {
-    if (this.$.env.is.exFrameBackground) return null
-    if (this.$.env.is.exFrame) return Number(this.$.env.params.tabId)
-    if (!this.$.is.number(self.__eposTabId)) throw this.never
-    return self.__eposTabId
+    if (this.$.env.is.exFrame) {
+      if (this.$.env.is.exFrameExtBackground) return null
+      if (this.$.env.is.exFrameExt) return Number(this.$.env.params.tabId)
+      if (this.$.env.is.exFrameWeb) throw new Error('Not implemented')
+    }
+
+    if (this.$.env.is.exTab) {
+      const tabId = self.__eposTabId
+      if (!this.$.is.number(tabId)) throw this.never
+      return tabId
+    }
+
+    throw this.never
   }
 
   private deleteEposVars() {

@@ -55,11 +55,11 @@ class EnvIs extends $gl.Unit {
   // ex variations
   exTab = this.ex && self === top
   exFrame = this.ex && self !== top
-  exFramePopup = this.exFrame && this.$env.params.type === 'popup'
-  exFramePanel = this.exFrame && this.$env.params.type === 'panel'
-  exFrameBackground = this.exFrame && this.$env.params.type === 'background'
-  exFrameExt = this.exFramePopup || this.exFramePanel || this.exFrameBackground
-  exFrameWeb = this.exFrame && !this.exFramePopup && !this.exFramePanel && !this.exFrameBackground
+  exFrameExtPopup = this.exFrame && this.$env.params.type === 'popup'
+  exFrameExtPanel = this.exFrame && this.$env.params.type === 'panel'
+  exFrameExtBackground = this.exFrame && this.$env.params.type === 'background'
+  exFrameExt = this.exFrameExtPopup || this.exFrameExtPanel || this.exFrameExtBackground
+  exFrameWeb = this.exFrame && !this.exFrameExtPopup && !this.exFrameExtPanel && !this.exFrameExtBackground
 
   // vw variations
   vwPopup = this.vw && this.$env.params.type === 'popup'

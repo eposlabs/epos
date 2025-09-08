@@ -1,6 +1,4 @@
 export class App extends $ex.Unit {
-  private ready$ = Promise.withResolvers<void>()
-
   browser = chrome
   libs = new $ex.Libs(this)
   utils = new $exOsSwVw.Utils(this)
@@ -21,10 +19,6 @@ export class App extends $ex.Unit {
   async init() {
     if (this.env.is.dev) self.$epos = this
     await this.dev.init()
-    this.ready$.resolve()
-  }
-
-  async waitReady() {
-    await this.ready$.promise
+    await this.boot.injector.inject()
   }
 }

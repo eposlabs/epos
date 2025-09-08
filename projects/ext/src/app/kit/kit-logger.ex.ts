@@ -4,7 +4,7 @@ export class KitLogger extends $ex.Unit {
   constructor(parent: $ex.Unit) {
     super(parent)
 
-    if (this.$.env.is.exFrameBackground) {
+    if (this.$.env.is.exFrameExtBackground) {
       this.patchConsole()
       this.handleRejections()
     }
