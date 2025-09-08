@@ -126,7 +126,7 @@ export class KitBrowserApi extends $ex.Unit {
     //   return this.$.bus.send('kit.browser.updateDynamicRules', options)
     // }
 
-    // Call method via SW
+    // Call method via [sw]
     return this.$.bus.send('kit.browser.callMethod', apiPath, methodName, ...args)
   }
 

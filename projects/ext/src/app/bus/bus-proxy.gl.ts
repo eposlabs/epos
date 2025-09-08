@@ -67,7 +67,7 @@ export class BusProxy extends $gl.Unit {
   }
 
   private setupContentScript() {
-    // Remove CS proxies left over from the previous CS.
+    // Remove [cs] proxies left over from the previous [cs].
     // This happens on tab refresh or navigation.
     async: this.sendToParent('bus.removeAllCsProxy')
 

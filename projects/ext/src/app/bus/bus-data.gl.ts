@@ -14,7 +14,7 @@ export type StorageLink = { [STORAGE_KEY]: string }
 
 export class BusData extends $gl.Unit {
   private $bus = this.up($gl.Bus)!
-  private blobs = new Map<string, Blob>() // SW only
+  private blobs = new Map<string, Blob>() // [sw] only
 
   constructor(parent: $gl.Unit) {
     super(parent)

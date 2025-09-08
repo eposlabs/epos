@@ -58,4 +58,5 @@ class EnvIs extends $gl.Unit {
   exFramePopup = this.exFrame && this.$env.params.type === 'popup'
   exFramePanel = this.exFrame && this.$env.params.type === 'panel'
   exFrameBackground = this.exFrame && this.$env.params.type === 'background'
+  exFrameWeb = this.exFrame && !this.exFramePopup && !this.exFramePanel && !this.exFrameBackground
 }

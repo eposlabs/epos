@@ -49,9 +49,9 @@ export class StateBoot extends $exSw.Unit {
 
   /** Load state data and populate root. */
   private async initRoot() {
-    // EX
+    // [ex]
     if (this.$.env.is.ex) {
-      // Apply document from SW
+      // Apply document from [sw]
       const update = await this.$state.bus.send<Uint8Array>('swGetDoc')
       this.$.libs.yjs.applyUpdate(this.$state.doc, update)
 
@@ -60,7 +60,7 @@ export class StateBoot extends $exSw.Unit {
       this.$state.root = this.$state.node.create(yRoot)
     }
 
-    // SW
+    // [sw]
     else if (this.$.env.is.sw) {
       // Read state data from IDB
       const data = await this.$.idb.get<Obj>(...this.$state.location)

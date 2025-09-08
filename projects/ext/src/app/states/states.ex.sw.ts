@@ -29,7 +29,7 @@ export class States extends $exSw.Unit {
     const id = location.join('/')
     if (this.map[id]) return this.map[id].root
 
-    // Ensure SW is connected first
+    // Ensure [sw] is connected first
     if (this.$.env.is.ex) {
       await this.$.bus.send('states.swConnect', location)
     }
@@ -38,7 +38,7 @@ export class States extends $exSw.Unit {
     const state = await $exSw.State.create(this, location, options)
     this.map[id] = state
 
-    // Mark EX as connected
+    // Mark [ex] as connected
     if (this.$.env.is.ex) {
       this.$.bus.on(`states.exConnected[${id}]`, () => true)
     }
@@ -56,7 +56,7 @@ export class States extends $exSw.Unit {
     await state.cleanup()
     delete this.map[id]
 
-    // Unmark EX as connected
+    // Unmark [ex] as connected
     if (this.$.env.is.ex) {
       this.$.bus.off(`states.exConnected[${id}]`)
     }
@@ -91,7 +91,7 @@ export class States extends $exSw.Unit {
     return id in this.map
   }
 
-  /** Automatically disconnect state if there are no EX connections to it. */
+  /** Automatically disconnect state if there are no [ex] connections to it. */
   private initAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {
