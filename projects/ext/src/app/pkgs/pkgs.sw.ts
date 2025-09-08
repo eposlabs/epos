@@ -37,24 +37,24 @@ export class Pkgs extends $sw.Unit {
     return this.list.some(pkg => pkg.targets.some(target => target.matches.includes('<panel>')))
   }
 
-  getCss(url: string) {
+  getCss(url: string, frame = false) {
     return this.list
-      .map(pkg => pkg.getCss(url))
+      .map(pkg => pkg.getCss(url, frame))
       .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
 
-  getLiteJs(url: string) {
+  getLiteJs(url: string, frame = false) {
     return this.list
-      .map(pkg => pkg.getLiteJs(url))
+      .map(pkg => pkg.getLiteJs(url, frame))
       .filter(this.$.is.present)
       .join('\n')
       .trim()
   }
 
-  getPayloads(url: string) {
-    return this.list.map(pkg => pkg.getPayload(url)).filter(this.$.is.present)
+  getPayloads(url: string, frame = false) {
+    return this.list.map(pkg => pkg.getPayload(url, frame)).filter(this.$.is.present)
   }
 
   getActionData() {
@@ -68,10 +68,10 @@ export class Pkgs extends $sw.Unit {
     return data
   }
 
-  private async getExecutionData(url: string) {
+  private async getExecutionData(url: string, frame = false) {
     const data: ExecutionData = {}
     for (const pkg of this.list) {
-      const meta = await pkg.getExecutionMeta(url)
+      const meta = await pkg.getExecutionMeta(url, frame)
       if (!meta) continue
       data[pkg.name] = meta
     }

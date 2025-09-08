@@ -49,7 +49,7 @@ export class Pkg extends $sw.Unit {
     const pkg = new Pkg(parent)
     const spec = await pkg.$.idb.get<Spec>(name, ':pkg', ':default')
     if (!spec) return null
-    pkg.update(spec)
+    await pkg.update(spec)
     return pkg
   }
 
@@ -76,21 +76,21 @@ export class Pkg extends $sw.Unit {
     })
   }
 
-  matchesUrl(url: string) {
-    return this.targets.some(target => target.matchesUrl(url))
+  matchesUrl(url: string, frame = false) {
+    return this.targets.some(target => target.matchesUrl(url, frame))
   }
 
-  getCss(url: string) {
-    return this.getCode(url, { modes: ['normal', 'lite'], lang: 'css' })
+  getCss(url: string, frame = false) {
+    return this.getCode(url, frame, { modes: ['normal', 'lite'], lang: 'css' })
   }
 
-  getLiteJs(url: string) {
-    return this.getCode(url, { modes: ['lite'], lang: 'js' })
+  getLiteJs(url: string, frame = false) {
+    return this.getCode(url, frame, { modes: ['lite'], lang: 'js' })
   }
 
-  getPayload(url: string): Payload | null {
-    const js = this.getCode(url, { modes: ['normal', 'shadow'], lang: 'js' })
-    const shadowCss = this.getCode(url, { modes: ['shadow'], lang: 'css' })
+  getPayload(url: string, frame = false): Payload | null {
+    const js = this.getCode(url, frame, { modes: ['normal', 'shadow'], lang: 'js' })
+    const shadowCss = this.getCode(url, frame, { modes: ['shadow'], lang: 'css' })
     if (!js && !shadowCss) return null
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
@@ -123,26 +123,26 @@ export class Pkg extends $sw.Unit {
     }
   }
 
-  async getExecutionMeta(url: string): Promise<ExecutionMeta | null> {
-    if (!this.matchesUrl(url)) return null
+  async getExecutionMeta(url: string, frame = false): Promise<ExecutionMeta | null> {
+    if (!this.matchesUrl(url, frame)) return null
     return {
       dev: this.dev,
       name: this.name,
       title: this.manifest.title,
       popup: this.manifest.popup,
-      hash: await this.getExecutionHash(url),
+      hash: await this.getExecutionHash(url, frame),
     }
   }
 
-  private getCode(url: string, filter: SourceFilter) {
-    const sourcePaths = this.getSourcePaths(url, filter)
+  private getCode(url: string, frame = false, filter: SourceFilter = {}) {
+    const sourcePaths = this.getSourcePaths(url, frame, filter)
     if (sourcePaths.length === 0) return null
     return sourcePaths.map(path => this.getSource(path)).join('\n')
   }
 
   /** Used to determine if package must be reloaded. */
-  async getExecutionHash(url: string) {
-    const usedSourcePaths = this.getSourcePaths(url).sort()
+  async getExecutionHash(url: string, frame = false) {
+    const usedSourcePaths = this.getSourcePaths(url, frame).sort()
     return await this.$.utils.hash({
       dev: this.dev,
       assets: this.manifest.assets,
@@ -151,11 +151,11 @@ export class Pkg extends $sw.Unit {
     })
   }
 
-  private getSourcePaths(url: string, filter: SourceFilter = {}) {
+  private getSourcePaths(url: string, frame = false, filter: SourceFilter = {}) {
     return (
       this.targets
-        // Filter targets by URL
-        .filter(target => target.matchesUrl(url))
+        // Filter targets by URI
+        .filter(target => target.matchesUrl(url, frame))
         // Filter targets by mode
         .filter(target => !filter.modes || filter.modes.includes(target.mode))
         // Extract source paths

@@ -13,22 +13,22 @@ export class PkgTarget extends $sw.Unit {
     this.mode = target.mode
   }
 
-  matchesUrl(url: string) {
+  matchesUrl(url: string, frame = false) {
     let ok = false
     for (const pattern of this.matches) {
       if (pattern.startsWith('!')) {
         if (!ok) continue
-        ok = !this.checkPattern(pattern.slice(1), url)
+        ok = !this.checkPattern(pattern.slice(1), url, frame)
       } else {
         if (ok) continue
-        ok = this.checkPattern(pattern, url)
+        ok = this.checkPattern(pattern, url, frame)
       }
     }
 
     return ok
   }
 
-  private checkPattern(pattern: PositivePattern, url: string): boolean {
+  private checkPattern(pattern: PositivePattern, url: string, frame: boolean) {
     const extOrigin = location.origin
 
     if (['<popup>', '<panel>', '<background>'].includes(pattern)) {
@@ -40,8 +40,13 @@ export class PkgTarget extends $sw.Unit {
     }
 
     if (pattern.startsWith('<hub>')) {
-      const hubPattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$pkg.name}`)
-      return new URLPattern(hubPattern).test(url)
+      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$pkg.name}`)
+      return new URLPattern(pattern).test(url)
+    }
+
+    if (frame) {
+      if (!pattern.startsWith('frame:')) return false
+      pattern = pattern.replace('frame:', '')
     }
 
     if (new URLPattern(pattern).test(url)) {
