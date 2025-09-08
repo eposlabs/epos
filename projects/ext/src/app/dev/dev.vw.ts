@@ -1,3 +1,5 @@
 export class Dev extends $vw.Unit {
-  units = new $gl.DevUnits(this)
+  async init() {
+    if (!import.meta.env.DEV) return
+  }
 }

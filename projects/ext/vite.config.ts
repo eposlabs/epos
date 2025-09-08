@@ -15,6 +15,7 @@ export default defineConfig(async ({ mode }) => {
     input: './src/app',
     output: './src/layers',
     watch: mode !== 'production',
+    globalize: mode === 'development',
   })
 
   const bundle = (name: string, options: BuildOptions = {}) => ({

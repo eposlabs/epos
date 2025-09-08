@@ -76,8 +76,8 @@ export class Pkg extends $sw.Unit {
     })
   }
 
-  matchesUrl(url: string, frame = false) {
-    return this.targets.some(target => target.matchesUrl(url, frame))
+  test(url: string, frame = false) {
+    return this.targets.some(target => target.test(url, frame))
   }
 
   getCss(url: string, frame = false) {
@@ -124,7 +124,7 @@ export class Pkg extends $sw.Unit {
   }
 
   async getExecutionMeta(url: string, frame = false): Promise<ExecutionMeta | null> {
-    if (!this.matchesUrl(url, frame)) return null
+    if (!this.test(url, frame)) return null
     return {
       dev: this.dev,
       name: this.name,
@@ -155,7 +155,7 @@ export class Pkg extends $sw.Unit {
     return (
       this.targets
         // Filter targets by URI
-        .filter(target => target.matchesUrl(url, frame))
+        .filter(target => target.test(url, frame))
         // Filter targets by mode
         .filter(target => !filter.modes || filter.modes.includes(target.mode))
         // Extract source paths

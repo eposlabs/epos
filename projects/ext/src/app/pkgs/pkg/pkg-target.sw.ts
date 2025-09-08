@@ -13,7 +13,7 @@ export class PkgTarget extends $sw.Unit {
     this.mode = target.mode
   }
 
-  matchesUrl(url: string, frame = false) {
+  test(url: string, frame = false) {
     let ok = false
     for (const pattern of this.matches) {
       if (pattern.startsWith('!')) {
@@ -52,7 +52,6 @@ export class PkgTarget extends $sw.Unit {
     if (new URLPattern(pattern).test(url)) {
       const { origin } = new URL(url)
       if (origin === extOrigin) return false
-      if (origin === this.$.env.url.web) return false
       return true
     }
 

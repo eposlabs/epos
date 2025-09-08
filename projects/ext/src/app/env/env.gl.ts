@@ -48,9 +48,9 @@ class EnvIs extends $gl.Unit {
   sw = BUNDLE === 'sw'
   vw = BUNDLE === 'vw'
 
-  // vw variations
-  vwPopup = this.vw && this.$env.params.type === 'popup'
-  vwPanel = this.vw && this.$env.params.type === 'panel'
+  // cs variations
+  csTop = this.cs && self === top
+  csFrame = this.cs && self !== top
 
   // ex variations
   exTab = this.ex && self === top
@@ -58,5 +58,10 @@ class EnvIs extends $gl.Unit {
   exFramePopup = this.exFrame && this.$env.params.type === 'popup'
   exFramePanel = this.exFrame && this.$env.params.type === 'panel'
   exFrameBackground = this.exFrame && this.$env.params.type === 'background'
+  exFrameExt = this.exFramePopup || this.exFramePanel || this.exFrameBackground
   exFrameWeb = this.exFrame && !this.exFramePopup && !this.exFramePanel && !this.exFrameBackground
+
+  // vw variations
+  vwPopup = this.vw && this.$env.params.type === 'popup'
+  vwPanel = this.vw && this.$env.params.type === 'panel'
 }

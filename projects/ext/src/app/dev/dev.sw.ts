@@ -1,15 +1,8 @@
 export class Dev extends $sw.Unit {
-  declare units: $gl.DevUnits
-  declare store: $exSw.DevStore
-
-  constructor(parent: $sw.Unit) {
-    super(parent)
-    // this.units = new $gl.DevUnits(this)
-    // this.store = new $exSw.DevStore(this)
-    this.$.bus.on('dev.testApi', this.testApi, this)
-  }
-
   async init() {
+    if (!import.meta.env.DEV) return
+
+    this.$.bus.on('dev.testApi', this.testApi, this)
     // this.initViewTab()
     // await this.store.init()
   }
