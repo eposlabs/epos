@@ -1,19 +1,29 @@
 import globalsJs from './boot-injector-globals.sw?raw'
 
-export type Tab = { id: number; url: string }
+export type Target = { tabId: number; frameId: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 
 export class BootInjector extends $sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
+
   private engine = {
     dev: { full: '', mini: '' },
     prod: { full: '', mini: '' },
   }
 
+  private ignoredUrlPrefixes = [
+    'blob:',
+    'chrome:',
+    'devtools:',
+    'about:blank',
+    'chrome-extension:',
+    'https://chromewebstore.google.com/',
+  ]
+
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.injectToTabsOnNavigation()
+    this.injectOnNavigation()
   }
 
   async init() {
@@ -28,74 +38,50 @@ export class BootInjector extends $sw.Unit {
     this.engine.prod.mini = await fetch('/ex-mini.js').then(r => r.text())
   }
 
-  private injectToTabsOnNavigation() {
+  private injectOnNavigation() {
     this.$.browser.webNavigation.onCommitted.addListener(async details => {
       const { tabId, frameId, url } = details
-      const isMainFrame = frameId === 0
-      if (!isMainFrame) return
-      if (url.startsWith('blob:')) return
-      if (url.startsWith('chrome:')) return
-      if (url.startsWith('devtools:')) return
-      if (url.startsWith('about:blank')) return
-      if (url.startsWith('chrome-extension:')) return
-      if (url.startsWith('https://chromewebstore.google.com/')) return
-      await this.safeInjectToTab({ id: tabId, url })
+      if (this.ignoredUrlPrefixes.some(prefix => url.startsWith(prefix))) return
+      await this.safeInjectTo({ tabId, frameId, url })
     })
   }
 
-  private async safeInjectToTab(tab: Tab) {
+  private async safeInjectTo(target: Target) {
     try {
-      await this.injectToTab(tab)
+      await this.injectTo(target)
     } catch (error) {
       this.log.error(error)
     }
   }
 
-  private async injectToTab(tab: Tab) {
-    // Inject lite js asap
-    const liteJs = this.$.pkgs.getLiteJs(tab.url)
-    if (liteJs) async: this.injectJs(tab, liteJs, 'function')
+  private async injectTo(target: Target) {
+    // Don't inject to frames
+    if (target.frameId !== 0) return
 
-    // Wait till CS is ready (creates self.__epos and generates bus token)
-    const csData = await this.waitCsReady(tab)
+    // Inject lite js
+    const liteJs = this.$.pkgs.getLiteJs(target.url)
+    if (liteJs) async: this.injectJs(target, liteJs, 'function')
+
+    // Wait till [cs] is ready (creates self.__epos* variables and provides bus token)
+    const csData = await this.waitCsReady(target)
 
     // Inject css
-    const css = this.$.pkgs.getCss(tab.url)
-    if (css) async: this.injectCss(tab, css)
-
-    // No pkg payloads for the url? -> Done
-    const payloads = this.$.pkgs.getPayloads(tab.url)
-    if (payloads.length === 0) return
-
-    // Check if dev packages are used
-    const hasDevPkg = payloads.some(payload => payload.dev)
-
-    // Prepare engine
-    const engine = hasDevPkg ? this.engine.dev : this.engine.prod
-    const engineJs = payloads.some(payload => this.hasReact(payload.script)) ? engine.full : engine.mini
-
-    // Prepare js
-    const js = [
-      `(() => {`,
-      `self.__eposTabId = ${JSON.stringify(tab.id)}`,
-      `self.__eposBusToken = ${JSON.stringify(csData.busToken)}`,
-      `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
-      globalsJs,
-      engineJs,
-      `})()`,
-    ].join(';\n')
+    const css = this.$.pkgs.getCss(target.url)
+    if (css) async: this.injectCss(target, css)
 
     // Inject js
-    async: this.injectJs(tab, js, hasDevPkg ? 'script' : 'script-auto-revoke')
+    const jsData = this.getJsData(target, csData.busToken)
+    if (!jsData) return
+    async: this.injectJs(target, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
   }
 
-  private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
+  private async injectJs(target: Target, js: string, mode: JsInjectMode) {
     // Origin is CSP-protected? -> Skip
-    const { origin } = new URL(tab.url)
+    const { origin } = new URL(target.url)
     if (this.cspProtectedOrigins.has(origin)) return
 
     // Inject js
-    const result = await this.execute(tab.id, 'MAIN', [js, mode], (js, mode) => {
+    const result = await this.execute(target, 'MAIN', [js, mode], (js, mode) => {
       try {
         if (mode === 'function') {
           new Function(js)()
@@ -119,15 +105,15 @@ export class BootInjector extends $sw.Unit {
     // Handle errors
     if (result.error) {
       if (result.error.includes('Content Security Policy')) {
-        await this.fixCspError(tab)
+        await this.fixCspError(target)
       } else {
-        this.log.error(`Failed to inject js to ${tab.url}.`, result.error)
+        this.log.error(`Failed to inject js to ${target.url}.`, result.error)
       }
     }
   }
 
-  private async injectCss(tab: Tab, css: string) {
-    await this.execute(tab.id, 'MAIN', [css], async css => {
+  private async injectCss(target: Target, css: string) {
+    await this.execute(target, 'MAIN', [css], async css => {
       const blob = new Blob([css], { type: 'text/css' })
       const link = document.createElement('link')
       link.epos = true
@@ -137,36 +123,57 @@ export class BootInjector extends $sw.Unit {
     })
   }
 
-  private async waitCsReady(tab: Tab) {
-    return await this.execute(tab.id, 'ISOLATED', [], async () => {
+  private async waitCsReady(target: Target) {
+    return await this.execute(target, 'ISOLATED', [], async () => {
       self.__eposCsReady$ ??= Promise.withResolvers()
       return await self.__eposCsReady$.promise
     })
   }
 
-  private async fixCspError(tab: Tab) {
+  private getJsData(target: Target, busToken: string) {
+    const payloads = this.$.pkgs.getPayloads(target.url)
+    if (payloads.length === 0) return null
+
+    const dev = payloads.some(payload => payload.dev)
+    const engine = dev ? this.engine.dev : this.engine.prod
+    const engineJs = payloads.some(payload => this.hasReact(payload.script)) ? engine.full : engine.mini
+
+    const js = [
+      `(() => {`,
+      `self.__eposTabId = ${JSON.stringify(target.tabId)}`,
+      `self.__eposBusToken = ${JSON.stringify(busToken)}`,
+      `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
+      globalsJs,
+      engineJs,
+      `})()`,
+    ].join(';\n')
+
+    return { js, dev }
+  }
+
+  private async fixCspError(target: Target) {
     // First try? -> Unregister all service workers to drop cached headers (x.com)
-    if (!this.cspFixTabIds.has(tab.id)) {
-      this.cspFixTabIds.add(tab.id)
-      self.setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
-      const origin = new URL(tab.url).origin
+    if (!this.cspFixTabIds.has(target.tabId)) {
+      this.cspFixTabIds.add(target.tabId)
+      self.setTimeout(() => this.cspFixTabIds.delete(target.tabId), 10_000)
+      const origin = new URL(target.url).origin
       await this.$.browser.browsingData.remove({ origins: [origin] }, { serviceWorkers: true })
-      await this.$.browser.tabs.reload(tab.id)
+      await this.$.browser.tabs.reload(target.tabId)
     }
 
     // Already tried and still fails? -> Mark origin as CSP-protected.
     // This can happen if CSP is set via meta tag (web.telegram.org).
     else {
-      const { origin } = new URL(tab.url)
-      this.cspFixTabIds.delete(tab.id)
+      const { origin } = new URL(target.url)
+      this.cspFixTabIds.delete(target.tabId)
       this.cspProtectedOrigins.add(origin)
       this.log(`CSP-protected origin: ${origin}`)
     }
   }
 
-  private async execute<T extends Fn>(tabId: number, world: 'MAIN' | 'ISOLATED', args: unknown[], fn: T) {
+  private async execute<T extends Fn>(target: Target, world: 'MAIN' | 'ISOLATED', args: unknown[], fn: T) {
     const [{ result }] = await this.$.browser.scripting.executeScript({
-      target: { tabId },
+      target: { tabId: target.tabId },
       world: world,
       args: args,
       func: fn,
