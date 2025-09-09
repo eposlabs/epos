@@ -39,14 +39,14 @@ export class PkgTarget extends $sw.Unit {
       return pattern === type && (!pkgName || pkgName === this.$pkg.name)
     }
 
-    if (pattern.startsWith('<hub>')) {
-      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$pkg.name}`)
-      return new URLPattern(pattern).test(url)
-    }
-
     if (frame) {
       if (!pattern.startsWith('frame:')) return false
       pattern = pattern.replace('frame:', '')
+    }
+
+    if (pattern.startsWith('<hub>')) {
+      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$pkg.name}`)
+      return new URLPattern(pattern).test(url)
     }
 
     if (new URLPattern(pattern).test(url)) {
