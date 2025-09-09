@@ -11,11 +11,13 @@
     },
     {
       "matches": ["frame:https://epos.dev/@x1-frame"],
-      "load": "./x1-frame.js"
+      "load": ["./x1-frame.js", "./x1-frame.css"],
+      "mode": "lite"
     },
     {
       "matches": ["frame:https://epos.dev/@x1-frame-2"],
-      "load": "./x1-frame-2.js"
+      "load": "./x1-frame-2.js",
+      "mode": "lite"
     },
     {
       "matches": ["<background>"],

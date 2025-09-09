@@ -1,4 +1,5 @@
-import setupJs from './boot-injector-setup.cs?raw'
+import setupElementJs from './boot-injector-setup-element.cs?raw'
+import setupGlobalsJs from './boot-injector-setup-globals.cs?raw'
 
 /**
  * For tabs, there are three 'actors' that execute code:
@@ -17,14 +18,86 @@ import setupJs from './boot-injector-setup.cs?raw'
 export class BootInjector extends $cs.Unit {
   constructor(parent: $cs.Unit) {
     super(parent)
-
-    // Setup self.__eposGlobals and self.__eposElement
-    this.execute(setupJs)
+    this.executeJs(setupElementJs)
+    this.executeJs(setupGlobalsJs)
   }
 
-  private execute(code: string) {
+  async inject() {
+    if (!this.$.env.is.csFrame) return
+
+    // Inject lite js
+    const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href, true)
+    if (liteJs) this.injectJs(liteJs)
+
+    // Inject css
+    const css = await this.$.bus.send<string>('pkgs.getCss', location.href, true)
+    if (css) this.injectCss(css)
+
+    // Inject ex.js + pkgs
+    // const jsData = this.$.bus.send<JsData>('boot.getJsData', location.href, true)
+    // if (!jsData) return
+    // async: this.injectJs(target, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
+    // this.injectJs('console.log("ex.js + pkgs")')
+  }
+
+  private executeJs(code: string) {
     const div = document.createElement('div')
-    div.setAttribute('onreset', `const URL = window.URL; ${code}`)
+    // It is important to pass URL as window.URL, otherwise URL will be a string that equals to location.href
+    div.setAttribute('onreset', `(URL => { ${code} })(window.URL)`)
     div.dispatchEvent(new Event('reset'))
+  }
+
+  private executeFn(fn: Fn, args: unknown[] = []) {
+    const js = `(${fn.toString()}).call(self, ...${JSON.stringify(args)})`
+    this.executeJs(js)
+  }
+
+  private injectJs(js: string) {
+    const eposElement = this.getEposElement()
+
+    const id = this.$.utils.id()
+    const div = document.createElement('div')
+    div.textContent = js
+    div.setAttribute('data-js', id)
+    eposElement.append(div)
+
+    this.executeFn(
+      (id: string) => {
+        const div = document.querySelector(`[data-js="${id}"]`)
+        if (!div) return
+        const js = div.textContent
+        div.remove()
+
+        const blob = new Blob([js], { type: 'application/javascript' })
+        const url = URL.createObjectURL(blob)
+        const script = document.createElement('script')
+        script.epos = true
+        script.src = url
+        script.onload = () => URL.revokeObjectURL(url)
+        self.__eposElement.append(script)
+      },
+      [id],
+    )
+  }
+
+  private injectCss(css: string) {
+    const eposElement = this.getEposElement()
+    const blob = new Blob([css], { type: 'text/css' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('link')
+    link.epos = true
+    link.rel = 'stylesheet'
+    link.href = url
+    link.onload = () => URL.revokeObjectURL(url)
+    eposElement.append(link)
+  }
+
+  private getEposElement() {
+    let eposElement = document.querySelector('epos')
+    // Trigger 'self.__eposElement' getter to create <epos/> element
+    if (!eposElement) this.executeJs('self.__eposElement')
+    eposElement = document.querySelector('epos')
+    if (!eposElement) throw this.never
+    return eposElement
   }
 }

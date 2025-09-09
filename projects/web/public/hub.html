@@ -3,12 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <title>epos</title>
     <link rel="icon" href="/favicon.svg" />
-    <script type="module">
-      const dark = self.matchMedia('(prefers-color-scheme: dark)').matches
-      if (dark) document.documentElement.style.background = '#212121'
-    </script>
+
+    <style>
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #212121;
+        }
+      }
+    </style>
   </head>
   <body></body>
 </html>

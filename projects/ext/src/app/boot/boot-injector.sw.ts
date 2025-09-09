@@ -1,6 +1,6 @@
 import patchGlobalsJs from './boot-injector-patch-globals.sw?raw'
 
-export type Target = { tabId: number; frameId: number; url: string }
+export type Tab = { id: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 
 export class BootInjector extends $sw.Unit {
@@ -41,47 +41,46 @@ export class BootInjector extends $sw.Unit {
   private injectOnNavigation() {
     this.$.browser.webNavigation.onCommitted.addListener(async details => {
       const { tabId, frameId, url } = details
+      // Do not inject to iframes on the page
+      if (frameId !== 0) return
       if (this.ignoredUrlPrefixes.some(prefix => url.startsWith(prefix))) return
-      await this.safeInjectTo({ tabId, frameId, url })
+      await this.safeInjectTo({ id: tabId, url })
     })
   }
 
-  private async safeInjectTo(target: Target) {
+  private async safeInjectTo(tab: Tab) {
     try {
-      await this.injectTo(target)
+      await this.injectTo(tab)
     } catch (error) {
       this.log.error(error)
     }
   }
 
-  private async injectTo(target: Target) {
-    // Don't inject to frames
-    if (target.frameId !== 0) return
-
+  private async injectTo(tab: Tab) {
     // Inject lite js
-    const liteJs = this.$.pkgs.getLiteJs(target.url)
-    if (liteJs) async: this.injectJs(target, liteJs, 'function')
+    const liteJs = this.$.pkgs.getLiteJs(tab.url)
+    if (liteJs) async: this.injectJs(tab, liteJs, 'function')
 
     // Wait till [cs] is ready (creates self.__epos* variables and provides bus token)
-    const csData = await this.waitCsReady(target)
+    const csData = await this.waitCsReady(tab)
 
     // Inject css
-    const css = this.$.pkgs.getCss(target.url)
-    if (css) async: this.injectCss(target, css)
+    const css = this.$.pkgs.getCss(tab.url)
+    if (css) async: this.injectCss(tab, css)
 
-    // Inject js
-    const jsData = this.getJsData(target, csData.busToken)
+    // Inject ex.js + pkgs
+    const jsData = this.getJsData(tab, csData.busToken)
     if (!jsData) return
-    async: this.injectJs(target, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
+    async: this.injectJs(tab, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
   }
 
-  private async injectJs(target: Target, js: string, mode: JsInjectMode) {
+  private async injectJs(tab: Tab, js: string, mode: JsInjectMode) {
     // Origin is CSP-protected? -> Skip
-    const { origin } = new URL(target.url)
+    const { origin } = new URL(tab.url)
     if (this.cspProtectedOrigins.has(origin)) return
 
     // Inject js
-    const result = await this.execute(target, 'MAIN', [js, mode], (js, mode) => {
+    const result = await this.execute(tab, 'MAIN', [js, mode], (js, mode) => {
       try {
         if (mode === 'function') {
           new Function(js)()
@@ -105,15 +104,15 @@ export class BootInjector extends $sw.Unit {
     // Handle errors
     if (result.error) {
       if (result.error.includes('Content Security Policy')) {
-        await this.fixCspError(target)
+        await this.fixCspError(tab)
       } else {
-        this.log.error(`Failed to inject js to ${target.url}.`, result.error)
+        this.log.error(`Failed to inject js to ${tab.url}.`, result.error)
       }
     }
   }
 
-  private async injectCss(target: Target, css: string) {
-    await this.execute(target, 'MAIN', [css], async css => {
+  private async injectCss(tab: Tab, css: string) {
+    await this.execute(tab, 'MAIN', [css], async css => {
       const blob = new Blob([css], { type: 'text/css' })
       const link = document.createElement('link')
       link.epos = true
@@ -123,15 +122,15 @@ export class BootInjector extends $sw.Unit {
     })
   }
 
-  private async waitCsReady(target: Target) {
-    return await this.execute(target, 'ISOLATED', [], async () => {
+  private async waitCsReady(tab: Tab) {
+    return await this.execute(tab, 'ISOLATED', [], async () => {
       self.__eposCsReady$ ??= Promise.withResolvers()
       return await self.__eposCsReady$.promise
     })
   }
 
-  private getJsData(target: Target, busToken: string) {
-    const payloads = this.$.pkgs.getPayloads(target.url)
+  private getJsData(tab: Tab, busToken: string) {
+    const payloads = this.$.pkgs.getPayloads(tab.url)
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)
@@ -140,7 +139,7 @@ export class BootInjector extends $sw.Unit {
 
     const js = [
       `(() => {`,
-      `self.__eposTabId = ${JSON.stringify(target.tabId)}`,
+      `self.__eposTabId = ${JSON.stringify(tab.id)}`,
       `self.__eposBusToken = ${JSON.stringify(busToken)}`,
       `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
       patchGlobalsJs,
@@ -151,29 +150,29 @@ export class BootInjector extends $sw.Unit {
     return { js, dev }
   }
 
-  private async fixCspError(target: Target) {
+  private async fixCspError(tab: Tab) {
     // First try? -> Unregister all service workers to drop cached headers (x.com)
-    if (!this.cspFixTabIds.has(target.tabId)) {
-      this.cspFixTabIds.add(target.tabId)
-      self.setTimeout(() => this.cspFixTabIds.delete(target.tabId), 10_000)
-      const origin = new URL(target.url).origin
+    if (!this.cspFixTabIds.has(tab.id)) {
+      this.cspFixTabIds.add(tab.id)
+      self.setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
+      const origin = new URL(tab.url).origin
       await this.$.browser.browsingData.remove({ origins: [origin] }, { serviceWorkers: true })
-      await this.$.browser.tabs.reload(target.tabId)
+      await this.$.browser.tabs.reload(tab.id)
     }
 
     // Already tried and still fails? -> Mark origin as CSP-protected.
     // This can happen if CSP is set via meta tag (web.telegram.org).
     else {
-      const { origin } = new URL(target.url)
-      this.cspFixTabIds.delete(target.tabId)
+      const { origin } = new URL(tab.url)
+      this.cspFixTabIds.delete(tab.id)
       this.cspProtectedOrigins.add(origin)
       this.log(`CSP-protected origin: ${origin}`)
     }
   }
 
-  private async execute<T extends Fn>(target: Target, world: 'MAIN' | 'ISOLATED', args: unknown[], fn: T) {
+  private async execute<T extends Fn>(tab: Tab, world: 'MAIN' | 'ISOLATED', args: unknown[], fn: T) {
     const [{ result }] = await this.$.browser.scripting.executeScript({
-      target: { tabId: target.tabId },
+      target: { tabId: tab.id },
       world: world,
       args: args,
       func: fn,

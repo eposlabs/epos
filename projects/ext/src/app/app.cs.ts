@@ -20,6 +20,7 @@ export class App extends $cs.Unit {
     self.$ = this
     self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
     self.__eposCsReady$.resolve({ busToken: this.getBusToken() })
+    await this.boot.injector.inject()
   }
 
   private getBusToken() {

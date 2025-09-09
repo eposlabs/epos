@@ -51,6 +51,7 @@ export class BootInjector extends $ex.Unit {
     await this.injectJs(js)
   }
 
+  // It is important to wait for 'onload', otherwise '__eposPkgDefs' will be undefined for 'executePkgs'
   private async injectJs(js: string) {
     const ready$ = Promise.withResolvers()
     const blob = new Blob([js], { type: 'application/javascript' })
@@ -94,16 +95,16 @@ export class BootInjector extends $ex.Unit {
   }
 
   private getTabId() {
-    if (this.$.env.is.exFrame) {
-      if (this.$.env.is.exFrameExtBackground) return null
-      if (this.$.env.is.exFrameExt) return Number(this.$.env.params.tabId)
-      if (this.$.env.is.exFrameWeb) throw new Error('Not implemented')
-    }
-
     if (this.$.env.is.exTab) {
       const tabId = self.__eposTabId
       if (!this.$.is.number(tabId)) throw this.never
       return tabId
+    }
+
+    if (this.$.env.is.exFrame) {
+      if (this.$.env.is.exFrameExtBackground) return null
+      if (this.$.env.is.exFrameExt) return Number(this.$.env.params.tabId)
+      if (this.$.env.is.exFrameWeb) throw new Error('Not implemented')
     }
 
     throw this.never

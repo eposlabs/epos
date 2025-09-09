@@ -5,7 +5,7 @@ export default defineConfig({
   title: 'epos',
   description: 'Browser Extension Engine',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
-  outDir: 'build',
+  outDir: 'dist',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
