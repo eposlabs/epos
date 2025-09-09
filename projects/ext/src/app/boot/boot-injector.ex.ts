@@ -111,12 +111,11 @@ export class BootInjector extends $ex.Unit {
   }
 
   private deleteEposVars() {
-    Reflect.deleteProperty(self, '__eposIsTop')
-    Reflect.deleteProperty(self, '__eposGlobals')
-    Reflect.deleteProperty(self, '__eposElement')
-    Reflect.deleteProperty(self, '__eposTabId')
-    Reflect.deleteProperty(self, '__eposBusToken')
-    Reflect.deleteProperty(self, '__eposPkgDefs')
-    Reflect.deleteProperty(self, '__eposInjected')
+    // Reflect.deleteProperty(self, '__eposIsTop')
+    // Reflect.deleteProperty(self, '__eposGlobals')
+    // Reflect.deleteProperty(self, '__eposElement')
+    // Reflect.deleteProperty(self, '__eposTabId')
+    // Reflect.deleteProperty(self, '__eposBusToken')
+    // Reflect.deleteProperty(self, '__eposPkgDefs')
   }
 }

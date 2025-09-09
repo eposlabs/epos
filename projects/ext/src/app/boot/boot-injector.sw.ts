@@ -57,11 +57,17 @@ export class BootInjector extends $sw.Unit {
   }
 
   private async injectTo(tab: Tab) {
-    // Inject lite js
-    const liteJs = this.$.pkgs.getLiteJs(tab.url)
-    if (liteJs) async: this.injectJs(tab, liteJs, 'function')
+    // Already injected? -> Done.
+    // This prevents double injection caused by browser back/forward cache navigation.
+    const injected = await this.execute(tab, 'MAIN', [], () => !!self.__eposInjected)
+    if (injected) return
 
-    // Wait till [cs] is ready (creates self.__epos* variables and provides bus token)
+    // Inject lite js and injection flag
+    const liteJs = this.$.pkgs.getLiteJs(tab.url)
+    const injectionFlagJs = `self.__eposInjected = true;`
+    async: this.injectJs(tab, `${injectionFlagJs}${liteJs}`, 'function')
+
+    // Wait till [cs] is ready
     const csData = await this.waitCsReady(tab)
 
     // Inject css
