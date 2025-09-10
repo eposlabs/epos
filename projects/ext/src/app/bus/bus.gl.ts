@@ -1,40 +1,138 @@
-export type Frame = string
-export type TabId = number
-export type Locus = 'service-worker' | 'content-script' | 'ext-page' | 'ext-frame' | 'injection'
-export type ProxyChild = `content-script-${TabId}` | `ext-frame-${Frame}` | 'injection'
+import type { Target } from './bus-action.gl'
 
 export class Bus extends $gl.Unit {
-  locus = this.getLocus()
+  id = this.$.utils.id()
+  actions: $gl.BusAction[] = []
   utils = new $gl.BusUtils(this)
-  ext = new $gl.BusExt(this)
-  page = new $gl.BusPage(this)
-  data = new $gl.BusData(this)
-  actions = new $gl.BusActions(this)
-  proxy = new $gl.BusProxy(this)
-  api = new $gl.BusApi(this)
+  serializer = new $gl.BusSerializer(this)
+  extBridge = new $gl.BusExtBridge(this)
+  pageBridge = new $gl.BusPageBridge(this)
 
-  on = this.$.utils.link(this.api, 'on')
-  off = this.$.utils.link(this.api, 'off')
-  once = this.$.utils.link(this.api, 'once')
-  send = this.$.utils.link(this.api, 'send')
-  emit = this.$.utils.link(this.api, 'emit')
-  setSignal = this.$.utils.link(this.api, 'setSignal')
-  waitSignal = this.$.utils.link(this.api, 'waitSignal')
-
-  create(id: string) {
-    return new $gl.BusApi(this, id)
+  create(scope: string) {
+    const scoped = (name: string) => `{${scope}}:${name}`
+    return {
+      on: (name: string, fn: Fn, thisValue?: unknown) => this.on(scoped(name), fn, thisValue),
+      off: (name: string, fn?: Fn) => this.off(scoped(name), fn),
+      send: <T>(name: string, ...args: unknown[]) => this.send<T>(scoped(name), ...args),
+      emit: <T>(name: string, ...args: unknown[]) => this.emit<T>(scoped(name), ...args),
+      once: (name: string, fn: Fn, thisValue?: unknown) => this.once(scoped(name), fn, thisValue),
+      setSignal: (name: string, ...args: unknown[]) => this.setSignal(scoped(name), ...args),
+      waitSignal: (name: string, timeout?: number) => this.waitSignal(scoped(name), timeout),
+    }
   }
 
-  is(...locusList: Locus[]) {
-    return locusList.includes(this.locus)
+  on(name: string, fn: Fn, thisValue?: unknown, target?: Target) {
+    if (!fn) return
+
+    // Register proxy action.
+    // - [cs-tab] -> [sw]
+    // - [cs-frame] and [ex] inside tab (top + any iframes) -> [cs-tab]
+    // - [cs-frame] and [ex] inside [vw] / [os] (iframe + any sub-iframes) -> [vw] / [os]
+    if (this.$.env.is.cs || this.$.env.is.ex) {
+      const actions = this.actions.filter(action => action.name === name)
+      if (actions.length === 0) {
+        if (this.$.env.is.csTab) {
+          async: this.extBridge.send('bus.registerTabAction', name)
+        } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
+          async: this.pageBridge.sendToTop('bus.registerFrameAction', name)
+        }
+      }
+    }
+
+    // Add action
+    const action = new $gl.BusAction(this, name, fn, thisValue, target)
+    this.actions.push(action)
   }
 
-  private getLocus(): Locus {
-    if (this.$.env.is.sw) return 'service-worker'
-    if (this.$.env.is.cs) return 'content-script'
-    if (this.$.env.is.exTab) return 'injection'
-    if (this.$.env.is.exFrame) return 'ext-frame'
-    if (this.$.env.is.os || this.$.env.is.vw || this.$.env.is.sm) return 'ext-page'
-    throw this.never
+  off(name: string, fn?: Fn, target?: Target) {
+    // Remove matching actions
+    this.actions = this.actions.filter(action => {
+      const nameMatches = action.name === name
+      const fnMatches = !fn || action.fn === fn
+      const targetMatches = target ? action.target === target : !action.target
+      if (nameMatches && fnMatches && targetMatches) return false
+      return true
+    })
+
+    // Unregister proxy action
+    if (this.$.env.is.cs || this.$.env.is.ex) {
+      const actions = this.actions.filter(action => action.name === name)
+      if (actions.length === 0) {
+        if (this.$.env.is.csTab) {
+          async: this.extBridge.send('bus.unregisterTabAction', name)
+        } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
+          async: this.pageBridge.sendToTop('bus.unregisterFrameAction', name)
+        }
+      }
+    }
+  }
+
+  async send<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
+    let result: unknown
+    if (this.$.env.is.sw || this.$.env.is.csTab || this.$.env.is.vw || this.$.env.is.os) {
+      result = await this.utils.pick([
+        this.extBridge.send(name, ...args),
+        this.executeProxyActions(name, ...args),
+      ])
+    } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
+      result = await this.pageBridge.sendToTop(name, ...args)
+    }
+
+    if (this.utils.isThrow(result)) {
+      const error = new Error(result.message)
+      Error.captureStackTrace(error, this.send)
+      throw error
+    }
+
+    return result as T
+  }
+
+  async emit<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
+    const actions = this.actions.filter(action => action.name === name && !action.target)
+    const result = await this.utils.pick(actions.map(action => action.execute(...args)))
+    return result as T
+  }
+
+  once(name: string, fn: Fn, thisValue?: unknown) {
+    // Create one-time handler
+    const handler = async (...args: unknown[]) => {
+      this.off(name, handler)
+      return await fn(...args)
+    }
+
+    // Register one-time handler
+    this.on(name, handler, thisValue)
+  }
+
+  setSignal(name: string, ...args: unknown[]) {
+    const value = args[0] ?? true
+    this.on(name, () => value)
+    async: this.send(name, value)
+  }
+
+  async waitSignal(name: string, timeout?: number) {
+    // Setup listener
+    const listener$ = Promise.withResolvers<unknown>()
+    const listener = (value: unknown) => listener$.resolve(value)
+    this.on(name, listener)
+
+    // Setup timer
+    const timer$ = Promise.withResolvers<false>()
+    let timer: number | null = null
+    if (timeout) timer = self.setTimeout(() => timer$.resolve(false), timeout)
+
+    // Wait for the signal or timer
+    const result = await this.utils.pick([this.send(name), listener$.promise, timer$.promise])
+
+    // Cleanup
+    this.off(name, listener)
+    if (timer) self.clearTimeout(timer)
+
+    return result
+  }
+
+  private async executeProxyActions(name: string, ...args: unknown[]) {
+    const actions = this.actions.filter(action => action.name === name && action.target)
+    return await this.utils.pick(actions.map(action => action.execute(...args)))
   }
 }

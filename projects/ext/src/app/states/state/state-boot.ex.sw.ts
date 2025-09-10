@@ -55,19 +55,8 @@ export class StateBoot extends $exSw.Unit {
 
   /** Load state data and populate root. */
   private async initRoot() {
-    // [ex]
-    if (this.$.env.is.ex) {
-      // Apply document from [sw]
-      const update = await this.$state.bus.send<Uint8Array>('swGetDoc')
-      this.$.libs.yjs.applyUpdate(this.$state.doc, update)
-
-      // Create MobX state from Yjs document
-      const yRoot = this.$state.doc.getMap('root')
-      this.$state.root = this.$state.node.create(yRoot)
-    }
-
     // [sw]
-    else if (this.$.env.is.sw) {
+    if (this.$.env.is.sw) {
       // Read state data from IDB
       const data = await this.$.idb.get<Obj>(...this.$state.location)
 
@@ -76,6 +65,17 @@ export class StateBoot extends $exSw.Unit {
 
       // Serve Yjs document
       this.$state.bus.on('swGetDoc', () => this.$.libs.yjs.encodeStateAsUpdate(this.$state.doc))
+    }
+
+    // [ex]
+    else if (this.$.env.is.ex) {
+      // Apply document from [sw]
+      const update = await this.$state.bus.send<Uint8Array>('swGetDoc')
+      this.$.libs.yjs.applyUpdate(this.$state.doc, update)
+
+      // Create MobX state from Yjs document
+      const yRoot = this.$state.doc.getMap('root')
+      this.$state.root = this.$state.node.create(yRoot)
     }
   }
 

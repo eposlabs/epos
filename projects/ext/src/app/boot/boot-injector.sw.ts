@@ -2,6 +2,7 @@ import patchGlobalsJs from './boot-injector-patch-globals.sw?raw'
 
 export type Tab = { id: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
+export type JsData = { js: string; dev: boolean }
 
 export class BootInjector extends $sw.Unit {
   private cspFixTabIds = new Set<number>()
@@ -24,6 +25,7 @@ export class BootInjector extends $sw.Unit {
   constructor(parent: $sw.Unit) {
     super(parent)
     this.injectOnNavigation()
+    this.$.bus.on('boot.getJsData', this.getJsData, this)
   }
 
   async init() {
@@ -111,6 +113,9 @@ export class BootInjector extends $sw.Unit {
     if (result.error) {
       if (result.error.includes('Content Security Policy')) {
         await this.fixCspError(tab)
+      } else if (result.error.includes('No tab with id')) {
+        console.warn('caught-good')
+        return
       } else {
         this.log.error(`Failed to inject js to ${tab.url}.`, result.error)
       }
@@ -135,8 +140,8 @@ export class BootInjector extends $sw.Unit {
     })
   }
 
-  private getJsData(tab: Tab, busToken: string) {
-    const payloads = this.$.pkgs.getPayloads(tab.url)
+  private getJsData(tab: Tab, busToken: string, frame = false): JsData | null {
+    const payloads = this.$.pkgs.getPayloads(tab.url, frame)
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)

@@ -1,19 +1,12 @@
-const THROW = ':EPOS_BUS_THROW'
-
+export const THROW = ':EPOS_BUS_THROW'
 export type Throw = { [THROW]: true; message: string }
 
 export class BusUtils extends $gl.Unit {
   static THROW = THROW
 
-  id(prefix = '') {
-    const now = Date.now()
-    const rand = Math.random().toString(36).slice(2)
-    return [prefix, now, rand].filter(Boolean).join('-')
-  }
-
   createTempObjectUrl(blob: Blob) {
     const objectUrl = URL.createObjectURL(blob)
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+    self.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
     return objectUrl
   }
 

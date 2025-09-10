@@ -5,9 +5,9 @@
 - **Bus**
   - epos.on
   - epos.off
-  - epos.once
   - epos.send
   - epos.emit
+  - epos.once
 - **State**
   - epos.connect
   - epos.disconnect

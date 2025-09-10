@@ -1,5 +1,6 @@
 import setupElementJs from './boot-injector-setup-element.cs?raw'
 import setupGlobalsJs from './boot-injector-setup-globals.cs?raw'
+import type { JsData } from './boot-injector.sw'
 
 /**
  * For tabs, there are three 'actors' that execute code:
@@ -34,15 +35,19 @@ export class BootInjector extends $cs.Unit {
     if (css) this.injectCss(css)
 
     // Inject ex.js + pkgs
-    // const jsData = this.$.bus.send<JsData>('boot.getJsData', location.href, true)
-    // if (!jsData) return
-    // async: this.injectJs(target, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
-    // this.injectJs('console.log("ex.js + pkgs")')
+    const jsData = await this.$.bus.send<JsData | null>(
+      'boot.getJsData',
+      { url: location.href, id: null },
+      null,
+      true,
+    )
+    if (!jsData) return
+    async: this.injectJs(jsData.js)
   }
 
   private executeJs(code: string) {
     const div = document.createElement('div')
-    // It is important to pass URL as window.URL, otherwise URL will be a string that equals to location.href
+    // It is important to pass URL as window.URL, otherwise URL will be a string equal to location.href
     div.setAttribute('onreset', `(URL => { ${code} })(window.URL)`)
     div.dispatchEvent(new Event('reset'))
   }

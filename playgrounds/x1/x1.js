@@ -2,8 +2,11 @@
 
 // class X1App extends epos.Unit {}
 
-console.warn('x1')
+const state = await epos.connect(() => ({ title: 'abc' }))
+
+console.warn('x1', state.title)
 self.epos = epos
+self.state = state
 
 await epos.browser.declarativeNetRequest.updateDynamicRules({
   removeRuleIds: [3],

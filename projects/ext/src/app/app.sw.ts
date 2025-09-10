@@ -29,20 +29,10 @@ export class App extends $sw.Unit {
     this.net = await $sw.Net.create(this)
     this.pkgs = await $sw.Pkgs.create(this)
     this.boot = await $sw.Boot.create(this)
-    await this.setupOffscreen()
     await this.setupContentScript()
+    await this.setupOffscreen()
     this.defineGlobalMethods()
     this.dev = await $sw.Dev.create(this)
-  }
-
-  private async setupOffscreen() {
-    const exists = await this.$.browser.offscreen.hasDocument()
-    if (exists) await this.$.browser.offscreen.closeDocument()
-    await this.$.browser.offscreen.createDocument({
-      url: this.$.env.url.offscreen,
-      reasons: ['BLOBS'],
-      justification: 'URL.createObjectURL',
-    })
   }
 
   private async setupContentScript() {
@@ -61,6 +51,16 @@ export class App extends $sw.Unit {
         allFrames: true,
       },
     ])
+  }
+
+  private async setupOffscreen() {
+    const exists = await this.$.browser.offscreen.hasDocument()
+    if (exists) await this.$.browser.offscreen.closeDocument()
+    await this.$.browser.offscreen.createDocument({
+      url: this.$.env.url.offscreen,
+      reasons: ['BLOBS'],
+      justification: 'URL.createObjectURL',
+    })
   }
 
   private defineGlobalMethods() {

@@ -49,7 +49,7 @@ class EnvIs extends $gl.Unit {
   vw = BUNDLE === 'vw'
 
   // cs variations
-  csTop = this.cs && self === top
+  csTab = this.cs && self === top
   csFrame = this.cs && self !== top
 
   // ex variations

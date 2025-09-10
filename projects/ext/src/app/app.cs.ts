@@ -24,8 +24,9 @@ export class App extends $cs.Unit {
   }
 
   private getBusToken() {
-    const token = this.bus.page.token
-    if (!token) throw this.never
-    return token
+    return null
+    // const token = this.bus.page.token
+    // if (!token) throw this.never
+    // return token
   }
 }

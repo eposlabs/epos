@@ -17,7 +17,7 @@ export class State extends $exSw.Unit {
   id: string
   root: Root | null = null
   doc = new this.$.libs.yjs.Doc()
-  bus: $gl.BusApi
+  bus: ReturnType<$gl.Bus['create']>
   location: Location
   initial: Initial | null
   versioner: Versioner | null

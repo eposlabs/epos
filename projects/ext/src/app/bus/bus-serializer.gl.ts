@@ -12,17 +12,17 @@ export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
 export type Storage = Map<string, unknown>
 export type StorageLink = { [STORAGE_KEY]: string }
 
-export class BusData extends $gl.Unit {
+export class BusSerializer extends $gl.Unit {
   private $bus = this.up($gl.Bus)!
   private blobs = new Map<string, Blob>() // [sw] only
+  private channel: BroadcastChannel | null = null // [sw] and [os] only, for blob transfer
 
   constructor(parent: $gl.Unit) {
     super(parent)
 
-    if (this.$.env.is.os) {
-      this.setupOffscreen()
-    } else if (this.$bus.is('service-worker')) {
-      this.setupServiceWorker()
+    if (this.$.env.is.sw || this.$.env.is.os) {
+      this.channel = new BroadcastChannel('bus')
+      if (this.$.env.is.os) this.setupOffscreen()
     }
   }
 
@@ -39,7 +39,7 @@ export class BusData extends $gl.Unit {
         this.$.is.uint16Array(value) ||
         this.$.is.uint32Array(value)
       ) {
-        const key = this.$bus.utils.id()
+        const key = this.$.utils.id()
         storage.set(key, value)
         return { [STORAGE_KEY]: key } as StorageLink
       }
@@ -61,10 +61,10 @@ export class BusData extends $gl.Unit {
 
       // Serialize blob
       if (this.$.is.blob(value)) {
-        if (this.$bus.is('service-worker')) {
-          const blobId = this.$bus.utils.id()
+        if (this.$.env.is.sw) {
+          const blobId = this.$.utils.id()
           this.blobs.set(blobId, value)
-          setTimeout(() => this.blobs.delete(blobId), 60_000)
+          self.setTimeout(() => this.blobs.delete(blobId), 60_000)
           return { [REF]: 'blobId', id: blobId } satisfies BlobIdRef
         } else {
           const url = this.$bus.utils.createTempObjectUrl(value)
@@ -114,9 +114,9 @@ export class BusData extends $gl.Unit {
 
       // Deserialize blob by id
       if (value[REF] === 'blobId') {
-        const key = this.$bus.utils.id()
+        const key = this.$.utils.id()
         const promise = (async () => {
-          const url = await this.$bus.ext.send('bus.blobIdToObjectUrl', value.id)
+          const url = await this.$bus.extBridge.send('bus.blobIdToObjectUrl', value.id)
           if (!this.$.is.string(url)) throw this.never
           const blob = await fetch(url).then(r => r.blob())
           storage.set(key, blob)
@@ -127,7 +127,7 @@ export class BusData extends $gl.Unit {
 
       // Deserialize blob by url
       if (value[REF] === 'blobUrl') {
-        const key = this.$bus.utils.id()
+        const key = this.$.utils.id()
         const promise = (async () => {
           const blob = await fetch(value.url).then(r => r.blob())
           storage.set(key, blob)
@@ -138,22 +138,22 @@ export class BusData extends $gl.Unit {
 
       // Deserialize undefined
       if (value[REF] === 'undefined') {
-        const key = this.$bus.utils.id()
+        const key = this.$.utils.id()
         storage.set(key, undefined)
         return { [STORAGE_KEY]: key }
       }
 
-      // Deserialize Uint8Array
+      // Serialize Uint8Array
       if (value[REF] === 'uint8') {
         return new Uint8Array(value.integers)
       }
 
-      // Deserialize Uint16Array
+      // Serialize Uint16Array
       if (value[REF] === 'uint16') {
         return new Uint16Array(value.integers)
       }
 
-      // Deserialize Uint32Array
+      // Serialize Uint32Array
       if (value[REF] === 'uint32') {
         return new Uint32Array(value.integers)
       }
@@ -166,6 +166,29 @@ export class BusData extends $gl.Unit {
 
     // Populate data with storage
     return this.populate(data, storage)
+  }
+
+  async blobIdToObjectUrl(blobId: string) {
+    const channel = this.channel
+    if (!channel) throw this.never
+
+    const blob = this.blobs.get(blobId)
+    this.blobs.delete(blobId)
+
+    const reqId = this.$.utils.id()
+    const url$ = Promise.withResolvers<string>()
+
+    const onMessage = (e: MessageEvent) => {
+      const [resId, url] = e.data as [string, string]
+      if (reqId !== resId) return
+      channel.removeEventListener('message', onMessage)
+      url$.resolve(url)
+    }
+
+    channel.addEventListener('message', onMessage)
+    channel.postMessage([reqId, blob])
+
+    return await url$.promise
   }
 
   private isRef(value: unknown): value is Ref {
@@ -202,36 +225,16 @@ export class BusData extends $gl.Unit {
   }
 
   private setupOffscreen() {
-    const channel = new BroadcastChannel('bus')
+    const channel = this.channel
+    if (!channel) throw this.never
 
     channel.addEventListener('message', async e => {
-      const [reqId, blob] = e.data as [string, Blob]
-      const url = URL.createObjectURL(blob)
+      if (!this.$.is.array(e.data)) throw this.never
+      const [reqId, blob] = e.data
+      if (!this.$.is.string(reqId)) throw this.never
+      if (!this.$.is.blob(blob)) throw this.never
+      const url = this.$bus.utils.createTempObjectUrl(blob)
       channel.postMessage([reqId, url])
-    })
-  }
-
-  private setupServiceWorker() {
-    const channel = new BroadcastChannel('bus')
-
-    this.$bus.ext.intercept('bus.blobIdToObjectUrl', async (_, blobId: string) => {
-      const blob = this.blobs.get(blobId)
-      this.blobs.delete(blobId)
-
-      const reqId = this.$bus.utils.id()
-      const url$ = Promise.withResolvers<string>()
-
-      const onMessage = (e: MessageEvent) => {
-        const [resId, url] = e.data as [string, string]
-        if (reqId !== resId) return
-        channel.removeEventListener('message', onMessage)
-        url$.resolve(url)
-      }
-
-      channel.addEventListener('message', onMessage)
-      channel.postMessage([reqId, blob])
-
-      return await url$.promise
     })
   }
 }
