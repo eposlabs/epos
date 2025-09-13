@@ -12,7 +12,7 @@ export class App extends $ex.Unit {
   kit = new $ex.Kit(this)
   pack = new $ex.Pack(this)
   peer = new $exOs.Peer(this)
-  states = new $exSw.States(this)
+  store = new $exSw.Store(this)
   ui = new $ex.Ui(this)
   units = new $exSw.Units(this)
 
@@ -24,7 +24,6 @@ export class App extends $ex.Unit {
 
   private async init() {
     if (this.env.is.dev) self.$epos = this
-    this.dev = await $ex.Dev.create(this)
     await this.boot.injector.inject()
     this.dev = await $gl.Dev.create(this)
   }

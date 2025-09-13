@@ -14,7 +14,7 @@ export class App extends $sw.Unit {
   net!: $sw.Net
   pack!: $sw.Pack
   peer = new $sw.Peer(this)
-  states = new $exSw.States(this)
+  store = new $exSw.Store(this)
   units = new $exSw.Units(this)
 
   static async create() {

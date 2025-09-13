@@ -76,7 +76,7 @@ export class BootInjector extends $ex.Unit {
   }
 
   private async executePkgs() {
-    const defs = self.__eposPkgDefs
+    const defs = self.__eposPkgDefs ?? []
     const tabId = this.getTabId()
     this.deleteEposVars()
 

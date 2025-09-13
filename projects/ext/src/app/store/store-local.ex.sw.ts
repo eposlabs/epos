@@ -3,7 +3,7 @@
 // TODO: unit support here (?)
 // local state should support owner as well for units to work
 // and onChange we need to handle detach
-export class StatesLocal extends $exSw.Unit {
+export class StoreLocal extends $exSw.Unit {
   create(data: unknown) {
     if (this.$.is.object(data)) {
       return this.createFromObject(data)

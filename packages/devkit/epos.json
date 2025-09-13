@@ -5,8 +5,9 @@
   "action": "<hub>",
   "targets": [
     {
-      "matches": ["<hub>"],
-      "load": ["./dist/gl.js", "./dist/gl.css"]
+      "matches": ["<hub>", "<popup>"],
+      "load": "./stub.js"
+      // "load": ["./dist/gl.js", "./dist/gl.css"]
     }
   ]
 }

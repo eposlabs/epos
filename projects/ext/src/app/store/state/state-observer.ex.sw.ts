@@ -4,14 +4,10 @@ import type { MNode, YNode } from './state-node.ex.sw'
 
 export type ObjectSet = Extract<IObjectWillChange<Obj>, { type: 'add' | 'update' }>
 export type ObjectRemove = Extract<IObjectWillChange<Obj>, { type: 'remove' }>
-export type ArraySet = Pretty<IArrayWillChange<any>>
-export type ArraySplice = Pretty<IArrayWillSplice<any>>
+export type ArraySet = IArrayWillChange<any>
+export type ArraySplice = IArrayWillSplice<any>
 export type Change = ObjectSet | ObjectRemove | ArraySet | ArraySplice
 
-/**
- * #### How Sync Works
- * MobX → Local Yjs → (bus) → Remote Yjs → MobX
- */
 export class StateObserver extends $exSw.Unit {
   private $state = this.up($exSw.State)!
   private applyingRemoteChanges = false // Yjs -> MobX
@@ -36,7 +32,6 @@ export class StateObserver extends $exSw.Unit {
   // ---------------------------------------------------------------------------
 
   private onMobxChange = (change: Change) => {
-    console.warn('!', change)
     // Skip if applying remote changes (Yjs -> MobX)
     if (this.applyingRemoteChanges) return change
 
@@ -67,7 +62,7 @@ export class StateObserver extends $exSw.Unit {
     }
 
     // Save state to IDB
-    this.$state.idb.saveWithDelay()
+    async: this.$state.persistence.save()
 
     return change
   }
@@ -76,13 +71,11 @@ export class StateObserver extends $exSw.Unit {
     // Skip symbols
     if (this.$.is.symbol(c.name)) return
 
-    // Skip if value has not changed.
-    // Also applied for getters (undefined === undefined).
+    // Skip if value hasn't changed
     if (c.newValue === c.object[c.name]) return
 
     // Attach new value
     const mOwner = c.object
-    // const newValue = this.$state.node.raw(c.newValue)
     c.newValue = this.$state.node.create(c.newValue, mOwner)
 
     // Detach old value
@@ -117,7 +110,6 @@ export class StateObserver extends $exSw.Unit {
   private processArraySet(c: ArraySet) {
     // Attach new value
     const mOwner = c.object
-    // const newValue = this.$state.node.raw(c.newValue)
     c.newValue = this.$state.node.create(c.newValue, mOwner)
 
     // Detach old value
@@ -135,7 +127,6 @@ export class StateObserver extends $exSw.Unit {
   private processArraySplice(c: ArraySplice) {
     // Attach added items
     const mOwner = c.object
-    // const added = this.$state.node.raw(c.added)
     c.added = c.added.map(item => this.$state.node.create(item, mOwner))
 
     // Detach removed items
@@ -173,7 +164,7 @@ export class StateObserver extends $exSw.Unit {
     }
 
     // Save state to IDB
-    this.$state.idb.saveWithDelay()
+    async: this.$state.persistence.save()
   }
 
   private applyYMapChange(e: YMapEvent<unknown>) {
@@ -193,9 +184,9 @@ export class StateObserver extends $exSw.Unit {
 
         // Attach new value or delete if the key was removed
         if (yMap.has(key)) {
-          mNode[key] = this.$state.node.create(yMap.get(key), mNode)
+          this.$state.node.set(mNode, key, yMap.get(key))
         } else {
-          delete mNode[key]
+          this.$state.node.remove(mNode, key)
         }
       }
 

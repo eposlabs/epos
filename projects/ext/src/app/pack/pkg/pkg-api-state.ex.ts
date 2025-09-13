@@ -1,4 +1,4 @@
-import type { Initial, Location, Versioner } from '../../states/state/state.ex.sw'
+import type { Initial, Location, Versioner } from '../../store/state/state.ex.sw'
 
 export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
@@ -7,7 +7,7 @@ export class PkgApiState extends $ex.Unit {
     const [name, initial, versioner] = this.parseConnectArgs(args)
     const location = this.getLocation(name)
 
-    return await this.$.states.connect(location, {
+    return await this.$.store.connect(location, {
       initial: initial,
       versioner: versioner,
       unitScope: this.$pkg.name,
@@ -17,17 +17,17 @@ export class PkgApiState extends $ex.Unit {
   disconnect = async (name?: string) => {
     this.validateName(name)
     const location = this.getLocation(name)
-    await this.$.states.disconnect(location)
+    await this.$.store.disconnect(location)
   }
 
   transaction = (fn: Fn) => {
     this.validateTransactionFn(fn)
-    this.$.states.transaction(fn)
+    this.$.store.transaction(fn)
   }
 
   local = (state: Obj = {}) => {
     this.validateState(state)
-    return this.$.states.local.create(state)
+    return this.$.store.local.create(state)
     return this.$.libs.mobx.observable(state)
   }
 
@@ -36,7 +36,7 @@ export class PkgApiState extends $ex.Unit {
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.states.isConnected([this.$pkg.name, ':state', name]),
+        connected: this.$.store.isConnected([this.$pkg.name, ':state', name]),
       }))
       .filter(state => {
         if (this.$.is.undefined(opts.connected)) return true
@@ -47,7 +47,7 @@ export class PkgApiState extends $ex.Unit {
   destroy = async (name?: string) => {
     this.validateName(name)
     const location = this.getLocation(name)
-    await this.$.states.destroy(location)
+    await this.$.store.destroy(location)
   }
 
   private parseConnectArgs(
