@@ -1,30 +1,25 @@
 export type Origin = null | 'remote'
 
-export class StateBoot extends $exSw.Unit {
+export class StateConnector extends $exSw.Unit {
   private $state = this.up($exSw.State)!
-  private ready = false
+  private connected = false
   private missedUpdates: Uint8Array[] = []
-  private afterReadyFns: Fn[] = []
+  private onConnectedFns: Fn[] = []
 
-  static async create(parent: $exSw.State) {
-    const boot = new $exSw.StateBoot(parent)
-    await boot.init()
-    return boot
-  }
-
-  private async init() {
+  async connect() {
     await this.$.peer.mutex(`state[${this.$state.id}]`, async () => {
       this.listenForRemoteUpdates()
       await this.initRoot()
       this.broadcastLocalUpdates()
       this.applyMissedUpdates()
       this.upgradeRoot()
-      this.ready = true
-      this.callAfterReadyFns()
+      this.connected = true
+      this.onConnectedFns.forEach(fn => fn())
+      this.onConnectedFns = []
     })
   }
 
-  async cleanup() {
+  async disconnect() {
     this.$state.doc.destroy()
     this.$state.bus.off('update')
 
@@ -34,18 +29,18 @@ export class StateBoot extends $exSw.Unit {
     }
   }
 
-  whenReady(fn: Fn) {
-    if (this.ready) {
+  whenConnected(fn: Fn) {
+    if (this.connected) {
       fn()
     } else {
-      this.afterReadyFns.push(fn)
+      this.onConnectedFns.push(fn)
     }
   }
 
   /** Listen for remote updates and apply them to Yjs document. */
   private listenForRemoteUpdates() {
     this.$state.bus.on('update', (update: Uint8Array) => {
-      if (this.ready) {
+      if (this.connected) {
         this.$.libs.yjs.applyUpdate(this.$state.doc, update, 'remote')
       } else {
         this.missedUpdates.push(update)
@@ -140,10 +135,5 @@ export class StateBoot extends $exSw.Unit {
         this.$.libs.yjs.applyUpdate(this.$state.doc, update, 'remote')
       }
     })
-  }
-
-  private callAfterReadyFns() {
-    this.afterReadyFns.forEach(fn => fn())
-    this.afterReadyFns = []
   }
 }

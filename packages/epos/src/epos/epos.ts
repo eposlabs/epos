@@ -47,6 +47,10 @@ declare class Unit<TRoot = unknown> {
   reaction: typeof mobx.reaction
   setTimeout: typeof self.setTimeout
   setInterval: typeof self.setInterval
+
+  static versioner: {
+    [version: number]: (this: Unit, ...args: any[]) => void
+  }
 }
 
 export interface Epos {

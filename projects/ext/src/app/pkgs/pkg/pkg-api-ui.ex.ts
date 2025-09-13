@@ -22,7 +22,9 @@ export class PkgApiUi extends $ex.Unit {
     this.ensureReact('render')
     container ??= this.getContainer()
     const root = this.$.libs.reactDomClient!.createRoot(container)
-    root.render(children)
+    const { StrictMode } = this.$.ui.react!
+    const { jsx } = this.$.ui.reactJsxRuntime!
+    root.render(jsx(StrictMode, { children }))
   }
 
   portal = (node: ReactNode, container: Element | DocumentFragment) => {

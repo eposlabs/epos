@@ -23,7 +23,7 @@ export class BusExtBridge extends $gl.Unit {
 
   async send(name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
-    const [result, error] = await this.$.utils.safe(this.$.browser.runtime.sendMessage(req))
+    const [result, error] = await this.$.utils.safe(() => this.$.browser.runtime.sendMessage(req))
     if (error && this.isIgnoredError(error)) return null
     if (error) throw error
 
@@ -34,7 +34,7 @@ export class BusExtBridge extends $gl.Unit {
 
   async sendToTab(tabId: number, name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
-    const [result, error] = await this.$.utils.safe(this.$.browser.tabs.sendMessage(tabId, req))
+    const [result, error] = await this.$.utils.safe(() => this.$.browser.tabs.sendMessage(tabId, req))
     if (error && this.isIgnoredError(error)) return null
     if (error) throw error
 

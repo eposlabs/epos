@@ -26,13 +26,7 @@ export class State extends $exSw.Unit {
   idb = new $exSw.StateIdb(this)
   node = new $exSw.StateNode(this)
   observer = new $exSw.StateObserver(this)
-  boot!: $exSw.StateBoot
-
-  static async create(parent: $exSw.Unit, location: Location, options: Options) {
-    const state = new $exSw.State(parent, location, options)
-    await state.init()
-    return state
-  }
+  connector = new $exSw.StateConnector(this)
 
   constructor(parent: $exSw.Unit, location: Location, options: Options) {
     super(parent)
@@ -44,12 +38,12 @@ export class State extends $exSw.Unit {
     this.unitScope = options.unitScope ?? ':default'
   }
 
-  private async init() {
-    this.boot = await $exSw.StateBoot.create(this)
+  async connect() {
+    await this.connector.connect()
   }
 
-  async cleanup() {
-    await this.boot.cleanup()
+  async disconnect() {
+    await this.connector.disconnect()
   }
 
   transaction(fn: () => void) {

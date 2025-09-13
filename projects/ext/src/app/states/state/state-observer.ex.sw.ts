@@ -36,6 +36,7 @@ export class StateObserver extends $exSw.Unit {
   // ---------------------------------------------------------------------------
 
   private onMobxChange = (change: Change) => {
+    console.warn('!', change)
     // Skip if applying remote changes (Yjs -> MobX)
     if (this.applyingRemoteChanges) return change
 
@@ -81,8 +82,8 @@ export class StateObserver extends $exSw.Unit {
 
     // Attach new value
     const mOwner = c.object
-    const newValue = this.$state.node.raw(c.newValue)
-    c.newValue = this.$state.node.create(newValue, mOwner)
+    // const newValue = this.$state.node.raw(c.newValue)
+    c.newValue = this.$state.node.create(c.newValue, mOwner)
 
     // Detach old value
     this.$state.node.detach(mOwner[c.name])
@@ -92,7 +93,7 @@ export class StateObserver extends $exSw.Unit {
       const yOwner = this.$state.node.getYNode(mOwner)
       if (!yOwner) throw this.never
       const key = String(c.name)
-      yOwner.set(key, this.$state.node.getYNode(c.newValue) ?? newValue)
+      yOwner.set(key, this.$state.node.getYNode(c.newValue) ?? c.newValue)
     })
   }
 
@@ -116,8 +117,8 @@ export class StateObserver extends $exSw.Unit {
   private processArraySet(c: ArraySet) {
     // Attach new value
     const mOwner = c.object
-    const newValue = this.$state.node.raw(c.newValue)
-    c.newValue = this.$state.node.create(newValue, mOwner)
+    // const newValue = this.$state.node.raw(c.newValue)
+    c.newValue = this.$state.node.create(c.newValue, mOwner)
 
     // Detach old value
     this.$state.node.detach(mOwner[c.index])
@@ -127,15 +128,15 @@ export class StateObserver extends $exSw.Unit {
       const yOwner = this.$state.node.getYNode(mOwner)
       if (!yOwner) throw this.never
       yOwner.delete(c.index)
-      yOwner.insert(c.index, [this.$state.node.getYNode(c.newValue) ?? newValue])
+      yOwner.insert(c.index, [this.$state.node.getYNode(c.newValue) ?? c.newValue])
     })
   }
 
   private processArraySplice(c: ArraySplice) {
     // Attach added items
     const mOwner = c.object
-    const added = this.$state.node.raw(c.added)
-    c.added = added.map(item => this.$state.node.create(item, mOwner))
+    // const added = this.$state.node.raw(c.added)
+    c.added = c.added.map(item => this.$state.node.create(item, mOwner))
 
     // Detach removed items
     for (let i = c.index; i < c.index + c.removedCount; i++) {
@@ -146,7 +147,7 @@ export class StateObserver extends $exSw.Unit {
     this.$state.doc.transact(() => {
       const yOwner = this.$state.node.getYNode(mOwner)
       if (!yOwner) throw this.never
-      const yAdded = added.map((value, index) => this.$state.node.getYNode(c.added[index]) ?? value)
+      const yAdded = c.added.map((value, index) => this.$state.node.getYNode(c.added[index]) ?? value)
       yOwner.delete(c.index, c.removedCount)
       yOwner.insert(c.index, yAdded)
     })

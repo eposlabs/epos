@@ -4,7 +4,7 @@ export class Pkgs extends $vw.Unit {
   map: { [name: string]: $vw.Pkg } = {}
   hasPanel = false
   actionData: ActionData = {}
-  selectedPkgName: string | null = localStorage.getItem('shell.selectedPkgName')
+  selectedPkgName: string | null = localStorage.getItem('pkgs.selectedPkgName')
   dock = new $vw.PkgsDock(this)
   watcher = new $exOsVw.PkgsWatcher(this)
 
@@ -31,7 +31,7 @@ export class Pkgs extends $vw.Unit {
     if (!this.map[name]) throw this.never
     this.selectedPkgName = name
     this.$.refresh()
-    localStorage.setItem('shell.selectedPkgName', name)
+    localStorage.setItem('pkgs.selectedPkgName', name)
   }
 
   private async initWatcher() {
@@ -73,7 +73,7 @@ export class Pkgs extends $vw.Unit {
         this.selectedPkgName = this.list[0].name
       }
 
-      // Refresh shell
+      // Refresh UI
       this.$.refresh()
     })
   }

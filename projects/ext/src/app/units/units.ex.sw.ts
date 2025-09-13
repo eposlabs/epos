@@ -4,6 +4,7 @@ import type { IObservableFactory } from 'mobx'
 let $: $ex.App | $sw.App
 
 export const _disposers_ = Symbol('disposers')
+export const _initialized$_ = Symbol('initialized$')
 export const _observableKeys_ = Symbol('observableKeys')
 export type ObservableUnit = Unit & { __observable: true }
 
@@ -12,6 +13,7 @@ export class Units extends $exSw.Unit {
   Unit = Unit
 
   static _disposers_ = _disposers_
+  static _initialized$_ = _initialized$_
   static _observableKeys_ = _observableKeys_
 
   constructor(parent: $exSw.Unit) {
@@ -26,13 +28,23 @@ export class Units extends $exSw.Unit {
   }
 
   createEmptyObservableUnit(scope: string, spec: string, keys: string[]) {
+    const Class = this.getClass(scope, spec)
+    if (!Class) throw this.never
+    const unit = new Class()
+    const allKeys = Object.keys(unit)
+    keys = Object.keys(unit).filter(key => !this.$.is.function(unit[key]))
+
     // Create empty unit shape and construct MobX annotations
-    const unit: Obj = {}
+    // const unit: Obj = {}
     const annotations: Record<string, IObservableFactory['ref']> = {}
     for (const key of keys) {
-      unit[key] = undefined
+      // unit[key] = undefined
       annotations[key] = this.$.libs.mobx.observable
     }
+
+    // const cls = new Class()
+    // return cls
+    // Reflect.setPrototypeOf(unit, Class.prototype)
 
     // Make unit observable
     this.$.libs.mobx.makeObservable(unit, annotations, { deep: false })
@@ -41,9 +53,11 @@ export class Units extends $exSw.Unit {
     Reflect.defineProperty(unit, _observableKeys_, { configurable: true, get: () => keys })
 
     // Apply prototype
-    const Class = this.getClass(scope, spec)
-    if (!Class) throw this.never
-    Reflect.setPrototypeOf(unit, Class.prototype)
+    // const Class = this.getClass(scope, spec)
+    // if (!Class) throw this.never
+    // const cls = new Class()
+    // return cls
+    // Reflect.setPrototypeOf(unit, Class.prototype)
 
     return unit as unknown as ObservableUnit
   }

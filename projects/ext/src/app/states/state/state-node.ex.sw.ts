@@ -1,5 +1,6 @@
 import type { Array as YjsArray, Map as YjsMap } from 'yjs'
 import type { Value } from './state.ex.sw'
+import { _local_, _exclude_ } from '../states.ex.sw'
 
 export const _meta_ = Symbol('meta')
 export const _keys_ = Symbol('keys')
@@ -30,6 +31,14 @@ export class StateNode extends $exSw.Unit {
 
   static getOwner<T extends MNode>(target: T) {
     return this.prototype.getOwner(target)
+  }
+
+  isSupported(target: unknown) {
+    return (
+      (this.$.is.object(target) && !target[_local_] && !target[_exclude_]) ||
+      this.$.is.array(target) ||
+      this.isSupportedPrimitive(target)
+    )
   }
 
   create(target: YMap, owner?: Owner): MObj
@@ -64,9 +73,11 @@ export class StateNode extends $exSw.Unit {
       return target
     }
 
+    throw new Error('No-supported')
+
     // Throw for unsupported types
-    const type = Object.prototype.toString.call(target)
-    throw new Error(`Unsupported value type: ${type}`)
+    // console.error(`Unsupported value for state:`, target)
+    // throw new Error('Unsupported value')
   }
 
   detach(target: unknown) {
@@ -134,6 +145,11 @@ export class StateNode extends $exSw.Unit {
     }
 
     if (this.$.is.object(value)) {
+      if (value[_keys_]) {
+        const object: Obj = {}
+        for (const key of value[_keys_]) object[key] = this.raw((value as Obj)[key])
+        return object as T
+      }
       const object: Obj = {}
       for (const key in value) object[key] = this.raw(value[key])
       return object as T
@@ -202,21 +218,47 @@ export class StateNode extends $exSw.Unit {
     const isUnit = this.$.units.isUnitSpec(this.$state.unitScope, spec)
 
     // Create empty node
-    const mNode = isUnit ? this.createEmptyMobxUnit(spec, Object.keys(object)) : this.createEmptyMobxObject()
+    const mNode = isUnit ? this.createEmptyMobxUnit(spec, Object.keys(object)) : {} //this.createEmptyMobxObject()
     const yNode = !owner ? this.$state.doc.getMap('root') : new this.$.libs.yjs.Map()
 
     // Attach node
     this.attach(mNode, yNode, owner)
 
     // Fill recursively
+    const annotations = {}
     for (const key in object) {
-      mNode[key] = this.create(object[key], mNode)
-      const meta = this.getMeta(mNode[key])
-      yNode.set(key, meta?.yNode ?? object[key])
+      if (this.isSupported(object[key])) {
+        annotations[key] = this.$.libs.mobx.observable
+        mNode[key] = this.create(object[key], mNode)
+        const meta = this.getMeta(mNode[key])
+        yNode.set(key, meta?.yNode ?? object[key])
+      } else {
+        let value = object[key]
+        Reflect.defineProperty(mNode, key, {
+          configurable: true,
+          get: () => value,
+          set: v => (value = v),
+        })
+      }
     }
+
+    this.$.libs.mobx.makeObservable(mNode, annotations, { deep: false })
+    let kValue = Object.keys(annotations)
+    Reflect.defineProperty(mNode, _keys_, {
+      configurable: true,
+      get: () => kValue,
+      set: v => (kValue = v),
+    })
 
     // Observe node
     this.observe(mNode)
+
+    if (object['@']) {
+      let Class = this.$.states.units[object['@']]
+      if (Class) Reflect.setPrototypeOf(mNode, Class.prototype)
+    } else if (object.constructor !== Object) {
+      Reflect.setPrototypeOf(mNode, Object.getPrototypeOf(object))
+    }
 
     // Setup unit
     if (isUnit) {
@@ -259,12 +301,12 @@ export class StateNode extends $exSw.Unit {
 
   private createEmptyMobxObject() {
     const object = this.$.libs.mobx.observable.object({}, {}, { deep: false })
-    return object as unknown as MObj
+    return object as MObj
   }
 
   private createEmptyMobxArray() {
     const array = this.$.libs.mobx.observable.array([], { deep: false })
-    return array as unknown as MArr
+    return array as MArr
   }
 
   private createEmptyMobxUnit(spec: string, keys: string[]) {
@@ -275,7 +317,7 @@ export class StateNode extends $exSw.Unit {
   private setupUnit(unit: MObj) {
     // Why 'when ready'? When unit runs versioner, changes should be broadcasted to other peers,
     // but broadcasting is enabled only after the state is ready.
-    this.$state.boot.whenReady(() => {
+    this.$state.connector.whenConnected(() => {
       if (!this.$.units.isObservableUnit(unit)) throw this.never
       this.$.units.setup(unit)
     })

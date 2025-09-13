@@ -5,7 +5,6 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "playgrounds/*",
     "projects/*"
   ],
   "scripts": {
@@ -13,7 +12,7 @@
     "edge": "ncu --upgrade --deep"
   },
   "devDependencies": {
-    "npm-check-updates": "^18.1.0",
+    "npm-check-updates": "^18.1.1",
     "prettier": "^3.6.2",
     "prettier-plugin-embed": "^0.5.0",
     "prettier-plugin-tailwindcss": "^0.6.14",

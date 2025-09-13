@@ -1,7 +1,7 @@
 import preact from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
 import { paralayer } from 'paralayer'
-import { defineConfig } from 'rolldown-vite'
+import { defineConfig } from 'vite'
 import rebundle from 'vite-plugin-rebundle'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
@@ -41,7 +41,7 @@ export default defineConfig(async ({ mode }) => {
       watch: mode === 'production' ? null : {},
       sourcemap: mode === 'development',
       minify: false,
-      rolldownOptions: {
+      rollupOptions: {
         input: {
           'cs': './src/entry/entry.cs.ts', // content script
           'ex': './src/entry/entry.ex.ts', // execution
@@ -56,9 +56,6 @@ export default defineConfig(async ({ mode }) => {
         output: {
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
-        },
-        experimental: {
-          strictExecutionOrder: true,
         },
       },
     },

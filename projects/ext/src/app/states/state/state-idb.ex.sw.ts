@@ -19,7 +19,7 @@ export class StateIdb extends $exSw.Unit {
     self.clearTimeout(this.timeout)
 
     // Save to IDB
-    const data = this.$.libs.mobx.toJS(this.$state.root)
+    const data = this.$state.root!._ // this.$.libs.mobx.toJS(this.$state.root)
     const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.$state.location, data))
     if (error) this.log.error('Failed to save state to IndexedDB', error)
 

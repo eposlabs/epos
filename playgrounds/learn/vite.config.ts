@@ -26,9 +26,6 @@ export default defineConfig(async ({ mode }) => {
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
         },
-        experimental: {
-          strictExecutionOrder: true,
-        },
       },
     },
 

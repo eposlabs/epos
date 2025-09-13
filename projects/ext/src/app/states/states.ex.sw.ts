@@ -1,9 +1,14 @@
 import type { Location, Options } from './state/state.ex.sw'
+import { _keys_ } from './state/state-node.ex.sw'
+
+export const _local_ = Symbol('local')
+export const _exclude_ = Symbol('exclude')
 
 export class States extends $exSw.Unit {
   map: Record<string, $exSw.State> = {}
   local = new $exSw.StatesLocal(this)
   private queue = new this.$.utils.Queue()
+  units = {}
 
   get list() {
     return Object.values(this.map)
@@ -24,10 +29,82 @@ export class States extends $exSw.Unit {
     }
   }
 
+  deleteKey(obj: Obj, key: string) {
+    delete obj[key]
+    this.$.libs.mobx.remove(obj, key)
+    if (obj[_keys_]) {
+      const index = obj[_keys_].indexOf(key)
+      if (index !== -1) obj[_keys_].splice(index, 1)
+    }
+  }
+
+  // epos.bus.on
+  // epos.bus.send()
+  // epos.bus.send()
+  // epos.off()
+  // epos.element
+  // epos.render()
+  // epos.component()
+  // epos.react.portal
+  // epos.react.render
+  // epos.react.useReaction
+  // epos.state.connect()
+  // epos.state.disconnect()
+  // epos.state.destroy()
+  // epos.state.local()
+
+  // epos.fetch
+  // epos.browser
+  // epos.autorun
+  // epos.reaction
+  // epos.state.local()
+  // epos.state.exclude()
+  // epos.state.addKey()
+  // epos.state.removeKey()
+
+  // epos.storage.set()
+  // epos.storage.get()
+  // epos.storage.delete()
+  // epos.storage.keys()
+  // epos.storage.clear()
+  // epos.storage.list()
+  // epos.Unit
+  // epos.units.register({ App: App })
+  // epos.units.list()
+  // epos.assets.url()
+  // epos.assets.blob()
+  // epos.assets.load()
+  // epos.transaction(() => {})
+
+  addKey(obj: Obj, key: string, value: unknown) {
+    this.$.libs.mobx.set(obj, key, value)
+    if (obj[_keys_]) {
+      if (!obj[_keys_].includes(key)) obj[_keys_].push(key)
+    }
+  }
+
+  createLocal(obj = {}) {
+    const localState = this.$.libs.mobx.observable(obj)
+    localState[_local_] = true
+    return localState
+  }
+
+  createExclude(value) {
+    const excludeState = Object(value)
+    excludeState[_exclude_] = true
+    return excludeState
+  }
+
+  register(keyClassMap) {
+    for (const key in keyClassMap) {
+      this.units[key] = keyClassMap[key]
+    }
+  }
+
   async connect(location: Location, options: Options = {}) {
     // Already connected? -> Return connected state
     const id = location.join('/')
-    if (this.map[id]) return this.map[id].root
+    if (this.map[id]) return this.map[id].root!
 
     // Ensure [sw] is connected first
     if (this.$.env.is.ex) {
@@ -35,7 +112,8 @@ export class States extends $exSw.Unit {
     }
 
     // Connect state
-    const state = await $exSw.State.create(this, location, options)
+    const state = new $exSw.State(this, location, options)
+    await state.connect()
     this.map[id] = state
 
     // Mark [ex] as connected
@@ -43,7 +121,7 @@ export class States extends $exSw.Unit {
       this.$.bus.on(`states.exConnected[${id}]`, () => true)
     }
 
-    return state.root
+    return state.root!
   }
 
   async disconnect(location: Location) {
@@ -52,8 +130,8 @@ export class States extends $exSw.Unit {
     const state = this.map[id]
     if (!state) return
 
-    // Cleanup and remove
-    await state.cleanup()
+    // Disconnect and remove
+    await state.disconnect()
     delete this.map[id]
 
     // Unmark [ex] as connected
