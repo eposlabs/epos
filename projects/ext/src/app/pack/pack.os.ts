@@ -1,11 +1,11 @@
-export class Pkgs extends $os.Unit {
-  map: { [name: string]: $os.Pkg } = {}
-  watcher = new $exOsVw.PkgsWatcher(this)
+export class Pack extends $os.Unit {
+  pkgs: { [name: string]: $os.Pkg } = {}
+  watcher = new $exOsVw.PackWatcher(this)
 
   static async create(parent: $os.Unit) {
-    const pkgs = new Pkgs(parent)
-    await pkgs.init()
-    return pkgs
+    const pack = new Pack(parent)
+    await pack.init()
+    return pack
   }
 
   private async init() {
@@ -16,7 +16,7 @@ export class Pkgs extends $os.Unit {
     await this.watcher.start((delta, data) => {
       // Update packages
       for (const meta of Object.values(data.execution)) {
-        const pkg = this.map[meta.name]
+        const pkg = this.pkgs[meta.name]
         if (!pkg) continue
         pkg.update(meta)
       }
@@ -25,15 +25,15 @@ export class Pkgs extends $os.Unit {
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.map[name] = new $os.Pkg(this, meta)
+        this.pkgs[name] = new $os.Pkg(this, meta)
       }
 
       // Remove packages
       for (const name of delta.removed) {
-        const pkg = this.map[name]
+        const pkg = this.pkgs[name]
         if (!pkg) throw this.never
         pkg.removeFrame()
-        delete this.map[name]
+        delete this.pkgs[name]
       }
     })
   }

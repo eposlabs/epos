@@ -25,7 +25,7 @@ export class Pkg extends $vw.Unit {
   }
 
   ui = () => {
-    const selected = this.$.pkgs.selectedPkgName === this.name
+    const selected = this.$.pack.selectedPkgName === this.name
     if (!this.invoked) this.invoked = selected
 
     let width: number | string

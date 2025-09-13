@@ -1,4 +1,4 @@
-import type { ActionData, ExecutionData } from './pkgs.sw'
+import type { ActionData, ExecutionData } from './pack.sw'
 
 export type PkgName = string
 export type OnUpdate = (delta: Delta, data: Data) => void
@@ -14,7 +14,7 @@ export type Data = {
   hasPanel: boolean
 }
 
-export class PkgsWatcher extends $exOsVw.Unit {
+export class PackWatcher extends $exOsVw.Unit {
   private executionData: ExecutionData = {}
 
   async start(onUpdate: OnUpdate) {

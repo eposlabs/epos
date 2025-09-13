@@ -1,7 +1,7 @@
 import type { TargetedEvent } from 'preact/compat'
 
-export class PkgsDock extends $vw.Unit {
-  private $pkgs = this.up($vw.Pkgs)!
+export class PackDock extends $vw.Unit {
+  private $pack = this.up($vw.Pack)!
   private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
   private selectedPkg: $vw.Pkg | null = null
@@ -18,11 +18,11 @@ export class PkgsDock extends $vw.Unit {
   }
 
   ui = () => {
-    if (!this.$pkgs.selectedPkgName) return null
+    if (!this.$pack.selectedPkgName) return null
 
     this.items = this.getItems()
     this.uniqueItemNames = this.$.utils.unique(this.items.map(item => item.name))
-    this.selectedPkg = this.$pkgs.getSelected()
+    this.selectedPkg = this.$pack.getSelected()
 
     return (
       <div
@@ -55,7 +55,7 @@ export class PkgsDock extends $vw.Unit {
       if (isAction) {
         await this.processAction(pkgName)
       } else {
-        this.$pkgs.select(pkgName)
+        this.$pack.select(pkgName)
         this.hide()
       }
     }
@@ -98,7 +98,7 @@ export class PkgsDock extends $vw.Unit {
 
   private PanelButton = () => {
     if (!this.$.env.is.vwPopup) return null
-    if (!this.$pkgs.hasPanel) return null
+    if (!this.$pack.hasPanel) return null
 
     return (
       <button
@@ -112,12 +112,12 @@ export class PkgsDock extends $vw.Unit {
 
   private getItems() {
     return [
-      ...this.$pkgs.list.map(pkg => ({
+      ...this.$pack.list().map(pkg => ({
         name: pkg.name,
         value: pkg.name,
         label: pkg.title ?? pkg.name,
       })),
-      ...Object.values(this.$pkgs.actionData).map(meta => ({
+      ...Object.values(this.$pack.actionData).map(meta => ({
         name: meta.name,
         value: `action:${meta.name}`,
         label: `${meta.title ?? meta.name} →`,
@@ -126,7 +126,7 @@ export class PkgsDock extends $vw.Unit {
   }
 
   private async processAction(pkgName: string) {
-    const meta = this.$pkgs.actionData[pkgName]
+    const meta = this.$pack.actionData[pkgName]
     if (!meta) throw this.never
 
     if (this.$.is.boolean(meta.action)) {

@@ -3,44 +3,44 @@ import type { ActionMeta, ExecutionMeta } from './pkg/pkg.sw'
 export type ActionData = { [name: string]: ActionMeta }
 export type ExecutionData = { [name: string]: ExecutionMeta }
 
-export class Pkgs extends $sw.Unit {
-  map: { [name: string]: $sw.Pkg } = {}
-  parser = new $sw.PkgsParser(this)
-  installer = new $sw.PkgsInstaller(this)
-  loader!: $sw.PkgsLoader
+export class Pack extends $sw.Unit {
+  pkgs: { [name: string]: $sw.Pkg } = {}
+  parser = new $sw.PackParser(this)
+  installer = new $sw.PackInstaller(this)
+  loader!: $sw.PackLoader
 
-  get list() {
-    return Object.values(this.map)
+  list() {
+    return Object.values(this.pkgs)
   }
 
   static async create(parent: $sw.Unit) {
-    const pkgs = new Pkgs(parent)
-    await pkgs.init()
-    return pkgs
+    const pack = new Pack(parent)
+    await pack.init()
+    return pack
   }
 
   private async init() {
-    this.$.bus.on('pkgs.hasPopup', this.hasPopup, this)
-    this.$.bus.on('pkgs.hasPanel', this.hasPanel, this)
-    this.$.bus.on('pkgs.getCss', this.getCss, this)
-    this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
-    this.$.bus.on('pkgs.getActionData', this.getActionData, this)
-    this.$.bus.on('pkgs.getExecutionData', this.getExecutionData, this)
-    this.loader = await $sw.PkgsLoader.create(this)
+    this.$.bus.on('pack.hasPopup', this.hasPopup, this)
+    this.$.bus.on('pack.hasPanel', this.hasPanel, this)
+    this.$.bus.on('pack.getCss', this.getCss, this)
+    this.$.bus.on('pack.getLiteJs', this.getLiteJs, this)
+    this.$.bus.on('pack.getPayloads', this.getPayloads, this)
+    this.$.bus.on('pack.getActionData', this.getActionData, this)
+    this.$.bus.on('pack.getExecutionData', this.getExecutionData, this)
+    this.loader = await $sw.PackLoader.create(this)
     await this.restoreFromIdb()
   }
 
   hasPopup() {
-    return this.list.some(pkg => pkg.targets.some(target => target.matches.includes('<popup>')))
+    return this.list().some(pkg => pkg.targets.some(target => target.matches.includes('<popup>')))
   }
 
   hasPanel() {
-    return this.list.some(pkg => pkg.targets.some(target => target.matches.includes('<panel>')))
+    return this.list().some(pkg => pkg.targets.some(target => target.matches.includes('<panel>')))
   }
 
   getCss(url: string, frame = false) {
-    return this.list
+    return this.list()
       .map(pkg => pkg.getCss(url, frame))
       .filter(this.$.is.present)
       .join('\n')
@@ -48,7 +48,7 @@ export class Pkgs extends $sw.Unit {
   }
 
   getLiteJs(url: string, frame = false) {
-    return this.list
+    return this.list()
       .map(pkg => pkg.getLiteJs(url, frame))
       .filter(this.$.is.present)
       .join('\n')
@@ -56,12 +56,14 @@ export class Pkgs extends $sw.Unit {
   }
 
   getPayloads(url: string, frame = false) {
-    return this.list.map(pkg => pkg.getPayload(url, frame)).filter(this.$.is.present)
+    return this.list()
+      .map(pkg => pkg.getPayload(url, frame))
+      .filter(this.$.is.present)
   }
 
   getActionData() {
     const data: ActionData = {}
-    for (const pkg of this.list) {
+    for (const pkg of this.list()) {
       const meta = pkg.getActionMeta()
       if (!meta) continue
       data[pkg.name] = meta
@@ -72,7 +74,7 @@ export class Pkgs extends $sw.Unit {
 
   private async getExecutionData(url: string, frame = false) {
     const data: ExecutionData = {}
-    for (const pkg of this.list) {
+    for (const pkg of this.list()) {
       const meta = await pkg.getExecutionMeta(url, frame)
       if (!meta) continue
       data[pkg.name] = meta
@@ -86,7 +88,7 @@ export class Pkgs extends $sw.Unit {
     for (const name of names) {
       const pkg = await $sw.Pkg.restore(this, name)
       if (!pkg) continue
-      this.map[name] = pkg
+      this.pkgs[name] = pkg
     }
   }
 }

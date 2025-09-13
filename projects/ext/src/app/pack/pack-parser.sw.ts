@@ -16,7 +16,7 @@ export type Manifest = {
   targets: Target[]
 }
 
-export class PkgsParser extends $sw.Unit {
+export class PackParser extends $sw.Unit {
   config = {
     keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets'],
     name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },

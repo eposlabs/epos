@@ -11,19 +11,19 @@ export class BootAction extends $sw.Unit {
       if (!tab.id) return
 
       // Has popup? -> Open popup
-      if (this.$.pkgs.hasPopup()) {
+      if (this.$.pack.hasPopup()) {
         await this.$boot.medium.openPopup(tab.id)
         return
       }
 
       // Has panel? -> Toggle panel
-      if (this.$.pkgs.hasPanel()) {
+      if (this.$.pack.hasPanel()) {
         await this.$boot.medium.togglePanel(tab.id)
         return
       }
 
       // Several actions? -> Open popup
-      const actionData = this.$.pkgs.getActionData()
+      const actionData = this.$.pack.getActionData()
       const actionCount = Object.keys(actionData).length
       if (actionCount > 1) {
         await this.$boot.medium.openPopup(tab.id)

@@ -1,4 +1,4 @@
-import type { Action, Manifest, Mode } from '../pkgs-parser.sw'
+import type { Action, Manifest, Mode } from '../pack-parser.sw'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>

@@ -1,4 +1,4 @@
-import type { Payload } from '../pkgs/pkg/pkg.sw'
+import type { Payload } from '../pack/pkg/pkg.sw'
 
 export class BootInjector extends $ex.Unit {
   async inject() {
@@ -82,7 +82,7 @@ export class BootInjector extends $ex.Unit {
 
     for (const def of defs) {
       // Create package
-      const pkg = await this.$.pkgs.create({
+      const pkg = await this.$.pack.create({
         name: def.name,
         icon: def.icon,
         title: def.title,

@@ -1,4 +1,4 @@
-import type { Mode, Pattern, PositivePattern, Target } from '../pkgs-parser.sw'
+import type { Mode, Pattern, PositivePattern, Target } from '../pack-parser.sw'
 
 export class PkgTarget extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!

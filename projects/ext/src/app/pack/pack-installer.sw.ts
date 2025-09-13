@@ -2,8 +2,8 @@ import type { Spec, Assets } from './pkg/pkg.sw'
 
 export type Pack = { spec: Spec; assets: Assets }
 
-export class PkgsInstaller extends $sw.Unit {
-  private $pkgs = this.up($sw.Pkgs)!
+export class PackInstaller extends $sw.Unit {
+  private $pack = this.up($sw.Pack)!
   private queue = new this.$.utils.Queue()
 
   constructor(parent: $sw.Unit) {
@@ -26,7 +26,7 @@ export class PkgsInstaller extends $sw.Unit {
 
   async remove(name: string) {
     await this.$.idb.deleteDatabase(name)
-    delete this.$pkgs.map[name]
+    delete this.$pack.pkgs[name]
     this.broadcast('pkgs.changed')
   }
 
@@ -56,7 +56,7 @@ export class PkgsInstaller extends $sw.Unit {
     if (jsonError) throw new Error(`Failed to parse ${url}: ${jsonError.message}`)
 
     // Parse manifest
-    const manifest = this.$pkgs.parser.parseManifest(data)
+    const manifest = this.$pack.parser.parseManifest(data)
 
     // Fetch assets
     const assets: Record<string, Blob> = {}
@@ -90,12 +90,12 @@ export class PkgsInstaller extends $sw.Unit {
   }
 
   private async installFromPack(pack: Pack) {
-    if (this.$pkgs.map[pack.spec.name]) {
-      const pkg = this.$pkgs.map[pack.spec.name]
+    if (this.$pack.pkgs[pack.spec.name]) {
+      const pkg = this.$pack.pkgs[pack.spec.name]
       await pkg.update(pack.spec, pack.assets)
     } else {
       const pkg = await $sw.Pkg.create(this, pack.spec, pack.assets)
-      this.$pkgs.map[pack.spec.name] = pkg
+      this.$pack.pkgs[pack.spec.name] = pkg
     }
   }
 
