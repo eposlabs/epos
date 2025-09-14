@@ -14,8 +14,8 @@
     "@tailwindcss/vite": "^4.1.13",
     "@types/chrome": "^0.1.11",
     "paralayer": "^1.0.6",
+    "rolldown-vite": "^7.1.9",
     "tailwindcss": "^4.1.13",
-    "vite": "^7.1.5",
     "vite-plugin-rebundle": "^1.2.10"
   }
 }

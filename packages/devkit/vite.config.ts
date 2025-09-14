@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import epos from 'epos/vite'
 import { paralayer } from 'paralayer'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'rolldown-vite'
 import rebundle, { type BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
@@ -23,13 +23,16 @@ export default defineConfig(async ({ mode }) => {
       watch: mode === 'production' ? null : {},
       sourcemap: mode === 'development',
       minify: false,
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           gl: './src/entry/entry.tsx',
         },
         output: {
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
+        },
+        experimental: {
+          strictExecutionOrder: true,
         },
       },
     },

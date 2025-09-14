@@ -28,8 +28,8 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
     "paralayer": "^1.0.6",
+    "rolldown-vite": "^7.1.9",
     "tailwindcss": "^4.1.13",
-    "vite": "^7.1.5",
     "vite-plugin-rebundle": "^1.2.10",
     "vite-plugin-static-copy": "^3.1.2"
   }
