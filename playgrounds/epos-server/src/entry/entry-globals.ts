@@ -1,1 +1,1 @@
-import '@eposlabs/utils/globals'
+import '@eposlabs/utils/global-types'

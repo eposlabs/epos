@@ -1,6 +1,6 @@
 {
   "name": "@eposlabs/utils",
-  "version": "1.0.0",
+  "version": "1.0.13",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -16,15 +16,12 @@
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./globals": {
-      "default": "./dist/globals.js",
-      "types": "./dist/globals.d.ts"
+    "./global-types": {
+      "default": "./dist/global-types.js",
+      "types": "./dist/global-types.d.ts"
     }
   },
   "files": [
     "dist"
-  ],
-  "publishConfig": {
-    "access": "public"
-  }
+  ]
 }

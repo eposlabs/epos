@@ -1,4 +1,4 @@
-import '@eposlabs/utils/globals'
+import '@eposlabs/utils/global-types'
 import type { CsReadyData } from '../app/app.cs'
 
 type PkgDef = {

@@ -6,7 +6,6 @@ declare global {
   type Cls<T = any> = types.Cls<T>
   type Fn<T = any> = types.Fn<T>
   type AsyncFn<T = any> = types.AsyncFn<T>
-  type Pretty<T> = types.Pretty<T>
 }
 
 export {}
