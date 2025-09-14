@@ -9,12 +9,12 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@eposlabs/utils": "^1.0.0",
+    "@eposlabs/utils": "^1.0.13",
     "epos-types": "^1.1.0",
     "jszip": "^3.10.1",
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
-    "preact": "^10.27.1",
+    "preact": "^10.27.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "strip-json-comments": "^5.0.3",
@@ -23,8 +23,8 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
     "@tailwindcss/vite": "^4.1.13",
-    "@types/chrome": "^0.1.9",
-    "@types/react": "^19.1.12",
+    "@types/chrome": "^0.1.11",
+    "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
     "paralayer": "^1.0.6",

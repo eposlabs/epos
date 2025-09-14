@@ -7,12 +7,12 @@
     "build": "vite build --mode production"
   },
   "dependencies": {
-    "@eposlabs/utils": "^1.0.0",
+    "@eposlabs/utils": "^1.0.13",
     "epos": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
-    "@types/chrome": "^0.1.9",
+    "@types/chrome": "^0.1.11",
     "paralayer": "^1.0.6",
     "tailwindcss": "^4.1.13",
     "vite": "^7.1.5",
