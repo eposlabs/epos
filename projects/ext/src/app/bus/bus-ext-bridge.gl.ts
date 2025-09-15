@@ -27,7 +27,7 @@ export class BusExtBridge extends $gl.Unit {
     if (error && this.isIgnoredError(error)) return null
     if (error) throw error
 
-    if (this.$.is.undefined(result)) return null // no handlers
+    if (this.$.is.undefined(result)) return null // No handlers
     if (!this.$.is.string(result)) throw this.never
     return await this.$bus.serializer.deserialize(result)
   }
@@ -38,7 +38,7 @@ export class BusExtBridge extends $gl.Unit {
     if (error && this.isIgnoredError(error)) return null
     if (error) throw error
 
-    if (this.$.is.undefined(result)) return null // no handlers
+    if (this.$.is.undefined(result)) return null // No handlers
     if (!this.$.is.string(result)) throw this.never
     return await this.$bus.serializer.deserialize(result)
   }

@@ -1,7 +1,7 @@
 export type Rgb = [number, number, number]
 
 export function colorHash(str: string) {
-  // Calculate hash (djb2 xor) as 32‑bit unsigned.
+  // Calculate hash (djb2 xor) as 32‑bit unsigned
   let hash = 5381
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 33) ^ str.charCodeAt(i)
@@ -11,7 +11,7 @@ export function colorHash(str: string) {
   // Calculate hue. Golden‑ratio scramble gives maximum spread for 'near' strings.
   const hue = Math.floor(((hash * 0.618033988749895) % 1) * 360)
 
-  // Start with vivid mid‑tone.
+  // Start with vivid mid‑tone
   const sat = 70
   let light = 50
 
@@ -19,13 +19,13 @@ export function colorHash(str: string) {
   for (let i = 0; i < 20; i++) {
     const rgb = hsl2rgb(hue, sat, light)
     const l = lum(rgb)
-    const cW = contrast(1, l) // versus white
-    const cB = contrast(0, l) // versus black
-    if (cW >= 4.5 && cB >= 4.5) break // good on both
-    light += cW < cB ? -5 : 5 // move toward darker or lighter
+    const cW = contrast(1, l) // Versus white
+    const cB = contrast(0, l) // Versus black
+    if (cW >= 4.5 && cB >= 4.5) break // Good on both
+    light += cW < cB ? -5 : 5 // Move toward darker or lighter
   }
 
-  // Convert to hex.
+  // Convert to hex
   const hex = hsl2rgb(hue, sat, light)
     .map(v => v.toString(16).padStart(2, '0'))
     .join('')

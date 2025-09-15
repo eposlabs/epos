@@ -2,62 +2,55 @@
 
 ### API
 
-- **Bus**
-  - epos.on
-  - epos.off
-  - epos.send
-  - epos.emit
-  - epos.once
-- **State**
-  - epos.connect
-  - epos.disconnect
-  - epos.transaction
-  - epos.local
-  - epos.states
-  - epos.destroy
-- **UI**
-  - epos.element
+- **General**
   - epos.component
   - epos.render
-  - epos.portal
-  - epos.useState
-  - epos.useAutorun
-  - epos.useReaction
-- **Unit**
-  - epos.Unit
-  - epos.register
-  - epos.units
-- **Tools**
-  - epos.fetch
   - epos.browser
-  - epos.autorun
-  - epos.reaction
+  - epos.fetch
+  - epos.element
+- **Bus**
+  - epos.bus.on
+  - epos.bus.off
+  - epos.bus.send
+  - epos.bus.emit
+  - epos.bus.once
+- **Store**
+  - epos.store.connect
+  - epos.store.disconnect
+  - epos.store.transaction
+  - epos.store.local
+  - epos.store.list
+  - epos.store.destroy
+  - epos.store.symbols.model.init
+  - epos.store.symbols.model.cleanup
+  - epos.store.symbols.model.versioner
+  - epos.store.symbols.model.parent
 - **Storage**
-  - epos.get
-  - epos.set
-  - epos.delete
-  - epos.keys
-  - epos.clear
-  - epos.storage
-  - epos.storages
+  - epos.storage.get
+  - epos.storage.set
+  - epos.storage.delete
+  - epos.storage.keys
+  - epos.storage.clear
+  - epos.storage.use(name?)
+  - epos.storage.list(filter)
 - **Assets**
-  - epos.url
-  - epos.load
-  - epos.unload
-  - epos.assets
+  - epos.assets.url
+  - epos.assets.load
+  - epos.assets.unload
+  - epos.assets.list
 - **Environment**
-  - epos.tabId
-  - epos.is.tab
-  - epos.is.shell
-  - epos.is.popup
-  - epos.is.panel
-  - epos.is.background
-  - epos.is.foreground
+  - epos.env.tabId
+  - epos.env.isTab
+  - epos.env.isPopup
+  - epos.env.isPanel
+  - epos.env.isShell
+  - epos.env.isBackground
+  - epos.env.isForeground
 - **Libs**
-  - epos.mobx
-  - epos.mobxReactLite
-  - epos.react
-  - epos.reactDom
-  - epos.reactDomClient
-  - epos.reactJsxRuntime
-  - epos.yjs
+  - epos.libs.mobx
+  - epos.libs.mobxReactLite
+  - epos.libs.react
+  - epos.libs.reactDom
+  - epos.libs.reactDomClient
+  - epos.libs.reactJsxRuntime
+  - epos.libs.yjs

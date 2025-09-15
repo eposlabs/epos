@@ -3,12 +3,10 @@ import type { Location, Options } from './state/state.ex.sw'
 export const _local_ = Symbol('local')
 export const _exclude_ = Symbol('exclude')
 
-export type Schema = new (...args: unknown[]) => unknown
-
 export class Store extends $exSw.Unit {
   states: Record<string, $exSw.State> = {}
-  local = new $exSw.StoreLocal(this)
   private queue = new this.$.utils.Queue()
+  private persistentIds = new Set<string>() // for [sw] only
 
   list() {
     return Object.values(this.states)
@@ -23,30 +21,28 @@ export class Store extends $exSw.Unit {
     if (this.$.env.is.ex) {
       this.$.bus.on('store.exDisconnect', this.disconnect, this)
     } else if (this.$.env.is.sw) {
-      this.$.bus.on('store.swConnect', this.voidify(this.connect))
+      this.$.bus.on('store.swConnect', async (location: Location, options: Options = {}) => {
+        await this.connect(location, options, true)
+      })
       this.$.bus.on('store.swDestroy', this.destroy, this)
       this.setupAutoDisconnect()
     }
   }
 
-  async connect(location: Location, options: Options = {}) {
-    // Already connected? -> Return connected state
+  async connect(location: Location, options: Options = {}, temp = false) {
     const id = location.join('/')
+    if (this.$.env.is.sw && !temp) this.persistentIds.add(id)
     if (this.states[id]) return this.states[id]
 
     // Ensure [sw] is connected first
-    if (this.$.env.is.ex) {
-      await this.$.bus.send('store.swConnect', location)
-    }
+    if (this.$.env.is.ex) await this.$.bus.send('store.swConnect', location)
 
     // Create state
     const state = await $exSw.State.create(this, location, options)
     this.states[id] = state
 
     // Mark [ex] as connected
-    if (this.$.env.is.ex) {
-      this.$.bus.on(`store.exConnected[${id}]`, () => true)
-    }
+    if (this.$.env.is.ex) this.$.bus.on(`store.exConnected[${id}]`, () => true)
 
     return state
   }
@@ -57,17 +53,16 @@ export class Store extends $exSw.Unit {
     const state = this.states[id]
     if (!state) return
 
-    // Cleanup and remove
-    await state.cleanup()
+    // Disconnect and remove
+    await state.disconnect()
     delete this.states[id]
 
     // Unmark [ex] as connected
-    if (this.$.env.is.ex) {
-      this.$.bus.off(`store.exConnected[${id}]`)
-    }
+    if (this.$.env.is.ex) this.$.bus.off(`store.exConnected[${id}]`)
   }
 
   async destroy(location: Location) {
+    // TODO: rework
     if (this.$.env.is.ex) {
       await this.disconnect(location)
       await this.$.bus.send('store.swDestroy', location)
@@ -102,16 +97,17 @@ export class Store extends $exSw.Unit {
       for (const state of this.list()) {
         const connected = await this.$.bus.send(`store.exConnected[${state.id}]`)
         if (connected) continue
-        await this.disconnect(state.location)
+        // console.warn('DISCONNECT', state.id)
+        // await this.disconnect(state.location)
       }
     }, this.$.utils.time('15s'))
   }
 
-  private voidify<T extends Fn>(fn: T) {
-    return async (...args: Parameters<T>) => {
-      await fn.call(this, ...args)
-    }
-  }
+  // private voidify<T extends Fn>(fn: T) {
+  //   return async (...args: Parameters<T>) => {
+  //     await fn.call(this, ...args)
+  //   }
+  // }
 
   // deleteKey(obj: Obj, key: string) {
   //   delete obj[key]

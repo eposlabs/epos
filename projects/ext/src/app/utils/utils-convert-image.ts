@@ -36,12 +36,12 @@ export async function convertImage(this: $exOsSwVw.Unit, blob: Blob, opts: Opts)
   const height = opts.size || opts.height
   if (!width || !height) throw new Error('width or height is required')
 
-  let cw: number | null = null // canvas width
-  let ch: number | null = null // canvas height
-  let w: number // resulting image width
-  let h: number // resulting image height
-  let x = 0 // offset x
-  let y = 0 // offset y
+  let cw: number | null = null // Canvas width
+  let ch: number | null = null // Canvas height
+  let w: number // Resulting image width
+  let h: number // Resulting image height
+  let x = 0 // Offset x
+  let y = 0 // Offset y
 
   if (opts.cover && width && height) {
     const scale = Math.max(width / image.width, height / image.height)
