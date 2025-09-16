@@ -5,6 +5,7 @@ export class App extends $sm.Unit {
   env = new $gl.Env(this)
   bus = new $gl.Bus(this)
 
+  dev!: $gl.Dev
   kit = new $sm.Kit(this)
 
   static async create() {
@@ -16,5 +17,6 @@ export class App extends $sm.Unit {
   private async init() {
     self.$ = this
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
+    this.dev = await $gl.Dev.create(this)
   }
 }

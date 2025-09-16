@@ -12,8 +12,7 @@ export class App extends $vw.Unit {
   bus = new $gl.Bus(this)
 
   boot = new $vw.Boot(this)
-  dev = new $vw.Dev(this)
-
+  dev!: $gl.Dev
   pack!: $vw.Pack
 
   static async create() {
@@ -26,6 +25,7 @@ export class App extends $vw.Unit {
     self.$ = this
     this.pack = await $vw.Pack.create(this)
     this.render()
+    this.dev = await $gl.Dev.create(this)
   }
 
   refresh() {

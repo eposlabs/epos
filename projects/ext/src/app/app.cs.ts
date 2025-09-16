@@ -8,7 +8,7 @@ export class App extends $cs.Unit {
   bus = new $gl.Bus(this)
 
   boot = new $cs.Boot(this)
-  dev = new $cs.Dev(this)
+  dev!: $gl.Dev
 
   static async create() {
     const app = new App()
@@ -21,6 +21,7 @@ export class App extends $cs.Unit {
     self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
     self.__eposCsReady$.resolve({ busToken: this.getBusToken() })
     await this.boot.injector.inject()
+    this.dev = await $gl.Dev.create(this)
   }
 
   private getBusToken() {

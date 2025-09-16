@@ -7,9 +7,9 @@ export class App extends $os.Unit {
   bus = new $gl.Bus(this)
 
   alive = new $os.Alive(this)
-  dev = new $os.Dev(this)
-  peer = new $exOs.Peer(this)
+  dev!: $gl.Dev
   pack!: $os.Pack
+  peer = new $exOs.Peer(this)
 
   static async create() {
     const app = new App()
@@ -21,5 +21,6 @@ export class App extends $os.Unit {
     self.$ = this
     this.utils.initOs()
     this.pack = await $os.Pack.create(this)
+    this.dev = await $gl.Dev.create(this)
   }
 }

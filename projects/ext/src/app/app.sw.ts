@@ -7,16 +7,15 @@ export class App extends $sw.Unit {
   bus = new $gl.Bus(this)
 
   alive = new $sw.Alive(this)
+  boot!: $sw.Boot
+  dev!: $gl.Dev
   idb = new $sw.Idb(this)
   kit = new $sw.Kit(this)
+  net!: $sw.Net
+  pack!: $sw.Pack
   peer = new $sw.Peer(this)
   states = new $exSw.States(this)
   units = new $exSw.Units(this)
-
-  boot!: $sw.Boot
-  dev!: $sw.Dev
-  net!: $sw.Net
-  pack!: $sw.Pack
 
   static async create() {
     const app = new App()
@@ -32,7 +31,7 @@ export class App extends $sw.Unit {
     await this.setupContentScript()
     await this.setupOffscreen()
     this.defineGlobalMethods()
-    this.dev = await $sw.Dev.create(this)
+    this.dev = await $gl.Dev.create(this)
   }
 
   private async setupContentScript() {
