@@ -6,11 +6,16 @@ import type * as reactDomClient from 'react-dom/client'
 import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 
-type Fn<T = any> = (...args: any[]) => T
-type State = Record<string, StateValue>
-type Versioner = Record<number, (state: State) => void>
-type ClassName = string | null | boolean | undefined | ClassName[]
-type StateValue = undefined | null | boolean | number | string | StateValue[] | { [key: string]: StateValue }
+export type Fn<T = any> = (...args: any[]) => T
+export type State = Record<string, unknown>
+export type Versioner = Record<number, (this: State, state: State) => void>
+export type ClassName = string | null | boolean | undefined | ClassName[]
+
+export type ConnectOptions<T> = {
+  initial?: () => T
+  models?: Record<string, unknown> | Map<string, unknown>
+  versioner?: Versioner
+}
 
 type Storage = {
   /** Get value from the storage. */
@@ -54,12 +59,10 @@ export interface Epos {
   store: {
     /** Connect state. */
     connect: {
-      <T extends State = {}>(): Promise<T>
-      <T extends State = {}>(initial: () => T): Promise<T>
-      <T extends State = {}>(initial: () => T, versioner: Versioner): Promise<T>
-      <T extends State = {}>(name: string): Promise<T>
-      <T extends State = {}>(name: string, initial: () => T): Promise<T>
-      <T extends State = {}>(name: string, initial: () => T, versioner: Versioner): Promise<T>
+      <T>(): Promise<T>
+      <T>(name: string): Promise<T>
+      <T>(options: ConnectOptions<T>): Promise<T>
+      <T>(name: string, options: ConnectOptions<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
@@ -71,7 +74,14 @@ export interface Epos {
     list(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
     /** Destroy state. */
     destroy(name?: string): Promise<void>
-    symbols: { model: { init: Symbol; cleanup: Symbol; versioner: Symbol; parent: Symbol } }
+    symbols: {
+      model: {
+        readonly init: unique symbol
+        readonly cleanup: unique symbol
+        readonly versioner: unique symbol
+        readonly parent: unique symbol
+      }
+    }
   }
 
   // Storage
@@ -146,6 +156,5 @@ declare global {
   }
 }
 
-const _epos = epos as Epos
+const _epos = epos
 export { _epos as epos }
-export default _epos

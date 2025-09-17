@@ -1,4 +1,4 @@
-export default epos.reactDom
+export default epos.libs.reactDom
 export const {
   createPortal,
   flushSync,
@@ -13,4 +13,4 @@ export const {
   useFormState,
   useFormStatus,
   version,
-} = epos.reactDom
+} = epos.libs.reactDom

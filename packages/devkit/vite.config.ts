@@ -6,13 +6,14 @@ import rebundle, { type BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({
-    input: './src/app',
+    input: './src/app/app.tsx',
     output: './src/layers',
     default: 'gl',
     watch: mode !== 'production',
   })
 
   const esbuildOptions: BuildOptions = {
+    format: 'esm',
     keepNames: true,
     minify: mode !== 'development',
     banner: { js: setupLayersJs },

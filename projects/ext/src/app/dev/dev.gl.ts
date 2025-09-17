@@ -35,6 +35,8 @@ export class Dev extends $gl.Unit {
 
     if (!import.meta.env.DEV) return
 
+    return
+
     if (this.$.env.is.sw) {
       // TODO: should work with both: parent passed as parameter (local) and in state (_parent_)
       class Unit {

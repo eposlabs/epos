@@ -4,7 +4,7 @@ export class Pack extends $vw.Unit {
   pkgs: { [name: string]: $vw.Pkg } = {}
   hasPanel = false
   actionData: ActionData = {}
-  selectedPkgName: string | null = localStorage.getItem('pkgs.selectedPkgName')
+  selectedPkgName: string | null = localStorage.getItem('pack.selectedPkgName')
   dock = new $vw.PackDock(this)
   watcher = new $exOsVw.PackWatcher(this)
 
@@ -31,7 +31,7 @@ export class Pack extends $vw.Unit {
     if (!this.pkgs[name]) throw this.never
     this.selectedPkgName = name
     this.$.refresh()
-    localStorage.setItem('pkgs.selectedPkgName', name)
+    localStorage.setItem('pack.selectedPkgName', name)
   }
 
   private async initWatcher() {

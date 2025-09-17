@@ -38,15 +38,15 @@ export class BootInjector extends $ex.Unit {
 
   private async injectCode() {
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href)
+    const liteJs = await this.$.bus.send<string>('pack.getLiteJs', location.href)
     if (liteJs) await this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
+    const css = await this.$.bus.send<string>('pack.getCss', location.href)
     if (css) this.injectCss(css)
 
     // Inject pkgs defs
-    const payloads = await this.$.bus.send<Payload[]>('pkgs.getPayloads', location.href)
+    const payloads = await this.$.bus.send<Payload[]>('pack.getPayloads', location.href)
     if (payloads.length === 0) return
     const js = `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`
     await this.injectJs(js)

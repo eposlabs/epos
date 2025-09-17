@@ -1,4 +1,4 @@
-export default epos.react
+export default epos.libs.react
 export const {
   act,
   cache,
@@ -37,4 +37,4 @@ export const {
   useSyncExternalStore,
   useTransition,
   version,
-} = epos.react
+} = epos.libs.react

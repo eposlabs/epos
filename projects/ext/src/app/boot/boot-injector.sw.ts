@@ -194,6 +194,7 @@ export class BootInjector extends $sw.Unit {
   }
 
   private hasReact(js: string) {
-    return js.includes('epos.reactJsxRuntime') || js.includes('React.createElement')
+    // TODO: probably React.createElement -> epos.libs.react
+    return js.includes('epos.libs.reactJsxRuntime') || js.includes('React.createElement')
   }
 }

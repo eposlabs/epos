@@ -14,7 +14,7 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/epos/epos.js"
+      "import": "./dist/epos/index.js"
     },
     "./vite": {
       "import": "./dist/plugin/plugin-vite.js"

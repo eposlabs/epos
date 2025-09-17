@@ -14,7 +14,6 @@ export class App extends $ex.Unit {
   peer = new $exOs.Peer(this)
   store = new $exSw.Store(this)
   ui = new $ex.Ui(this)
-  units = new $exSw.Units(this)
 
   static async create() {
     const app = new App()

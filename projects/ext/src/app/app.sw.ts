@@ -15,7 +15,6 @@ export class App extends $sw.Unit {
   pack!: $sw.Pack
   peer = new $sw.Peer(this)
   store = new $exSw.Store(this)
-  units = new $exSw.Units(this)
 
   static async create() {
     const app = new App()

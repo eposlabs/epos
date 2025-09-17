@@ -561,13 +561,13 @@ export class State extends $exSw.Unit {
   }
 
   private hydrateModels() {
-    const queue = this.hydrationQueue
-    if (queue.size === 0) return
-    this.hydrationQueue = new Set()
+    if (this.hydrationQueue.size === 0) return
 
     this.transaction(() => {
-      for (const model of queue) this.runModelVersioner(model)
-      for (const model of queue) this.runModelMethod(model, _init_)
+      // Hydration queue might be updated during versioner, do not put this.hydrationQueue to a variable
+      for (const model of this.hydrationQueue) this.runModelVersioner(model)
+      for (const model of this.hydrationQueue) this.runModelMethod(model, _init_)
+      this.hydrationQueue.clear()
     })
   }
 
@@ -580,7 +580,7 @@ export class State extends $exSw.Unit {
     const versions = this.getVersionsAsc(Model[_versioner_])
     if (versions.length === 0) return
 
-    // Get keys before versioner
+    const valuesBefore = { ...model }
     const keysBefore = new Set(Object.keys(model))
 
     // Run versioner
@@ -596,6 +596,7 @@ export class State extends $exSw.Unit {
     // Notify MobX about removed keys
     for (const key of keysBefore) {
       if (keysAfter.has(key)) continue
+      this.detach(valuesBefore[key])
       model[key] = null // Required for MobX to detect change inside 'remove' below
       this.$.libs.mobx.remove(model, key)
     }

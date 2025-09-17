@@ -1,2 +1,2 @@
-export default epos.reactJsxRuntime
-export const { Fragment, jsx, jsxs } = epos.reactJsxRuntime
+export default epos.libs.reactJsxRuntime
+export const { Fragment, jsx, jsxs } = epos.libs.reactJsxRuntime

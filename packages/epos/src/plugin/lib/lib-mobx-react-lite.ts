@@ -9,4 +9,4 @@ export const {
   useLocalStore,
   useObserver,
   useStaticRendering,
-} = epos.mobxReactLite
+} = epos.libs.mobxReactLite

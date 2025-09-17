@@ -21,13 +21,13 @@ export class PackInstaller extends $sw.Unit {
       await this.installByName(input, dev)
     }
 
-    this.broadcast('pkgs.changed')
+    this.broadcast('pack.pkgsChanged')
   }
 
   async remove(name: string) {
     await this.$.idb.deleteDatabase(name)
     delete this.$pack.pkgs[name]
-    this.broadcast('pkgs.changed')
+    this.broadcast('pack.pkgsChanged')
   }
 
   private async installByName(name: string, dev = false) {

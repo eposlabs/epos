@@ -1,3 +1,4 @@
+import { has } from 'mobx'
 import type { ActionData, ExecutionData } from './pack.sw'
 
 export type PkgName = string
@@ -19,13 +20,13 @@ export class PackWatcher extends $exOsVw.Unit {
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
-    this.$.bus.on('pkgs.changed', () => this.update(onUpdate))
+    this.$.bus.on('pack.pkgsChanged', () => this.update(onUpdate))
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actionData = await this.$.bus.send<ActionData>('pkgs.getActionData')
-    const executionData = await this.$.bus.send<ExecutionData>('pkgs.getExecutionData', location.href)
-    const hasPanel = await this.$.bus.send<boolean>('pkgs.hasPanel')
+    const actionData = await this.$.bus.send<ActionData>('pack.getActionData')
+    const executionData = await this.$.bus.send<ExecutionData>('pack.getExecutionData', location.href)
+    const hasPanel = await this.$.bus.send<boolean>('pack.hasPanel')
 
     const executionData1 = this.executionData
     const executionData2 = executionData
