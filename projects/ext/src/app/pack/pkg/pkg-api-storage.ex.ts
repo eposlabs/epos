@@ -1,40 +1,40 @@
 export class PkgApiStorage extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
 
-  get = async (key: string, name?: string) => {
+  async get(key: string, name?: string) {
     this.validateKey(key)
     this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.get(this.$pkg.name, name, key)
   }
 
-  set = async (key: string, value: unknown, name?: string) => {
+  async set(key: string, value: unknown, name?: string) {
     this.validateKey(key)
     this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.set(this.$pkg.name, name, key, value)
   }
 
-  delete = async (key: string, name?: string) => {
+  async delete(key: string, name?: string) {
     this.validateKey(key)
     this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.delete(this.$pkg.name, name, key)
   }
 
-  keys = async (name?: string) => {
+  async keys(name?: string) {
     this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.keys(this.$pkg.name, name)
   }
 
-  clear = async (name?: string) => {
+  async clear(name?: string) {
     this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.deleteStore(this.$pkg.name, name)
   }
 
-  storage = (name?: string) => {
+  use(name?: string) {
     this.validateName(name)
     name ??= ':storage'
 
@@ -47,7 +47,7 @@ export class PkgApiStorage extends $ex.Unit {
     }
   }
 
-  storages = async () => {
+  async list() {
     const stores = await this.$.idb.listStores(this.$pkg.name)
     const names = stores.filter(store => store === ':storage' || !store.startsWith(':'))
     return names.map(name => ({ name: name === ':storage' ? null : name }))

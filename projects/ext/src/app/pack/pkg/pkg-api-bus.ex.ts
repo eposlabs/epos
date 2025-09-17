@@ -2,30 +2,30 @@ export class PkgApiBus extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   private bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
 
-  on = (name: string, fn: Fn, thisValue?: unknown) => {
+  on(name: string, fn: Fn, thisValue?: unknown) {
     this.validateName(name)
     this.validateFn(fn)
     this.bus.on(name, fn, thisValue)
   }
 
-  off = (name: string, fn?: Fn) => {
+  off(name: string, fn?: Fn) {
     this.validateName(name)
     this.validateFn(fn, true)
     this.bus.off(name, fn)
   }
 
-  once = (name: string, fn: Fn, thisValue?: unknown) => {
+  once(name: string, fn: Fn, thisValue?: unknown) {
     this.validateName(name)
     this.validateFn(fn)
     this.bus.once(name, fn, thisValue)
   }
 
-  send = async (name: string, ...args: unknown[]) => {
+  async send(name: string, ...args: unknown[]) {
     this.validateName(name)
     return await this.bus.send(name, ...args)
   }
 
-  emit = async (name: string, ...args: unknown[]) => {
+  async emit(name: string, ...args: unknown[]) {
     this.validateName(name)
     return await this.bus.emit(name, ...args)
   }

@@ -1,13 +1,11 @@
 export class PkgApi extends $ex.Unit {
+  general!: $ex.PkgApiGeneral
   bus = new $ex.PkgApiBus(this)
-  state = new $ex.PkgApiState(this)
-  ui = new $ex.PkgApiUi(this)
-  unit = new $ex.PkgApiUnit(this)
+  store = new $ex.PkgApiStore(this)
   storage = new $ex.PkgApiStorage(this)
-  assets = new $ex.PkgApiAssets(this)
+  assets!: $ex.PkgApiAssets
   env = new $ex.PkgApiEnv(this)
   libs = new $ex.PkgApiLibs(this)
-  tools!: $ex.PkgApiTools
   epos!: ReturnType<$ex.PkgApi['createEpos']>
 
   static async create(parent: $ex.Unit) {
@@ -17,77 +15,83 @@ export class PkgApi extends $ex.Unit {
   }
 
   private async init() {
-    this.tools = await $ex.PkgApiTools.create(this)
+    this.general = await $ex.PkgApiGeneral.create(this)
+    this.assets = await $ex.PkgApiAssets.create(this)
     this.epos = this.createEpos()
   }
 
   private createEpos() {
     const epos = {
-      // Bus
-      on: this.bus.on,
-      off: this.bus.off,
-      once: this.bus.once,
-      send: this.bus.send,
-      emit: this.bus.emit,
-
-      // State
-      connect: this.state.connect,
-      disconnect: this.state.disconnect,
-      transaction: this.state.transaction,
-      local: this.state.local,
-      states: this.state.states,
-      destroy: this.state.destroy,
-
-      // UI
-      element: this.ui.element,
-      component: this.ui.component,
-      render: this.ui.render,
-      portal: this.ui.portal,
-      useState: this.ui.useState,
-      useAutorun: this.ui.useAutorun,
-      useReaction: this.ui.useReaction,
-
-      // Unit
-      Unit: this.unit.Unit,
-      register: this.unit.register,
-      units: this.unit.units,
-
-      // Tools
-      fetch: this.tools.fetch,
-      browser: this.tools.browser,
-      autorun: this.tools.autorun,
-      reaction: this.tools.reaction,
-
-      // Storage
-      get: this.storage.get,
-      set: this.storage.set,
-      delete: this.storage.delete,
-      keys: this.storage.keys,
-      clear: this.storage.clear,
-      storage: this.storage.storage,
-      storages: this.storage.storages,
-
-      // Assets
-      url: this.assets.url,
-      load: this.assets.load,
-      unload: this.assets.unload,
-      assets: this.assets.assets,
-
-      // Env
-      tabId: this.env.tabId,
-      is: this.env.is,
-
-      // Libs
-      mobx: this.libs.mobx,
-      mobxReactLite: this.libs.mobxReactLite,
-      react: this.libs.react,
-      reactDom: this.libs.reactDom,
-      reactDomClient: this.libs.reactDomClient,
-      reactJsxRuntime: this.libs.reactJsxRuntime,
-      yjs: this.libs.yjs,
-
       // TODO: change to package API
       engine: this.$,
+
+      // General
+      fetch: this.$.utils.link(this.general, 'fetch'),
+      browser: this.general.browser,
+      element: this.general.element,
+      component: this.$.utils.link(this.general, 'component'),
+      render: this.$.utils.link(this.general, 'render'),
+
+      // Bus
+      bus: {
+        on: this.$.utils.link(this.bus, 'on'),
+        off: this.$.utils.link(this.bus, 'off'),
+        once: this.$.utils.link(this.bus, 'once'),
+        send: this.$.utils.link(this.bus, 'send'),
+        emit: this.$.utils.link(this.bus, 'emit'),
+      },
+
+      // Store
+      store: {
+        connect: this.$.utils.link(this.store, 'connect'),
+        disconnect: this.$.utils.link(this.store, 'disconnect'),
+        transaction: this.$.utils.link(this.store, 'transaction'),
+        local: this.$.utils.link(this.store, 'local'),
+        list: this.$.utils.link(this.store, 'list'),
+        destroy: this.$.utils.link(this.store, 'destroy'),
+        symbols: this.store.symbols,
+      },
+
+      // Storage
+      storage: {
+        get: this.$.utils.link(this.storage, 'get'),
+        set: this.$.utils.link(this.storage, 'set'),
+        delete: this.$.utils.link(this.storage, 'delete'),
+        keys: this.$.utils.link(this.storage, 'keys'),
+        clear: this.$.utils.link(this.storage, 'clear'),
+        use: this.$.utils.link(this.storage, 'use'),
+        list: this.$.utils.link(this.storage, 'list'),
+      },
+
+      // Assets
+      assets: {
+        url: this.$.utils.link(this.assets, 'url'),
+        load: this.$.utils.link(this.assets, 'load'),
+        unload: this.$.utils.link(this.assets, 'unload'),
+        list: this.$.utils.link(this.assets, 'list'),
+      },
+
+      // Env
+      env: {
+        tabId: this.env.tabId,
+        isTab: this.env.isTab,
+        isPopup: this.env.isPopup,
+        isPanel: this.env.isPanel,
+        isShell: this.env.isShell,
+        isBackground: this.env.isBackground,
+        isForeground: this.env.isForeground,
+      },
+
+      // Libs
+      libs: {
+        mobx: this.libs.mobx,
+        mobxReactLite: this.libs.mobxReactLite,
+        react: this.libs.react,
+        reactDom: this.libs.reactDom,
+        reactDomClient: this.libs.reactDomClient,
+        reactJsxRuntime: this.libs.reactJsxRuntime,
+        yjs: this.libs.yjs,
+      },
     }
 
     class Epos {}

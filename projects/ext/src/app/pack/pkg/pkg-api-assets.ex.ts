@@ -1,58 +1,59 @@
-export type Asset = {
-  blob: Blob
-  url: string | null
-}
-
 export class PkgApiAssets extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  private loaded: { [path: string]: Asset } = {}
+  private urls: { [path: string]: string | null } = {}
+  private paths: string[] = []
 
-  url = (path: string) => {
+  static async create(parent: $ex.Unit) {
+    const pkgApiAssets = new PkgApiAssets(parent)
+    await pkgApiAssets.init()
+    return pkgApiAssets
+  }
+
+  private async init() {
+    this.paths = await this.$.idb.keys(this.$pkg.name, ':assets')
+  }
+
+  url(path: string) {
     this.validatePath(path)
     path = this.normalizePath(path)
-    const asset = this.loaded[path]
-    if (!asset) throw new Error(`Asset does not exist or is not loaded: ${path}`)
-    asset.url ??= URL.createObjectURL(asset.blob)
-    return asset.url
+    if (!this.urls[path]) throw new Error(`Asset does not exist or is not loaded: ${path}`)
+    return this.urls[path]
   }
 
-  load = async (path: string) => {
-    this.validatePath(path)
-
+  async load(path: string) {
     if (path === '*') {
-      const assets = await this.assets({ loaded: false })
-      const paths = assets.map(asset => asset.path)
-      await Promise.all(paths.map(path => this.load(path)))
-    } else {
-      path = this.normalizePath(path)
-      if (this.loaded[path]) return
-      const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
-      if (!blob) throw new Error(`Asset not found: ${path}`)
-      this.loaded[path] = { blob, url: null }
+      await Promise.all(this.paths.map(path => this.load(path)))
+      return
     }
+
+    this.validatePath(path)
+    path = this.normalizePath(path)
+    if (this.urls[path]) return
+    const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
+    if (!blob) throw new Error(`Asset not found: ${path}`)
+    this.urls[path] = URL.createObjectURL(blob)
   }
 
-  unload = (path: string) => {
-    this.validatePath(path)
-
+  unload(path: string) {
     if (path === '*') {
-      const paths = Object.keys(this.loaded)
+      const paths = Object.keys(this.urls)
       paths.forEach(path => this.unload(path))
-    } else {
-      path = this.normalizePath(path)
-      const asset = this.loaded[path]
-      if (!asset) return
-      if (asset.url) URL.revokeObjectURL(asset.url)
-      delete this.loaded[path]
+      return
     }
+
+    this.validatePath(path)
+    path = this.normalizePath(path)
+    const url = this.urls[path]
+    if (!url) return
+    URL.revokeObjectURL(url)
+    delete this.urls[path]
   }
 
-  assets = async (opts: { loaded?: boolean } = {}) => {
-    const paths = await this.$.idb.keys(this.$pkg.name, ':assets')
-    return paths
+  list(opts: { loaded?: boolean } = {}) {
+    return this.paths
       .map(path => ({
         path: path,
-        loaded: path in this.loaded,
+        loaded: path in this.urls,
       }))
       .filter(asset => {
         if (this.$.is.undefined(opts.loaded)) return true

@@ -36,52 +36,22 @@ export class Dev extends $gl.Unit {
     if (!import.meta.env.DEV) return
 
     if (this.$.env.is.sw) {
-      // TODO: Models must apply name via Reflect.setProperty (?) so we can access its
-      // name via this.constructor.name, name should be as registered and not as class name.
-      // Maybe static getter? Reflect.defineProperty(Model, 'name', { get: () => this.getModelName(Model) })
-
-      // epos does not provide Unit, instead unit is provided as extrernal npm package.
-      // @eposlabs/epos-unit
-      // this unit is configurable, by default it binds all methods, creates ui keys, and creates log.
-      // also this.reaction, this.setTimeout and so on.
-      // super.init is required to be called on each Unit. Can we avoid this (?)
-
-      // static get [epos.state.symbols.versioner]() {
-      //   return this.versioner
-      // }
-      // [epos.state.symbols.modelInitBefore]() {}
-      // [epos.state.symbols.modelInitAfter]() {}
-      // [epos.state.symbols.modelCleanupBefore]() {}
-      // [epos.state.symbols.modelCleanupAfter]() {}
-      // [epos.state.symbols.init]() {}
-      // [epos.state.symbols.modelInit]() {
-      //   this.init()
-      // }
-      // [epos.state.symbols.modelCleanup]() {}
-
-      // init() {
-      //   // this.bindUiKeys()
-      //   // this.bindMethods()
-      //   // this.createLog()
-      //   this.ui = () => 3
-      // }
-
-      // THIS IS THE WAY
+      // TODO: should work with both: parent passed as parameter (local) and in state (_parent_)
       class Unit {
-        _root_ = Symbol('root')
+        // _root_ = Symbol('root')
 
         static get [$exSw.State._versioner_]() {
           return this.versioner
         }
 
         [$exSw.State._init_]() {
-          Reflect.defineProperty(this, '$', { get: () => 3 })
+          // Reflect.defineProperty(this, '$', { get: () => 3 })
           this.init?.()
         }
 
         // get $() {
-        //   // if (!this[$exSw.State._parent_]) return this
-        //   // return this[$exSw.State._parent_].$
+        //   if (!this[$exSw.State._parent_]) return this
+        //   return this[$exSw.State._parent_].$
         // }
       }
 
@@ -98,37 +68,25 @@ export class Dev extends $gl.Unit {
       class Body extends Unit {
         type = 'body'
         name: string
-
         constructor(parent, name = 'body') {
           super(parent)
-          this.name = this.$.utils.uppercase(name)
+          // console.warn(this[$exSw.State._parent_])
+          // this.name = this.$.utils.uppercase(name)
         }
-
-        init() {
-          this.show = this.show.bind(this)
-        }
-
         testBinding() {
           const array = [1, 2, 3]
           array.forEach(this.show)
         }
-
         show(item) {
           console.log(`show body ${this.name}`, item)
         }
-
-        init() {
-          console.log('body init')
-          // super.init()
-          // this.s = 2
-        }
       }
 
-      class Robot extends Unit {
+      class Xio extends Unit {
         type = 'robot'
         utils = new Utils(this)
         body = new Body(this, 'robotbody')
-
+        init() {}
         static versioner = {
           1() {
             this.type = 'NewRobot'
@@ -138,18 +96,6 @@ export class Dev extends $gl.Unit {
             console.warn('v2')
           },
         }
-
-        // [$exSw.State._init_]() {
-        //   console.log('init')
-        // }
-
-        // [$exSw.State._cleanup_]() {
-        //   console.log('cleanup')
-        // }
-
-        // uppercase(str) {
-        //   return str.toUpperCase()
-        // }
       }
 
       class Head {
@@ -161,7 +107,14 @@ export class Dev extends $gl.Unit {
 
       const s = await this.$.store.connect(['a', 'b', 'c'], {
         initial: () => ({ robot: new Robot() }),
-        models: { Robot, Body, Utils, Head },
+        models: {
+          Xio: Xio,
+          Robot: Xio,
+          Body,
+          Utils,
+          Head,
+          UtilsNew: Utils,
+        },
         versioner: {
           1() {
             this.robot.utils['@'] = 'Utils'
@@ -171,10 +124,18 @@ export class Dev extends $gl.Unit {
             this.head = new Head()
             this.head.type = type
           },
+          8() {
+            const data = this.robot._
+            delete data['@']
+            console.warn(data)
+            this.robot = new Xio(this)
+            console.warn(this.robot)
+            Object.assign(this.robot, data)
+          },
         },
       })
 
-      Object.assign(self, { s, Robot, Body, Unit, Utils, Head })
+      Object.assign(self, { s, Robot: Xio, Body, Unit, Utils, Head })
     }
 
     if (this.$.env.is.ex) {

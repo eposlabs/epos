@@ -3,17 +3,17 @@ import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'y
 import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
 
 export const _meta_ = Symbol('meta')
-export const _parent_ = Symbol('parent')
 export const _init_ = Symbol('init')
 export const _cleanup_ = Symbol('cleanup')
 export const _versioner_ = Symbol('versioner')
+export const _parent_ = Symbol('parent')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStore, DbKey]
+export type GetInitialState = () => Obj | Model
 export type Versioner = Record<number, (state: MObject) => void>
 export type ModelClass = (new (...args: unknown[]) => unknown) & { [_versioner_]?: Versioner }
 export type Model = InstanceType<ModelClass>
-export type GetInitialState = () => Obj | Model
 
 // MobX node
 export type Parent = MNode | null
@@ -42,7 +42,7 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
 
 export type Options = {
   initial?: GetInitialState
-  models?: Record<string, ModelClass>
+  models?: Record<string, ModelClass> | Map<string, ModelClass>
   versioner?: Versioner
 }
 
@@ -56,14 +56,14 @@ export class State extends $exSw.Unit {
   location: Location
 
   static _meta_ = _meta_
-  static _parent_ = _parent_
   static _init_ = _init_
   static _cleanup_ = _cleanup_
   static _versioner_ = _versioner_
+  static _parent_ = _parent_
 
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<$gl.Bus['create']>
-  private models: Record<string, ModelClass>
+  private models: Map<string, ModelClass>
   private versioner: Versioner
   private getInitialState: GetInitialState
   private connected = false
@@ -87,7 +87,7 @@ export class State extends $exSw.Unit {
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
-    this.models = options.models ?? {}
+    this.models = this.createModelMap(options.models ?? {})
     this.versioner = options.versioner ?? {}
     this.getInitialState = options.initial ?? (() => ({}))
     this.save = this.saveQueue.wrap(this.save, this)
@@ -530,15 +530,15 @@ export class State extends $exSw.Unit {
 
   private getModelByName(name: unknown) {
     if (!this.$.is.string(name)) return null
-    return this.models[name] ?? null
+    return this.models.get(name) ?? null
   }
 
   private getModelByInstance(instance: Obj) {
-    return Object.values(this.models).find(Model => instance instanceof Model) ?? null
+    return [...this.models.values()].find(Model => instance instanceof Model) ?? null
   }
 
   private getModelName(Model: ModelClass) {
-    return Object.keys(this.models).find(name => this.models[name] === Model) ?? null
+    return [...this.models.keys()].find(name => this.models.get(name) === Model) ?? null
   }
 
   private isModel(value: unknown): value is MObject & { __model: true } {
@@ -659,5 +659,10 @@ export class State extends $exSw.Unit {
     return Object.keys(versioner)
       .map(Number)
       .sort((v1, v2) => v1 - v2)
+  }
+
+  private createModelMap(models: Record<string, ModelClass> | Map<string, ModelClass>) {
+    if (this.$.is.map(models)) return models
+    return new Map(Object.entries(models))
   }
 }
