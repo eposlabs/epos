@@ -4,10 +4,12 @@ export class PkgApiStore extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
 
   symbols = {
-    init: $exSw.State._init_,
-    cleanup: $exSw.State._cleanup_,
-    versioner: $exSw.State._versioner_,
-    parent: $exSw.State._parent_,
+    model: {
+      init: $exSw.State._init_,
+      cleanup: $exSw.State._cleanup_,
+      versioner: $exSw.State._versioner_,
+      parent: $exSw.State._parent_,
+    },
   }
 
   async connect(): Promise<Obj>

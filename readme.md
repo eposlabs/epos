@@ -3,11 +3,11 @@
 ### API
 
 - **General**
-  - epos.component
-  - epos.render
-  - epos.browser
   - epos.fetch
+  - epos.browser
   - epos.element
+  - epos.render
+  - epos.component
 - **Bus**
   - epos.bus.on
   - epos.bus.off
@@ -31,19 +31,20 @@
   - epos.storage.delete
   - epos.storage.keys
   - epos.storage.clear
-  - epos.storage.use(name?)
-  - epos.storage.list(filter)
+  - epos.storage.use
+  - epos.storage.list
 - **Assets**
   - epos.assets.url
   - epos.assets.load
   - epos.assets.unload
   - epos.assets.list
-- **Environment**
+- **Env**
   - epos.env.tabId
   - epos.env.isTab
   - epos.env.isPopup
   - epos.env.isPanel
   - epos.env.isShell
+  - epos.env.isFrame
   - epos.env.isBackground
   - epos.env.isForeground
 - **Libs**

@@ -7,182 +7,133 @@ import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 
 type Fn<T = any> = (...args: any[]) => T
-type Cls<T = any> = new (...args: any[]) => T
 type State = Record<string, StateValue>
 type Versioner = Record<number, (state: State) => void>
 type ClassName = string | null | boolean | undefined | ClassName[]
-
-type StateValue =
-  | undefined
-  | null
-  | boolean
-  | number
-  | string
-  | Unit
-  | StateValue[]
-  | { [key: string]: StateValue }
+type StateValue = undefined | null | boolean | number | string | StateValue[] | { [key: string]: StateValue }
 
 type Storage = {
-  /** Get value from storage. */
+  /** Get value from the storage. */
   get<T = unknown>(key: string): Promise<T>
-  /** Set value in storage. */
+  /** Set value in the storage. */
   set<T = unknown>(key: string, value: T): Promise<void>
-  /** Delete value from storage. */
+  /** Delete value from the storage. */
   delete(key: string): Promise<void>
-  /** Get all keys from storage. */
+  /** Get all keys from the storage. */
   keys(): Promise<string[]>
-  /** Clear storage. Deletes all keys and storage itself. */
+  /** Clear the storage. Deletes all keys and storage itself. */
   clear(): Promise<void>
 }
 
-declare class Unit<TRoot = unknown> {
-  /** Reference to the root unit. */
-  $: TRoot
-  log: Fn<void> & { warn: Fn<void>; error: Fn<void> }
-  constructor(parent?: Unit<TRoot> | null)
-  /** Find ancestor unit by its class. */
-  up<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null
-  up<T extends Unit<TRoot>, K extends keyof T>(Ancestor: Cls<T>, key: K): T[K] | null
-  autorun: typeof mobx.autorun
-  reaction: typeof mobx.reaction
-  setTimeout: typeof self.setTimeout
-  setInterval: typeof self.setInterval
-
-  static versioner: {
-    [version: number]: (this: Unit, ...args: any[]) => void
-  }
-}
-
 export interface Epos {
-  // ---------------------------------------------------------------------------
-  // BUS
-  // ---------------------------------------------------------------------------
-  /** Listen for an event. */
-  on(eventName: string, callback: Fn, thisValue?: unknown): void
-  /** Remove event listener. */
-  off(eventName: string, callback?: Fn): void
-  /** Listen for an event once. */
-  once(eventName: string, callback: Fn, thisValue?: unknown): void
-  /** Send an event to all remote listeners (local listeners are ignored). */
-  send<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
-  /** Emit event locally (calls local listeners only). */
-  emit<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
-
-  // ---------------------------------------------------------------------------
-  // STATE
-  // ---------------------------------------------------------------------------
-  /** Connect to the state. */
-  connect: {
-    <T extends State = {}>(): Promise<T>
-    <T extends State = {}>(initial: () => T): Promise<T>
-    <T extends State = {}>(initial: () => T, versioner: Versioner): Promise<T>
-    <T extends State = {}>(name: string): Promise<T>
-    <T extends State = {}>(name: string, initial: () => T): Promise<T>
-    <T extends State = {}>(name: string, initial: () => T, versioner: Versioner): Promise<T>
-  }
-  /** Disconnect from the state. */
-  disconnect(name?: string): void
-  /** Performs any state changes in a batch. */
-  transaction: (fn: () => void) => void
-  /** Create local state (no sync). */
-  local<T extends State = {}>(state?: T): T
-  /** Get the list of all state names. */
-  states(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
-  /** Destroy state. */
-  destroy(name?: string): Promise<void>
-
-  // ---------------------------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------------------------
-  element: HTMLElement
+  // General
+  fetch: typeof window.fetch
+  browser: typeof chrome
+  element: HTMLDivElement
+  render(node: react.ReactNode, container?: reactDomClient.Container): void
   component: {
     <P>(Component: react.FC<P>): typeof Component
     <P>(name: string, Component: react.FC<P>): typeof Component
   }
-  render(node: react.ReactNode, container?: reactDomClient.Container): void
-  portal: typeof reactDom.createPortal
-  useState: typeof mobxReactLite.useLocalObservable
-  useAutorun(...args: Parameters<typeof mobx.autorun>): void
-  useReaction(...args: Parameters<typeof mobx.reaction>): void
 
-  // ---------------------------------------------------------------------------
-  // UNIT
-  // ---------------------------------------------------------------------------
-  Unit: typeof Unit
-  /** Register unit class. */
-  register(Unit: Cls<Unit>): void
-  units(): { [name: string]: typeof Unit }
-
-  // ---------------------------------------------------------------------------
-  // TOOLS
-  // ---------------------------------------------------------------------------
-  fetch: typeof window.fetch
-  browser: typeof chrome
-  /** @see https://mobx.js.org/reactions.html#autorun */
-  autorun: typeof mobx.autorun
-  /** @see https://mobx.js.org/reactions.html#reaction */
-  reaction: typeof mobx.reaction
-
-  // ---------------------------------------------------------------------------
-  // STORAGE
-  // ---------------------------------------------------------------------------
-  /** Get value from the storage. */
-  get<T = unknown>(key: string, storageName?: string): Promise<T>
-  /** Set value in the storage. */
-  set<T = unknown>(key: string, value: T, storageName?: string): Promise<void>
-  /** Delete value from the storage. */
-  delete(key: string, storageName?: string): Promise<void>
-  /** Get all keys from the storage. */
-  keys(storageName?: string): Promise<string[]>
-  /** Clear storage. Removes all keys and storage itself. */
-  clear(storageName?: string): Promise<void>
-  /** Create storage API. */
-  storage(name: string): Promise<Storage>
-  /** Get list of all storage names. */
-  storages(): Promise<Array<{ name: string | null }>>
-
-  // ---------------------------------------------------------------------------
-  // ASSETS
-  // ---------------------------------------------------------------------------
-  /** Get asset URL. Asset must be loaded first. */
-  url(path: string): Promise<string>
-  /** Load asset to memory. Pass '*' to load all assets. */
-  load(path: string): Promise<void>
-  /** Unload asset from memory. Pass '*' to unload all assets.*/
-  unload(path: string): void
-  /** Get list of all available asset paths. */
-  assets(opts?: { loaded?: boolean }): Promise<Array<{ path: string; loaded: boolean }>>
-
-  // ---------------------------------------------------------------------------
-  // ENV
-  // ---------------------------------------------------------------------------
-  /** Current tab ID. */
-  tabId: number
-  is: {
-    /** True if running in a tab. */
-    tab: boolean
-    /** True if running in a popup or side panel (`<popup>` or `<panel>`). */
-    shell: boolean
-    /** True if running in a popup (`<popup>`). */
-    popup: boolean
-    /** True if running in a side panel (`<panel>`). */
-    panel: boolean
-    /** True if running in the background (`<background>`). */
-    background: boolean
-    /** True if running in the foreground (not `<background>`). */
-    foreground: boolean
+  // Bus
+  bus: {
+    /** Listen for an event. */
+    on(eventName: string, callback: Fn, thisValue?: unknown): void
+    /** Remove event listener. */
+    off(eventName: string, callback?: Fn): void
+    /** Listen for an event once. */
+    once(eventName: string, callback: Fn, thisValue?: unknown): void
+    /** Send an event to all remote listeners (local listeners are ignored). */
+    send<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
+    /** Emit event locally (calls local listeners only). */
+    emit<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
   }
 
-  // ---------------------------------------------------------------------------
-  // LIBS
-  // ---------------------------------------------------------------------------
-  mobx: typeof mobx
-  mobxReactLite: typeof mobxReactLite
-  react: typeof react
-  reactDom: typeof reactDom
-  reactDomClient: typeof reactDomClient
-  reactJsxRuntime: typeof reactJsxRuntime
-  yjs: typeof yjs
+  // Store
+  store: {
+    /** Connect state. */
+    connect: {
+      <T extends State = {}>(): Promise<T>
+      <T extends State = {}>(initial: () => T): Promise<T>
+      <T extends State = {}>(initial: () => T, versioner: Versioner): Promise<T>
+      <T extends State = {}>(name: string): Promise<T>
+      <T extends State = {}>(name: string, initial: () => T): Promise<T>
+      <T extends State = {}>(name: string, initial: () => T, versioner: Versioner): Promise<T>
+    }
+    /** Disconnect state. */
+    disconnect(name?: string): void
+    /** Run any state changes in a batch. */
+    transaction: (fn: () => void) => void
+    /** Create local state (no sync). */
+    local<T extends State = {}>(state?: T): T
+    /** Get the list of all state names. */
+    list(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
+    /** Destroy state. */
+    destroy(name?: string): Promise<void>
+    symbols: { model: { init: Symbol; cleanup: Symbol; versioner: Symbol; parent: Symbol } }
+  }
+
+  // Storage
+  storage: {
+    /** Get value from the storage. */
+    get<T = unknown>(key: string, storageName?: string): Promise<T>
+    /** Set value in the storage. */
+    set<T = unknown>(key: string, value: T, storageName?: string): Promise<void>
+    /** Delete value from the storage. */
+    delete(key: string, storageName?: string): Promise<void>
+    /** Get all keys from the storage. */
+    keys(storageName?: string): Promise<string[]>
+    /** Clear storage. Removes all keys and storage itself. */
+    clear(storageName?: string): Promise<void>
+    /** Create storage API. */
+    use(name: string): Promise<Storage>
+    /** Get list of all storage names. */
+    list(): Promise<Array<{ name: string | null }>>
+  }
+
+  // Assets
+  assets: {
+    /** Get asset URL. Asset must be loaded first. */
+    url(path: string): Promise<string>
+    /** Load asset to memory. Pass '*' to load all assets. */
+    load(path: string): Promise<void>
+    /** Unload asset from memory. Pass '*' to unload all assets.*/
+    unload(path: string): void
+    /** Get list of all available asset paths. */
+    list(opts?: { loaded?: boolean }): Array<{ path: string; loaded: boolean }>
+  }
+
+  // Env
+  env: {
+    /** Current tab ID. */
+    tabId: number
+    /** True if running in a tab (top-level, not iframe). */
+    isTab: boolean
+    /** True if running in an iframe. */
+    isFrame: boolean
+    /** True if running in a popup or side panel (`<popup>` or `<panel>`). */
+    isShell: boolean
+    /** True if running in a popup (`<popup>`). */
+    isPopup: boolean
+    /** True if running in a side panel (`<panel>`). */
+    isPanel: boolean
+    /** True if running in the background (`<background>`). */
+    isBackground: boolean
+    /** True if running in the foreground (not `<background>` and not inside iframe). */
+    isForeground: boolean
+  }
+
+  // Libs
+  libs: {
+    mobx: typeof mobx
+    mobxReactLite: typeof mobxReactLite
+    react: typeof react
+    reactDom: typeof reactDom
+    reactDomClient: typeof reactDomClient
+    reactJsxRuntime: typeof reactJsxRuntime
+    yjs: typeof yjs
+  }
 }
 
 declare global {

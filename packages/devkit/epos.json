@@ -6,7 +6,8 @@
   "targets": [
     {
       "matches": ["<hub>", "<popup>"],
-      "load": "./stub.js"
+      "load": "./stub.js",
+      "mode": "shadow"
       // "load": ["./dist/gl.js", "./dist/gl.css"]
     }
   ]

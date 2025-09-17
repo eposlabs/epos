@@ -17,19 +17,19 @@ export class PkgApiGeneral extends $ex.Unit {
     this.browser = await this.$.kit.browser.create(this.$pkg.name)
   }
 
-  component<T extends FC>(render: T): T
-  component<T extends FC>(name: string, render: T): T
-  component(...args: unknown[]) {
-    const [name, render] = args.length === 1 ? [null, args[0] as FC] : [args[0] as string, args[1] as FC]
-    return this.$.ui.component(name, render)
-  }
-
   render(children: ReactNode, container?: Container) {
     container ??= this.getContainer()
     const root = this.$.libs.reactDomClient!.createRoot(container)
     const { StrictMode } = this.$.ui.react!
     const { jsx } = this.$.ui.reactJsxRuntime!
     root.render(jsx(StrictMode, { children }))
+  }
+
+  component<P>(Component: FC<P>): typeof Component
+  component<P>(name: string, Component: FC<P>): typeof Component
+  component(...args: unknown[]) {
+    const [name, Component] = args.length === 1 ? [null, args[0] as FC] : [args[0] as string, args[1] as FC]
+    return this.$.ui.component(name, Component)
   }
 
   private createPkgElement() {
