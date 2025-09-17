@@ -38,6 +38,10 @@
   - epos.assets.load
   - epos.assets.unload
   - epos.assets.list
+- **Frame**
+  - epos.frame.open
+  - epos.frame.close
+  - epos.frame.list
 - **Env**
   - epos.env.tabId
   - epos.env.isTab

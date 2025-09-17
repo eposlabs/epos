@@ -1,4 +1,5 @@
 export const REF = ':EPOS_BUS_REF'
+export type DateRef = { [REF]: 'date'; iso: string }
 export type ErrorRef = { [REF]: 'error'; message: string; stack: string | undefined }
 export type BlobIdRef = { [REF]: 'blobId'; id: string }
 export type BlobUrlRef = { [REF]: 'blobUrl'; url: string }
@@ -6,7 +7,15 @@ export type UndefinedRef = { [REF]: 'undefined' }
 export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
 export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
 export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
-export type Ref = ErrorRef | BlobIdRef | BlobUrlRef | UndefinedRef | Uint8Ref | Uint16Ref | Uint32Ref
+export type Ref =
+  | DateRef
+  | ErrorRef
+  | BlobIdRef
+  | BlobUrlRef
+  | UndefinedRef
+  | Uint8Ref
+  | Uint16Ref
+  | Uint32Ref
 
 export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
 export type Storage = Map<string, unknown>
@@ -27,19 +36,23 @@ export class BusSerializer extends $gl.Unit {
   }
 
   sanitize(data: unknown) {
+    const { $ } = this
     const storage: Storage = new Map()
 
-    const json = JSON.stringify(data, (_, value: unknown) => {
+    const json = JSON.stringify(data, function (key: string) {
+      const value = this[key]
+
       // Sanitize supported non-json values as storage links
       if (
-        this.$.is.blob(value) ||
-        this.$.is.error(value) ||
-        this.$.is.undefined(value) ||
-        this.$.is.uint8Array(value) ||
-        this.$.is.uint16Array(value) ||
-        this.$.is.uint32Array(value)
+        $.is.date(value) ||
+        $.is.blob(value) ||
+        $.is.error(value) ||
+        $.is.undefined(value) ||
+        $.is.uint8Array(value) ||
+        $.is.uint16Array(value) ||
+        $.is.uint32Array(value)
       ) {
-        const key = this.$.utils.id()
+        const key = $.utils.id()
         storage.set(key, value)
         return { [STORAGE_KEY]: key } as StorageLink
       }
@@ -52,43 +65,52 @@ export class BusSerializer extends $gl.Unit {
   }
 
   serialize(data: unknown) {
+    const { $, $bus, blobs } = this
+
     // Serialize data
-    return JSON.stringify(data, (_, value: unknown) => {
-      // Serialize error
-      if (this.$.is.error(value)) {
-        return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
+    return JSON.stringify(data, function (key: string) {
+      const value = this[key]
+
+      // Serialize date
+      if ($.is.date(value)) {
+        return { [REF]: 'date', iso: value.toISOString() } satisfies DateRef
       }
 
       // Serialize blob
-      if (this.$.is.blob(value)) {
-        if (this.$.env.is.sw) {
-          const blobId = this.$.utils.id()
-          this.blobs.set(blobId, value)
-          self.setTimeout(() => this.blobs.delete(blobId), 60_000)
+      if ($.is.blob(value)) {
+        if ($.env.is.sw) {
+          const blobId = $.utils.id()
+          blobs.set(blobId, value)
+          self.setTimeout(() => blobs.delete(blobId), 60_000)
           return { [REF]: 'blobId', id: blobId } satisfies BlobIdRef
         } else {
-          const url = this.$bus.utils.createTempObjectUrl(value)
+          const url = $bus.utils.createTempObjectUrl(value)
           return { [REF]: 'blobUrl', url } satisfies BlobUrlRef
         }
       }
 
+      // Serialize error
+      if ($.is.error(value)) {
+        return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
+      }
+
       // Serialize undefined
-      if (this.$.is.undefined(value)) {
+      if ($.is.undefined(value)) {
         return { [REF]: 'undefined' } satisfies UndefinedRef
       }
 
       // Serialize Uint8Array
-      if (this.$.is.uint8Array(value)) {
+      if ($.is.uint8Array(value)) {
         return { [REF]: 'uint8', integers: Array.from(value) } satisfies Uint8Ref
       }
 
       // Serialize Uint16Array
-      if (this.$.is.uint16Array(value)) {
+      if ($.is.uint16Array(value)) {
         return { [REF]: 'uint16', integers: Array.from(value) } satisfies Uint16Ref
       }
 
       // Serialize Uint32Array
-      if (this.$.is.uint32Array(value)) {
+      if ($.is.uint32Array(value)) {
         return { [REF]: 'uint32', integers: Array.from(value) } satisfies Uint32Ref
       }
 
@@ -105,11 +127,9 @@ export class BusSerializer extends $gl.Unit {
       // Regular value? -> Use as is
       if (!this.isRef(value)) return value
 
-      // Deserialize error
-      if (value[REF] === 'error') {
-        const error = new Error(value.message)
-        if (value.stack) error.stack = value.stack
-        return error
+      // Deserialize date
+      if (value[REF] === 'date') {
+        return new Date(value.iso)
       }
 
       // Deserialize blob by id
@@ -134,6 +154,13 @@ export class BusSerializer extends $gl.Unit {
         })()
         promises.push(promise)
         return { [STORAGE_KEY]: key }
+      }
+
+      // Deserialize error
+      if (value[REF] === 'error') {
+        const error = new Error(value.message)
+        if (value.stack) error.stack = value.stack
+        return error
       }
 
       // Deserialize undefined
