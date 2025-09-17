@@ -1,6 +1,7 @@
 export class PkgApi extends $ex.Unit {
+  private $pkg = this.up($ex.Pkg)!
   general!: $ex.PkgApiGeneral
-  bus = new $ex.PkgApiBus(this)
+  bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
   store = new $ex.PkgApiStore(this)
   storage = new $ex.PkgApiStorage(this)
   assets!: $ex.PkgApiAssets

@@ -17,14 +17,14 @@ export class PkgApiGeneral extends $ex.Unit {
     this.browser = await this.$.kit.browser.create(this.$pkg.name)
   }
 
-  component(...args: any[]) {
-    this.ensureReact('component')
-    const [name, render] = this.parseComponentArgs(args)
+  component<T extends FC>(render: T): T
+  component<T extends FC>(name: string, render: T): T
+  component(...args: unknown[]) {
+    const [name, render] = args.length === 1 ? [null, args[0] as FC] : [args[0] as string, args[1] as FC]
     return this.$.ui.component(name, render)
   }
 
   render(children: ReactNode, container?: Container) {
-    this.ensureReact('render')
     container ??= this.getContainer()
     const root = this.$.libs.reactDomClient!.createRoot(container)
     const { StrictMode } = this.$.ui.react!
@@ -96,35 +96,5 @@ export class PkgApiGeneral extends $ex.Unit {
       if (!root) throw this.never
       return root
     }
-  }
-
-  private ensureReact(method: string) {
-    if (this.$.libs.react) return
-    throw new Error(`epos.${method} is not available, because React is not used by "${this.$pkg.name}"`)
-  }
-
-  private parseComponentArgs(args: unknown[]): [string | null, FC] {
-    if (args.length === 1) {
-      const [render] = args
-      this.validateRender(render)
-      return [null, render]
-    }
-
-    if (args.length === 2) {
-      const [name, render] = args
-      this.validateName(name)
-      this.validateRender(render)
-      return [name, render]
-    }
-
-    throw new Error('Invalid number of arguments, 1 or 2 expected')
-  }
-
-  private validateName(name: unknown): asserts name is string {
-    if (!this.$.is.string(name)) throw new Error('Invalid component name, string expected')
-  }
-
-  private validateRender(render: unknown): asserts render is FC {
-    if (!this.$.is.function(render)) throw new Error('Invalid component, function expected')
   }
 }

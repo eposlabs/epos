@@ -14,7 +14,6 @@ export class PkgApiAssets extends $ex.Unit {
   }
 
   url(path: string) {
-    this.validatePath(path)
     path = this.normalizePath(path)
     if (!this.urls[path]) throw new Error(`Asset does not exist or is not loaded: ${path}`)
     return this.urls[path]
@@ -26,7 +25,6 @@ export class PkgApiAssets extends $ex.Unit {
       return
     }
 
-    this.validatePath(path)
     path = this.normalizePath(path)
     if (this.urls[path]) return
     const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
@@ -41,7 +39,6 @@ export class PkgApiAssets extends $ex.Unit {
       return
     }
 
-    this.validatePath(path)
     path = this.normalizePath(path)
     const url = this.urls[path]
     if (!url) return
@@ -73,13 +70,5 @@ export class PkgApiAssets extends $ex.Unit {
       .split('/')
       .filter(p => p !== '' && p !== '.')
       .join('/')
-  }
-
-  private validatePath(path: string) {
-    if (!this.$.is.string(path)) {
-      throw new Error('Invalid asset path, string expected')
-    } else if (path.length === 0) {
-      throw new Error('Invalid asset path, non-empty string expected')
-    }
   }
 }

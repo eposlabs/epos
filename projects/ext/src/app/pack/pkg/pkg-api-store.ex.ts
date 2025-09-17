@@ -10,26 +10,41 @@ export class PkgApiStore extends $ex.Unit {
     parent: $exSw.State._parent_,
   }
 
+  async connect(): Promise<Obj>
+  async connect(name: string): Promise<Obj>
+  async connect(options: Options): Promise<Obj>
   async connect(...args: unknown[]) {
-    const [name, options] = this.parseConnectArgs(args)
+    let name: string | undefined = undefined
+    let options: Options | undefined = undefined
+
+    if (args.length === 1) {
+      if (this.$.is.string(args[0])) {
+        name = args[0]
+      } else {
+        options = args[0] as Options
+      }
+    } else if (args.length >= 2) {
+      name = args[0] as string
+      options = args[1] as Options
+    }
+
     const location = this.getLocation(name)
-    return await this.$.store.connect(location, options)
+    const state = await this.$.store.connect(location, options)
+    return state.data
   }
 
   async disconnect(name?: string) {
-    this.validateName(name)
     const location = this.getLocation(name)
     await this.$.store.disconnect(location)
   }
 
   transaction(fn: () => void) {
-    this.validateTransactionFn(fn)
     this.$.store.transaction(fn)
   }
 
   local(state: Obj = {}) {
-    this.validateLocalState(state)
     throw new Error('Not implemented yet')
+    return state
   }
 
   async list(opts: { connected?: boolean } = {}) {
@@ -46,91 +61,12 @@ export class PkgApiStore extends $ex.Unit {
   }
 
   async destroy(name?: string) {
-    this.validateName(name)
     const location = this.getLocation(name)
     await this.$.store.destroy(location)
   }
 
-  private parseConnectArgs(args: unknown[]): [undefined | string, undefined | Options] {
-    if (args.length === 0) {
-      return [undefined, undefined]
-    }
-
-    if (args.length === 1) {
-      if (this.$.is.string(args[0])) {
-        const [name] = args
-        this.validateName(name)
-        return [name, undefined]
-      } else {
-        const [options] = args
-        this.validateOptions(options)
-        return [undefined, options]
-      }
-    }
-
-    if (args.length === 2) {
-      const [name, options] = args
-      this.validateName(name)
-      this.validateOptions(options)
-      return [name, options]
-    }
-
-    throw new Error('Invalid number of arguments, 0-2 expected')
-  }
-
   private getLocation(name: undefined | string): Location {
-    if (this.$.is.undefined(name)) {
-      return [this.$pkg.name, ':state', ':default']
-    } else {
-      return [this.$pkg.name, ':state', name]
-    }
-  }
-
-  private validateName(name: unknown): asserts name is undefined | string {
-    if (this.$.is.undefined(name)) return
-    if (!this.$.is.string(name)) throw new Error('Invalid state name, string expected')
-    if (name.length === 0) throw new Error('Invalid state name, non-empty string expected')
-    if (name.startsWith(':')) throw new Error('Invalid state name, cannot start with ":"')
-  }
-
-  private validateOptions(options: unknown): asserts options is undefined | Options {
-    if (this.$.is.undefined(options)) return
-    if (!this.$.is.object(options)) throw new Error('Invalid options, object expected')
-    this.validateInitial(options.initial)
-    this.validateModels(options.models)
-    this.validateVersioner(options.versioner)
-  }
-
-  private validateInitial(initial: unknown) {
-    if (this.$.is.undefined(initial)) return
-    if (!this.$.is.function(initial)) throw new Error('Invalid "initial" field, function expected')
-  }
-
-  private validateModels(models: unknown) {
-    if (this.$.is.undefined(models)) return
-    if (this.$.is.map(models)) return
-    if (this.$.is.object(models)) return
-    throw new Error('Invalid "models" field, object or Map expected')
-  }
-
-  private validateVersioner(versioner: unknown) {
-    if (this.$.is.undefined(versioner)) return
-    if (!this.$.is.object(versioner)) throw new Error('Invalid "versioner" field, object expected')
-
-    const keys = Object.keys(versioner)
-    const badKey = keys.find(key => !this.$.is.numeric(key))
-    if (badKey) throw new Error(`Invalid "versioner" field, keys must be numeric, but got: "${badKey}"`)
-
-    const badValueKey = keys.find(key => !this.$.is.function(versioner[key]))
-    if (badValueKey)
-      throw new Error(`Invalid "versioner" field, value for key "${badValueKey}" must be a function`)
-  }
-
-  private validateTransactionFn(fn: Fn) {
-    if (!this.$.is.function(fn)) throw new Error('Invalid transaction argument, function expected')
-  }
-
-  private validateLocalState(state: unknown) {
-    if (!this.$.is.object(state)) throw new Error('Invalid state, object expected')
+    name ??= ':default'
+    return [this.$pkg.name, ':state', name]
   }
 }

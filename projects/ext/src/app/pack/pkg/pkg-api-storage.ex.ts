@@ -2,42 +2,32 @@ export class PkgApiStorage extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
 
   async get(key: string, name?: string) {
-    this.validateKey(key)
-    this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.get(this.$pkg.name, name, key)
   }
 
   async set(key: string, value: unknown, name?: string) {
-    this.validateKey(key)
-    this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.set(this.$pkg.name, name, key, value)
   }
 
   async delete(key: string, name?: string) {
-    this.validateKey(key)
-    this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.delete(this.$pkg.name, name, key)
   }
 
   async keys(name?: string) {
-    this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.keys(this.$pkg.name, name)
   }
 
   async clear(name?: string) {
-    this.validateName(name)
     name ??= ':storage'
     return await this.$.idb.deleteStore(this.$pkg.name, name)
   }
 
   use(name?: string) {
-    this.validateName(name)
     name ??= ':storage'
-
     return {
       get: (key: string) => this.get(key, name),
       set: (key: string, value: unknown) => this.set(key, value, name),
@@ -51,17 +41,5 @@ export class PkgApiStorage extends $ex.Unit {
     const stores = await this.$.idb.listStores(this.$pkg.name)
     const names = stores.filter(store => store === ':storage' || !store.startsWith(':'))
     return names.map(name => ({ name: name === ':storage' ? null : name }))
-  }
-
-  private validateName(name?: string) {
-    if (this.$.is.undefined(name)) return
-    if (!this.$.is.string(name)) throw new Error('Invalid storage name, string expected')
-    if (name.length === 0) throw new Error('Invalid storage name, non-empty string expected')
-    if (name.startsWith(':')) throw new Error('Invalid storage name, cannot start with ":"')
-  }
-
-  private validateKey(key: string) {
-    if (!this.$.is.string(key)) throw new Error('Invalid storage key, string expected')
-    if (key.length === 0) throw new Error('Invalid storage key, non-empty string expected')
   }
 }
