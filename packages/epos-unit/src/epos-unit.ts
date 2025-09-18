@@ -1,18 +1,17 @@
-import { epos } from 'epos'
 import { createLog, type Cls } from '@eposlabs/utils'
+import { epos } from 'epos'
+
 import type { FC } from 'react'
 
-const _root_ = Symbol('root')
-const _disposers_ = Symbol('disposers')
-const _tempParent_ = Symbol('parent')
-type Versioner = Record<number, (this: any, unit: any) => void>
+export const _root_ = Symbol('root')
+export const _disposers_ = Symbol('disposers')
+export const _tempParent_ = Symbol('parent')
 
 export class Unit {
   declare '@': string
   declare private [_root_]: Unit
   declare private [_disposers_]: Array<() => void>
   declare private [_tempParent_]: Unit | null;
-  declare [epos.store.symbols.model.parent]: Unit | null;
   [key: PropertyKey]: unknown
 
   constructor(parent: Unit | null = null) {
@@ -33,6 +32,7 @@ export class Unit {
     // Bind all methods
     for (const key of prototypeKeys) {
       if (typeof this[key] !== 'function') continue
+      if (key === 'constructor') continue
       this[key] = this[key].bind(this)
     }
 
@@ -74,7 +74,7 @@ export class Unit {
     return this.versioner
   }
 
-  static defineVersioner(versioner: Versioner) {
+  static defineVersioner(versioner: Record<number, (this: any, unit: any) => void>) {
     return versioner
   }
 
@@ -88,7 +88,7 @@ export class Unit {
   }
 
   up<T extends Unit>(Ancestor: Cls<T>): T | null {
-    let cursor = getParent(this)
+    let cursor: unknown = getParent(this)
     while (cursor) {
       if (cursor instanceof Ancestor) return cursor
       cursor = getParent(cursor)
@@ -129,8 +129,8 @@ function isUiKey(key: string) {
   return key === 'ui' || /^[A-Z][a-zA-Z0-9]*$/.test(key)
 }
 
-function getParent(unit: Unit) {
-  return unit[_tempParent_] ?? unit[epos.store.symbols.model.parent]
+function getParent(child: any) {
+  return child[_tempParent_] ?? child[epos.store.symbols.model.parent]
 }
 
 function findRoot(unit: Unit) {
