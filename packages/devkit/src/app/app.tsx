@@ -1,33 +1,22 @@
-export class App {
+export class App extends $gl.Unit {
   utils = new $gl.Utils(this)
-  // idb = new $gl.Idb(this)
-  // pkgs = new $gl.Pkgs(this)
+  idb = new $gl.Idb(this)
+  pkgs: $gl.Pkg[] = []
 
   ui() {
     return (
       <div>
         <div>Devkit App</div>
-        {/* <this.pkgs.ui /> */}
+        <div>
+          <button>ADD PACKAGE</button>
+        </div>
       </div>
     )
   }
 
   static versioner: any = {
-    1() {
-      this.utils = new $gl.Utils(this)
-    },
-    2() {
-      this.utils = new $gl.Utils(this)
-      console.warn(this.utils)
-    },
-    3() {
-      this.utils = new $gl.Utils(this)
-    },
-    4() {
-      console.warn('4')
-    },
-    13() {
-      this.utils = new $gl.Utils(this)
+    38() {
+      this.idb = new $gl.Idb(this)
     },
   }
 }

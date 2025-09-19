@@ -34,6 +34,8 @@ export class Net extends $sw.Unit {
             responseHeaders: [
               { header: 'Content-Security-Policy', operation: 'remove' },
               { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
+
+              // TODO: implement properly
               { header: 'x-frame-options', operation: 'remove' },
             ],
           },

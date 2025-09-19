@@ -1,9 +1,10 @@
 import { is, QueueMap, safe } from '@eposlabs/utils'
 
-export class Utils {
+export class Utils extends $gl.Unit {
   declare is: typeof is
   declare QueueMap: typeof QueueMap
   declare safe: typeof safe
+
   uuid() {
     return crypto.randomUUID()
   }

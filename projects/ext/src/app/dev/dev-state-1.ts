@@ -35,8 +35,6 @@ export class Dev extends $gl.Unit {
 
     if (!import.meta.env.DEV) return
 
-    let $ = this.$
-
     if (this.$.env.is.sw) {
       const { _init_, _cleanup_, _versioner_ } = $exSw.State
       class Node {
@@ -87,88 +85,41 @@ export class Dev extends $gl.Unit {
         }
       }
 
-      class Message {
-        text: string
-        constructor(text: string) {
-          this.text = text ?? crypto.randomUUID().slice(0, 4)
-        }
-        [$exSw.State._init_]() {
-          console.log('[init] message', this.text)
-        }
-        [$exSw.State._cleanup_]() {
-          console.log('[cleanup] message', this.text)
-        }
-      }
-
-      class Chat {
-        messages: Message[] = []
-        top = null;
-        [$exSw.State._init_]() {
-          console.log('[init] chat', this.messages.length)
-        }
-        [$exSw.State._cleanup_]() {
-          console.log('[cleanup] chat', this.messages.length)
-        }
-        static [$exSw.State._versioner_] = {
-          5() {
-            this.messages = this.messages.slice(0, 2)
-          },
-          7() {
-            // TODO: problem: when versioner is applied, this 'new' is initialized first, before other messages
-            // After reload, it is initialized first
-            this.messages.push(new Message('new'))
-          },
-          11() {
-            console.warn('##############')
-            const m = new Message('a')
-            for (const key in m) {
-              console.warn(key)
-            }
-            console.log(m, $.is.object(m))
-            this.top = new Message('a')
-          },
-        }
-      }
-
-      Object.assign(Message.prototype, {
-        da() {
-          // return 2
-        },
-      })
-
       const s = await this.$.store.connect(['a', 'b', 'c'], {
-        initial: () => ({ chat: new Chat() }),
-        models: { Node, Chat, Message },
+        initial: () => new Node('root'),
+        models: { Node },
         versioner: {},
       })
 
       const init = () => {
-        s.data.messages.push(new Message('1'), new Message('2'), new Message('3'), new Message('4'))
-        // s.data.nodes = []
-        // const a = new Node('a')
-        // const b = new Node('b')
-        // s.data.nodes.push(a, b)
+        s.data.nodes = []
+        const a = new Node('a')
+        const b = new Node('b')
+        s.data.nodes.push(a, b)
       }
 
-      Object.assign(self, { s, Node, Chat, Message, init })
+      Object.assign(self, { s, Node, init })
     }
 
     if (this.$.env.is.ex) {
-      // class Robot {
-      //   show() {
-      //     console.log('me robot')
-      //   }
-      // }
-      // class Arm {
-      //   show() {
-      //     console.log('me arm')
-      //   }
-      // }
+      class Robot {
+        show() {
+          console.log('me robot')
+        }
+      }
+
+      class Arm {
+        show() {
+          console.log('me arm')
+        }
+      }
+
       const s = await this.$.store.connect(['a', 'b', 'c'], {
-        // getInitialState: () => new Robot(),
-        // models: { Robot, Arm },
+        getInitialState: () => new Robot(),
+        models: { Robot, Arm },
         // versioner: { 5: s => (s.root = 5) },
       })
+
       Object.assign(self, { s })
     }
   }

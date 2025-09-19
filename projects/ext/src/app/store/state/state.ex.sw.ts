@@ -1,4 +1,8 @@
 // @ts-nocheck
+// TODO: (see dev.gl.ts) problem: when versioner is applied, this 'new' is initialized first, before other messages.
+// After reload, it is initialized first.
+// this.messages.push(new Message('new')).
+
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
 import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
@@ -239,7 +243,6 @@ export class State extends $exSw.Unit {
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
       this.wire(mObject, yMap, parent, Model, object.constructor === Model)
       // It is important to use Object.keys instead for..in, because for..in also iterates over prototype properties
-      console.warn(object, Object.keys(object))
       Object.keys(object).forEach(key => this.set(mObject, key, object[key]))
       this.attachedNodes.add(mObject)
       return mObject

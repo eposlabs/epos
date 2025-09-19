@@ -127,7 +127,7 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 
 function isUiKey(key: string) {
-  return key === 'ui' || /^[A-Z][a-zA-Z0-9]*$/.test(key)
+  return key.startsWith('ui')
 }
 
 function getParent(child: any) {

@@ -6,9 +6,9 @@ export type DbKey = string
 export type Database = IDBDatabase & { [_cleanup_]?: () => void }
 
 export class Idb extends $gl.Unit {
+  static _cleanup_ = _cleanup_
   declare private dbs: { [name: DbName]: Database }
   declare private queues: InstanceType<typeof this.$.utils.QueueMap>
-  static _cleanup_ = _cleanup_
 
   init() {
     this.dbs = {}
