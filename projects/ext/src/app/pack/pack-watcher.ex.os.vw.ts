@@ -1,4 +1,3 @@
-import { has } from 'mobx'
 import type { ActionData, ExecutionData } from './pack.sw'
 
 export type PkgName = string

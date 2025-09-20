@@ -49,7 +49,8 @@ export class PkgApi extends $ex.Unit {
         transaction: this.$.utils.link(this.store, 'transaction'),
         local: this.$.utils.link(this.store, 'local'),
         list: this.$.utils.link(this.store, 'list'),
-        destroy: this.$.utils.link(this.store, 'destroy'),
+        remove: this.$.utils.link(this.store, 'remove'),
+        registerGlobalModels: this.$.utils.link(this.store, 'registerGlobalModels'),
         symbols: this.store.symbols,
       },
 

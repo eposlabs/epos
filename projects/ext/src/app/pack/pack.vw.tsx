@@ -79,7 +79,7 @@ export class Pack extends $vw.Unit {
   }
 
   ui = () => {
-    if (this.list.length === 0) return null
+    if (this.list().length === 0) return null
     return (
       <div onMouseEnter={() => this.dock.hide()}>
         {this.list().map(pkg => (

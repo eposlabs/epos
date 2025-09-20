@@ -20,7 +20,8 @@
   - epos.store.transaction
   - epos.store.local
   - epos.store.list
-  - epos.store.destroy
+  - epos.store.remove
+  - epos.store.registerGlobalModels
   - epos.store.symbols.model.init
   - epos.store.symbols.model.cleanup
   - epos.store.symbols.model.versioner
