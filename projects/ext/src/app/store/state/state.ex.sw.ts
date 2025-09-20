@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
 import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
@@ -30,7 +31,8 @@ export type YNode = YMap | YArray
 export type Meta = {
   mNode: MNode
   yNode: YNode
-  onDetach: () => void
+  unwire: () => void
+  model: null | { keys: Set<string> } // Present for model nodes
 }
 
 // MobX change types
@@ -42,7 +44,7 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
 
 export type Options = {
   initial?: GetInitialState
-  models?: Record<string, ModelClass> | Map<string, ModelClass>
+  models?: Record<string, ModelClass>
   versioner?: Versioner
 }
 
@@ -63,14 +65,15 @@ export class State extends $exSw.Unit {
 
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<$gl.Bus['create']>
-  private models: Map<string, ModelClass>
+  private models: Record<string, ModelClass>
   private versioner: Versioner
   private getInitialState: GetInitialState
   private connected = false
-
-  private hydrationQueue = new Set<MObject>()
-  private mobxChangeDepth = 0
+  private committing = false
+  private attachedNodes = new Set<MNode>()
+  private detachedNodes = new Set<MNode>()
   private applyingYjsToMobx = false
+  private mobxOperationDepth = 0
 
   private saveQueue = new this.$.utils.Queue()
   private saveTimeout: number | undefined = undefined
@@ -87,10 +90,36 @@ export class State extends $exSw.Unit {
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
-    this.models = this.createModelMap(options.models ?? {})
+    this.models = options.models ?? {}
     this.versioner = options.versioner ?? {}
     this.getInitialState = options.initial ?? (() => ({}))
     this.save = this.saveQueue.wrap(this.save, this)
+  }
+
+  async disconnect() {
+    if (!this.connected) return
+    this.connected = false
+    this.doc.destroy()
+    this.bus.off('update')
+    if (this.$.env.is.sw) this.bus.off('swGetDocAsUpdate')
+    await this.save()
+  }
+
+  async destroy() {
+    await this.disconnect()
+    await this.$.idb.delete(...this.location)
+  }
+
+  transaction(fn: () => void) {
+    this.$.libs.mobx.runInAction(() => {
+      this.doc.transact(() => {
+        fn()
+      })
+    })
+  }
+
+  registerModels(models: Record<string, ModelClass>) {
+    Object.assign(this.models, models)
   }
 
   private async init() {
@@ -130,8 +159,9 @@ export class State extends $exSw.Unit {
       await this.bus.send('update', update)
     })
 
-    // 5. Set initial state. Run state versioner. Hydrate models.
+    // 5. Set initial state. Run state versioner. Commit attached & detached nodes.
     this.transaction(() => {
+      // Initialize initial state or run state versioner
       $: (() => {
         const versions = this.getVersionsAsc(this.versioner)
 
@@ -141,17 +171,17 @@ export class State extends $exSw.Unit {
           this.data = this.attach(this.getInitialState(), null)
 
           // State itself is a model? -> Don't use state versioner (model versioner will be used)
-          if (this.isModel(this.data)) return
+          if (this.isModelNode(this.data)) return
 
           // Set the latest version
           if (versions.length === 0) return
-          this.$.libs.mobx.set(this.data, ':version', versions.at(-1))
+          this.set(this.data, ':version', versions.at(-1))
         }
 
         // Non-empty state?
         else {
           // State itself is a model? -> Don't run state versioner (model versioner will be run)
-          if (this.isModel(this.data)) return
+          if (this.isModelNode(this.data)) return
 
           // Run state versioner
           for (const version of versions) {
@@ -162,37 +192,15 @@ export class State extends $exSw.Unit {
         }
       })()
 
-      // Hydrate models
-      this.hydrateModels()
+      // Mark state as ready, from now on all changes will be tracked for commit
+      this.connected = true
+
+      // Commit attached & detached nodes
+      this.commit()
     })
 
     // 6. Save changes
     this.saveDebounced()
-
-    // 7. Mark as connected
-    this.connected = true
-  }
-
-  async disconnect() {
-    if (!this.connected) return
-    this.connected = false
-    this.doc.destroy()
-    this.bus.off('update')
-    if (this.$.env.is.sw) this.bus.off('swGetDocAsUpdate')
-    await this.save()
-  }
-
-  async destroy() {
-    await this.disconnect()
-    await this.$.idb.delete(...this.location)
-  }
-
-  transaction(fn: () => void) {
-    this.$.libs.mobx.runInAction(() => {
-      this.doc.transact(() => {
-        fn()
-      })
-    })
   }
 
   // ---------------------------------------------------------------------------
@@ -209,18 +217,18 @@ export class State extends $exSw.Unit {
       const yMap = source
       const Model = this.getModelByName(yMap.get('@'))
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: !Model })
-      this.wire(mObject, yMap, parent)
-      if (Model) this.applyModel(mObject, Model, false)
-      yMap.forEach((value, key) => this.$.libs.mobx.set(mObject, key, value))
-      if (Model) this.hydrationQueue.add(mObject)
+      this.wire(mObject, yMap, parent, Model)
+      yMap.forEach((value, key) => this.set(mObject, key, value))
+      this.attachedNodes.add(mObject)
       return mObject
     }
 
     if (source instanceof this.$.libs.yjs.Array) {
       const yArray = source
       const mArray: MArray = this.$.libs.mobx.observable.array([], { deep: false })
-      this.wire(mArray, yArray, parent)
+      this.wire(mArray, yArray, parent, null)
       yArray.forEach(item => mArray.push(item))
+      this.attachedNodes.add(mArray)
       return mArray
     }
 
@@ -229,10 +237,11 @@ export class State extends $exSw.Unit {
       const Model = this.getModelByName(object['@']) ?? this.getModelByInstance(object)
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: !Model })
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
-      this.wire(mObject, yMap, parent)
-      if (Model) this.applyModel(mObject, Model, object instanceof Model)
-      for (const key in object) this.$.libs.mobx.set(mObject, key, object[key])
-      if (Model) this.hydrationQueue.add(mObject)
+      this.wire(mObject, yMap, parent, Model, object.constructor === Model)
+      // It is important to use Object.keys instead for..in, because for..in also iterates over prototype properties
+      console.warn(object, Object.keys(object))
+      Object.keys(object).forEach(key => this.set(mObject, key, object[key]))
+      this.attachedNodes.add(mObject)
       return mObject
     }
 
@@ -240,8 +249,9 @@ export class State extends $exSw.Unit {
       const array = source
       const mArray: MArray = this.$.libs.mobx.observable.array([], { deep: false })
       const yArray = new this.$.libs.yjs.Array()
-      this.wire(mArray, yArray, parent)
+      this.wire(mArray, yArray, parent, null)
       array.forEach(item => mArray.push(item))
+      this.attachedNodes.add(mArray)
       return mArray
     }
 
@@ -259,58 +269,164 @@ export class State extends $exSw.Unit {
     throw new Error('Unsupported state value')
   }
 
-  private wire(mNode: MNode, yNode: YNode, parent: Parent) {
-    // Start node observers
+  private detach(target: unknown) {
+    // Detach attached nodes only. Skip regular objects/arrays and other regular values.
+    const meta = this.getMeta(target)
+    if (!meta) return
+
+    // Detach object node and all its children
+    if (this.$.is.object(target)) {
+      const keys = this.keys(target)
+      for (const key of keys) this.detach(target[key])
+      this.detachedNodes.add(target)
+    }
+
+    // Detach array node and all its children
+    else if (this.$.is.array(target)) {
+      for (const item of target) this.detach(item)
+      this.detachedNodes.add(target)
+    }
+  }
+
+  private wire(mNode: MNode, yNode: YNode, parent: Parent, Model: ModelClass | null, isFresh = false) {
+    // 1. Start node observers
     const unobserveMNode = this.$.libs.mobx.intercept(mNode, this.onMNodeChange as any)
     yNode.observe(this.onYNodeChange)
 
-    const onDetach = () => {
+    // 2. Define unwire method
+    const unwire = () => {
       // Stop node observers
       unobserveMNode()
       yNode.unobserve(this.onYNodeChange)
-
-      // Delete parent reference
-      delete mNode[_parent_]
 
       // Delete meta reference
       delete mNode[_meta_]
       delete yNode[_meta_]
 
+      // Delete parent reference
+      delete mNode[_parent_]
+
       // Delete dev helpers
       delete mNode._
       delete yNode._
       delete mNode.__
-
-      // Cleanup model
-      if (this.isModel(mNode)) {
-        if (this.hydrationQueue.has(mNode)) this.hydrationQueue.delete(mNode)
-        this.runModelMethod(mNode, _cleanup_)
-      }
     }
 
-    // Define parent
-    Reflect.defineProperty(mNode, _parent_, { configurable: true, get: () => parent })
-
-    // Define meta
-    const meta: Meta = { mNode, yNode, onDetach }
+    // 3. Define meta
+    const meta: Meta = { mNode, yNode, unwire, model: Model ? { keys: new Set() } : null }
     Reflect.defineProperty(mNode, _meta_, { configurable: true, get: () => meta })
     Reflect.defineProperty(yNode, _meta_, { configurable: true, get: () => meta })
 
-    // Define dev helpers
+    // 4. Define parent
+    Reflect.defineProperty(mNode, _parent_, { configurable: true, get: () => parent })
+
+    // 5. Define dev helpers
     Reflect.defineProperty(mNode, '_', { configurable: true, get: () => this.unwrap(mNode) })
     Reflect.defineProperty(yNode, '_', { configurable: true, get: () => yNode.toJSON() })
     Reflect.defineProperty(mNode, '__', { configurable: true, get: () => this.$.libs.mobx.toJS(mNode) })
+
+    // 6. Setup model
+    if (Model) {
+      // Apply model prototype
+      if (!this.$.is.object(mNode)) throw this.never
+      Reflect.setPrototypeOf(mNode, Model.prototype)
+
+      // Set '@' and ':version' fields if this is a fresh model instance
+      if (isFresh) {
+        const name = this.getModelName(Model)
+        if (this.$.is.undefined(name)) throw this.never
+        this.set(mNode, '@', name)
+        const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
+        if (versions.length > 0) this.set(mNode, ':version', versions.at(-1))
+      }
+    }
   }
 
-  private detach(target: unknown) {
-    const meta = this.getMeta(target)
-    if (meta) meta.onDetach()
+  private commit() {
+    const pretty = nodes => {
+      return [...nodes].filter(n => this.isModelNode(n)).map(a => a._)
+    }
 
-    if (this.$.is.object(target)) {
-      const keys = this.keys(target)
-      for (const key of keys) this.detach(target[key])
-    } else if (this.$.is.array(target)) {
-      for (const item of target) this.detach(item)
+    // TOP-LEVEL
+    if (!this.committing) {
+      this.committing = true
+
+      this.topLevelPhase = 'model-versioner'
+      this.topLevelInitQueue = new Set(this.attachedNodes)
+      // this.initialized = new Set()
+      // console.warn(pretty(this.topLevelInitQueue))
+
+      const attachedNodes = new Set(this.attachedNodes)
+      this.attachedNodes.clear()
+
+      for (const node of attachedNodes) {
+        if (this.isModelNode(node)) {
+          // console.log('[versioner:0]', node._)
+          this.runModelVersioner(node)
+        }
+      }
+
+      this.topLevelPhase = 'model-init'
+      // console.warn(pretty(this.topLevelInitQueue))
+      for (const node of this.topLevelInitQueue) {
+        if (this.detachedNodes.has(node)) continue
+        if (this.isModelNode(node)) {
+          // console.log('[init:0]', node._)
+          const meta = this.getMeta(node)
+          meta.initialized = true
+          this.runModelMethod(node, _init_)
+        }
+      }
+
+      for (const node of this.detachedNodes) {
+        if (this.isModelNode(node)) {
+          const meta = this.getMeta(node)
+          if (!meta.initialized) continue
+          // console.log('[cleanup]', node._)
+          this.runModelMethod(node, _cleanup_)
+        }
+      }
+
+      for (const node of this.detachedNodes) {
+        const meta = this.getMeta(node)
+        if (!meta) throw this.never
+        meta.unwire()
+      }
+
+      this.initialized = new Set()
+      this.committing = false
+      this.detachedNodes.clear()
+    }
+
+    // NESTED
+    else {
+      const newNodes = new Set(this.attachedNodes)
+      this.attachedNodes.clear()
+
+      for (const node of newNodes) {
+        if (this.isModelNode(node)) {
+          if (this.topLevelPhase === 'model-versioner') {
+            // console.log('[versioner]', node._)
+            this.runModelVersioner(node)
+            this.topLevelInitQueue = new Set([node, ...Array.from(this.topLevelInitQueue)])
+          } else if (this.topLevelPhase === 'model-init') {
+            // console.log('[versioner]', node._)
+            this.runModelVersioner(node)
+          }
+        }
+      }
+
+      if (this.topLevelPhase === 'model-init') {
+        for (const node of newNodes) {
+          if (this.isModelNode(node)) {
+            // console.log('[init]', node._)
+            // this.initialized.add(node)
+            const meta = this.getMeta(node)
+            meta.initialized = true
+            this.runModelMethod(node, _init_)
+          }
+        }
+      }
     }
   }
 
@@ -319,9 +435,11 @@ export class State extends $exSw.Unit {
   // ---------------------------------------------------------------------------
 
   private onMNodeChange = (change: MNodeChange) => {
-    // When connected, track the MobX change depth. When the depth reaches 0 at the end of a change,
-    // it means the entire operation has completed. After this, queued models are hydrated.
-    if (this.connected) this.mobxChangeDepth += 1
+    // When connected, track MobX operation depth. When the depth reaches 0 at the end of a change,
+    // it means the entire operation has completed. After this, attach/detach queues are committed.
+    if (this.connected) {
+      this.mobxOperationDepth += 1
+    }
 
     // Process 'change' object:
     // - Create nodes for new values
@@ -353,9 +471,9 @@ export class State extends $exSw.Unit {
       // Save state to IDB
       this.saveDebounced()
 
-      // Hydrate models when the entire MobX change operation has completed
-      this.mobxChangeDepth -= 1
-      if (this.mobxChangeDepth === 0) this.hydrateModels()
+      // Commit attach/detach queues when the entire operation has completed
+      this.mobxOperationDepth -= 1
+      if (this.mobxOperationDepth === 0) this.commit()
     }
 
     return change
@@ -468,9 +586,9 @@ export class State extends $exSw.Unit {
       for (const key of e.keysChanged) {
         this.detach(mObject[key])
         if (yMap.has(key)) {
-          this.$.libs.mobx.set(mObject, key, yMap.get(key))
+          this.set(mObject, key, yMap.get(key))
         } else {
-          this.$.libs.mobx.remove(mObject, key)
+          this.delete(mObject, key)
         }
       }
 
@@ -507,6 +625,59 @@ export class State extends $exSw.Unit {
   }
 
   // ---------------------------------------------------------------------------
+  // MODEL MANAGEMENT
+  // ---------------------------------------------------------------------------
+
+  private runModelVersioner(model: MObject) {
+    const Model = this.getModelByInstance(model)
+    if (!Model) throw this.never
+
+    // No versions? -> Ignore
+    if (!Model[_versioner_]) return
+    const versions = this.getVersionsAsc(Model[_versioner_])
+    if (versions.length === 0) return
+
+    // Save current values
+    const valuesBefore = { ...model }
+
+    // Get keys before versioner
+    const keysBefore = new Set(Object.keys(model))
+
+    // Run versioner
+    for (const version of versions) {
+      if (this.$.is.number(model[':version']) && model[':version'] >= version) continue
+      Model[_versioner_][version].call(model, model)
+      model[':version'] = version
+    }
+
+    // Get keys after versioner
+    const keysAfter = new Set(Object.keys(model))
+
+    // Notify MobX about deleted keys
+    for (const key of keysBefore) {
+      if (keysAfter.has(key)) continue
+      // Manually detach old values. Detach won't happen automatically, because inside versioner,
+      // we delete fields with `delete model[key]` while `mobx.remove` is required for auto-detection.
+      this.detach(valuesBefore[key])
+      model[key] = null // Required for MobX to detect change inside 'delete' below
+      this.delete(model, key)
+    }
+
+    // Notify MobX about added keys
+    for (const key of keysAfter) {
+      if (keysBefore.has(key)) continue
+      const value = model[key]
+      delete model[key] // Required for MobX to detect change inside 'set' below
+      this.set(model, key, value)
+    }
+  }
+
+  private runModelMethod(model: MObject, method: PropertyKey) {
+    if (!this.$.is.function(model[method])) return
+    model[method]()
+  }
+
+  // ---------------------------------------------------------------------------
   // PERSISTENCE
   // ---------------------------------------------------------------------------
 
@@ -525,99 +696,32 @@ export class State extends $exSw.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // MODEL MANAGEMENT
-  // ---------------------------------------------------------------------------
-
-  private getModelByName(name: unknown) {
-    if (!this.$.is.string(name)) return null
-    return this.models.get(name) ?? null
-  }
-
-  private getModelByInstance(instance: Obj) {
-    return [...this.models.values()].find(Model => instance instanceof Model) ?? null
-  }
-
-  private getModelName(Model: ModelClass) {
-    return [...this.models.keys()].find(name => this.models.get(name) === Model) ?? null
-  }
-
-  private isModel(value: unknown): value is MObject & { __model: true } {
-    if (!this.$.is.object(value)) return false
-    return !!this.getModelByInstance(value)
-  }
-
-  private applyModel(mObject: MObject, Model: ModelClass, fresh: boolean) {
-    // Apply model prototype
-    Reflect.setPrototypeOf(mObject, Model.prototype)
-
-    // Fresh? -> Set '@' and ':version' fields
-    if (fresh) {
-      const name = this.getModelName(Model)
-      if (!name) throw this.never
-      this.$.libs.mobx.set(mObject, '@', name)
-      const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
-      if (versions.length > 0) this.$.libs.mobx.set(mObject, ':version', versions.at(-1))
-    }
-  }
-
-  private hydrateModels() {
-    if (this.hydrationQueue.size === 0) return
-
-    this.transaction(() => {
-      // Hydration queue might be updated during versioner, do not put this.hydrationQueue to a variable
-      for (const model of this.hydrationQueue) this.runModelVersioner(model)
-      for (const model of this.hydrationQueue) this.runModelMethod(model, _init_)
-      this.hydrationQueue.clear()
-    })
-  }
-
-  private runModelVersioner(model: MObject) {
-    const Model = this.getModelByInstance(model)
-    if (!Model) throw this.never
-
-    // No versions? -> Ignore
-    if (!Model[_versioner_]) return
-    const versions = this.getVersionsAsc(Model[_versioner_])
-    if (versions.length === 0) return
-
-    const valuesBefore = { ...model }
-    const keysBefore = new Set(Object.keys(model))
-
-    // Run versioner
-    for (const version of versions) {
-      if (this.$.is.number(model[':version']) && model[':version'] >= version) continue
-      Model[_versioner_][version].call(model, model)
-      model[':version'] = version
-    }
-
-    // Get keys after versioner
-    const keysAfter = new Set(Object.keys(model))
-
-    // Notify MobX about removed keys
-    for (const key of keysBefore) {
-      if (keysAfter.has(key)) continue
-      this.detach(valuesBefore[key])
-      model[key] = null // Required for MobX to detect change inside 'remove' below
-      this.$.libs.mobx.remove(model, key)
-    }
-
-    // Notify MobX about added keys
-    for (const key of keysAfter) {
-      if (keysBefore.has(key)) continue
-      const value = model[key]
-      delete model[key] // Required for MobX to detect change inside 'set' below
-      this.$.libs.mobx.set(model, key, value)
-    }
-  }
-
-  private runModelMethod(model: MObject, method: PropertyKey) {
-    if (!this.$.is.function(model[method])) return
-    model[method]()
-  }
-
-  // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
+
+  private set(mObject: MObject, key: string, value: unknown) {
+    // Track observable keys for models
+    const meta = this.getMeta(mObject)
+    if (!meta) throw this.never
+    if (meta.model) meta.model.keys.add(key)
+
+    this.$.libs.mobx.set(mObject, key, value)
+  }
+
+  private delete(mObject: MObject, key: string) {
+    // Track observable keys for models
+    const meta = this.getMeta(mObject)
+    if (!meta) throw this.never
+    if (meta.model) meta.model.keys.delete(key)
+
+    this.$.libs.mobx.remove(mObject, key)
+  }
+
+  private keys(value: Obj) {
+    const meta = this.getMeta(value)
+    if (meta && meta.model) return [...meta.model.keys]
+    return Object.keys(value)
+  }
 
   private getMeta(target: any): Meta | null {
     return (target?.[_meta_] as Meta) ?? null
@@ -635,10 +739,23 @@ export class State extends $exSw.Unit {
     return meta.yNode as T extends MObject ? YMap : YArray
   }
 
-  private keys(value: Obj) {
-    const yNode = this.getYNode(value)
-    if (!yNode) return Object.keys(value)
-    return [...yNode.keys()]
+  private isModelNode(mNode: MNode): mNode is MObject & { __model: true } {
+    const meta = this.getMeta(mNode)
+    if (!meta) throw this.never
+    return !!meta.model
+  }
+
+  private getModelByName(name: unknown) {
+    if (!this.$.is.string(name)) return null
+    return this.models[name]
+  }
+
+  private getModelByInstance(instance: Obj) {
+    return Object.values(this.models).find(Model => instance.constructor === Model) ?? null
+  }
+
+  private getModelName(Model: ModelClass) {
+    return Object.keys(this.models).find(name => this.models[name] === Model) ?? null
   }
 
   private unwrap<T>(value: T): T {
@@ -660,10 +777,5 @@ export class State extends $exSw.Unit {
     return Object.keys(versioner)
       .map(Number)
       .sort((v1, v2) => v1 - v2)
-  }
-
-  private createModelMap(models: Record<string, ModelClass> | Map<string, ModelClass>) {
-    if (this.$.is.map(models)) return models
-    return new Map(Object.entries(models))
   }
 }

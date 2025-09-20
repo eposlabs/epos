@@ -24,7 +24,7 @@ export class Store extends $exSw.Unit {
       this.$.bus.on('store.swConnect', async (location: Location, options: Options = {}) => {
         await this.connect(location, options, true)
       })
-      this.$.bus.on('store.swDestroy', this.destroy, this)
+      this.$.bus.on('store.swRemove', this.remove, this)
       this.setupAutoDisconnect()
     }
   }
@@ -61,11 +61,11 @@ export class Store extends $exSw.Unit {
     if (this.$.env.is.ex) this.$.bus.off(`store.exConnected[${id}]`)
   }
 
-  async destroy(location: Location) {
-    // TODO: rework
+  async remove(location: Location) {
+    // TODO: rework, use state.destroy()
     if (this.$.env.is.ex) {
       await this.disconnect(location)
-      await this.$.bus.send('store.swDestroy', location)
+      await this.$.bus.send('store.swRemove', location)
     } else if (this.$.env.is.sw) {
       await this.disconnect(location)
       await this.$.bus.send('store.exDisconnect', location)
