@@ -1,2 +1,1 @@
-console.log('devkit')
-self.epos = epos
+console.log(top === parent)

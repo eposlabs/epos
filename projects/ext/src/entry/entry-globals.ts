@@ -14,7 +14,7 @@ declare global {
 
   // Global variables injected to [ex]
   var __eposIsTop: boolean
-  var __eposGlobals: Record<string, unknown>
+  var __eposOriginalGlobals: Record<string, unknown>
   var __eposElement: HTMLElement
   var __eposTabId: number | null
   var __eposBusToken: string | null

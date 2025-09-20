@@ -7,6 +7,10 @@
     {
       "matches": ["<hub>", "<popup>"],
       "load": ["./dist/gl.js", "./dist/gl.css"]
+    },
+    {
+      "matches": ["http://localhost:3022/index.html"],
+      "load": "./stub.js"
     }
   ]
 }

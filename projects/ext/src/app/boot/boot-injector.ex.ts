@@ -48,7 +48,7 @@ export class BootInjector extends $ex.Unit {
     // Inject pkgs defs
     const payloads = await this.$.bus.send<Payload[]>('pack.getPayloads', location.href)
     if (payloads.length === 0) return
-    const js = `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`
+    const js = `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`
     await this.injectJs(js)
   }
 

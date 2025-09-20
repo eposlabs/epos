@@ -6,7 +6,7 @@ import rebundle, { type BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({
-    input: './src/app/app.tsx',
+    input: './src/app',
     output: './src/layers',
     default: 'gl',
     watch: mode !== 'production',
@@ -26,7 +26,7 @@ export default defineConfig(async ({ mode }) => {
       minify: false,
       rolldownOptions: {
         input: {
-          gl: './src/entry/entry.tsx',
+          gl: './src/entry/index.tsx',
         },
         output: {
           entryFileNames: '[name].js',

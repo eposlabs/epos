@@ -150,13 +150,14 @@ export class BootInjector extends $sw.Unit {
 
     const js = [
       `(() => {`,
-      `self.__eposTabId = ${JSON.stringify(tab.id)}`,
-      `self.__eposBusToken = ${JSON.stringify(busToken)}`,
-      `self.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}]`,
+      `this.__eposTabId = ${JSON.stringify(tab.id)};`,
+      `this.__eposBusToken = ${JSON.stringify(busToken)};`,
+      `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`,
       patchGlobalsJs,
+      `;`,
       exJs,
       `})()`,
-    ].join(';\n')
+    ].join('\n')
 
     return { js, dev }
   }
