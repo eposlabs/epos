@@ -2,7 +2,7 @@ const globals = {}
 const keys = [...Object.getOwnPropertyNames(self), 'addEventListener', 'removeEventListener']
 for (const key of keys) globals[key] = self[key]
 self.__eposIsTop = self === top
-self.__eposGlobals = globals
+self.__eposOriginalGlobals = globals
 
 // Prevent globals being non-configurable.
 // If some website has code like this:
