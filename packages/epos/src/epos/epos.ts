@@ -7,13 +7,14 @@ import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 
 export type Fn<T = any> = (...args: any[]) => T
-export type State = Record<string, unknown>
-export type Versioner = Record<number, (this: State, state: State) => void>
+export type Obj = Record<string, unknown>
+export type Versioner = Record<number, (this: any, state: any) => void>
 export type ClassName = string | null | boolean | undefined | ClassName[]
+export type ModelClass = new (...args: any[]) => any
 
-export type ConnectOptions<T> = {
+export type ConnectOptions<T extends Obj> = {
   initial?: () => T
-  models?: Record<string, unknown> | Map<string, unknown>
+  models?: Record<string, ModelClass>
   versioner?: Versioner
 }
 
@@ -59,21 +60,21 @@ export interface Epos {
   store: {
     /** Connect state. */
     connect: {
-      <T>(): Promise<T>
-      <T>(name: string): Promise<T>
-      <T>(options: ConnectOptions<T>): Promise<T>
-      <T>(name: string, options: ConnectOptions<T>): Promise<T>
+      <T extends Obj>(name?: string, options?: ConnectOptions<T>): Promise<T>
+      <T extends Obj>(options?: ConnectOptions<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    local<T extends State = {}>(state?: T): T
+    local<T extends Obj = {}>(state?: T): T
     /** Get the list of all state names. */
     list(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
-    /** Destroy state. */
-    destroy(name?: string): Promise<void>
+    /** Remove state. */
+    remove(name?: string): Promise<void>
+    /** Dynamically register models for all states. */
+    registerGlobalModels(models: Record<string, ModelClass>): void
     symbols: {
       model: {
         readonly init: unique symbol
