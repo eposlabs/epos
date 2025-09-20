@@ -4,18 +4,18 @@ import { epos } from 'epos'
 import type { FC } from 'react'
 
 export const _root_ = Symbol('root')
+export const _parent_ = Symbol('parent')
 export const _disposers_ = Symbol('disposers')
-export const _tempParent_ = Symbol('parent')
 
-export class Unit {
+export class Unit<TRoot = unknown> {
   declare '@': string
-  declare private [_root_]: Unit
-  declare private [_disposers_]: Array<() => void>
-  declare private [_tempParent_]: Unit | null;
+  declare private [_root_]: TRoot
+  declare private [_parent_]: Unit<TRoot> | null // Parent reference for not-yet-attached units
+  declare private [_disposers_]: Set<() => void>;
   [key: PropertyKey]: unknown
 
-  constructor(parent: Unit | null = null) {
-    this[_tempParent_] = parent
+  constructor(parent: Unit<TRoot> | null = null) {
+    Reflect.defineProperty(this, _parent_, { get: () => parent })
   }
 
   // ---------------------------------------------------------------------------
@@ -27,7 +27,8 @@ export class Unit {
     const prototypeKeys = Object.getOwnPropertyNames(Unit.prototype)
 
     // Set disposers container
-    this[_disposers_] = []
+    const disposers = new Set<() => void>()
+    Reflect.defineProperty(this, _disposers_, { get: () => disposers })
 
     // Bind all methods
     for (const key of prototypeKeys) {
@@ -59,7 +60,7 @@ export class Unit {
   [epos.store.symbols.model.cleanup]() {
     // Call disposers
     this[_disposers_].forEach(disposer => disposer())
-    this[_disposers_] = []
+    this[_disposers_].clear()
 
     // Call cleanup method
     if (typeof this.cleanup === 'function') this.cleanup()
@@ -83,7 +84,7 @@ export class Unit {
   // ---------------------------------------------------------------------------
 
   get $() {
-    this[_root_] ??= findRoot(this)
+    this[_root_] ??= findRoot(this) as TRoot
     return this[_root_]
   }
 
@@ -98,25 +99,25 @@ export class Unit {
 
   autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
     const disposer = epos.libs.mobx.autorun(...args)
-    this[_disposers_].push(disposer)
+    this[_disposers_].add(disposer)
     return disposer
   }
 
   reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
     const disposer = epos.libs.mobx.reaction(...args)
-    this[_disposers_].push(disposer)
+    this[_disposers_].add(disposer)
     return disposer
   }
 
   setTimeout(...args: Parameters<typeof self.setTimeout>) {
     const id = self.setTimeout(...args)
-    this[_disposers_].push(() => self.clearTimeout(id))
+    this[_disposers_].add(() => self.clearTimeout(id))
     return id
   }
 
   setInterval(...args: Parameters<typeof self.setInterval>) {
     const id = self.setInterval(...args)
-    this[_disposers_].push(() => self.clearInterval(id))
+    this[_disposers_].add(() => self.clearInterval(id))
     return id
   }
 }
@@ -130,7 +131,7 @@ function isUiKey(key: string) {
 }
 
 function getParent(child: any) {
-  return child[_tempParent_] ?? child[epos.store.symbols.model.parent]
+  return child[_parent_] ?? child[epos.store.symbols.model.parent]
 }
 
 function findRoot(unit: Unit) {
