@@ -1,6 +1,6 @@
 import type { Location, ModelClass, Options } from '../../store/state/state.ex.sw'
 
-export class PkgApiStore extends $ex.Unit {
+export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   private states: { [name: string]: $exSw.State } = {}
 

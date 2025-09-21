@@ -5,6 +5,10 @@ export class Utils extends $gl.Unit {
   declare QueueMap: typeof QueueMap
   declare safe: typeof safe
 
+  init() {
+    this.safe.sync = safe.sync
+  }
+
   uuid() {
     return crypto.randomUUID()
   }

@@ -3,7 +3,7 @@ import './units'
 import '../layers/index.gl'
 import './index.css'
 
-const app = await epos.store.connect({
+const app = await epos.state.connect({
   models: { ...$gl },
   initial: () => new $gl.App(),
 })

@@ -1,6 +1,14 @@
 {
   "name": "web-fs-target",
-  "assets": ["./src/fs.js", "public/image.jpg"],
-  "run": "*://*",
-  "src": ["./src/fs.js", "./src/fs.css"]
+  "assets": ["public/image.jpg"],
+  "targets": [
+    {
+      "matches": ["*://*/*"],
+      "load": ["./src/fs.js", "./src/fs.css"]
+    },
+    {
+      "matches": ["https://x.com/*"],
+      "load": ["./x2.js", "./x2.css"]
+    }
+  ]
 }

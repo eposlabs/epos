@@ -5,7 +5,6 @@ export type ExecutionData = { [name: string]: ExecutionMeta }
 
 export class Pack extends $sw.Unit {
   pkgs: { [name: string]: $sw.Pkg } = {}
-  parser = new $sw.PackParser(this)
   installer = new $sw.PackInstaller(this)
   loader!: $sw.PackLoader
 

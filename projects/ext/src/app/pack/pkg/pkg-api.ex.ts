@@ -2,7 +2,7 @@ export class PkgApi extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   general!: $ex.PkgApiGeneral
   bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
-  store = new $ex.PkgApiStore(this)
+  state = new $ex.PkgApiState(this)
   storage = new $ex.PkgApiStorage(this)
   assets!: $ex.PkgApiAssets
   env = new $ex.PkgApiEnv(this)
@@ -42,16 +42,16 @@ export class PkgApi extends $ex.Unit {
         emit: this.$.utils.link(this.bus, 'emit'),
       },
 
-      // Store
-      store: {
-        connect: this.$.utils.link(this.store, 'connect'),
-        disconnect: this.$.utils.link(this.store, 'disconnect'),
-        transaction: this.$.utils.link(this.store, 'transaction'),
-        local: this.$.utils.link(this.store, 'local'),
-        list: this.$.utils.link(this.store, 'list'),
-        remove: this.$.utils.link(this.store, 'remove'),
-        registerGlobalModels: this.$.utils.link(this.store, 'registerGlobalModels'),
-        symbols: this.store.symbols,
+      // State
+      state: {
+        connect: this.$.utils.link(this.state, 'connect'),
+        disconnect: this.$.utils.link(this.state, 'disconnect'),
+        transaction: this.$.utils.link(this.state, 'transaction'),
+        local: this.$.utils.link(this.state, 'local'),
+        list: this.$.utils.link(this.state, 'list'),
+        remove: this.$.utils.link(this.state, 'remove'),
+        registerGlobalModels: this.$.utils.link(this.state, 'registerGlobalModels'),
+        symbols: this.state.symbols,
       },
 
       // Storage

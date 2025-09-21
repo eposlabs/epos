@@ -5,7 +5,7 @@
   "action": "<hub>",
   "targets": [
     {
-      "matches": ["<hub>", "<popup>"],
+      "matches": ["<hub>"],
       "load": ["./dist/gl.js", "./dist/gl.css"]
     },
     {

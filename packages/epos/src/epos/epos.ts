@@ -56,8 +56,8 @@ export interface Epos {
     emit<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
   }
 
-  // Store
-  store: {
+  // State
+  state: {
     /** Connect state. */
     connect: {
       <T extends Obj>(name?: string, options?: ConnectOptions<T>): Promise<T>

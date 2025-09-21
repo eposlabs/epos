@@ -8,6 +8,8 @@ export class PackInstaller extends $sw.Unit {
 
   constructor(parent: $sw.Unit) {
     super(parent)
+    this.$.bus.on('pack.install', this.install, this)
+    this.$.bus.on('pack.remove', this.remove, this)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
   }
@@ -50,13 +52,11 @@ export class PackInstaller extends $sw.Unit {
     if (!res) throw new Error(`Failed to fetch ${url}`)
 
     // Read epos.json
-    const [json, readError] = await this.$.utils.safe(res.text().then(this.$.libs.stripJsonComments))
-    if (readError) throw new Error(`Failed to parse ${url}: ${readError.message}`)
-    const [data, jsonError] = this.$.utils.safe.sync(() => JSON.parse(json))
-    if (jsonError) throw new Error(`Failed to parse ${url}: ${jsonError.message}`)
+    const [json] = await this.$.utils.safe(res.text())
+    if (!json) throw new Error(`Failed to read ${url}`)
 
     // Parse manifest
-    const manifest = this.$pack.parser.parseManifest(data)
+    const manifest = this.$.libs.parseEposManifest(json)
 
     // Fetch assets
     const assets: Record<string, Blob> = {}
@@ -90,12 +90,12 @@ export class PackInstaller extends $sw.Unit {
   }
 
   private async installFromPack(pack: Pack) {
-    if (this.$pack.pkgs[pack.spec.name]) {
-      const pkg = this.$pack.pkgs[pack.spec.name]
+    if (this.$pack.pkgs[pack.spec.manifest.name]) {
+      const pkg = this.$pack.pkgs[pack.spec.manifest.name]
       await pkg.update(pack.spec, pack.assets)
     } else {
       const pkg = await $sw.Pkg.create(this, pack.spec, pack.assets)
-      this.$pack.pkgs[pack.spec.name] = pkg
+      this.$pack.pkgs[pack.spec.manifest.name] = pkg
     }
   }
 

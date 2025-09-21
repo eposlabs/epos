@@ -1,4 +1,4 @@
-import type { Action, Manifest, Mode } from '../pack-parser.sw'
+import type { Action, Manifest, Mode } from '@eposlabs/epos-manifest-parser'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
@@ -6,6 +6,7 @@ export type SourceFilter = { modes?: Mode[]; lang?: 'js' | 'css' }
 
 export type Spec = {
   dev: boolean
+  // TODO: why name if manifest.name is the same?
   name: string
   sources: Sources
   manifest: Manifest

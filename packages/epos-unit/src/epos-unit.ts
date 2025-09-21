@@ -1,4 +1,4 @@
-import { createLog, type Cls } from '@eposlabs/utils'
+import { createLog, type Log, type Cls } from '@eposlabs/utils'
 import { epos } from 'epos'
 
 import type { FC } from 'react'
@@ -9,6 +9,7 @@ export const _disposers_ = Symbol('disposers')
 
 export class Unit<TRoot = unknown> {
   declare '@': string
+  declare log: Log
   declare private [_root_]: TRoot
   declare private [_parent_]: Unit<TRoot> | null // Parent reference for not-yet-attached units
   declare private [_disposers_]: Set<() => void>;
@@ -22,7 +23,7 @@ export class Unit<TRoot = unknown> {
   // INIT
   // ---------------------------------------------------------------------------
 
-  [epos.store.symbols.model.init]() {
+  [epos.state.symbols.model.init]() {
     const Unit = this.constructor
     const prototypeKeys = Object.getOwnPropertyNames(Unit.prototype)
 
@@ -41,7 +42,7 @@ export class Unit<TRoot = unknown> {
     for (const key of prototypeKeys) {
       if (typeof this[key] !== 'function') continue
       if (!isUiKey(key)) continue
-      const componentName = key === 'ui' ? this['@'] : [this['@'], key].join('-')
+      const componentName = [this['@'], key.replace('ui', '')].filter(Boolean).join('-')
       this[key] = epos.component(componentName, this[key] as FC)
     }
 
@@ -57,7 +58,7 @@ export class Unit<TRoot = unknown> {
   // CLEANUP
   // ---------------------------------------------------------------------------
 
-  [epos.store.symbols.model.cleanup]() {
+  [epos.state.symbols.model.cleanup]() {
     // Call disposers
     this[_disposers_].forEach(disposer => disposer())
     this[_disposers_].clear()
@@ -70,7 +71,7 @@ export class Unit<TRoot = unknown> {
   // VERSIONER
   // ---------------------------------------------------------------------------
 
-  static get [epos.store.symbols.model.versioner]() {
+  static get [epos.state.symbols.model.versioner]() {
     if (!('versioner' in this)) return null
     return this.versioner
   }
@@ -131,7 +132,7 @@ function isUiKey(key: string) {
 }
 
 function getParent(child: any) {
-  return child[_parent_] ?? child[epos.store.symbols.model.parent]
+  return child[_parent_] ?? child[epos.state.symbols.model.parent]
 }
 
 function findRoot(unit: Unit) {

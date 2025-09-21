@@ -1,11 +1,6 @@
-// @types/wicg-file-system-access
 {
   "name": "web-fs",
-  "action": "https://epos.dev/@web-fs",
-  "bundles": [
-    {
-      "run": "<hub>",
-      "src": ["./dist/fg.js", "dist/fg.css"]
-    }
-  ]
+  "action": "<hub>",
+  "matches": ["*://*/*"],
+  "load": ["./src/test.js"]
 }

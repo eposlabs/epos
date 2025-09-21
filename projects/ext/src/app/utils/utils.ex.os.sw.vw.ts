@@ -1,4 +1,4 @@
-import { ensureArray, is, Queue, QueueMap, safe, wait } from '@eposlabs/utils'
+import { ensureArray, is, Queue, QueueMap, safe, unique, wait } from '@eposlabs/utils'
 import { convertImage } from './utils-convert-image'
 import { cx } from './utils-cx'
 import { equal } from './utils-equal'
@@ -11,7 +11,6 @@ import { normalizeUrl } from './utils-normalize-url'
 import { set } from './utils-set'
 import { time } from './utils-time'
 import { toPascalCase } from './utils-to-pascal-case'
-import { unique } from './utils-unique'
 
 export class Utils extends $exOsSwVw.Unit {
   initOs() {

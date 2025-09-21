@@ -1,5 +1,5 @@
 {
-  "name": "devkit",
+  "name": "epos-devkit",
   "type": "module",
   "private": true,
   "scripts": {
@@ -7,6 +7,7 @@
     "build": "vite build --mode production"
   },
   "dependencies": {
+    "@eposlabs/epos-manifest-parser": "^1.0.1",
     "@eposlabs/utils": "^1.0.13",
     "epos": "^1.7.1",
     "epos-unit": "^1.0.1"

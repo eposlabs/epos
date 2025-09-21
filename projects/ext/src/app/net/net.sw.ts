@@ -27,7 +27,7 @@ export class Net extends $sw.Unit {
           priority: 1,
           condition: {
             urlFilter: '*://*/*',
-            resourceTypes: ['main_frame', 'xmlhttprequest'],
+            resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
           },
           action: {
             type: 'modifyHeaders',
@@ -36,7 +36,7 @@ export class Net extends $sw.Unit {
               { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
 
               // TODO: implement properly
-              { header: 'x-frame-options', operation: 'remove' },
+              // { header: 'x-frame-options', operation: 'remove' },
             ],
           },
         },

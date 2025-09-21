@@ -243,7 +243,12 @@ export class State extends $exSw.Unit {
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
       this.wire(mObject, yMap, parent, Model, object.constructor === Model)
       // It is important to use Object.keys instead for..in, because for..in also iterates over prototype properties
-      Object.keys(object).forEach(key => this.set(mObject, key, object[key]))
+      // this.keys because object can be observable s.items = [s.items[0]]
+      this.keys(object).forEach(key => this.set(mObject, key, object[key]))
+      // const dkeys = new Set(this.keys(object))
+      // const staticKeys = new Set(Object.keys(object)).difference(dkeys)
+      // for (const key of staticKeys) mObject[key] = object[key]
+
       this.attachedNodes.add(mObject)
       return mObject
     }
