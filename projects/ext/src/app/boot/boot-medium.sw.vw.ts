@@ -5,9 +5,9 @@ export class BootMedium extends $swVw.Unit {
     if (this.$.env.is.vwPopup) {
       this.$.bus.on('boot.isPopupOpen', () => true)
       this.$.bus.on('boot.closePopup', () => window.close())
-    } else if (this.$.env.is.vwPanel) {
+    } else if (this.$.env.is.vwSidePanel) {
       const tabId = this.$.env.params.tabId
-      this.$.bus.on(`boot.isPanelOpen[${tabId}]`, () => true)
+      this.$.bus.on(`boot.isSidePanelOpen[${tabId}]`, () => true)
     }
   }
 
@@ -57,23 +57,24 @@ export class BootMedium extends $swVw.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // PANEL
+  // SIDE PANEL
   // ---------------------------------------------------------------------------
 
-  async openPanel(tabId: number) {
-    const path = this.$.env.url.view({ type: 'panel', tabId: String(tabId) })
-    await this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
+  async openSidePanel(tabId: number) {
+    const path = this.$.env.url.view({ type: 'sidePanel', tabId: String(tabId) })
+    // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
+    async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
   }
 
-  async closePanel(tabId: number) {
+  async closeSidePanel(tabId: number) {
     await this.$.browser.sidePanel.setOptions({ tabId, enabled: false })
   }
 
-  async togglePanel(tabId: number) {
-    const wasOpenPromise = this.$.bus.send(`boot.isPanelOpen[${tabId}]`)
-    await this.openPanel(tabId)
+  async toggleSidePanel(tabId: number) {
+    const wasOpenPromise = this.$.bus.send(`boot.isSidePanelOpen[${tabId}]`)
+    await this.openSidePanel(tabId)
     const wasOpen = await wasOpenPromise
-    if (wasOpen) await this.closePanel(tabId)
+    if (wasOpen) await this.closeSidePanel(tabId)
   }
 }

@@ -2,7 +2,7 @@ import type { ActionData } from './pack.sw'
 
 export class Pack extends $vw.Unit {
   pkgs: { [name: string]: $vw.Pkg } = {}
-  hasPanel = false
+  hasSidePanel = false
   actionData: ActionData = {}
   selectedPkgName: string | null = localStorage.getItem('pack.selectedPkgName')
   dock = new $vw.PackDock(this)
@@ -57,7 +57,7 @@ export class Pack extends $vw.Unit {
       }
 
       // Update data
-      this.hasPanel = data.hasPanel
+      this.hasSidePanel = data.hasSidePanel
       this.actionData = data.action
 
       // Close view if nothing to show

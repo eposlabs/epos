@@ -5,7 +5,7 @@ export type Action = null | true | string
 export type Popup = { width?: number; height?: number } | null
 export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
 export type Pattern = PositivePattern | NegativePattern
-export type PositivePattern = '<popup>' | '<panel>' | '<background>' | `<hub>${string}` | string
+export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | `<hub>${string}` | string
 export type NegativePattern = `!<hub>${string}` | `!${string}`
 export type Mode = 'normal' | 'shadow' | 'lite'
 
@@ -169,7 +169,7 @@ function parsePattern(pattern: unknown): Pattern {
   if (!is.string(pattern)) throw new Error(`Invalid 'matches' pattern: ${JSON.stringify(pattern)}`)
 
   if (pattern === '<popup>') return pattern
-  if (pattern === '<panel>') return pattern
+  if (pattern === '<sidePanel>') return pattern
   if (pattern === '<background>') return pattern
 
   const urlPattern = pattern.startsWith('!') ? pattern.slice(1) : pattern

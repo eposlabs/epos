@@ -24,7 +24,7 @@
       "load": "./x1-bg.js"
     },
     {
-      "matches": ["<popup>", "<panel>"],
+      "matches": ["<popup>", "<sidePanel>"],
       "load": "./x1-popup.js"
     }
   ]

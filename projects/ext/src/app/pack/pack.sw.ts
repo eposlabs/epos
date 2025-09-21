@@ -20,7 +20,7 @@ export class Pack extends $sw.Unit {
 
   private async init() {
     this.$.bus.on('pack.hasPopup', this.hasPopup, this)
-    this.$.bus.on('pack.hasPanel', this.hasPanel, this)
+    this.$.bus.on('pack.hasSidePanel', this.hasSidePanel, this)
     this.$.bus.on('pack.getCss', this.getCss, this)
     this.$.bus.on('pack.getLiteJs', this.getLiteJs, this)
     this.$.bus.on('pack.getPayloads', this.getPayloads, this)
@@ -34,8 +34,8 @@ export class Pack extends $sw.Unit {
     return this.list().some(pkg => pkg.targets.some(target => target.matches.includes('<popup>')))
   }
 
-  hasPanel() {
-    return this.list().some(pkg => pkg.targets.some(target => target.matches.includes('<panel>')))
+  hasSidePanel() {
+    return this.list().some(pkg => pkg.targets.some(target => target.matches.includes('<sidePanel>')))
   }
 
   getCss(url: string, frame = false) {

@@ -18,12 +18,12 @@ class EnvUrl extends $gl.Unit {
     return `/system.html?${new URLSearchParams(params)}`
   }
 
-  view(params: { type: 'popup' | 'panel'; tabId: string }) {
+  view(params: { type: 'popup' | 'sidePanel'; tabId: string }) {
     return `/view.html?${new URLSearchParams(params)}`
   }
 
   frame(params: {
-    type: 'popup' | 'panel' | 'background'
+    type: 'popup' | 'sidePanel' | 'background'
     tabId?: string
     name: string
     hash: string
@@ -56,12 +56,13 @@ class EnvIs extends $gl.Unit {
   exTab = this.ex && self === top
   exFrame = this.ex && self !== top
   exFrameExtPopup = this.exFrame && this.$env.params.type === 'popup'
-  exFrameExtPanel = this.exFrame && this.$env.params.type === 'panel'
+  exFrameExtSidePanel = this.exFrame && this.$env.params.type === 'sidePanel'
   exFrameExtBackground = this.exFrame && this.$env.params.type === 'background'
-  exFrameExt = this.exFrameExtPopup || this.exFrameExtPanel || this.exFrameExtBackground
-  exFrameWeb = this.exFrame && !this.exFrameExtPopup && !this.exFrameExtPanel && !this.exFrameExtBackground
+  exFrameExt = this.exFrameExtPopup || this.exFrameExtSidePanel || this.exFrameExtBackground
+  exFrameWeb =
+    this.exFrame && !this.exFrameExtPopup && !this.exFrameExtSidePanel && !this.exFrameExtBackground
 
   // vw variations
   vwPopup = this.vw && this.$env.params.type === 'popup'
-  vwPanel = this.vw && this.$env.params.type === 'panel'
+  vwSidePanel = this.vw && this.$env.params.type === 'sidePanel'
 }

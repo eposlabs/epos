@@ -1,4 +1,4 @@
-export type CsReadyData = { busToken: string }
+export type CsReadyData = { busToken: string | null }
 
 export class App extends $cs.Unit {
   browser = chrome

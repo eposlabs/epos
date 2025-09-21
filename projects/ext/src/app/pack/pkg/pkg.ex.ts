@@ -63,7 +63,7 @@ export class Pkg extends $ex.Unit {
     // Create new favicon
     favicon = document.createElement('link')
     favicon.rel = 'icon'
-    favicon.href = this.api.assets.url(this.icon)
+    favicon.href = this.api.assets.url(this.icon)!
     document.head.append(favicon)
   }
 }

@@ -86,7 +86,7 @@ export class PkgApi extends $ex.Unit {
         tabId: this.env.tabId,
         isTab: this.env.isTab,
         isPopup: this.env.isPopup,
-        isPanel: this.env.isPanel,
+        isSidePanel: this.env.isSidePanel,
         isShell: this.env.isShell,
         isBackground: this.env.isBackground,
         isForeground: this.env.isForeground,

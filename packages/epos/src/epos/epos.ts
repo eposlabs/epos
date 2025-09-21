@@ -133,12 +133,12 @@ export interface Epos {
     isTab: boolean
     /** True if running in an iframe. */
     isFrame: boolean
-    /** True if running in a popup or side panel (`<popup>` or `<panel>`). */
+    /** True if running in a popup or side panel (`<popup>` or `<sidePanel>`). */
     isShell: boolean
     /** True if running in a popup (`<popup>`). */
     isPopup: boolean
-    /** True if running in a side panel (`<panel>`). */
-    isPanel: boolean
+    /** True if running in a side panel (`<sidePanel>`). */
+    isSidePanel: boolean
     /** True if running in the background (`<background>`). */
     isBackground: boolean
     /** True if running in the foreground (not `<background>` and not inside iframe). */

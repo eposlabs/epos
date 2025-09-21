@@ -45,7 +45,7 @@
   - epos.env.tabId
   - epos.env.isTab
   - epos.env.isPopup
-  - epos.env.isPanel
+  - epos.env.isSidePanel
   - epos.env.isShell
   - epos.env.isFrame
   - epos.env.isBackground

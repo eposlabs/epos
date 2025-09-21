@@ -238,7 +238,7 @@ export class PkgParser extends $fg.Unit {
     }
 
     if (pattern === '<popup>') return pattern
-    if (pattern === '<panel>') return pattern
+    if (pattern === '<sidePanel>') return pattern
     if (pattern === '<background>') return pattern
 
     const urlPattern = pattern.startsWith('!') ? pattern.slice(1) : pattern

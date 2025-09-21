@@ -28,7 +28,8 @@ export class Pkg extends $gl.Unit {
     // Handle was removed from IDB? -> Remove package
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('pkg', 'handles', this.id)
     if (!handle) {
-      this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
+      console.error('handle not found for', this.name)
+      // this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
       return
     }
 

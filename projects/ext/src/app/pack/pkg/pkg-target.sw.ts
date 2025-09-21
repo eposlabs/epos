@@ -1,4 +1,4 @@
-import type { Mode, Pattern, PositivePattern, Target } from '../pack-parser.sw'
+import type { Mode, Pattern, PositivePattern, Target } from '@eposlabs/epos-manifest-parser'
 
 export class PkgTarget extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
@@ -31,7 +31,7 @@ export class PkgTarget extends $sw.Unit {
   private checkPattern(pattern: PositivePattern, url: string, frame: boolean) {
     const extOrigin = location.origin
 
-    if (['<popup>', '<panel>', '<background>'].includes(pattern)) {
+    if (['<popup>', '<sidePanel>', '<background>'].includes(pattern)) {
       const { origin, searchParams } = new URL(url)
       if (origin !== extOrigin) return false
       const type = `<${searchParams.get('type')}>`

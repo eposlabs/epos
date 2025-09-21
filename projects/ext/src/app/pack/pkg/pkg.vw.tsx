@@ -33,7 +33,7 @@ export class Pkg extends $vw.Unit {
     if (this.$.env.is.vwPopup) {
       width = this.popup?.width ?? 380
       height = this.popup?.height ?? 600
-    } else if (this.$.env.is.vwPanel) {
+    } else if (this.$.env.is.vwSidePanel) {
       width = '100vw'
       height = '100vh'
     } else {
@@ -43,7 +43,7 @@ export class Pkg extends $vw.Unit {
     if (!this.invoked) return null
 
     const src = this.$.env.url.frame({
-      type: this.$.env.params.type as 'popup' | 'panel',
+      type: this.$.env.params.type as 'popup' | 'sidePanel',
       tabId: this.$.env.params.tabId,
       name: this.name,
       hash: this.hash,

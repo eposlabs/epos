@@ -16,9 +16,9 @@ export class BootAction extends $sw.Unit {
         return
       }
 
-      // Has panel? -> Toggle panel
-      if (this.$.pack.hasPanel()) {
-        await this.$boot.medium.togglePanel(tab.id)
+      // Has side panel? -> Toggle side panel
+      if (this.$.pack.hasSidePanel()) {
+        await this.$boot.medium.toggleSidePanel(tab.id)
         return
       }
 

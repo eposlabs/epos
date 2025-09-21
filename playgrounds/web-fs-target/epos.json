@@ -15,6 +15,10 @@
       "load": "web-background.js"
     },
     {
+      "matches": ["<popup>", "<sidePanel>"],
+      "load": "side-panel.js"
+    },
+    {
       "matches": "frame:https://inssist.com/*",
       "load": "frame.js"
     }

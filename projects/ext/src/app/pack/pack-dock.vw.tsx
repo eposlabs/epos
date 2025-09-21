@@ -1,4 +1,4 @@
-import type { TargetedEvent } from 'preact/compat'
+import type { TargetedEvent } from 'preact'
 
 export class PackDock extends $vw.Unit {
   private $pack = this.up($vw.Pack)!
@@ -6,15 +6,27 @@ export class PackDock extends $vw.Unit {
   private uniqueItemNames: string[] = []
   private selectedPkg: $vw.Pkg | null = null
   private hidden = true
+  private timeout: number | undefined = undefined
 
   show() {
-    this.hidden = false
-    this.$.refresh()
+    self.clearTimeout(this.timeout)
+    this.timeout = self.setTimeout(() => {
+      this.hidden = false
+      this.$.refresh()
+    }, 50)
   }
 
   hide() {
-    this.hidden = true
-    this.$.refresh()
+    self.clearTimeout(this.timeout)
+    this.timeout = self.setTimeout(() => {
+      this.hidden = true
+      this.$.refresh()
+    }, 150)
+  }
+
+  hideWithBigDelay() {
+    self.clearTimeout(this.timeout)
+    this.timeout = self.setTimeout(() => this.hide(), 1000)
   }
 
   ui = () => {
@@ -27,6 +39,7 @@ export class PackDock extends $vw.Unit {
     return (
       <div
         onMouseEnter={() => this.show()}
+        onMouseLeave={() => this.hideWithBigDelay()}
         class={this.$.utils.cx([
           'fixed top-0 right-0 z-10 h-28 bg-brand font-mono font-semibold text-black',
           'transition delay-30 duration-200 select-none',
@@ -37,7 +50,7 @@ export class PackDock extends $vw.Unit {
         <div class="relative flex h-full">
           <this.Select />
           <this.ActionButton />
-          <this.PanelButton />
+          <this.SidePanelButton />
         </div>
       </div>
     )
@@ -96,13 +109,13 @@ export class PackDock extends $vw.Unit {
     )
   }
 
-  private PanelButton = () => {
+  private SidePanelButton = () => {
     if (!this.$.env.is.vwPopup) return null
-    if (!this.$pack.hasPanel) return null
+    if (!this.$pack.hasSidePanel) return null
 
     return (
       <button
-        onClick={() => this.openPanel()}
+        onClick={() => this.openSidePanel()}
         class="flex h-full w-28 items-center justify-center text-inherit only:box-content only:px-2 not-only:nth-of-type-2:pr-3"
       >
         <div class="-translate-y-1 text-[16px]">◨</div>
@@ -139,10 +152,10 @@ export class PackDock extends $vw.Unit {
     self.close()
   }
 
-  private openPanel() {
+  private openSidePanel() {
     const tabId = Number(this.$.env.params.tabId)
     if (!tabId) throw this.never
-    this.$.boot.medium.openPanel(tabId)
+    this.$.boot.medium.openSidePanel(tabId)
     self.close()
   }
 }

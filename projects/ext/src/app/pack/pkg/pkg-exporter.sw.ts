@@ -49,12 +49,12 @@ export class PkgExporter extends $sw.Unit {
 
     const manifest = await fetch('/manifest.json').then(r => r.json())
     // const runItems = this.$pkg.bundles.flatMap(bundle => bundle.run)
-    // const hasPanel = runItems.includes('<panel>')
+    // const hasSidePanel = runItems.includes('<sidePanel>')
     // const hub = this.$.env.url.hub(false)
 
     // const urls = runItems
     //   .map(run => {
-    //     if (['<popup>', '<panel>', '<background>'].includes(run)) return null
+    //     if (['<popup>', '<sidePanel>', '<background>'].includes(run)) return null
     //     if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
     //     return run
     //   })
@@ -73,7 +73,7 @@ export class PkgExporter extends $sw.Unit {
       //   'declarativeNetRequest',
       //   'offscreen',
       //   'scripting',
-      //   hasPanel ? 'sidePanel' : null,
+      //   hasSidePanel ? 'sidePanel' : null,
       //   'tabs',
       //   'unlimitedStorage',
       //   'webNavigation',

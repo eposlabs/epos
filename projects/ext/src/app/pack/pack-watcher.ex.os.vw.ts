@@ -11,7 +11,7 @@ export type Delta = {
 export type Data = {
   action: ActionData
   execution: ExecutionData
-  hasPanel: boolean
+  hasSidePanel: boolean
 }
 
 export class PackWatcher extends $exOsVw.Unit {
@@ -25,7 +25,7 @@ export class PackWatcher extends $exOsVw.Unit {
   private async update(onUpdate: OnUpdate) {
     const actionData = await this.$.bus.send<ActionData>('pack.getActionData')
     const executionData = await this.$.bus.send<ExecutionData>('pack.getExecutionData', location.href)
-    const hasPanel = await this.$.bus.send<boolean>('pack.hasPanel')
+    const hasSidePanel = await this.$.bus.send<boolean>('pack.hasSidePanel')
 
     const executionData1 = this.executionData
     const executionData2 = executionData
@@ -34,7 +34,7 @@ export class PackWatcher extends $exOsVw.Unit {
     const added = names2.filter(name => !executionData1[name])
     const removed = names1.filter(name => !executionData2[name])
 
-    const data: Data = { action: actionData, execution: executionData, hasPanel }
+    const data: Data = { action: actionData, execution: executionData, hasSidePanel }
     const delta: Delta = { added, removed }
     this.executionData = executionData
 
