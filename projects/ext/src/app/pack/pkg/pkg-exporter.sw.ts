@@ -8,6 +8,8 @@ export class PkgExporter extends $sw.Unit {
 
     const engineFiles = [
       'cs.js',
+      'ex-dev.js',
+      'ex-mini-dev.js',
       'ex-mini.js',
       'ex.js',
       'os.js',
@@ -24,9 +26,12 @@ export class PkgExporter extends $sw.Unit {
       zip.file(path, blob)
     }
 
-    const pkg = await this.$.idb.get<Spec>(this.$pkg.name, ':pkg', ':default')
-    if (!pkg) throw this.never
-    pkg.dev = false
+    const pkg: Spec = {
+      name: this.$pkg.name,
+      dev: false,
+      sources: this.$pkg.sources,
+      manifest: this.$pkg.manifest,
+    }
     zip.file('pkg.json', JSON.stringify(pkg, null, 2))
 
     const assets: Record<string, Blob> = {}
@@ -47,43 +52,33 @@ export class PkgExporter extends $sw.Unit {
     })
     zip.file('icon.png', icon128)
 
-    const manifest = await fetch('/manifest.json').then(r => r.json())
-    // const runItems = this.$pkg.bundles.flatMap(bundle => bundle.run)
-    // const hasSidePanel = runItems.includes('<sidePanel>')
-    // const hub = this.$.env.url.hub(false)
-
-    // const urls = runItems
-    //   .map(run => {
-    //     if (['<popup>', '<sidePanel>', '<background>'].includes(run)) return null
-    //     if (run.startsWith('<hub>')) return run.replace('<hub>', `${hub}/${pkg.name}`)
-    //     return run
-    //   })
-    //   .filter(this.$.is.present)
-    //   .filter(this.$.utils.unique.filter)
-
-    const totalManifest = {
-      ...manifest,
-      name: pkg.manifest.title ?? pkg.manifest.name,
-      action: {
-        default_title: pkg.manifest.title ?? pkg.manifest.name,
-      },
-      // host_permissions: [...urls].sort(),
-      // permissions: [
-      //   'alarms',
-      //   'declarativeNetRequest',
-      //   'offscreen',
-      //   'scripting',
-      //   hasSidePanel ? 'sidePanel' : null,
-      //   'tabs',
-      //   'unlimitedStorage',
-      //   'webNavigation',
-      // ].filter(Boolean),
+    const urlFilters = new Set<string>()
+    for (const target of this.$pkg.targets) {
+      for (let pattern of target.matches) {
+        if (pattern.startsWith('!')) continue
+        if (pattern.startsWith('frame:')) pattern = pattern.replace('frame:', '')
+        if (pattern === '<popup>') continue
+        if (pattern === '<sidePanel>') continue
+        if (pattern === '<background>') continue
+        if (pattern === '<hub>') pattern = `${this.$.env.url.web}/@${this.$pkg.name}/*`
+        urlFilters.add(pattern)
+      }
+    }
+    if (urlFilters.has('*://*/*')) {
+      urlFilters.clear()
+      urlFilters.add('*://*/*')
     }
 
-    zip.file('manifest.json', JSON.stringify(totalManifest, null, 2))
-    const blob = await zip.generateAsync({ type: 'blob' })
-    const url = await this.$.bus.send<string>('utils.createObjectUrl', blob)
-    await this.$.browser.downloads.download({ url, filename: `${this.$pkg.name}.zip` })
-    await this.$.bus.send('utils.revokeObjectUrl', url)
+    const engineManifest = await fetch('/manifest.json').then(r => r.json())
+
+    const manifest = {
+      ...engineManifest,
+      name: this.$pkg.manifest.title ?? this.$pkg.manifest.name,
+      action: { default_title: this.$pkg.manifest.title ?? this.$pkg.manifest.name },
+      ...(this.$pkg.manifest.manifest ?? {}),
+    }
+
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+    return await zip.generateAsync({ type: 'blob' })
   }
 }

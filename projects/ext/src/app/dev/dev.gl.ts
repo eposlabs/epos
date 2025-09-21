@@ -34,6 +34,7 @@ export class Dev extends $gl.Unit {
     }
 
     if (!import.meta.env.DEV) return
+    return
 
     let $ = this.$
 

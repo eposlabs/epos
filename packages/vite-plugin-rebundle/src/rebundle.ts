@@ -140,14 +140,19 @@ export class Rebundle extends $utils.Unit {
     }
 
     // Build with esbuild
-    const result = await $esbuild.build({
-      sourcemap: Boolean(this.config.build.sourcemap),
-      ...chunkBuildOptions,
-      outfile: chunkPath,
-      entryPoints: [chunkPath],
-      bundle: true,
-      allowOverwrite: true,
-    })
+    let result
+    try {
+      result = await $esbuild.build({
+        sourcemap: Boolean(this.config.build.sourcemap),
+        ...chunkBuildOptions,
+        outfile: chunkPath,
+        entryPoints: [chunkPath],
+        bundle: true,
+        allowOverwrite: true,
+      })
+    } catch (err) {
+      return
+    }
 
     // Errors? -> Ignore, esbuild will show errors in console
     if (result.errors.length > 0) return
@@ -195,7 +200,7 @@ export class Rebundle extends $utils.Unit {
     await Promise.all(
       usedPaths.map(async path => {
         const content = await this.read(path)
-        if (!content) throw this.never
+        if (!content) return
         files[path] = content
       }),
     )

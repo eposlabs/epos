@@ -68,7 +68,7 @@ export class Pkg extends $gl.Unit {
     this.globalObserver = new FileSystemObserver(async (records: any[]) => {
       for (const record of records) {
         const path = record.relativePathComponents.join('/')
-        this.log(`[global] ${record.type}`, path)
+        // this.log(`[global] ${record.type}`, path)
         if (path === 'epos.json' || this.error) {
           this.startFileObservers()
         }
@@ -79,7 +79,6 @@ export class Pkg extends $gl.Unit {
   }
 
   private async startFileObservers() {
-    console.log('[restart]')
     this.stopFileObservers()
 
     const [manifest, manifestError] = await this.$.utils.safe(() => this.readManifest())
@@ -131,7 +130,7 @@ export class Pkg extends $gl.Unit {
           return
         }
 
-        this.log(`[file] ${record.type}`, path)
+        // this.log(`[file] ${record.type}`, path)
         this.install()
       }
     })
@@ -215,6 +214,13 @@ export class Pkg extends $gl.Unit {
     await (epos as any).engine.bus.send('pack.install', pack)
   }
 
+  async export() {
+    const blob = await (epos as any).engine.bus.send('pack.export', this.name)
+    const url = URL.createObjectURL(blob)
+    await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
+    URL.revokeObjectURL(url)
+  }
+
   // ---------------------------------------------------------------------------
   // UI
   // ---------------------------------------------------------------------------
@@ -263,6 +269,12 @@ export class Pkg extends $gl.Unit {
               Request access
             </button>
           )}
+        </div>
+
+        <div>
+          <button onClick={this.export} class="bg-amber-200">
+            EXPORT
+          </button>
         </div>
 
         <div class="mt-3">

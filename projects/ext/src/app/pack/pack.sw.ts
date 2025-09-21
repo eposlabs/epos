@@ -26,8 +26,15 @@ export class Pack extends $sw.Unit {
     this.$.bus.on('pack.getPayloads', this.getPayloads, this)
     this.$.bus.on('pack.getActionData', this.getActionData, this)
     this.$.bus.on('pack.getExecutionData', this.getExecutionData, this)
+    this.$.bus.on('pack.export', this.exportPkg, this)
     this.loader = await $sw.PackLoader.create(this)
     await this.restoreFromIdb()
+  }
+
+  private async exportPkg(pkgName: string) {
+    const pkg = this.pkgs[pkgName]
+    if (!pkg) throw new Error(`No such pkg: ${pkgName}`)
+    return await pkg.exporter.export()
   }
 
   hasPopup() {

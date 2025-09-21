@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "epos.json schema",
+  "title": "Epos Manifest Schema",
   "type": "object",
   "properties": {
     "$schema": { "type": "string" },
@@ -13,7 +13,8 @@
     "targets": { "$ref": "#/definitions/Targets" },
     "matches": { "$ref": "#/definitions/Matches" },
     "load": { "$ref": "#/definitions/Load" },
-    "mode": { "$ref": "#/definitions/Mode" }
+    "mode": { "$ref": "#/definitions/Mode" },
+    "manifest": { "$ref": "#/definitions/Manifest" }
   },
   "required": ["name"],
   "additionalProperties": false,
@@ -97,6 +98,10 @@
     "Mode": {
       "type": "string",
       "enum": ["normal", "shadow", "lite"]
+    },
+
+    "Manifest": {
+      "$ref": "https://json.schemastore.org/chrome-manifest.json"
     }
   }
 }

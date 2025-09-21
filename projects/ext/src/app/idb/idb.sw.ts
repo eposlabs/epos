@@ -13,6 +13,14 @@ export class Idb extends $sw.Unit {
   constructor(parent: $sw.Unit) {
     super(parent)
 
+    this.get = this.enqueue(this.get)
+    this.has = this.enqueue(this.has)
+    this.set = this.enqueue(this.set)
+    this.keys = this.enqueue(this.keys)
+    this.delete = this.enqueue(this.delete)
+    this.deleteStore = this.enqueue(this.deleteStore)
+    this.deleteDatabase = this.enqueue(this.deleteDatabase)
+
     this.$.bus.on('idb.get', this.get, this)
     this.$.bus.on('idb.has', this.has, this)
     this.$.bus.on('idb.set', this.set, this)
@@ -23,14 +31,6 @@ export class Idb extends $sw.Unit {
     this.$.bus.on('idb.listDatabases', this.listDatabases, this)
     this.$.bus.on('idb.deleteStore', this.deleteStore, this)
     this.$.bus.on('idb.deleteDatabase', this.deleteDatabase, this)
-
-    this.get = this.enqueue(this.get)
-    this.has = this.enqueue(this.has)
-    this.set = this.enqueue(this.set)
-    this.keys = this.enqueue(this.keys)
-    this.delete = this.enqueue(this.delete)
-    this.deleteStore = this.enqueue(this.deleteStore)
-    this.deleteDatabase = this.enqueue(this.deleteDatabase)
   }
 
   /** Gets a value from the store. */

@@ -2,15 +2,16 @@
   "$schema": "https://epos.dev/schema.json",
   "name": "devkit",
   "title": "[epos] DevKit",
-  "action": "<hub>",
   "targets": [
     {
       "matches": ["<hub>"],
       "load": ["./dist/gl.js", "./dist/gl.css"]
-    },
-    {
-      "matches": ["http://localhost:3022/index.html"],
-      "load": "./stub.js"
     }
-  ]
+  ],
+
+  "manifest": {
+    "name": "[epos]",
+    "version": "1.0",
+    "manifest_version": 3
+  }
 }

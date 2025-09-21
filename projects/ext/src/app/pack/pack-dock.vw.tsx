@@ -98,6 +98,8 @@ export class PackDock extends $vw.Unit {
     if (this.uniqueItemNames.length > 1) return null
     const selectedPkg = this.selectedPkg
     if (!selectedPkg) return null
+    const meta = this.$pack.actionData[selectedPkg.name]
+    if (!meta) return null
 
     return (
       <button

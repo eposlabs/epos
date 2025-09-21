@@ -1,4 +1,6 @@
 {
+  "$schema": "https://epos.dev/schema.json",
+
   "name": "web-fs-target",
   "assets": ["public/image.jpg"],
   "targets": [
@@ -22,5 +24,11 @@
       "matches": "frame:https://inssist.com/*",
       "load": "frame.js"
     }
-  ]
+  ],
+
+  "manifest": {
+    "name": "Web FS Target",
+    "version": "1.0.0",
+    "manifest_version": 3
+  }
 }

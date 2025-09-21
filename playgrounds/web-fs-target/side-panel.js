@@ -1,4 +1,4 @@
-const n = 2
+const n = 4
 
 document.body.innerHTML = `
   ${epos.env.isPopup ? `<h1>Popup ${n}</h1>` : ''}

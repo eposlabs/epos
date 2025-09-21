@@ -17,10 +17,11 @@ export type Manifest = {
   popup: Popup
   assets: string[]
   targets: Target[]
+  manifest: Obj | null
 }
 
 const config = {
-  keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets'],
+  keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets', 'manifest'],
   name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
   popup: {
     keys: ['width', 'height'],
@@ -51,6 +52,7 @@ export function parseManifest(json: string): Manifest {
     popup: parsePopup(manifest),
     assets: parseAssets(manifest),
     targets: parseTargets(manifest),
+    manifest: parseExtensionManifest(manifest),
   }
 }
 
@@ -207,6 +209,12 @@ function parsePaths(paths: string[]) {
   if (externalPath) throw new Error(`External paths are not allowed: ${externalPath}`)
 
   return paths
+}
+
+function parseExtensionManifest(manifest: Obj) {
+  if (!('manifest' in manifest)) return null
+  if (!is.object(manifest.manifest)) throw new Error(`'manifest' must be an object`)
+  return manifest.manifest
 }
 
 // ---------------------------------------------------------------------------
