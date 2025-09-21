@@ -9,6 +9,14 @@
     {
       "matches": ["https://x.com/*"],
       "load": ["./x2.js", "./x2.css"]
+    },
+    {
+      "matches": "<background>",
+      "load": "web-background.js"
+    },
+    {
+      "matches": "frame:https://inssist.com/*",
+      "load": "frame.js"
     }
   ]
 }

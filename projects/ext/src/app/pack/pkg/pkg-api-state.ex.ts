@@ -59,11 +59,11 @@ export class PkgApiState extends $ex.Unit {
   }
 
   async list(opts: { connected?: boolean } = {}) {
-    const names = await this.$.idb.keys(this.$pkg.name, ':store')
+    const names = await this.$.idb.keys(this.$pkg.name, ':state')
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.store.isConnected([this.$pkg.name, ':store', name]),
+        connected: this.$.store.isConnected([this.$pkg.name, ':state', name]),
       }))
       .filter(state => {
         if (this.$.is.undefined(opts.connected)) return true
@@ -76,7 +76,7 @@ export class PkgApiState extends $ex.Unit {
   }
 
   private getLocation(name: string): Location {
-    return [this.$pkg.name, ':store', name]
+    return [this.$pkg.name, ':state', name]
   }
 
   private prepareName(name?: string) {

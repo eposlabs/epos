@@ -20,7 +20,7 @@
   - epos.state.transaction
   - epos.state.local
   - epos.state.list
-  - epos.state.remove
+  - epos.state.destroy
   - epos.state.registerGlobalModels
   - epos.state.symbols.model.init
   - epos.state.symbols.model.cleanup
@@ -39,10 +39,10 @@
   - epos.assets.load
   - epos.assets.unload
   - epos.assets.list
-- **Frame**
-  - epos.frame.open
-  - epos.frame.close
-  - epos.frame.list
+- **Frames**
+  - epos.frames.create
+  - epos.frames.remove
+  - epos.frames.list
 - **Env**
   - epos.env.tabId
   - epos.env.isTab

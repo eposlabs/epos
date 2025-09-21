@@ -12,17 +12,18 @@
   - epos.bus.send
   - epos.bus.emit
   - epos.bus.once
-- **Store**
-  - epos.store.connect
-  - epos.store.disconnect
-  - epos.store.transaction
-  - epos.store.local
-  - epos.store.list
-  - epos.store.remove
-  - epos.store.symbols.model.init
-  - epos.store.symbols.model.cleanup
-  - epos.store.symbols.model.versioner
-  - epos.store.symbols.model.parent
+- **State**
+  - epos.state.connect
+  - epos.state.disconnect
+  - epos.state.transaction
+  - epos.state.local
+  - epos.state.list
+  - epos.state.destroy
+  - epos.state.registerGlobalModels
+  - epos.state.symbols.model.init
+  - epos.state.symbols.model.cleanup
+  - epos.state.symbols.model.versioner
+  - epos.state.symbols.model.parent
 - **Storage**
   - epos.storage.get
   - epos.storage.set
@@ -36,10 +37,10 @@
   - epos.assets.load
   - epos.assets.unload
   - epos.assets.list
-- **Frame**
-  - epos.frame.open
-  - epos.frame.close
-  - epos.frame.list
+- **Frames**
+  - epos.frames.create
+  - epos.frames.remove
+  - epos.frames.list
 - **Env**
   - epos.env.tabId
   - epos.env.isTab

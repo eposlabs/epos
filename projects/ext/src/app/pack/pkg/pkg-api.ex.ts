@@ -1,12 +1,13 @@
 export class PkgApi extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  general!: $ex.PkgApiGeneral
+  assets!: $ex.PkgApiAssets
   bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
+  env = new $ex.PkgApiEnv(this)
+  frames = new $ex.PkgApiFrames(this)
+  general!: $ex.PkgApiGeneral
+  libs = new $ex.PkgApiLibs(this)
   state = new $ex.PkgApiState(this)
   storage = new $ex.PkgApiStorage(this)
-  assets!: $ex.PkgApiAssets
-  env = new $ex.PkgApiEnv(this)
-  libs = new $ex.PkgApiLibs(this)
   epos!: ReturnType<$ex.PkgApi['createEpos']>
 
   static async create(parent: $ex.Unit) {
@@ -71,6 +72,13 @@ export class PkgApi extends $ex.Unit {
         load: this.$.utils.link(this.assets, 'load'),
         unload: this.$.utils.link(this.assets, 'unload'),
         list: this.$.utils.link(this.assets, 'list'),
+      },
+
+      // Frames
+      frames: {
+        create: this.$.utils.link(this.frames, 'create'),
+        remove: this.$.utils.link(this.frames, 'remove'),
+        list: this.$.utils.link(this.frames, 'list'),
       },
 
       // Env

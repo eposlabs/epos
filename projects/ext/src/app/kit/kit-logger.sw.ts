@@ -15,7 +15,7 @@ export class KitLogger extends $sw.Unit {
     if (message.type === 'info') {
       console.log(
         `%c${message.name}`,
-        `color: #000; background: #b3e5ff; padding: 1px 3px; border-radius: 2px;`,
+        `color: #000; background: #ccc; padding: 1px 3px; border-radius: 2px;`,
         ...message.args,
       )
     }

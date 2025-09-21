@@ -70,9 +70,9 @@ export interface Epos {
     /** Create local state (no sync). */
     local<T extends Obj = {}>(state?: T): T
     /** Get the list of all state names. */
-    list(opts?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
-    /** Remove state. */
-    remove(name?: string): Promise<void>
+    list(filter?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
+    /** Remove state and all its data. */
+    destroy(name?: string): Promise<void>
     /** Dynamically register models for all states. */
     registerGlobalModels(models: Record<string, ModelClass>): void
     symbols: {
@@ -112,7 +112,17 @@ export interface Epos {
     /** Unload asset from memory. Pass '*' to unload all assets.*/
     unload(path: string): void
     /** Get list of all available asset paths. */
-    list(opts?: { loaded?: boolean }): Array<{ path: string; loaded: boolean }>
+    list(filter?: { loaded?: boolean }): Array<{ path: string; loaded: boolean }>
+  }
+
+  // Frames
+  frames: {
+    /** Create a new frame. */
+    create(name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
+    /** Remove frame by name. */
+    remove(name: string): Promise<void>
+    /** Get list of all created frames. */
+    list(): Promise<Array<{ name: string; url: string }>>
   }
 
   // Env

@@ -1,1 +1,2 @@
-// console.log('3')
+console.log('fs.js')
+self.epos = epos

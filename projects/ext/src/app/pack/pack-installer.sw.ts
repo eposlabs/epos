@@ -29,6 +29,7 @@ export class PackInstaller extends $sw.Unit {
   async remove(name: string) {
     await this.$.idb.deleteDatabase(name)
     delete this.$pack.pkgs[name]
+    await this.$.bus.send('pack.removeAllPkgFrames', name)
     this.broadcast('pack.pkgsChanged')
   }
 

@@ -22,10 +22,8 @@ export class BootInjector extends $ex.Unit {
     }
 
     // For [exFrameWeb]:
-    // - Not implemented
     if (this.$.env.is.exFrameWeb) {
       await this.executePkgs()
-      // this.log.error('exFrameWeb is not implemented')
       return
     }
   }
