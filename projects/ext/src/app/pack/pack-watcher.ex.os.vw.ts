@@ -6,6 +6,8 @@ export type OnUpdate = (delta: Delta, data: Data) => void
 export type Delta = {
   added: PkgName[]
   removed: PkgName[]
+  // TODO: implement properly (required for auto-refresh)
+  updated: PkgName[]
 }
 
 export type Data = {
@@ -34,8 +36,12 @@ export class PackWatcher extends $exOsVw.Unit {
     const added = names2.filter(name => !executionData1[name])
     const removed = names1.filter(name => !executionData2[name])
 
+    const updated = names1.filter(
+      name => executionData2[name] && executionData1[name].hash !== executionData2[name].hash,
+    )
+
     const data: Data = { action: actionData, execution: executionData, hasSidePanel }
-    const delta: Delta = { added, removed }
+    const delta: Delta = { added, removed, updated }
     this.executionData = executionData
 
     onUpdate(delta, data)

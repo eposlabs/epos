@@ -47,7 +47,7 @@ export type MArraySpliceChange = IArrayWillSplice<any>
 export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateChange | MArraySpliceChange
 
 export type Options = {
-  initial?: GetInitialState
+  getInitialState?: GetInitialState
   models?: Record<string, ModelClass>
   versioner?: Versioner
 }
@@ -81,7 +81,7 @@ export class State extends $exSw.Unit {
 
   private saveQueue = new this.$.utils.Queue()
   private saveTimeout: number | undefined = undefined
-  private SAVE_DELAY = this.$.env.is.dev ? 300 : 2000
+  private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // 2000
 
   static async create(parent: $exSw.Unit, location: Location, options: Options = {}) {
     const state = new State(parent, location, options)
@@ -96,7 +96,7 @@ export class State extends $exSw.Unit {
     this.location = location
     this.models = options.models ?? {}
     this.versioner = options.versioner ?? {}
-    this.getInitialState = options.initial ?? (() => ({}))
+    this.getInitialState = options.getInitialState ?? (() => ({}))
     this.save = this.saveQueue.wrap(this.save, this)
   }
 
@@ -172,10 +172,12 @@ export class State extends $exSw.Unit {
         // Empty state?
         if (Object.keys(this.data).length === 0) {
           // Set initial state
-          this.data = this.attach(this.getInitialState(), null)
+          const initial = this.getInitialState()
+          Object.assign(this.data, initial)
+          // Object.keys(initial).forEach(key => this.set(this.data, key, initial[key]))
 
           // State itself is a model? -> Don't use state versioner (model versioner will be used)
-          if (this.isModelNode(this.data)) return
+          // if (this.isModelNode(this.data)) return
 
           // Set the latest version
           if (versions.length === 0) return
@@ -185,7 +187,7 @@ export class State extends $exSw.Unit {
         // Non-empty state?
         else {
           // State itself is a model? -> Don't run state versioner (model versioner will be run)
-          if (this.isModelNode(this.data)) return
+          // if (this.isModelNode(this.data)) return
 
           // Run state versioner
           for (const version of versions) {

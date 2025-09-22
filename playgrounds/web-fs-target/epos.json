@@ -6,7 +6,7 @@
   "targets": [
     {
       "matches": ["*://*/*"],
-      "load": ["./src/fs.js", "./src/fs.css"]
+      "load": ["./src/fs.js", "./src/fs.css"
     },
     {
       "matches": ["https://x.com/*"],

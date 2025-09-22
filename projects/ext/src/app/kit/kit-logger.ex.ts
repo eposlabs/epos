@@ -5,8 +5,8 @@ export class KitLogger extends $ex.Unit {
     super(parent)
 
     if (this.$.env.is.exFrameExtBackground) {
-      this.patchConsole()
-      this.handleRejections()
+      // this.patchConsole()
+      // this.handleRejections()
     }
   }
 

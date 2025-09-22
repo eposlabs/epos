@@ -8,8 +8,6 @@ export class PkgExporter extends $sw.Unit {
 
     const engineFiles = [
       'cs.js',
-      'ex-dev.js',
-      'ex-mini-dev.js',
       'ex-mini.js',
       'ex.js',
       'os.js',
@@ -20,6 +18,10 @@ export class PkgExporter extends $sw.Unit {
       'frame.html',
       'offscreen.html',
     ]
+
+    if (this.$pkg.name === 'devkit') {
+      engineFiles.push('ex-dev.js', 'ex-mini-dev.js')
+    }
 
     for (const path of engineFiles) {
       const blob = await fetch(`/${path}`).then(r => r.blob())

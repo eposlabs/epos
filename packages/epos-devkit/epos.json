@@ -2,6 +2,17 @@
   "$schema": "https://epos.dev/schema.json",
   "name": "devkit",
   "title": "[epos] DevKit",
+  "assets": [
+    "./public/icon.png",
+    "./template/epos.json",
+    "./template/package.json",
+    "./template/tsconfig.json",
+    "./template/vite.config.ts",
+    "./template/src/app/app.gl.tsx",
+    "./template/src/entry/entry.gl.tsx",
+    "./template/src/entry/entry.gl.css",
+    "./template/src/entry/entry-units.ts"
+  ],
   "targets": [
     {
       "matches": ["<hub>"],

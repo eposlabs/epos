@@ -37,7 +37,9 @@
 - **Assets**
   - epos.assets.url
   - epos.assets.load
+  - epos.assets.loadAll
   - epos.assets.unload
+  - epos.assets.unloadAll
   - epos.assets.list
 - **Frames**
   - epos.frames.create

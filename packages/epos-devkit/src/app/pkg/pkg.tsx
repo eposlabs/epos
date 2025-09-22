@@ -1,6 +1,5 @@
 // TODO: handle when adding pkg with the same name
 import { parseManifest } from '@eposlabs/epos-manifest-parser'
-
 import type { Manifest } from '@eposlabs/epos-manifest-parser'
 
 export class Pkg extends $gl.Unit {
@@ -9,13 +8,15 @@ export class Pkg extends $gl.Unit {
   name: string | null = null
   error: string | null = null
   manifest: Manifest | null = null
+  time: string | null = null
+  declare private timeout: number | undefined
   declare private handle: FileSystemDirectoryHandle
   declare private globalObserver: any
   declare private fileObservers: Set<any>
 
   static async create(parent: $gl.Unit) {
     const $ = parent.$
-    const [handle, error] = await $.utils.safe(() => self.showDirectoryPicker({ mode: 'readwrite' }))
+    const [handle, error] = await $.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
     if (error) return null
 
     const pkg = new Pkg(parent)
@@ -36,14 +37,14 @@ export class Pkg extends $gl.Unit {
     this.handle = handle
     this.globalObserver = null
     this.fileObservers = new Set()
-    this.status = await this.handle.queryPermission({ mode: 'readwrite' })
+    this.status = await this.handle.queryPermission({ mode: 'read' })
     this.setupGlobalObserver()
     this.startFileObservers()
     // await this.readManifestAndSetupFileObservers()
   }
 
   cleanup() {
-    console.warn('stop', this.fileObservers)
+    // console.warn('stop', this.fileObservers)
     this.stopFileObservers()
     if (this.globalObserver) {
       this.globalObserver.disconnect()
@@ -58,7 +59,6 @@ export class Pkg extends $gl.Unit {
     // }
   }
 
-  // Called when DELETE is clicked. Intentionally left empty.
   async remove() {
     await (epos as any).engine.bus.send('pack.remove', this.name)
     this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
@@ -88,6 +88,10 @@ export class Pkg extends $gl.Unit {
     }
 
     this.manifest = manifest
+
+    if (this.name !== manifest.name) {
+      await (epos as any).engine.bus.send('pack.remove', this.name)
+    }
     this.name = manifest.name ?? null
 
     const paths = this.getUsedManifestPaths()
@@ -113,24 +117,23 @@ export class Pkg extends $gl.Unit {
 
   private async setupFileObserver(path: string) {
     const [handle, error] = await this.$.utils.safe(() => this.getFileHandleDeep(path))
-    if (error) throw new Error(`Required file not found: ${path}`)
+    if (error) throw new Error(`File not found: ${path}`)
 
     const observer = new FileSystemObserver(async (records: any[]) => {
       for (const record of records) {
         if (path === 'epos.json') {
-          this.stopFileObservers()
-          this.startFileObservers()
-          this.install()
+          // this.stopFileObservers()
+          // this.startFileObservers()
+          // this.install()
           return
         }
 
         if (record.type === 'disappeared') {
           this.stopFileObservers()
-          this.error = `Required file was deleted: ${path}`
+          this.error = `File was deleted: ${path}`
           return
         }
 
-        // this.log(`[file] ${record.type}`, path)
         this.install()
       }
     })
@@ -185,33 +188,36 @@ export class Pkg extends $gl.Unit {
   }
 
   private async install() {
-    if (!this.manifest) return
-
-    const assets: Record<string, Blob> = {}
-    for (const path of this.manifest.assets) {
-      assets[path] = await this.readFile(path)
-    }
-
-    const sources: Record<string, string> = {}
-    for (const target of this.manifest.targets) {
-      for (const path of target.load) {
-        if (sources[path]) continue
-        const blob = await this.readFile(path)
-        sources[path] = await blob.text()
+    this.time = new Date().toString().split(' ')[4]
+    self.clearTimeout(this.timeout)
+    this.timeout = self.setTimeout(async () => {
+      if (!this.manifest) return
+      const assets: Record<string, Blob> = {}
+      for (const path of this.manifest.assets) {
+        assets[path] = await this.readFile(path)
       }
-    }
 
-    const pack = {
-      spec: {
-        dev: true,
-        name: this.manifest.name,
-        sources: sources,
-        manifest: this.manifest,
-      },
-      assets: assets,
-    }
+      const sources: Record<string, string> = {}
+      for (const target of this.manifest.targets) {
+        for (const path of target.load) {
+          if (sources[path]) continue
+          const blob = await this.readFile(path)
+          sources[path] = await blob.text()
+        }
+      }
 
-    await (epos as any).engine.bus.send('pack.install', pack)
+      const pack = {
+        spec: {
+          dev: true,
+          name: this.manifest.name,
+          sources: sources,
+          manifest: this.manifest,
+        },
+        assets: assets,
+      }
+
+      await (epos as any).engine.bus.send('pack.install', pack)
+    }, 50)
   }
 
   async export() {
@@ -227,87 +233,43 @@ export class Pkg extends $gl.Unit {
 
   ui() {
     return (
-      <div
-        class={[
-          'w-[320px]',
-          'rounded-xl border bg-white/80 shadow-sm backdrop-blur',
-          'border-gray-200',
-          'p-4',
-          'relative', // added to enable absolute positioning for the DELETE button
-          'dark:border-gray-800 dark:bg-gray-900/60',
-        ]}
-      >
-        <button
-          class={[
-            'absolute top-2 right-2',
-            'bg-red-600/20 px-2 py-1 text-xs font-semibold text-red-600 uppercase',
-            'rounded hover:text-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none',
-          ]}
-          onClick={this.remove}
-        >
-          REMOVE
-        </button>
-
-        <div class="flex items-start justify-between">
-          <div class="min-w-0">
-            <div class="text-xs tracking-wide text-gray-500 uppercase dark:text-gray-400">Package</div>
-            <div class="truncate text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {this.name ?? 'Unknown package'}
+      <div class="group flex flex-col bg-white p-4 dark:bg-black">
+        <div class="flex items-center justify-between">
+          <div class="">
+            {this.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
+            {this.time && <span class="ml-3 text-xs text-gray-500">{this.time}</span>}
+          </div>
+          <div class="flex gap-2">
+            {!this.error && (
+              <div
+                onClick={this.export}
+                class="cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-800"
+              >
+                [export]
+              </div>
+            )}
+            <div
+              onClick={this.remove}
+              class="cursor-default px-1 py-0.5 hover:bg-red-200 dark:hover:bg-red-800"
+            >
+              [remove]
             </div>
           </div>
-
-          {this.status === 'denied' && (
-            <button
-              class={[
-                'ml-3 inline-flex items-center rounded-md',
-                'bg-blue-600 px-3 py-1.5 text-sm font-medium text-white',
-                'hover:bg-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none',
-                'disabled:cursor-not-allowed disabled:opacity-50',
-              ]}
-              onClick={this.requestAccess}
-            >
-              Request access
-            </button>
-          )}
         </div>
-
-        <div>
-          <button onClick={this.export} class="bg-amber-200">
-            EXPORT
-          </button>
-        </div>
-
-        <div class="mt-3">
-          {this.error ? (
-            <div
-              class={[
-                'rounded-md border p-3 text-sm',
-                'border-red-200 bg-red-50 text-red-700',
-                'dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-300',
-              ]}
-            >
-              {this.error}
-            </div>
-          ) : (
-            <div
-              class={[
-                'rounded-md border p-3 text-sm',
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
-                'dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-300',
-              ]}
-            >
-              ✅ Connected
-            </div>
-          )}
-        </div>
-
-        {/* Optional: manifest preview for debugging
-        {this.manifest && (
-          <pre class="mt-3 max-h-48 overflow-auto rounded-md border border-gray-200 p-2 text-xs dark:border-gray-800">
-            {JSON.stringify(this.manifest, null, 2)}
-          </pre>
-        )} */}
+        {this.error && (
+          <div class="mt-4 bg-red-100 p-2.5 px-3 text-pretty text-gray-800 dark:bg-red-900 dark:text-white">
+            {this.error}
+          </div>
+        )}
       </div>
     )
+  }
+
+  static versioner: any = {
+    12() {
+      this.time = null
+      delete this.lastChanges
+      delete this.lastChange
+    },
   }
 }

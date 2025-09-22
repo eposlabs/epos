@@ -13,7 +13,7 @@ export type ClassName = string | null | boolean | undefined | ClassName[]
 export type ModelClass = new (...args: any[]) => any
 
 export type ConnectOptions<T extends Obj> = {
-  initial?: () => T
+  getInitialState?: () => T
   models?: Record<string, ModelClass>
   versioner?: Versioner
 }
@@ -106,11 +106,15 @@ export interface Epos {
   // Assets
   assets: {
     /** Get asset URL. Asset must be loaded first. */
-    url(path: string): Promise<string>
-    /** Load asset to memory. Pass '*' to load all assets. */
-    load(path: string): Promise<void>
-    /** Unload asset from memory. Pass '*' to unload all assets.*/
+    url(path: string): string
+    /** Load asset by path. */
+    load(path: string): Promise<Blob>
+    /** Load all assets. */
+    loadAll(): Promise<Blob[]>
+    /** Unload asset from memory. */
     unload(path: string): void
+    /** Unload all assets from memory. */
+    unloadAll(): void
     /** Get list of all available asset paths. */
     list(filter?: { loaded?: boolean }): Array<{ path: string; loaded: boolean }>
   }

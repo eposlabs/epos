@@ -42,7 +42,7 @@ export class PkgApiState extends $ex.Unit {
     delete this.states[name]
   }
 
-  async remove(name?: string) {
+  async destroy(name?: string) {
     name = this.prepareName(name)
     const location = this.getLocation(name)
     await this.$.store.remove(location)

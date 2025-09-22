@@ -46,7 +46,7 @@ export class App extends $vw.Unit {
 
     return (
       <props.context.Provider value={renderId}>
-        <div>
+        <div class="min-h-200 min-w-240">
           <this.$.pack.dock.ui />
           <this.$.pack.ui />
         </div>

@@ -27,9 +27,17 @@ export class PackInstaller extends $sw.Unit {
   }
 
   async remove(name: string) {
+    for (const key of Object.keys(this.$.store.states)) {
+      if (key.startsWith(`${name}/`)) {
+        const parts = key.split('/')
+        const location = parts as [string, string, string]
+        await this.$.store.disconnect(location)
+      }
+    }
+
+    await this.$.bus.send('pack.removeAllPkgFrames', name)
     await this.$.idb.deleteDatabase(name)
     delete this.$pack.pkgs[name]
-    await this.$.bus.send('pack.removeAllPkgFrames', name)
     this.broadcast('pack.pkgsChanged')
   }
 

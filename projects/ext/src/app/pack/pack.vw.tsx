@@ -70,7 +70,7 @@ export class Pack extends $vw.Unit {
 
       // Select first package if none selected
       if (!this.selectedPkgName || !this.pkgs[this.selectedPkgName]) {
-        this.selectedPkgName = this.list()[0].name ?? null
+        this.selectedPkgName = this.list()[0]?.name ?? null
       }
 
       // Refresh UI

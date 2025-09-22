@@ -3,6 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <title>epos</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        color: light-dark(#000, #fff);
+        background: light-dark(#fff, #212121);
+      }
+    </style>
     <script type="module">
       const isDev = new URL(location.href).searchParams.get('dev') === 'true'
       const script = document.createElement('script')

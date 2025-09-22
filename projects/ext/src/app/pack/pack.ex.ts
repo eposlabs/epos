@@ -9,4 +9,14 @@ export class Pack extends $ex.Unit {
     this.pkgs[props.name] = pkg
     return pkg
   }
+
+  constructor(parent: $ex.Unit) {
+    super(parent)
+
+    this.watcher.start(delta => {
+      if (delta.updated.length > 0 && new URLSearchParams(location.search).has('autoreload')) {
+        location.reload()
+      }
+    })
+  }
 }

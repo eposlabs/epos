@@ -1,9 +1,8 @@
-import './globals'
-import './units'
+import 'epos'
+import './entry.gl.css'
+import './entry-units'
 import '../layers/index.gl'
-import './index.css'
 
-await epos.assets.load('/public/icon.png')
 const state = await epos.state.connect({
   getInitialState: () => ({ app: new $gl.App() }),
   models: { ...$gl },
@@ -11,4 +10,4 @@ const state = await epos.state.connect({
 
 epos.render(<state.app.ui />)
 
-Object.assign(self, { epos, $: state.app, _gl: $gl })
+Object.assign(self, { epos, $: state.app })

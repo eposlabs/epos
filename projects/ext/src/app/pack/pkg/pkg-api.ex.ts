@@ -50,7 +50,7 @@ export class PkgApi extends $ex.Unit {
         transaction: this.$.utils.link(this.state, 'transaction'),
         local: this.$.utils.link(this.state, 'local'),
         list: this.$.utils.link(this.state, 'list'),
-        remove: this.$.utils.link(this.state, 'remove'),
+        destroy: this.$.utils.link(this.state, 'destroy'),
         registerGlobalModels: this.$.utils.link(this.state, 'registerGlobalModels'),
         symbols: this.state.symbols,
       },
@@ -70,7 +70,9 @@ export class PkgApi extends $ex.Unit {
       assets: {
         url: this.$.utils.link(this.assets, 'url'),
         load: this.$.utils.link(this.assets, 'load'),
+        loadAll: this.$.utils.link(this.assets, 'loadAll'),
         unload: this.$.utils.link(this.assets, 'unload'),
+        unloadAll: this.$.utils.link(this.assets, 'unloadAll'),
         list: this.$.utils.link(this.assets, 'list'),
       },
 
@@ -88,6 +90,7 @@ export class PkgApi extends $ex.Unit {
         isPopup: this.env.isPopup,
         isSidePanel: this.env.isSidePanel,
         isShell: this.env.isShell,
+        isFrame: this.env.isFrame,
         isBackground: this.env.isBackground,
         isForeground: this.env.isForeground,
       },
