@@ -5,7 +5,7 @@ import './index.css'
 
 await epos.assets.load('/public/icon.png')
 const state = await epos.state.connect({
-  getInitialState: () => ({ app: new $gl.App() }),
+  getInitialState: () => ({ app: new $gl.App(null) }),
   models: { ...$gl },
 })
 

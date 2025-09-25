@@ -1,4 +1,4 @@
-import { createLog, type Log, type Cls } from '@eposlabs/utils'
+import { createLog, type Cls, type Log } from '@eposlabs/utils'
 import { epos } from 'epos'
 
 import type { FC } from 'react'
@@ -6,6 +6,7 @@ import type { FC } from 'react'
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
 export const _disposers_ = Symbol('disposers')
+export type Descriptors = Record<string | symbol, PropertyDescriptor>
 
 export class Unit<TRoot = unknown> {
   declare '@': string
@@ -15,7 +16,8 @@ export class Unit<TRoot = unknown> {
   declare private [_disposers_]: Set<() => void>;
   [key: PropertyKey]: unknown
 
-  constructor(parent: Unit<TRoot> | null = null) {
+  constructor(parent: Unit<TRoot> | null) {
+    // Define parent for not-yet-attached units
     Reflect.defineProperty(this, _parent_, { get: () => parent })
   }
 
@@ -25,23 +27,29 @@ export class Unit<TRoot = unknown> {
 
   [epos.state.symbols.model.init]() {
     const Unit = this.constructor
-    const prototypeKeys = Object.getOwnPropertyNames(Unit.prototype)
+    const descriptors: Descriptors = Object.getOwnPropertyDescriptors(Unit.prototype)
+    const keys = Reflect.ownKeys(descriptors)
 
-    // Set disposers container
+    // Setup disposers container
     const disposers = new Set<() => void>()
     Reflect.defineProperty(this, _disposers_, { get: () => disposers })
 
     // Bind all methods
-    for (const key of prototypeKeys) {
-      if (typeof this[key] !== 'function') continue
+    for (const key of keys) {
       if (key === 'constructor') continue
-      this[key] = this[key].bind(this)
+      const descriptor = descriptors[key]
+      if (descriptor.get || descriptor.set) continue
+      if (typeof descriptor.value !== 'function') continue
+      this[key] = descriptor.value.bind(this)
     }
 
     // Wrap UI methods to components
-    for (const key of prototypeKeys) {
+    for (const key of keys) {
+      if (typeof key === 'symbol') continue
+      if (!key.startsWith('ui')) continue
+      const descriptor = descriptors[key]
+      if (descriptor.get || descriptor.set) continue
       if (typeof this[key] !== 'function') continue
-      if (!isUiKey(key)) continue
       const componentName = [this['@'], key.replace('ui', '')].filter(Boolean).join('-')
       this[key] = epos.component(componentName, this[key] as FC)
     }
@@ -81,13 +89,17 @@ export class Unit<TRoot = unknown> {
   }
 
   // ---------------------------------------------------------------------------
-  // GETTERS & METHODS
+  // ROOT
   // ---------------------------------------------------------------------------
 
   get $() {
     this[_root_] ??= findRoot(this) as TRoot
     return this[_root_]
   }
+
+  // ---------------------------------------------------------------------------
+  // METHODS
+  // ---------------------------------------------------------------------------
 
   up<T extends Unit>(Ancestor: Cls<T>): T | null {
     let cursor: unknown = getParent(this)
@@ -126,10 +138,6 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 // HELPERS
 // ---------------------------------------------------------------------------
-
-function isUiKey(key: string) {
-  return key.startsWith('ui')
-}
 
 function getParent(child: any) {
   return child[_parent_] ?? child[epos.state.symbols.model.parent]
