@@ -109,7 +109,7 @@ export class Pkg extends $sw.Unit {
         `  icon: ${JSON.stringify(this.manifest.icon)},`,
         `  title: ${JSON.stringify(this.manifest.title)},`,
         `  shadowCss: ${JSON.stringify(shadowCss)},`,
-        `  fn(epos, React = epos.react, ${layers.join(', ')}) { ${js} },`,
+        `  async fn(epos, React = epos.libs.react, ${layers.join(', ')}) { ${js} },`,
         `}`,
       ].join('\n'),
     }

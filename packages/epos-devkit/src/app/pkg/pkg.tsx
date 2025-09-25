@@ -2,6 +2,8 @@
 import { parseManifest } from '@eposlabs/epos-manifest-parser'
 import type { Manifest } from '@eposlabs/epos-manifest-parser'
 
+const engine = (epos as any).engine
+
 export class Pkg extends $gl.Unit {
   id = crypto.randomUUID()
   status: null | 'prompt' | 'denied' | 'granted' = null
@@ -39,12 +41,10 @@ export class Pkg extends $gl.Unit {
     this.fileObservers = new Set()
     this.status = await this.handle.queryPermission({ mode: 'read' })
     this.setupGlobalObserver()
-    this.startFileObservers()
-    // await this.readManifestAndSetupFileObservers()
+    this.restartFileObservers()
   }
 
   cleanup() {
-    // console.warn('stop', this.fileObservers)
     this.stopFileObservers()
     if (this.globalObserver) {
       this.globalObserver.disconnect()
@@ -52,25 +52,27 @@ export class Pkg extends $gl.Unit {
     }
   }
 
-  async requestAccess() {
-    // this.status = await this.handle.requestPermission({ mode: 'readwrite' })
-    // if (this.status === 'granted') {
-    //   await this.startWatchers()
-    // }
-  }
-
   async remove() {
-    await (epos as any).engine.bus.send('pack.remove', this.name)
+    await engine.bus.send('pack.remove', this.name)
     this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
   }
 
   private setupGlobalObserver() {
     this.globalObserver = new FileSystemObserver(async (records: any[]) => {
+      // this.log(`[global] ${record.type}`, path)
+      this.restartFileObservers()
+      return
+
+      if (this.error) {
+        this.restartFileObservers()
+        return
+      }
+
       for (const record of records) {
         const path = record.relativePathComponents.join('/')
-        // this.log(`[global] ${record.type}`, path)
-        if (path === 'epos.json' || this.error) {
-          this.startFileObservers()
+        if (path === 'epos.json') {
+          this.restartFileObservers()
+          break
         }
       }
     })
@@ -78,7 +80,7 @@ export class Pkg extends $gl.Unit {
     this.globalObserver.observe(this.handle, { recursive: true })
   }
 
-  private async startFileObservers() {
+  private async restartFileObservers() {
     this.stopFileObservers()
 
     const [manifest, manifestError] = await this.$.utils.safe(() => this.readManifest())
@@ -88,10 +90,7 @@ export class Pkg extends $gl.Unit {
     }
 
     this.manifest = manifest
-
-    if (this.name !== manifest.name) {
-      await (epos as any).engine.bus.send('pack.remove', this.name)
-    }
+    if (this.name !== manifest.name) await engine.bus.send('pack.remove', this.name)
     this.name = manifest.name ?? null
 
     const paths = this.getUsedManifestPaths()
@@ -102,7 +101,6 @@ export class Pkg extends $gl.Unit {
         this.stopFileObservers()
         return
       }
-
       this.fileObservers.add(observer)
     }
 
@@ -116,22 +114,17 @@ export class Pkg extends $gl.Unit {
   }
 
   private async setupFileObserver(path: string) {
-    const [handle, error] = await this.$.utils.safe(() => this.getFileHandleDeep(path))
+    const [handle, error] = await this.$.utils.safe(() => this.getFileHandleByPath(path))
     if (error) throw new Error(`File not found: ${path}`)
 
     const observer = new FileSystemObserver(async (records: any[]) => {
       for (const record of records) {
-        if (path === 'epos.json') {
-          // this.stopFileObservers()
-          // this.startFileObservers()
-          // this.install()
-          return
-        }
+        if (path === 'epos.json') continue
 
         if (record.type === 'disappeared') {
           this.stopFileObservers()
           this.error = `File was deleted: ${path}`
-          return
+          break
         }
 
         this.install()
@@ -142,14 +135,14 @@ export class Pkg extends $gl.Unit {
   }
 
   private async readFile(path: string) {
-    const handle = await this.getFileHandleDeep(path)
+    const handle = await this.getFileHandleByPath(path)
     const file = await handle.getFile()
     return new Blob([file], { type: file.type })
   }
 
   private getUsedManifestPaths() {
     if (!this.manifest) throw new Error('Manifest not loaded')
-    const paths = new Set<string>(['epos.json'])
+    const paths = new Set<string>()
     this.manifest.assets.forEach(path => paths.add(path))
     this.manifest.targets.forEach(target => target.load.forEach(path => paths.add(path)))
     return [...paths]
@@ -171,12 +164,13 @@ export class Pkg extends $gl.Unit {
     return manifest
   }
 
-  private async getFileHandleDeep(path: string) {
+  private async getFileHandleByPath(path: string) {
     const parts = path.split('/')
-    if (parts.length === 0) throw new Error('empty path')
+    if (parts.length === 0) throw new Error(`File not found: ${path}`)
+
     const dirs = parts.slice(0, -1)
     const fileName = parts.at(-1)
-    if (!fileName) throw new Error('invalid file path')
+    if (!fileName) throw new Error(`File not found: ${path}`)
 
     let dir: FileSystemDirectoryHandle = this.handle
     for (const dirName of dirs) {
@@ -190,8 +184,10 @@ export class Pkg extends $gl.Unit {
   private async install() {
     this.time = new Date().toString().split(' ')[4]
     self.clearTimeout(this.timeout)
+
     this.timeout = self.setTimeout(async () => {
       if (!this.manifest) return
+
       const assets: Record<string, Blob> = {}
       for (const path of this.manifest.assets) {
         assets[path] = await this.readFile(path)
@@ -206,22 +202,19 @@ export class Pkg extends $gl.Unit {
         }
       }
 
-      const pack = {
-        spec: {
-          dev: true,
-          name: this.manifest.name,
-          sources: sources,
-          manifest: this.manifest,
-        },
-        assets: assets,
+      const spec = {
+        dev: true,
+        name: this.manifest.name,
+        sources: sources,
+        manifest: this.manifest,
       }
 
-      await (epos as any).engine.bus.send('pack.install', pack)
+      await engine.bus.send('pack.install', { spec, assets })
     }, 50)
   }
 
   async export() {
-    const blob = await (epos as any).engine.bus.send('pack.export', this.name)
+    const blob = await engine.bus.send('pack.export', this.name)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
@@ -264,6 +257,10 @@ export class Pkg extends $gl.Unit {
       </div>
     )
   }
+
+  // ---------------------------------------------------------------------------
+  // VERSIONER
+  // ---------------------------------------------------------------------------
 
   static versioner: any = {
     12() {

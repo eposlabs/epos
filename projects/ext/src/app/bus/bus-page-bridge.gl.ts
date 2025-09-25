@@ -182,15 +182,16 @@ export class BusPageBridge extends $gl.Unit {
   }
 
   private unregisterRemovedFrameActions() {
-    const frames = new Set(this.getAllFrames())
+    const existingFrames = new Set(this.getAllFrames())
     this.$bus.actions = this.$bus.actions.filter(action => {
       if (!action.target) return true
-      return frames.has(action.target as WindowProxy)
+      if (!existingFrames.has(action.target as WindowProxy)) return false
+      return true
     })
   }
 
   private getAllFrames(root: WindowProxy = self): WindowProxy[] {
-    const frames: WindowProxy[] = []
+    const frames: WindowProxy[] = [root]
     for (let i = 0; i < root.frames.length; i++) {
       const frame = root.frames[i]
       const subframes = this.getAllFrames(frame)

@@ -144,7 +144,10 @@ export class Rebundle extends $utils.Unit {
     try {
       result = await $esbuild.build({
         sourcemap: Boolean(this.config.build.sourcemap),
+        format: 'esm',
         ...chunkBuildOptions,
+        banner: { ...chunkBuildOptions.banner, js: ';(async () => {' + (chunkBuildOptions.banner?.js ?? '') },
+        footer: { ...chunkBuildOptions.footer, js: (chunkBuildOptions.footer?.js ?? '') + '})();' },
         outfile: chunkPath,
         entryPoints: [chunkPath],
         bundle: true,

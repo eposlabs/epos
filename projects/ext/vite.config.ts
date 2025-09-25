@@ -22,6 +22,7 @@ export default defineConfig(async ({ mode }) => {
     minify: mode !== 'development',
     keepNames: true,
     banner: { js: setup },
+    format: 'esm',
     ...options,
     define: {
       'BUNDLE': json(name),

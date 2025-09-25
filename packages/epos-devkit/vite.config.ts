@@ -15,7 +15,7 @@ export default defineConfig(async ({ mode }) => {
   const esbuildOptions: BuildOptions = {
     format: 'esm',
     keepNames: true,
-    minify: mode !== 'development',
+    minify: false, // mode !== 'development',
     banner: { js: setupLayersJs },
   }
 

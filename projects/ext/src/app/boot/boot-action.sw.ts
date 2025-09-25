@@ -36,7 +36,7 @@ export class BootAction extends $sw.Unit {
         const action = actionData[name].action
         if (action === true) {
           const bus = this.$.bus.create(`pkg[${name}]`)
-          await bus.send('action')
+          await bus.send(':action', tab.id)
         } else {
           await this.$boot.medium.openTab(action)
         }

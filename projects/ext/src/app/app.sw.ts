@@ -65,5 +65,6 @@ export class App extends $sw.Unit {
     self.add = (name: string, dev = false) => this.pack.installer.install(name, dev)
     self.remove = (name: string) => this.pack.installer.remove(name)
     self.eject = (name: string) => this.pack.pkgs[name].exporter.export()
+    self.install = self.add
   }
 }
