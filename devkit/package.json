@@ -1,5 +1,5 @@
 {
-  "name": "epos-devkit",
+  "name": "devkit",
   "type": "module",
   "private": true,
   "scripts": {
