@@ -7,41 +7,34 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "rm -rf dist && tsc -w",
-    "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
   },
   "exports": {
     ".": {
-      "import": "./dist/epos/index.js"
+      "import": "./src/epos.ts"
     },
     "./vite": {
-      "import": "./dist/plugin/plugin-vite.js"
-    },
-    "./esbuild": {
-      "import": "./dist/plugin/plugin-esbuild.js"
+      "import": "./src/vite.ts"
     }
   },
   "files": [
-    "dist",
+    "src",
     "epos.schema.json"
   ],
   "dependencies": {
-    "@types/chrome": "^0.1.11",
-    "@types/react": "^19.1.13",
+    "@types/chrome": "^0.1.12",
+    "@types/react": "^19.1.14",
     "@types/react-dom": "^19.1.9",
-    "mobx": "^6.13.7",
+    "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.0",
     "react": "^19.1.1",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "esbuild": "^0.25.9",
-    "vite": "^7.1.5"
+    "vite": "^7.1.7"
   },
   "peerDependencies": {
-    "esbuild": "^0.25.9",
     "vite": "^7.1.4"
   }
 }

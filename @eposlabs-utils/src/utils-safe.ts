@@ -1,4 +1,4 @@
-import { is } from './utils-is.js'
+import { is } from './utils-is.ts'
 
 export async function safe<T>(
   effect: (() => T | Promise<T>) | Promise<T>,

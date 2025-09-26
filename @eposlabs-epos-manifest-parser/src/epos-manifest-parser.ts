@@ -264,3 +264,5 @@ function normalizePath(path: string) {
     .filter(path => path && path !== '.')
     .join('/')
 }
+
+export default parseManifest

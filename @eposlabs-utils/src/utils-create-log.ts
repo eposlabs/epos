@@ -1,6 +1,5 @@
-import { colorHash } from './utils-color-hash.js'
-
-import type { Fn } from './utils-types.js'
+import { colorHash } from './utils-color-hash.ts'
+import type { Fn } from './utils-types.ts'
 
 export type Log = Fn<void> & { warn: Fn<void>; error: Fn<void> }
 

@@ -10,24 +10,22 @@
     "vite-plugin"
   ],
   "scripts": {
-    "dev": "rm -rf dist && tsc --watch",
-    "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
   },
   "bin": {
     "paralayer": "./src/bin.ts"
   },
   "exports": {
     ".": {
-      "import": "./src/index.ts"
+      "import": "./src/paralayer.ts"
     }
   },
   "files": [
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.0.13",
+    "@eposlabs/utils": "^1.1.1",
     "chokidar": "^4.0.3",
     "minimist": "^1.2.8"
   },

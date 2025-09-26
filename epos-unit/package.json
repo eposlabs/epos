@@ -1,27 +1,25 @@
 {
   "name": "epos-unit",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "rm -rf dist && tsc -w",
-    "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": "./src/epos-unit.ts"
     }
   },
   "files": [
-    "dist"
+    "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.0.13",
-    "epos": "^1.7.1"
+    "@eposlabs/utils": "^1.1.1",
+    "epos": "^1.7.7"
   }
 }

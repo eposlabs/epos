@@ -15,10 +15,10 @@ export type Options = {
   input: DirPath | DirPath[]
   output: DirPath
   watch?: boolean
-  /** Default layer name. If a file name does not have layer tags, default name will be used. */
-  default?: string | null
   /** Whether the layer variables should be exposed globally. */
   globalize?: boolean
+  /** If a file name does not have layer tags, default layer name will be used. */
+  defaultLayerName?: string | null
 }
 
 export class Paralayer extends Unit {
@@ -37,7 +37,7 @@ export class Paralayer extends Unit {
     this.options = options
   }
 
-  start = async () => {
+  async start() {
     if (this.started) return
     this.started = true
 
@@ -238,7 +238,7 @@ export class Paralayer extends Unit {
     const name = basename(path)
     const layer = name.split('.').slice(1, -1).sort().join('.')
     if (layer) return layer
-    return this.options.default ?? ''
+    return this.options.defaultLayerName ?? ''
   }
 
   private getLayerName(layer: string, style: '$camel' | '$Pascal') {
@@ -266,3 +266,11 @@ export class Paralayer extends Unit {
     await writeFile(path, content, 'utf-8')
   }
 }
+
+export async function paralayer(options: Options) {
+  const pl = new Paralayer(options)
+  await pl.start()
+  return await pl.readSetupJs()
+}
+
+export default paralayer

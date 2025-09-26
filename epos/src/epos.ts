@@ -18,7 +18,7 @@ export type ConnectOptions<T extends Obj> = {
   versioner?: Versioner
 }
 
-type Storage = {
+export type Storage = {
   /** Get value from the storage. */
   get<T = unknown>(key: string): Promise<T>
   /** Set value in the storage. */
@@ -171,5 +171,5 @@ declare global {
   }
 }
 
-const _epos = epos
-export { _epos as epos }
+export { epos }
+export default epos

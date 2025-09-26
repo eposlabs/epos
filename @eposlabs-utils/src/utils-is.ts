@@ -1,4 +1,4 @@
-import type { Fn, Obj, Arr } from './utils-types.js'
+import type { Fn, Obj, Arr } from './utils-types.ts'
 
 const toString = Object.prototype.toString
 

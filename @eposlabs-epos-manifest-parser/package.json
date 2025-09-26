@@ -1,27 +1,24 @@
 {
   "name": "@eposlabs/epos-manifest-parser",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "scripts": {
-    "dev": "rm -rf dist && tsc --watch",
-    "build": "rm -rf dist && tsc",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
   },
   "exports": {
     ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/epos-manifest-parser.ts"
     }
   },
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.0.13",
+    "@eposlabs/utils": "^1.1.1",
     "strip-json-comments": "^5.0.3"
   },
   "publishConfig": {

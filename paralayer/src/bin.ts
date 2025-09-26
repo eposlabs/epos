@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import minimist from 'minimist'
-import { paralayer } from './index.ts'
+import { paralayer } from './paralayer.ts'
 
 const argv = minimist(process.argv.slice(2), {
-  string: ['default'],
+  string: ['defaultLayerName'],
   boolean: ['watch', 'globalize'],
-  default: { watch: false, default: null, globalize: false },
+  default: { watch: false, globalize: false, defaultLayerName: null },
 })
 
 const paths = argv._
@@ -27,6 +27,6 @@ await paralayer({
   input: input,
   output: output,
   watch: argv.watch,
-  default: argv.default,
   globalize: argv.globalize,
+  defaultLayerName: argv.defaultLayerName,
 })

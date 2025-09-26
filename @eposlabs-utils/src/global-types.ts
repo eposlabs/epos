@@ -1,4 +1,4 @@
-import type * as types from './utils-types.js'
+import type * as types from './utils-types.ts'
 
 declare global {
   type Obj = types.Obj
