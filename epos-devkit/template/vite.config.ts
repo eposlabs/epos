@@ -1,8 +1,8 @@
 import tailwindcss from '@tailwindcss/vite'
-import epos from 'epos/vite'
+import { epos } from 'epos/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import rebundle, { type BuildOptions } from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({

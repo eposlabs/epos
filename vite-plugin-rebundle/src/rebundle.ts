@@ -12,11 +12,13 @@ import { WebSocketServer } from 'ws'
 export const _code_ = Symbol('rebundle:code')
 export const _sourcemap_ = Symbol('rebundle:sourcemap')
 
+export type RolldownOptions = {
+  input: InputOptions
+  output: OutputOptions
+}
+
 export type Options = {
-  [bundleName: string]: {
-    input: InputOptions
-    output: OutputOptions
-  }
+  [bundleName: string]: RolldownOptions
 }
 
 export class Rebundle extends Unit {
@@ -234,3 +236,9 @@ export class Rebundle extends Unit {
     await this.removeDirectoryIfEmpty(dirname(dir))
   }
 }
+
+export function rebundle(options: Options = {}) {
+  return new Rebundle(options).vite
+}
+
+export default rebundle

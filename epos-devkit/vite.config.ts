@@ -1,25 +1,34 @@
 import tailwindcss from '@tailwindcss/vite'
-import epos from 'epos/vite'
+import { epos } from 'epos/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import rebundle, { type BuildOptions } from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({
     input: './src/app',
     output: './src/layers',
-    default: 'gl',
     watch: mode !== 'production',
+    defaultLayerName: 'gl',
   })
 
-  const esbuildOptions: BuildOptions = {
-    format: 'esm',
-    keepNames: true,
-    minify: false, // mode !== 'development',
-    banner: { js: setupLayersJs },
-  }
-
   return {
+    plugins: [
+      epos(),
+      tailwindcss(),
+      rebundle({
+        gl: {
+          input: {
+            keepNames: true,
+          },
+          output: {
+            minify: false, // mode !== 'development',
+            banner: setupLayersJs,
+          },
+        },
+      }),
+    ],
+
     build: {
       watch: mode === 'production' ? null : {},
       sourcemap: mode === 'development',
@@ -37,7 +46,5 @@ export default defineConfig(async ({ mode }) => {
         },
       },
     },
-
-    plugins: [epos(), tailwindcss(), rebundle({ gl: esbuildOptions })],
   }
 })

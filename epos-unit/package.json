@@ -20,6 +20,6 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.1.1",
-    "epos": "^1.7.7"
+    "epos": "^1.8.0"
   }
 }

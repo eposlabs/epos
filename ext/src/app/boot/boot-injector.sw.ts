@@ -154,7 +154,9 @@ export class BootInjector extends $sw.Unit {
       `this.__eposBusToken = ${JSON.stringify(busToken)};`,
       `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`,
       patchGlobalsJs,
-      `(async () => {${exJs}})();`,
+      `(async () => {`,
+      exJs,
+      `})();`,
       `})()`,
     ].join('\n')
 
