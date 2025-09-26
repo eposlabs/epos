@@ -1,6 +1,0 @@
-{
-  "name": "web-fs",
-  "action": "<hub>",
-  "matches": ["*://*/*"],
-  "load": ["./src/test.js"]
-}
