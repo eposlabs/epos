@@ -27,11 +27,11 @@ export class PackInstaller extends $sw.Unit {
   }
 
   async remove(name: string) {
-    for (const key of Object.keys(this.$.store.states)) {
+    for (const key of Object.keys(this.$.states.map)) {
       if (key.startsWith(`${name}/`)) {
         const parts = key.split('/')
         const location = parts as [string, string, string]
-        await this.$.store.disconnect(location)
+        await this.$.states.disconnect(location)
       }
     }
 

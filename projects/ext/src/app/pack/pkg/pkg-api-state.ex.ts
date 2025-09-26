@@ -1,4 +1,4 @@
-import type { Location, ModelClass, Options } from '../../store/state/state.ex.sw'
+import type { Location, ModelClass, Options } from '../../states/state/state.ex.sw'
 
 export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
@@ -31,31 +31,32 @@ export class PkgApiState extends $ex.Unit {
 
     name = this.prepareName(name)
     const location = this.getLocation(name)
-    this.states[name] = await this.$.store.connect(location, options)
+    this.states[name] = await this.$.states.connect(location, options)
     return this.states[name].data
   }
 
   async disconnect(name?: string) {
     name = this.prepareName(name)
     const location = this.getLocation(name)
-    await this.$.store.disconnect(location)
+    await this.$.states.disconnect(location)
     delete this.states[name]
   }
 
   async destroy(name?: string) {
     name = this.prepareName(name)
     const location = this.getLocation(name)
-    await this.$.store.remove(location)
+    await this.$.states.remove(location)
     delete this.states[name]
   }
 
   local(state: Obj = {}) {
-    throw new Error('Not implemented yet')
-    return state
+    return this.$.libs.mobx.observable(state)
+    // throw new Error('Not implemented yet')
+    // return state
   }
 
   transaction(fn: () => void) {
-    this.$.store.transaction(fn)
+    this.$.states.transaction(fn)
   }
 
   async list(opts: { connected?: boolean } = {}) {
@@ -63,7 +64,7 @@ export class PkgApiState extends $ex.Unit {
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.store.isConnected([this.$pkg.name, ':state', name]),
+        connected: this.$.states.isConnected([this.$pkg.name, ':state', name]),
       }))
       .filter(state => {
         if (this.$.is.undefined(opts.connected)) return true

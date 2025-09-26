@@ -61,7 +61,7 @@ class Robot {
   }
 }
 
-const s = await this.$.store.connect(['a', 'b', 'c'], {
+const s = await this.$.states.connect(['a', 'b', 'c'], {
   getInitialState: () => new Robot(),
   models: {},
   versioner: {},

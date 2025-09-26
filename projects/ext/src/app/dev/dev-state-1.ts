@@ -85,7 +85,7 @@ export class Dev extends $gl.Unit {
         }
       }
 
-      const s = await this.$.store.connect(['a', 'b', 'c'], {
+      const s = await this.$.states.connect(['a', 'b', 'c'], {
         initial: () => new Node('root'),
         models: { Node },
         versioner: {},
@@ -114,7 +114,7 @@ export class Dev extends $gl.Unit {
         }
       }
 
-      const s = await this.$.store.connect(['a', 'b', 'c'], {
+      const s = await this.$.states.connect(['a', 'b', 'c'], {
         getInitialState: () => new Robot(),
         models: { Robot, Arm },
         // versioner: { 5: s => (s.root = 5) },

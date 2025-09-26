@@ -12,7 +12,7 @@ export class App extends $ex.Unit {
   kit = new $ex.Kit(this)
   pack = new $ex.Pack(this)
   peer = new $exOs.Peer(this)
-  store = new $exSw.Store(this)
+  states = new $exSw.States(this)
   ui = new $ex.Ui(this)
 
   static async create() {
