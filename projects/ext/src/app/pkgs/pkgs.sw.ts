@@ -3,36 +3,36 @@ import type { ActionMeta, ExecutionMeta } from './pkg/pkg.sw'
 export type ActionData = { [name: string]: ActionMeta }
 export type ExecutionData = { [name: string]: ExecutionMeta }
 
-export class Pack extends $sw.Unit {
-  pkgs: { [name: string]: $sw.Pkg } = {}
-  installer = new $sw.PackInstaller(this)
-  loader!: $sw.PackLoader
+export class Pkgs extends $sw.Unit {
+  map: { [name: string]: $sw.Pkg } = {}
+  installer = new $sw.PkgsInstaller(this)
+  loader!: $sw.PkgsLoader
 
   list() {
-    return Object.values(this.pkgs)
+    return Object.values(this.map)
   }
 
   static async create(parent: $sw.Unit) {
-    const pack = new Pack(parent)
-    await pack.init()
-    return pack
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
   }
 
   private async init() {
-    this.$.bus.on('pack.hasPopup', this.hasPopup, this)
-    this.$.bus.on('pack.hasSidePanel', this.hasSidePanel, this)
-    this.$.bus.on('pack.getCss', this.getCss, this)
-    this.$.bus.on('pack.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('pack.getPayloads', this.getPayloads, this)
-    this.$.bus.on('pack.getActionData', this.getActionData, this)
-    this.$.bus.on('pack.getExecutionData', this.getExecutionData, this)
-    this.$.bus.on('pack.export', this.exportPkg, this)
-    this.loader = await $sw.PackLoader.create(this)
+    this.$.bus.on('pkgs.hasPopup', this.hasPopup, this)
+    this.$.bus.on('pkgs.hasSidePanel', this.hasSidePanel, this)
+    this.$.bus.on('pkgs.getCss', this.getCss, this)
+    this.$.bus.on('pkgs.getLiteJs', this.getLiteJs, this)
+    this.$.bus.on('pkgs.getPayloads', this.getPayloads, this)
+    this.$.bus.on('pkgs.getActionData', this.getActionData, this)
+    this.$.bus.on('pkgs.getExecutionData', this.getExecutionData, this)
+    this.$.bus.on('pkgs.export', this.exportPkg, this)
+    this.loader = await $sw.PkgsLoader.create(this)
     await this.restoreFromIdb()
   }
 
   private async exportPkg(pkgName: string) {
-    const pkg = this.pkgs[pkgName]
+    const pkg = this.map[pkgName]
     if (!pkg) throw new Error(`No such pkg: ${pkgName}`)
     return await pkg.exporter.export()
   }
@@ -94,7 +94,7 @@ export class Pack extends $sw.Unit {
     for (const name of names) {
       const pkg = await $sw.Pkg.restore(this, name)
       if (!pkg) continue
-      this.pkgs[name] = pkg
+      this.map[name] = pkg
     }
   }
 }

@@ -1,7 +1,7 @@
 import type { TargetedEvent } from 'preact'
 
-export class PackDock extends $vw.Unit {
-  private $pack = this.up($vw.Pack)!
+export class PkgsDock extends $vw.Unit {
+  private $pkgs = this.up($vw.Pkgs)!
   // private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
   private selectedPkg: $vw.Pkg | null = null
@@ -30,11 +30,11 @@ export class PackDock extends $vw.Unit {
   }
 
   ui = () => {
-    // if (!this.$pack.selectedPkgName) return null
+    // if (!this.$pkgs.selectedPkgName) return null
 
     const items = this.getItems()
     this.uniqueItemNames = this.$.utils.unique(items.map(item => item.name))
-    this.selectedPkg = this.$pack.getSelected()
+    this.selectedPkg = this.$pkgs.getSelected()
 
     return (
       <div
@@ -68,7 +68,7 @@ export class PackDock extends $vw.Unit {
       if (isAction) {
         await this.processAction(pkgName)
       } else {
-        this.$pack.select(pkgName)
+        this.$pkgs.select(pkgName)
         this.hide()
       }
     }
@@ -119,7 +119,7 @@ export class PackDock extends $vw.Unit {
     if (this.uniqueItemNames.length > 1) return null
     const selectedPkg = this.selectedPkg
     if (!selectedPkg) return null
-    const meta = this.$pack.actionData[selectedPkg.name]
+    const meta = this.$pkgs.actionData[selectedPkg.name]
     if (!meta) return null
 
     return (
@@ -134,7 +134,7 @@ export class PackDock extends $vw.Unit {
 
   private SidePanelButton = () => {
     if (!this.$.env.is.vwPopup) return null
-    if (!this.$pack.hasSidePanel) return null
+    if (!this.$pkgs.hasSidePanel) return null
 
     return (
       <button
@@ -148,12 +148,12 @@ export class PackDock extends $vw.Unit {
 
   private getItems() {
     return [
-      ...this.$pack.list().map(pkg => ({
+      ...this.$pkgs.list().map(pkg => ({
         name: pkg.name,
         value: pkg.name,
         label: pkg.title ?? pkg.name,
       })),
-      ...Object.values(this.$pack.actionData).map(meta => ({
+      ...Object.values(this.$pkgs.actionData).map(meta => ({
         name: meta.name,
         value: `action:${meta.name}`,
         label: `${meta.title ?? meta.name} →`,
@@ -162,7 +162,7 @@ export class PackDock extends $vw.Unit {
   }
 
   private async processAction(pkgName: string) {
-    const meta = this.$pack.actionData[pkgName]
+    const meta = this.$pkgs.actionData[pkgName]
     if (!meta) throw this.never
 
     if (this.$.is.boolean(meta.action)) {

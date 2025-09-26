@@ -1,4 +1,4 @@
-import type { ActionData, ExecutionData } from './pack.sw'
+import type { ActionData, ExecutionData } from './pkgs.sw'
 
 export type PkgName = string
 export type OnUpdate = (delta: Delta, data: Data) => void
@@ -16,18 +16,18 @@ export type Data = {
   hasSidePanel: boolean
 }
 
-export class PackWatcher extends $exOsVw.Unit {
+export class PkgsWatcher extends $exOsVw.Unit {
   private executionData: ExecutionData = {}
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
-    this.$.bus.on('pack.pkgsChanged', () => this.update(onUpdate))
+    this.$.bus.on('pkgs.changed', () => this.update(onUpdate))
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actionData = await this.$.bus.send<ActionData>('pack.getActionData')
-    const executionData = await this.$.bus.send<ExecutionData>('pack.getExecutionData', location.href)
-    const hasSidePanel = await this.$.bus.send<boolean>('pack.hasSidePanel')
+    const actionData = await this.$.bus.send<ActionData>('pkgs.getActionData')
+    const executionData = await this.$.bus.send<ExecutionData>('pkgs.getExecutionData', location.href)
+    const hasSidePanel = await this.$.bus.send<boolean>('pkgs.hasSidePanel')
 
     const executionData1 = this.executionData
     const executionData2 = executionData

@@ -1,4 +1,4 @@
-import type { Payload } from '../pack/pkg/pkg.sw'
+import type { Payload } from '../pkgs/pkg/pkg.sw'
 
 export class BootInjector extends $ex.Unit {
   async inject() {
@@ -36,15 +36,15 @@ export class BootInjector extends $ex.Unit {
 
   private async injectCode() {
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('pack.getLiteJs', location.href)
+    const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href)
     if (liteJs) await this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('pack.getCss', location.href)
+    const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
     if (css) this.injectCss(css)
 
     // Inject pkgs defs
-    const payloads = await this.$.bus.send<Payload[]>('pack.getPayloads', location.href)
+    const payloads = await this.$.bus.send<Payload[]>('pkgs.getPayloads', location.href)
     if (payloads.length === 0) return
     const js = `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`
     await this.injectJs(js)
@@ -80,7 +80,7 @@ export class BootInjector extends $ex.Unit {
 
     for (const def of defs) {
       // Create package
-      const pkg = await this.$.pack.create({
+      const pkg = await this.$.pkgs.create({
         name: def.name,
         icon: def.icon,
         title: def.title,

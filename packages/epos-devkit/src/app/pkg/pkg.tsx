@@ -53,7 +53,7 @@ export class Pkg extends $gl.Unit {
   }
 
   async remove() {
-    await engine.bus.send('pack.remove', this.name)
+    await engine.bus.send('pkgs.remove', this.name)
     this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
   }
 
@@ -90,7 +90,7 @@ export class Pkg extends $gl.Unit {
     }
 
     this.manifest = manifest
-    if (this.name !== manifest.name) await engine.bus.send('pack.remove', this.name)
+    if (this.name !== manifest.name) await engine.bus.send('pkgs.remove', this.name)
     this.name = manifest.name ?? null
 
     const paths = this.getUsedManifestPaths()
@@ -209,12 +209,12 @@ export class Pkg extends $gl.Unit {
         manifest: this.manifest,
       }
 
-      await engine.bus.send('pack.install', { spec, assets })
+      await engine.bus.send('pkgs.install', { spec, assets })
     }, 50)
   }
 
   async export() {
-    const blob = await engine.bus.send('pack.export', this.name)
+    const blob = await engine.bus.send('pkgs.export', this.name)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)

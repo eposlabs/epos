@@ -1,6 +1,6 @@
-export class PackLoader extends $sw.Unit {
+export class PkgsLoader extends $sw.Unit {
   static async create(parent: $sw.Unit) {
-    const loader = new PackLoader(parent)
+    const loader = new PkgsLoader(parent)
     await loader.init()
     return loader
   }

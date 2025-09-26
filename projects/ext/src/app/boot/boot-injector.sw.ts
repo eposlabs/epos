@@ -65,7 +65,7 @@ export class BootInjector extends $sw.Unit {
     if (injected) return
 
     // Inject lite js and injection flag
-    const liteJs = this.$.pack.getLiteJs(tab.url)
+    const liteJs = this.$.pkgs.getLiteJs(tab.url)
     const injectionFlagJs = `self.__eposInjected = true;`
     async: this.injectJs(tab, `${injectionFlagJs}${liteJs}`, 'function')
 
@@ -73,7 +73,7 @@ export class BootInjector extends $sw.Unit {
     const csData = await this.waitCsReady(tab)
 
     // Inject css
-    const css = this.$.pack.getCss(tab.url)
+    const css = this.$.pkgs.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
 
     // Inject ex.js + pkgs
@@ -141,7 +141,7 @@ export class BootInjector extends $sw.Unit {
   }
 
   private getJsData(tab: Tab, busToken: string, frame = false): JsData | null {
-    const payloads = this.$.pack.getPayloads(tab.url, frame)
+    const payloads = this.$.pkgs.getPayloads(tab.url, frame)
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)

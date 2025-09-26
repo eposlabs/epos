@@ -1,21 +1,21 @@
-import type { ActionData } from './pack.sw'
+import type { ActionData } from './pkgs.sw'
 
-export class Pack extends $vw.Unit {
-  pkgs: { [name: string]: $vw.Pkg } = {}
+export class Pkgs extends $vw.Unit {
+  map: { [name: string]: $vw.Pkg } = {}
   hasSidePanel = false
   actionData: ActionData = {}
-  selectedPkgName: string | null = localStorage.getItem('pack.selectedPkgName')
-  dock = new $vw.PackDock(this)
-  watcher = new $exOsVw.PackWatcher(this)
+  selectedPkgName: string | null = localStorage.getItem('pkgs.selectedPkgName')
+  dock = new $vw.PkgsDock(this)
+  watcher = new $exOsVw.PkgsWatcher(this)
 
   list() {
-    return Object.values(this.pkgs)
+    return Object.values(this.map)
   }
 
   static async create(parent: $vw.Unit) {
-    const pack = new Pack(parent)
-    await pack.init()
-    return pack
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
   }
 
   private async init() {
@@ -24,21 +24,21 @@ export class Pack extends $vw.Unit {
 
   getSelected() {
     if (!this.selectedPkgName) return null
-    return this.pkgs[this.selectedPkgName] ?? null
+    return this.map[this.selectedPkgName] ?? null
   }
 
   select(name: string) {
-    if (!this.pkgs[name]) throw this.never
+    if (!this.map[name]) throw this.never
     this.selectedPkgName = name
     this.$.refresh()
-    localStorage.setItem('pack.selectedPkgName', name)
+    localStorage.setItem('pkgs.selectedPkgName', name)
   }
 
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
       // Update packages
       for (const meta of Object.values(data.execution)) {
-        const pkg = this.pkgs[meta.name]
+        const pkg = this.map[meta.name]
         if (!pkg) continue
         pkg.update(meta)
       }
@@ -47,13 +47,13 @@ export class Pack extends $vw.Unit {
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.pkgs[meta.name] = new $vw.Pkg(this, meta)
+        this.map[meta.name] = new $vw.Pkg(this, meta)
       }
 
       // Remove packages
       for (const name of delta.removed) {
-        if (!this.pkgs[name]) throw this.never
-        delete this.pkgs[name]
+        if (!this.map[name]) throw this.never
+        delete this.map[name]
       }
 
       // Update data
@@ -61,15 +61,15 @@ export class Pack extends $vw.Unit {
       this.actionData = data.action
 
       // Close view if nothing to show
-      const noPack = this.list().length === 0
+      const noPkgs = this.list().length === 0
       const noActions = Object.keys(this.actionData).length === 0
-      if (noPack && noActions) {
+      if (noPkgs && noActions) {
         self.close()
         return
       }
 
       // Select first package if none selected
-      if (!this.selectedPkgName || !this.pkgs[this.selectedPkgName]) {
+      if (!this.selectedPkgName || !this.map[this.selectedPkgName]) {
         this.selectedPkgName = this.list()[0]?.name ?? null
       }
 

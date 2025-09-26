@@ -1,13 +1,13 @@
 import type { Rule } from '../net/net.sw'
 
-export class Pack extends $os.Unit {
-  pkgs: { [name: string]: $os.Pkg } = {}
-  watcher = new $exOsVw.PackWatcher(this)
+export class Pkgs extends $os.Unit {
+  map: { [name: string]: $os.Pkg } = {}
+  watcher = new $exOsVw.PkgsWatcher(this)
 
   static async create(parent: $os.Unit) {
-    const pack = new Pack(parent)
-    await pack.init()
-    return pack
+    const pkgs = new Pkgs(parent)
+    await pkgs.init()
+    return pkgs
   }
 
   private async init() {
@@ -19,7 +19,7 @@ export class Pack extends $os.Unit {
     await this.watcher.start((delta, data) => {
       // Update packages
       for (const meta of Object.values(data.execution)) {
-        const pkg = this.pkgs[meta.name]
+        const pkg = this.map[meta.name]
         if (!pkg) continue
         pkg.update(meta)
       }
@@ -28,24 +28,24 @@ export class Pack extends $os.Unit {
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.pkgs[name] = new $os.Pkg(this, meta)
+        this.map[name] = new $os.Pkg(this, meta)
       }
 
       // Remove packages
       for (const name of delta.removed) {
-        const pkg = this.pkgs[name]
+        const pkg = this.map[name]
         if (!pkg) throw this.never
         pkg.removeFrame()
-        delete this.pkgs[name]
+        delete this.map[name]
       }
     })
   }
 
   private initPkgFrames() {
-    this.$.bus.on('pack.createPkgFrame', this.createPkgFrame, this)
-    this.$.bus.on('pack.removePkgFrame', this.removePkgFrame, this)
-    this.$.bus.on('pack.removeAllPkgFrames', this.removeAllPkgFrames, this)
-    this.$.bus.on('pack.getPkgFrames', this.getPkgFrames, this)
+    this.$.bus.on('pkgs.createPkgFrame', this.createPkgFrame, this)
+    this.$.bus.on('pkgs.removePkgFrame', this.removePkgFrame, this)
+    this.$.bus.on('pkgs.removeAllPkgFrames', this.removeAllPkgFrames, this)
+    this.$.bus.on('pkgs.getPkgFrames', this.getPkgFrames, this)
   }
 
   private async createPkgFrame(

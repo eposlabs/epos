@@ -38,7 +38,7 @@ export class PkgApiGeneral extends $ex.Unit {
 
     const pkgElement = document.createElement('div')
     pkgElement.epos = true
-    pkgElement.setAttribute('package', this.$pkg.name)
+    pkgElement.setAttribute('pkgs.ge', this.$pkg.name)
     eposElement.append(pkgElement)
 
     this.attachRoot(pkgElement)

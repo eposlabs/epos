@@ -27,11 +27,11 @@ export class BootInjector extends $cs.Unit {
     if (!this.$.env.is.csFrame) return
 
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('pack.getLiteJs', location.href, true)
+    const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href, true)
     if (liteJs) this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('pack.getCss', location.href, true)
+    const css = await this.$.bus.send<string>('pkgs.getCss', location.href, true)
     if (css) this.injectCss(css)
 
     // Inject ex.js + pkgs

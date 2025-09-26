@@ -2,14 +2,14 @@ import type { Spec, Assets } from './pkg/pkg.sw'
 
 export type Pack = { spec: Spec; assets: Assets }
 
-export class PackInstaller extends $sw.Unit {
-  private $pack = this.up($sw.Pack)!
+export class PkgsInstaller extends $sw.Unit {
+  private $pkgs = this.up($sw.Pkgs)!
   private queue = new this.$.utils.Queue()
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('pack.install', this.install, this)
-    this.$.bus.on('pack.remove', this.remove, this)
+    this.$.bus.on('pkgs.install', this.install, this)
+    this.$.bus.on('pkgs.remove', this.remove, this)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
   }
@@ -23,7 +23,7 @@ export class PackInstaller extends $sw.Unit {
       await this.installByName(input, dev)
     }
 
-    this.broadcast('pack.pkgsChanged')
+    this.broadcast('pkgs.changed')
   }
 
   async remove(name: string) {
@@ -35,10 +35,10 @@ export class PackInstaller extends $sw.Unit {
       }
     }
 
-    await this.$.bus.send('pack.removeAllPkgFrames', name)
+    await this.$.bus.send('pkgs.removeAllPkgFrames', name)
     await this.$.idb.deleteDatabase(name)
-    delete this.$pack.pkgs[name]
-    this.broadcast('pack.pkgsChanged')
+    delete this.$pkgs.map[name]
+    this.broadcast('pkgs.changed')
   }
 
   private async installByName(name: string, dev = false) {
@@ -99,12 +99,12 @@ export class PackInstaller extends $sw.Unit {
   }
 
   private async installFromPack(pack: Pack) {
-    if (this.$pack.pkgs[pack.spec.manifest.name]) {
-      const pkg = this.$pack.pkgs[pack.spec.manifest.name]
+    if (this.$pkgs.map[pack.spec.manifest.name]) {
+      const pkg = this.$pkgs.map[pack.spec.manifest.name]
       await pkg.update(pack.spec, pack.assets)
     } else {
       const pkg = await $sw.Pkg.create(this, pack.spec, pack.assets)
-      this.$pack.pkgs[pack.spec.manifest.name] = pkg
+      this.$pkgs.map[pack.spec.manifest.name] = pkg
     }
   }
 

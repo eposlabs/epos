@@ -8,8 +8,8 @@ export class App extends $os.Unit {
 
   alive = new $os.Alive(this)
   dev!: $gl.Dev
-  pack!: $os.Pack
   peer = new $exOs.Peer(this)
+  pkgs!: $os.Pkgs
 
   static async create() {
     const app = new App()
@@ -20,7 +20,7 @@ export class App extends $os.Unit {
   private async init() {
     self.$ = this
     this.utils.initOs()
-    this.pack = await $os.Pack.create(this)
+    this.pkgs = await $os.Pkgs.create(this)
     this.dev = await $gl.Dev.create(this)
   }
 }
