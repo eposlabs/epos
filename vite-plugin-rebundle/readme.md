@@ -4,7 +4,7 @@ A Vite plugin that guarantees **one standalone file per entry point**. Each entr
 
 ## Why?
 
-Sometimes you need bundles without dynamic imports. Vite/Rollup don’t provide this option when building with multiple entries. This plugin solves it by rebundling Vite’s output with esbuild to enforce single-file output.
+Sometimes you need bundles without dynamic imports. Vite/Rollup don’t provide this option when building with multiple entries. This plugin solves it by rebundling Vite’s output with rolldown to enforce single-file output.
 
 > ⚠️ This plugin runs **only during** `vite build`. It does not affect the Vite dev server.
 
@@ -38,21 +38,18 @@ export default defineConfig({
 
 ## Options
 
-You can provide **esbuild options per entry point**. This is useful, for example, to inject custom define variables into specific bundles:
+You can provide **rolldown options per entry point**. This is useful, for example, to inject custom define variables into specific bundles:
 
 ```javascript
 export default defineConfig({
   plugins: [
     rebundle({
       app: {
-        define: {
-          BUNDLE_NAME: JSON.stringify('app'),
-        },
+        output: { define: { BUNDLE_NAME: JSON.stringify('app') } },
       },
       libs: {
-        define: {
-          BUNDLE_NAME: JSON.stringify('libs'),
-        },
+        input: { keepNames: true },
+        output: { define: { BUNDLE_NAME: JSON.stringify('libs') } },
       },
     }),
   ],
@@ -73,10 +70,10 @@ export default defineConfig({
 ## How it works
 
 When you run `vite build`, Rollup normally outputs multiple chunks per entry if code-splitting is needed.
-`vite-plugin-rebundle` hooks into the build and **rebundles each entry’s output with esbuild**, forcing a single self-contained file per entry.
+`vite-plugin-rebundle` hooks into the build and **rebundles each entry’s output with rolldown**, forcing a single self-contained file per entry.
 
-- Rollup still handles the initial build (tree-shaking, asset pipeline, etc.).
-- Afterward, each entry is passed through esbuild.
+- Vite still handles the initial build (tree-shaking, asset pipeline, etc.).
+- Afterward, each entry is passed through rolldown.
 - The final result is one .js file per entry with no dynamic imports or shared chunks.
 - If sourcemaps are enabled, they are preserved — the rebundled files include correct mappings.
 

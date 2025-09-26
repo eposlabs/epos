@@ -5,8 +5,10 @@
     "moduleResolution": "bundler",
     "strict": true,
 
+    "allowImportingTsExtensions": true,
     "declaration": true,
     "jsx": "react-jsx",
+    "noEmit": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true

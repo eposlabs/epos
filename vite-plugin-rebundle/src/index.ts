@@ -1,11 +1,9 @@
-import { Rebundle, type Options } from './rebundle.js'
-import type { BuildOptions } from 'esbuild'
+import { Rebundle, type Options } from './rebundle.ts'
 
-export type { BuildOptions }
+export type RebundleOptions = Options[string]
 
-export default function rebundle(options: Options = {}) {
-  const rb = new Rebundle(options)
-  return rb.vite
+export function rebundle(options: Options = {}) {
+  return new Rebundle(options).vite
 }
 
-export { rebundle }
+export default rebundle

@@ -1,37 +1,52 @@
-import preact from '@preact/preset-vite'
+import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import rebundle from 'vite-plugin-rebundle'
+import { rebundle, type RebundleOptions } from 'vite-plugin-rebundle'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-
-import type { BuildOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
-  const defineDevNodeEnv = { 'process.env.NODE_ENV': json('development') }
 
-  const setup = await paralayer({
+  const jsSetupLayers = await paralayer({
     input: './src/app',
     output: './src/layers',
     watch: mode !== 'production',
-    // globalize: mode === 'development',
   })
 
-  const bundle = (name: string, options: BuildOptions = {}) => ({
-    minify: mode !== 'development',
-    keepNames: true,
-    banner: { js: setup },
-    // format: 'esm',
-    ...options,
-    define: {
-      'BUNDLE': json(name),
-      'process.env.NODE_ENV': json(env),
-      ...options.define,
+  const bundle = (name: string, forceDev = false): RebundleOptions => ({
+    input: {
+      keepNames: true,
+      define: {
+        'BUNDLE': json(name),
+        'process.env.NODE_ENV': forceDev ? json('development') : json(env),
+      },
+    },
+    output: {
+      banner: jsSetupLayers,
+      minify: mode !== 'development',
+      ...(name.startsWith('ex') ? { sourcemap: false } : {}),
     },
   })
 
   return {
+    plugins: [
+      tailwindcss(),
+      preact({ reactAliasesEnabled: false }),
+      viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
+      rebundle({
+        'cs': bundle('cs'),
+        'ex-mini.dev': bundle('ex-mini', true),
+        'ex-mini': bundle('ex-mini'),
+        'ex.dev': bundle('ex', true),
+        'ex': bundle('ex'),
+        'os': bundle('os'),
+        'sm': bundle('sm'),
+        'sw': bundle('sw'),
+        'vw': bundle('vw'),
+      }),
+    ],
+
     define: {
       'import.meta.env.DEV': json(mode === 'development'),
       'import.meta.env.PROD': json(mode !== 'development'),
@@ -45,10 +60,10 @@ export default defineConfig(async ({ mode }) => {
       rolldownOptions: {
         input: {
           'cs': './src/entry/entry.cs.ts', // content script
-          'ex': './src/entry/entry.ex.ts', // execution
-          'ex-dev': './src/entry/entry.ex.ts', // ex with forced NODE_ENV=development
+          'ex-mini.dev': './src/entry/entry.ex.ts', // ex-mini with forced NODE_ENV=development
           'ex-mini': './src/entry/entry.ex.ts', // ex without react
-          'ex-mini-dev': './src/entry/entry.ex.ts', // ex-mini with forced NODE_ENV=development
+          'ex.dev': './src/entry/entry.ex.ts', // ex with forced NODE_ENV=development
+          'ex': './src/entry/entry.ex.ts', // execution
           'os': './src/entry/entry.os.ts', // offscreen
           'sm': './src/entry/entry.sm.ts', // system
           'sw': './src/entry/entry.sw.ts', // service worker
@@ -63,23 +78,6 @@ export default defineConfig(async ({ mode }) => {
         },
       },
     },
-
-    plugins: [
-      tailwindcss(),
-      preact({ reactAliasesEnabled: false }),
-      viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
-      rebundle({
-        'cs': bundle('cs'),
-        'ex': bundle('ex', { sourcemap: false }),
-        'ex-dev': bundle('ex', { sourcemap: false, define: defineDevNodeEnv }),
-        'ex-mini': bundle('ex-mini', { sourcemap: false }),
-        'ex-mini-dev': bundle('ex-mini', { sourcemap: false, define: defineDevNodeEnv }),
-        'os': bundle('os'),
-        'sm': bundle('sm'),
-        'sw': bundle('sw'),
-        'vw': bundle('vw'),
-      }),
-    ],
   }
 })
 

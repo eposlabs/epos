@@ -30,8 +30,8 @@ export class BootInjector extends $sw.Unit {
 
   async init() {
     // Dev versions are absent for exported packages
-    const [exDevFull] = await this.$.utils.safe(fetch('/ex-dev.js').then(r => r.text()))
-    const [exDevMini] = await this.$.utils.safe(fetch('/ex-mini-dev.js').then(r => r.text()))
+    const [exDevFull] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
+    const [exDevMini] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(r => r.text()))
     this.ex.dev.full = exDevFull ?? ''
     this.ex.dev.mini = exDevMini ?? ''
 
