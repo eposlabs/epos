@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -16,17 +16,15 @@
     "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },
   "bin": {
-    "paralayer": "bin.js"
+    "paralayer": "./src/bin.ts"
   },
   "exports": {
     ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts"
     }
   },
   "files": [
-    "dist",
-    "bin.js"
+    "src"
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.0.13",

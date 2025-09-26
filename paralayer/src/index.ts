@@ -1,4 +1,4 @@
-import { Paralayer, type Options } from './paralayer.js'
+import { Paralayer, type Options } from './paralayer.ts'
 
 export async function paralayer(options: Options) {
   const pl = new Paralayer(options)

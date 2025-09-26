@@ -1,5 +1,7 @@
+#!/usr/bin/env node
+
 import minimist from 'minimist'
-import { paralayer } from './index.js'
+import { paralayer } from './index.ts'
 
 const argv = minimist(process.argv.slice(2), {
   string: ['default'],

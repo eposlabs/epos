@@ -1,9 +1,8 @@
-import * as $utils from '@eposlabs/utils'
-import * as $chokidar from 'chokidar'
-import * as $fs from 'node:fs/promises'
-import * as $path from 'node:path'
-
+import { Queue, safe, Unit } from '@eposlabs/utils'
 import type { FSWatcher } from 'chokidar'
+import { watch } from 'chokidar'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { basename, extname, join, relative } from 'node:path'
 
 export type DirPath = string
 
@@ -22,13 +21,13 @@ export type Options = {
   globalize?: boolean
 }
 
-export class Paralayer extends $utils.Unit {
+export class Paralayer extends Unit {
   private files: { [path: string]: File | null } = {}
   private options: Options
   private started = false
   private ready = false
   private ready$ = Promise.withResolvers<void>()
-  private queue = new $utils.Queue()
+  private queue = new Queue()
   private extensions = new Set(['.ts', '.tsx', '.js', '.jsx'])
   private previousLayers: string[] = []
   private watcher: FSWatcher | null = null
@@ -42,9 +41,9 @@ export class Paralayer extends $utils.Unit {
     if (this.started) return
     this.started = true
 
-    await $utils.safe($fs.rm(this.options.output, { recursive: true }))
+    await safe(rm(this.options.output, { recursive: true }))
 
-    this.watcher = $chokidar.watch(this.options.input)
+    this.watcher = watch(this.options.input)
     this.watcher.on('all', this.onAll)
     this.watcher.on('ready', this.onReady)
 
@@ -54,8 +53,8 @@ export class Paralayer extends $utils.Unit {
   }
 
   async readSetupJs() {
-    const setupJsPath = $path.join(this.options.output, 'setup.js')
-    return await $fs.readFile(setupJsPath, 'utf-8')
+    const setupJsPath = join(this.options.output, 'setup.js')
+    return await readFile(setupJsPath, 'utf-8')
   }
 
   // ---------------------------------------------------------------------------
@@ -67,7 +66,7 @@ export class Paralayer extends $utils.Unit {
     if (!['add', 'change', 'unlink'].includes(event)) return
 
     // Not supported file extension? -> Ignore
-    const ext = $path.extname(path)
+    const ext = extname(path)
     if (!this.extensions.has(ext)) return
 
     // No layer in the file name? -> Ignore
@@ -109,13 +108,13 @@ export class Paralayer extends $utils.Unit {
     const allLayers = Object.keys(pathsByLayers)
 
     // Ensure output directory exists
-    await $fs.mkdir(this.options.output, { recursive: true })
+    await mkdir(this.options.output, { recursive: true })
 
     // Ensure all files are read
     await Promise.all(
       paths.map(async path => {
         if (this.files[path]) return
-        const content = await $fs.readFile(path, 'utf-8')
+        const content = await readFile(path, 'utf-8')
         const names = this.extractExportedClassNames(content)
         this.files[path] = { content, names }
       }),
@@ -124,14 +123,14 @@ export class Paralayer extends $utils.Unit {
     // Create layer files
     for (const layer in pathsByLayers) {
       // Generate layer.[layer].ts
-      const layerFile = $path.join(this.options.output, `layer.${layer}.ts`)
+      const layerFile = join(this.options.output, `layer.${layer}.ts`)
       const layerPaths = pathsByLayers[layer]!.toSorted()
       const layerContent = this.generateLayerContent(layer, layerPaths)
       await this.write(layerFile, layerContent)
 
       // Top layer? -> Generate index.[layer].ts
       if (this.isTopLayer(layer)) {
-        const indexFile = $path.join(this.options.output, `index.${layer}.ts`)
+        const indexFile = join(this.options.output, `index.${layer}.ts`)
         const indexContent = this.generateIndexContent(layer, allLayers)
         await this.write(indexFile, indexContent)
       }
@@ -144,18 +143,18 @@ export class Paralayer extends $utils.Unit {
     // Delete files of removed layers
     for (const layer of removedLayers) {
       // Delete layer file
-      const layerFile = $path.join(this.options.output, `layer.${layer}.ts`)
-      await $fs.rm(layerFile)
+      const layerFile = join(this.options.output, `layer.${layer}.ts`)
+      await rm(layerFile)
 
       // Top layer? -> Remove index file
       if (this.isTopLayer(layer)) {
-        const indexFile = $path.join(this.options.output, `index.${layer}.ts`)
-        await $fs.rm(indexFile)
+        const indexFile = join(this.options.output, `index.${layer}.ts`)
+        await rm(indexFile)
       }
     }
 
     // Generate setup.js file
-    const setupFile = $path.join(this.options.output, 'setup.js')
+    const setupFile = join(this.options.output, 'setup.js')
     const setupContent = this.generateSetupContent(allLayers)
     await this.write(setupFile, setupContent)
   }
@@ -184,7 +183,7 @@ export class Paralayer extends $utils.Unit {
         if (file.names.length === 0) return ''
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)
-        const relativePath = $path.relative(this.options.output, path)
+        const relativePath = relative(this.options.output, path)
         return `import { ${[...names, ...types].join(', ')} } from '${relativePath}'`
       })
       .filter(Boolean)
@@ -236,7 +235,7 @@ export class Paralayer extends $utils.Unit {
   }
 
   private getLayer(path: string) {
-    const name = $path.basename(path)
+    const name = basename(path)
     const layer = name.split('.').slice(1, -1).sort().join('.')
     if (layer) return layer
     return this.options.default ?? ''
@@ -262,8 +261,8 @@ export class Paralayer extends $utils.Unit {
   }
 
   private async write(path: string, content: string) {
-    const [prevContent] = await $utils.safe(() => $fs.readFile(path, 'utf-8'))
+    const [prevContent] = await safe(() => readFile(path, 'utf-8'))
     if (content === prevContent) return
-    await $fs.writeFile(path, content, 'utf-8')
+    await writeFile(path, content, 'utf-8')
   }
 }
