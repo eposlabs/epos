@@ -4,8 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "workspaces": [
-    "packages/*",
-    "projects/*"
+    "*"
   ],
   "scripts": {
     "prettier": "prettier --write ./",
