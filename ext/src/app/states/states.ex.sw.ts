@@ -6,7 +6,7 @@ export const _exclude_ = Symbol('exclude')
 export class States extends $exSw.Unit {
   map: Record<string, $exSw.State> = {}
   private queue = new this.$.utils.Queue()
-  private persistentIds = new Set<string>() // for [sw] only
+  private persistentIds = new Set<string>() // For [sw] only
 
   list() {
     return Object.values(this.map)

@@ -21,11 +21,11 @@
   - epos.state.local
   - epos.state.list
   - epos.state.destroy
-  - epos.state.registerGlobalModels
-  - epos.state.symbols.model.init
-  - epos.state.symbols.model.cleanup
-  - epos.state.symbols.model.versioner
-  - epos.state.symbols.model.parent
+  - epos.state.registerModels
+  - epos.state.symbols.parent
+  - epos.state.symbols.modelInit
+  - epos.state.symbols.modelCleanup
+  - epos.state.symbols.modelVersioner
 - **Storage**
   - epos.storage.get
   - epos.storage.set
@@ -48,12 +48,10 @@
 - **Env**
   - epos.env.tabId
   - epos.env.isTab
+  - epos.env.isFrame
   - epos.env.isPopup
   - epos.env.isSidePanel
-  - epos.env.isShell
-  - epos.env.isFrame
   - epos.env.isBackground
-  - epos.env.isForeground
 - **Libs**
   - epos.libs.mobx
   - epos.libs.mobxReactLite

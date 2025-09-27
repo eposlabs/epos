@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
 
-const mapping: Record<string, string> = {
+const libs: Record<string, string> = {
   'react': resolve(import.meta.dirname, './libs/libs-react.js'),
   'react/jsx-runtime': resolve(import.meta.dirname, './libs/libs-react-jsx-runtime.js'),
   'react-dom': resolve(import.meta.dirname, './libs/libs-react-dom.js'),
@@ -14,7 +14,7 @@ export function epos(): Plugin {
   return {
     name: 'epos',
     enforce: 'pre',
-    resolveId: source => mapping[source] ?? null,
+    resolveId: source => libs[source] ?? null,
   }
 }
 

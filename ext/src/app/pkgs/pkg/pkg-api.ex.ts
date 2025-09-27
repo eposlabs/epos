@@ -51,7 +51,7 @@ export class PkgApi extends $ex.Unit {
         local: this.$.utils.link(this.state, 'local'),
         list: this.$.utils.link(this.state, 'list'),
         destroy: this.$.utils.link(this.state, 'destroy'),
-        registerGlobalModels: this.$.utils.link(this.state, 'registerGlobalModels'),
+        registerModels: this.$.utils.link(this.state, 'registerModels'),
         symbols: this.state.symbols,
       },
 
@@ -87,12 +87,10 @@ export class PkgApi extends $ex.Unit {
       env: {
         tabId: this.env.tabId,
         isTab: this.env.isTab,
+        isFrame: this.env.isFrame,
         isPopup: this.env.isPopup,
         isSidePanel: this.env.isSidePanel,
-        isShell: this.env.isShell,
-        isFrame: this.env.isFrame,
         isBackground: this.env.isBackground,
-        isForeground: this.env.isForeground,
       },
 
       // Libs

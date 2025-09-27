@@ -8,16 +8,17 @@ import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'y
 import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
 
 export const _meta_ = Symbol('meta')
-export const _init_ = Symbol('init')
-export const _cleanup_ = Symbol('cleanup')
-export const _versioner_ = Symbol('versioner')
 export const _parent_ = Symbol('parent')
+export const _modelInit_ = Symbol('modelInit')
+export const _modelCleanup_ = Symbol('modelCleanup')
+export const _modelVersioner_ = Symbol('modelVersioner')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStore, DbKey]
+export type Initial = Obj | Model | (() => Obj | Model)
 export type GetInitialState = () => Obj | Model
 export type Versioner = Record<number, (state: MObject) => void>
-export type ModelClass = (new (...args: unknown[]) => unknown) & { [_versioner_]?: Versioner }
+export type ModelClass = (new (...args: unknown[]) => unknown) & { [_modelVersioner_]?: Versioner }
 export type Model = InstanceType<ModelClass>
 
 // MobX node
@@ -47,7 +48,7 @@ export type MArraySpliceChange = IArrayWillSplice<any>
 export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateChange | MArraySpliceChange
 
 export type Options = {
-  getInitialState?: GetInitialState
+  initial?: Initial
   models?: Record<string, ModelClass>
   versioner?: Versioner
 }
@@ -59,19 +60,20 @@ export type Options = {
 export class State extends $exSw.Unit {
   id: string
   data!: MObject & { ':version'?: number }
+  // root!: { data: MObject & { ':version'?: number } }
   location: Location
 
   static _meta_ = _meta_
-  static _init_ = _init_
-  static _cleanup_ = _cleanup_
-  static _versioner_ = _versioner_
   static _parent_ = _parent_
+  static _modelInit_ = _modelInit_
+  static _modelCleanup_ = _modelCleanup_
+  static _modelVersioner_ = _modelVersioner_
 
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<$gl.Bus['create']>
   private models: Record<string, ModelClass>
   private versioner: Versioner
-  private getInitialState: GetInitialState
+  private initial: Initial
   private connected = false
   private committing = false
   private attachedNodes = new Set<MNode>()
@@ -95,8 +97,8 @@ export class State extends $exSw.Unit {
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
     this.models = options.models ?? {}
+    this.initial = options.initial ?? {}
     this.versioner = options.versioner ?? {}
-    this.getInitialState = options.getInitialState ?? (() => ({}))
     this.save = this.saveQueue.wrap(this.save, this)
   }
 
@@ -122,7 +124,7 @@ export class State extends $exSw.Unit {
     })
   }
 
-  registerModels(models: Record<string, ModelClass>) {
+  addModels(models: Record<string, ModelClass>) {
     Object.assign(this.models, models)
   }
 
@@ -172,7 +174,7 @@ export class State extends $exSw.Unit {
         // Empty state?
         if (Object.keys(this.data).length === 0) {
           // Set initial state
-          const initial = this.getInitialState()
+          const initial = this.$.is.function(this.initial) ? this.initial() : this.initial
           Object.assign(this.data, initial)
           // Object.keys(initial).forEach(key => this.set(this.data, key, initial[key]))
 
@@ -346,7 +348,7 @@ export class State extends $exSw.Unit {
         const name = this.getModelName(Model)
         if (this.$.is.undefined(name)) throw this.never
         this.set(mNode, '@', name)
-        const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
+        const versions = this.getVersionsAsc(Model[_modelVersioner_] ?? {})
         if (versions.length > 0) this.set(mNode, ':version', versions.at(-1))
       }
     }
@@ -384,7 +386,7 @@ export class State extends $exSw.Unit {
           // console.log('[init:0]', node._)
           const meta = this.getMeta(node)
           meta.initialized = true
-          this.runModelMethod(node, _init_)
+          this.runModelMethod(node, _modelInit_)
         }
       }
 
@@ -393,7 +395,7 @@ export class State extends $exSw.Unit {
           const meta = this.getMeta(node)
           if (!meta.initialized) continue
           // console.log('[cleanup]', node._)
-          this.runModelMethod(node, _cleanup_)
+          this.runModelMethod(node, _modelCleanup_)
         }
       }
 
@@ -433,7 +435,7 @@ export class State extends $exSw.Unit {
             // this.initialized.add(node)
             const meta = this.getMeta(node)
             meta.initialized = true
-            this.runModelMethod(node, _init_)
+            this.runModelMethod(node, _modelInit_)
           }
         }
       }
@@ -643,8 +645,8 @@ export class State extends $exSw.Unit {
     if (!Model) throw this.never
 
     // No versions? -> Ignore
-    if (!Model[_versioner_]) return
-    const versions = this.getVersionsAsc(Model[_versioner_])
+    if (!Model[_modelVersioner_]) return
+    const versions = this.getVersionsAsc(Model[_modelVersioner_])
     if (versions.length === 0) return
 
     // Save current values
@@ -656,7 +658,7 @@ export class State extends $exSw.Unit {
     // Run versioner
     for (const version of versions) {
       if (this.$.is.number(model[':version']) && model[':version'] >= version) continue
-      Model[_versioner_][version].call(model, model)
+      Model[_modelVersioner_][version].call(model, model)
       model[':version'] = version
     }
 

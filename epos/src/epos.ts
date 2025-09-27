@@ -11,12 +11,8 @@ export type Obj = Record<string, unknown>
 export type Versioner = Record<number, (this: any, state: any) => void>
 export type ClassName = string | null | boolean | undefined | ClassName[]
 export type ModelClass = new (...args: any[]) => any
-
-export type ConnectOptions<T extends Obj> = {
-  getInitialState?: () => T
-  models?: Record<string, ModelClass>
-  versioner?: Versioner
-}
+export type Model = InstanceType<ModelClass>
+export type Initial<T extends Obj | Model> = T | (() => T)
 
 export type Storage = {
   /** Get value from the storage. */
@@ -60,8 +56,8 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T extends Obj>(name?: string, options?: ConnectOptions<T>): Promise<T>
-      <T extends Obj>(options?: ConnectOptions<T>): Promise<T>
+      <T extends Obj | Model>(initial?: Initial<T>, versioner?: Versioner): Promise<T>
+      <T extends Obj | Model>(name?: string, initial?: Initial<T>, versioner?: Versioner): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
@@ -70,18 +66,16 @@ export interface Epos {
     /** Create local state (no sync). */
     local<T extends Obj = {}>(state?: T): T
     /** Get the list of all state names. */
-    list(filter?: { connected?: boolean }): Promise<Array<{ name: string | null }>>
+    list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
     destroy(name?: string): Promise<void>
-    /** Dynamically register models for all states. */
-    registerGlobalModels(models: Record<string, ModelClass>): void
+    /** Register models for all states. */
+    registerModels(models: Record<string, ModelClass>): void
     symbols: {
-      model: {
-        readonly init: unique symbol
-        readonly cleanup: unique symbol
-        readonly versioner: unique symbol
-        readonly parent: unique symbol
-      }
+      readonly parent: unique symbol
+      readonly modelInit: unique symbol
+      readonly modelCleanup: unique symbol
+      readonly modelVersioner: unique symbol
     }
   }
 
@@ -97,10 +91,10 @@ export interface Epos {
     keys(storageName?: string): Promise<string[]>
     /** Clear storage. Removes all keys and storage itself. */
     clear(storageName?: string): Promise<void>
-    /** Create storage API. */
-    use(name: string): Promise<Storage>
-    /** Get list of all storage names. */
-    list(): Promise<Array<{ name: string | null }>>
+    /** Get storage API for a specific storage. */
+    use(storageName: string): Promise<Storage>
+    /** Get this list of all storages. */
+    list(): Promise<{ name: string | null }[]>
   }
 
   // Assets
@@ -116,7 +110,7 @@ export interface Epos {
     /** Unload all assets from memory. */
     unloadAll(): void
     /** Get list of all available asset paths. */
-    list(filter?: { loaded?: boolean }): Array<{ path: string; loaded: boolean }>
+    list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 
   // Frames
@@ -126,7 +120,7 @@ export interface Epos {
     /** Remove frame by name. */
     remove(name: string): Promise<void>
     /** Get list of all created frames. */
-    list(): Promise<Array<{ name: string; url: string }>>
+    list(): Promise<{ name: string; url: string }[]>
   }
 
   // Env

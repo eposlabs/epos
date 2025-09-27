@@ -1,37 +1,36 @@
-import type { Location, ModelClass, Options } from '../../states/state/state.ex.sw'
+import type { Location, ModelClass, Initial, Versioner } from '../../states/state/state.ex.sw'
 
 export class PkgApiState extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
-  private states: { [name: string]: $exSw.State } = {}
+  private states: { [stateName: string]: $exSw.State } = {}
+  private models: { [modelName: string]: ModelClass } = {}
 
   symbols = {
-    model: {
-      init: $exSw.State._init_,
-      cleanup: $exSw.State._cleanup_,
-      versioner: $exSw.State._versioner_,
-      parent: $exSw.State._parent_,
-    },
+    parent: $exSw.State._parent_,
+    modelInit: $exSw.State._modelInit_,
+    modelCleanup: $exSw.State._modelCleanup_,
+    modelVersioner: $exSw.State._modelVersioner_,
   }
 
-  async connect(name?: string, options?: Options): Promise<Obj>
-  async connect(options?: Options): Promise<Obj>
-  async connect(...args: unknown[]) {
+  async connect(initial?: Initial, versioner?: Versioner): Promise<Obj>
+  async connect(name: string, initial?: Initial, versioner?: Versioner): Promise<Obj>
+  async connect(...args: unknown[]): Promise<Obj> {
     let name: string | undefined
-    let options: Options | undefined
-    if (args.length === 1) {
-      if (this.$.is.string(args[0])) {
-        name = args[0] as string
-      } else if (this.$.is.object(args[0])) {
-        options = args[0] as Options
-      }
-    } else if (args.length >= 2) {
-      name = args[0] as string
-      options = args[1] as Options
+    let initial: Initial
+    let versioner: Versioner
+    if (this.$.is.string(args[0])) {
+      name = args[0]
+      initial = (args[1] ?? {}) as Initial
+      versioner = (args[2] ?? {}) as Versioner
+    } else {
+      name = undefined
+      initial = (args[0] ?? {}) as Initial
+      versioner = (args[1] ?? {}) as Versioner
     }
 
     name = this.prepareName(name)
     const location = this.getLocation(name)
-    this.states[name] = await this.$.states.connect(location, options)
+    this.states[name] = await this.$.states.connect(location, { initial, versioner, models: this.models })
     return this.states[name].data
   }
 
@@ -49,17 +48,15 @@ export class PkgApiState extends $ex.Unit {
     delete this.states[name]
   }
 
-  local(state: Obj = {}) {
-    return this.$.libs.mobx.observable(state)
-    // throw new Error('Not implemented yet')
-    // return state
+  local(data: Obj = {}): Obj {
+    return this.$.libs.mobx.observable(data)
   }
 
   transaction(fn: () => void) {
     this.$.states.transaction(fn)
   }
 
-  async list(opts: { connected?: boolean } = {}) {
+  async list(filter: { connected?: boolean } = {}) {
     const names = await this.$.idb.keys(this.$pkg.name, ':state')
     return names
       .map(name => ({
@@ -67,13 +64,14 @@ export class PkgApiState extends $ex.Unit {
         connected: this.$.states.isConnected([this.$pkg.name, ':state', name]),
       }))
       .filter(state => {
-        if (this.$.is.undefined(opts.connected)) return true
-        return opts.connected === state.connected
+        if (this.$.is.undefined(filter.connected)) return true
+        return filter.connected === state.connected
       })
   }
 
-  registerGlobalModels(models: Record<string, ModelClass>) {
-    Object.values(this.states).forEach(state => state.registerModels(models))
+  registerModels(models: Record<string, ModelClass>) {
+    Object.assign(this.models, models)
+    Object.values(this.states).forEach(state => state.addModels(models))
   }
 
   private getLocation(name: string): Location {
@@ -82,8 +80,8 @@ export class PkgApiState extends $ex.Unit {
 
   private prepareName(name?: string) {
     if (this.$.is.absent(name)) return ':default'
-    if (name === '') throw new Error('Store name cannot be empty string')
-    if (name.startsWith(':')) throw new Error(`Store name cannot start with ':'`)
+    if (name === '') throw new Error('State name cannot be an empty string')
+    if (name.startsWith(':')) throw new Error(`State name cannot start with ':'`)
     return name
   }
 }
