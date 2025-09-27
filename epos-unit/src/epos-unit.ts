@@ -1,5 +1,5 @@
+import 'epos'
 import { createLog, type Cls, type Log } from '@eposlabs/utils'
-import { epos } from 'epos'
 import type { FC } from 'react'
 
 export const _root_ = Symbol('root')

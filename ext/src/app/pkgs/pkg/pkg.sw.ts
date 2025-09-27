@@ -1,4 +1,4 @@
-import type { Action, Manifest, Mode } from '@eposlabs/epos-manifest-parser'
+import type { Action, Manifest, Mode } from 'epos-manifest-parser'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>

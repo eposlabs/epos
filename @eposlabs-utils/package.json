@@ -6,8 +6,9 @@
   "author": "imkost",
   "description": "",
   "scripts": {
+    "build": "tsup src --format esm --dts --clean",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },
   "exports": {
     ".": {

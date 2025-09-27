@@ -1,25 +1,33 @@
 {
   "name": "epos",
-  "version": "1.8.0",
+  "version": "1.8.3",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
   "scripts": {
+    "build": "tsup src --format esm --dts --clean",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm publish' --"
+    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },
   "exports": {
     ".": {
-      "import": "./src/epos.ts"
+      "import": "./dist/epos.js"
     },
     "./vite": {
+      "import": "./dist/vite.js"
+    },
+    "./ts": {
+      "import": "./src/epos.ts"
+    },
+    "./vite/ts": {
       "import": "./src/vite.ts"
     }
   },
   "files": [
     "src",
+    "dist",
     "epos.schema.json"
   ],
   "dependencies": {

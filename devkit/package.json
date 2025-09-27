@@ -7,7 +7,7 @@
     "build": "vite build --mode production"
   },
   "dependencies": {
-    "@eposlabs/epos-manifest-parser": "^1.1.0",
+    "epos-manifest-parser": "^1.1.0",
     "@eposlabs/utils": "^1.1.1",
     "epos": "^1.8.0",
     "epos-unit": "^1.1.0"

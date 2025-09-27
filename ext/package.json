@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@eposlabs/epos-manifest-parser": "^1.1.0",
+    "epos-manifest-parser": "^1.1.0",
     "@eposlabs/utils": "^1.1.1",
     "epos-types": "^1.1.0",
     "jszip": "^3.10.1",

@@ -1,6 +1,6 @@
 // TODO: handle when adding pkg with the same name
-import { parseManifest } from '@eposlabs/epos-manifest-parser'
-import type { Manifest } from '@eposlabs/epos-manifest-parser'
+import { parseManifest } from 'epos-manifest-parser'
+import type { Manifest } from 'epos-manifest-parser'
 
 const engine = (epos as any).engine
 

@@ -1,4 +1,4 @@
-import type { Mode, Pattern, PositivePattern, Target } from '@eposlabs/epos-manifest-parser'
+import type { Mode, Pattern, PositivePattern, Target } from 'epos-manifest-parser'
 
 export class PkgTarget extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
