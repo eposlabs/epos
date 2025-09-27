@@ -1,4 +1,6 @@
 .DS_Store
+.env
+.netlify
 dist
-node_modules
 layers
+node_modules
