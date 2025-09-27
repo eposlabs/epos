@@ -29,6 +29,8 @@ export class Dev extends $gl.Unit {
             value: 'true',
             expirationDate: Date.now() / 1000 + 60 * 60 * 24 * 30,
           })
+        } else if (name === 'storage') {
+          await this.$.browser.storage.local.set({ 'epos:checked': true })
         }
       })
     }

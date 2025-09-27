@@ -1,7 +1,6 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "devkit",
-  "title": "[epos] DevKit",
   "assets": [
     "./public/icon.png",
     "./template/epos.json",
@@ -14,15 +13,25 @@
     "./template/src/entry/entry-units.ts"
   ],
   "targets": [
+    // Main
     {
       "matches": ["<hub>"],
       "load": ["./dist/gl.js", "./dist/gl.css"]
+    },
+    // Learn
+    {
+      "matches": ["https://epos.dev/@learn"],
+      "load": ["./dist/fg.js", "./dist/fg.css"]
+    },
+    {
+      "matches": ["<background>"],
+      "load": ["./dist/bg.js"]
     }
   ],
 
   "manifest": {
     "name": "[epos]",
-    "version": "1.0",
+    "version": "1.1",
     "manifest_version": 3
   }
 }

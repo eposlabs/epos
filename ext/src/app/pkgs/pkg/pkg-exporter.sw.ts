@@ -20,7 +20,7 @@ export class PkgExporter extends $sw.Unit {
     ]
 
     if (this.$pkg.name === 'devkit') {
-      engineFiles.push('ex-dev.js', 'ex-mini-dev.js')
+      engineFiles.push('ex.dev.js', 'ex-mini.dev.js')
     }
 
     for (const path of engineFiles) {

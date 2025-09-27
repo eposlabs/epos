@@ -9,15 +9,15 @@
   "dependencies": {
     "epos-manifest-parser": "^1.1.0",
     "@eposlabs/utils": "^1.1.1",
-    "epos": "^1.8.0",
-    "epos-unit": "^1.1.0"
+    "epos": "^1.8.3",
+    "epos-unit": "^1.1.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
     "@types/chrome": "^0.1.12",
-    "paralayer": "^1.1.0",
+    "paralayer": "^1.1.1",
     "rolldown-vite": "^7.1.13",
     "tailwindcss": "^4.1.13",
-    "vite-plugin-rebundle": "^1.3.1"
+    "vite-plugin-rebundle": "^1.3.2"
   }
 }
