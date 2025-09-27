@@ -1,8 +1,8 @@
 import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import { paralayer } from 'paralayer'
+import { paralayer } from 'paralayer/ts'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle, type RebundleOptions } from 'vite-plugin-rebundle'
+import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle/ts'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig(async ({ mode }) => {
@@ -14,7 +14,7 @@ export default defineConfig(async ({ mode }) => {
     watch: mode !== 'production',
   })
 
-  const bundle = (name: string, forceDev = false): RebundleOptions => ({
+  const bundle = (name: string, forceDev = false): RolldownOptions => ({
     input: {
       keepNames: true,
       define: {
