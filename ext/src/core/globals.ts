@@ -1,4 +1,5 @@
-import '@eposlabs/utils/global-types'
+/// <reference types="rolldown-vite/client" />
+import '@eposlabs/utils/globals/ts'
 import type { CsReadyData } from '../app/app.cs'
 
 type PkgDef = {
@@ -10,6 +11,10 @@ type PkgDef = {
 }
 
 declare global {
+  interface ImportMetaEnv {
+    readonly REBUNDLE_PORT: number
+  }
+
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
 
   // Global variables injected to [ex]

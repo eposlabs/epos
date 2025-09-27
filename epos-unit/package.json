@@ -7,7 +7,7 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "build": "tsup src --format esm --dts --clean",
+    "build": "tsup src --format esm --dts --clean --no-splitting",
     "lint": "tsc --noEmit",
     "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
   },

@@ -1,5 +1,6 @@
 import type { Context } from 'preact'
 import type { Dispatch, StateUpdater } from 'preact/hooks'
+import './app.vw.css'
 
 export class App extends $vw.Unit {
   private setRenderId: Dispatch<StateUpdater<string>> | null = null

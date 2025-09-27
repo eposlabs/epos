@@ -8,7 +8,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
-  const jsSetupLayers = await paralayer({
+  const setupLayersJs = await paralayer({
     input: './src/app',
     output: './src/layers',
     watch: mode !== 'production',
@@ -23,7 +23,7 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     output: {
-      banner: jsSetupLayers,
+      banner: setupLayersJs,
       minify: mode !== 'development',
     },
   })
@@ -35,10 +35,10 @@ export default defineConfig(async ({ mode }) => {
       viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
       rebundle({
         'cs': bundle('cs'),
-        'ex-mini.dev': bundle('ex-mini', true),
-        'ex-mini': bundle('ex-mini'),
-        'ex.dev': bundle('ex', true),
         'ex': bundle('ex'),
+        'ex.dev': bundle('ex', true),
+        'ex-mini': bundle('ex-mini'),
+        'ex-mini.dev': bundle('ex-mini', true),
         'os': bundle('os'),
         'sm': bundle('sm'),
         'sw': bundle('sw'),
@@ -56,15 +56,15 @@ export default defineConfig(async ({ mode }) => {
       watch: mode === 'production' ? null : {},
       rolldownOptions: {
         input: {
-          'cs': './src/entry/entry.cs.ts', // content script
-          'ex-mini.dev': './src/entry/entry.ex.ts', // ex-mini with forced NODE_ENV=development
-          'ex-mini': './src/entry/entry.ex.ts', // ex without react
-          'ex.dev': './src/entry/entry.ex.ts', // ex with forced NODE_ENV=development
-          'ex': './src/entry/entry.ex.ts', // execution
-          'os': './src/entry/entry.os.ts', // offscreen
-          'sm': './src/entry/entry.sm.ts', // system
-          'sw': './src/entry/entry.sw.ts', // service worker
-          'vw': './src/entry/entry.vw.ts', // view
+          'cs': './src/cs.ts', // Content Script
+          'ex': './src/ex.ts', // Execution
+          'ex.dev': './src/ex.ts', // Execution with forced NODE_ENV=development
+          'ex-mini': './src/ex.ts', // Execution without React
+          'ex-mini.dev': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
+          'os': './src/os.ts', // Offscreen
+          'sm': './src/sm.ts', // System
+          'sw': './src/sw.ts', // Service Worker
+          'vw': './src/vw.ts', // View
         },
         output: {
           minify: false,

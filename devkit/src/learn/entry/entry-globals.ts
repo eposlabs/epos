@@ -1,2 +1,2 @@
-import '@eposlabs/utils/global-types'
+import '@eposlabs/utils/globals/ts'
 import 'epos'
