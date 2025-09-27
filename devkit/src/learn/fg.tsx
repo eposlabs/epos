@@ -1,8 +1,8 @@
-import './entry.fg.css'
-import './entry-globals'
-import './entry-units'
-import '../layers/index.sh'
-import '../layers/index.fg'
+import './core/globals'
+import './core/units'
+import './layers/index.sh'
+import './layers/index.fg'
+import './fg.css'
 
 const state = await epos.state.connect('learn', {
   models: { ...$sh, ...$fg },

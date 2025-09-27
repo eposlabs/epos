@@ -44,9 +44,9 @@ export default defineConfig(async ({ mode }) => {
       minify: false,
       rolldownOptions: {
         input: {
-          gl: './src/entry/index.tsx',
-          fg: './src/learn/entry/entry.fg.tsx',
-          bg: './src/learn/entry/entry.bg.ts',
+          gl: './src/gl.tsx',
+          fg: './src/learn/fg.tsx',
+          bg: './src/learn/bg.ts',
         },
         output: {
           entryFileNames: '[name].js',

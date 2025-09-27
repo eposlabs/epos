@@ -1,7 +1,7 @@
-import './globals'
-import './units'
-import '../layers/index.gl'
-import './index.css'
+import './core/globals'
+import './core/units'
+import './layers/index.gl'
+import './gl.css'
 
 await epos.assets.load('/public/icon.png')
 const state = await epos.state.connect({
