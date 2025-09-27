@@ -34,7 +34,7 @@ const config = {
   },
 }
 
-export function parseManifest(json: string): Manifest {
+export function parseEposManifest(json: string): Manifest {
   json = stripJsonComments(json)
   const [manifest, error] = safe.sync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
@@ -265,4 +265,4 @@ function normalizePath(path: string) {
     .join('/')
 }
 
-export default parseManifest
+export default parseEposManifest

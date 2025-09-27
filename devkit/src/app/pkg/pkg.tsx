@@ -1,5 +1,5 @@
 // TODO: handle when adding pkg with the same name
-import { parseManifest } from 'epos-manifest-parser'
+import { parseEposManifest } from 'epos-manifest-parser'
 import type { Manifest } from 'epos-manifest-parser'
 
 const engine = (epos as any).engine
@@ -158,8 +158,8 @@ export class Pkg extends $gl.Unit {
     const [json, jsonError] = await this.$.utils.safe(() => file.text())
     if (jsonError) throw new Error(`Failed to read epos.json content: ${jsonError.message}`)
 
-    const [manifest, manifestError] = this.$.utils.safe.sync(() => parseManifest(json))
-    if (manifestError) throw new Error(`Failed to parse manifest: ${manifestError.message}`)
+    const [manifest, manifestError] = this.$.utils.safe.sync(() => parseEposManifest(json))
+    if (manifestError) throw new Error(`Failed to parse epos.json: ${manifestError.message}`)
 
     return manifest
   }

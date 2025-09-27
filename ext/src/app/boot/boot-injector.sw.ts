@@ -9,8 +9,8 @@ export class BootInjector extends $sw.Unit {
   private cspProtectedOrigins = new Set<string>()
 
   private ex = {
-    dev: { full: '', mini: '' },
-    prod: { full: '', mini: '' },
+    full: { dev: '', prod: '' },
+    mini: { dev: '', prod: '' },
   }
 
   private ignoredUrlPrefixes = [
@@ -30,14 +30,14 @@ export class BootInjector extends $sw.Unit {
 
   async init() {
     // Dev versions are absent for exported packages
-    const [exDevFull] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
-    const [exDevMini] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(r => r.text()))
-    this.ex.dev.full = exDevFull ?? ''
-    this.ex.dev.mini = exDevMini ?? ''
+    const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
+    const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(r => r.text()))
+    this.ex.full.dev = exFullDev ?? ''
+    this.ex.mini.dev = exMiniDev ?? ''
 
     // Prod versions are always present
-    this.ex.prod.full = await fetch('/ex.js').then(r => r.text())
-    this.ex.prod.mini = await fetch('/ex-mini.js').then(r => r.text())
+    this.ex.full.prod = await fetch('/ex.js').then(r => r.text())
+    this.ex.mini.prod = await fetch('/ex-mini.js').then(r => r.text())
   }
 
   private injectOnNavigation() {
@@ -77,7 +77,7 @@ export class BootInjector extends $sw.Unit {
     if (css) async: this.injectCss(tab, css)
 
     // Inject ex.js + pkgs
-    const jsData = this.getJsData(tab, csData.busToken)
+    const jsData = this.getJsData(tab, csData.busToken as any)
     if (!jsData) return
     async: this.injectJs(tab, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
   }
@@ -145,8 +145,8 @@ export class BootInjector extends $sw.Unit {
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)
-    const ex = dev ? this.ex.dev : this.ex.prod
-    const exJs = payloads.some(payload => this.hasReact(payload.script)) ? ex.full : ex.mini
+    const ex = payloads.some(payload => this.hasReact(payload.script)) ? this.ex.full : this.ex.mini
+    const exJs = dev ? ex.dev : ex.prod
 
     const js = [
       `(() => {`,
