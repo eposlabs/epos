@@ -119,12 +119,15 @@ export class Rebundle extends Unit {
     const chunkPath = join(this.dist, chunk.fileName)
     const chunkOptions = this.options[chunk.name] ?? {}
 
-    // Read chunk files, save their content
+    // Read chunk files
     const chunkFiles = await this.readChunkFiles(chunk)
 
     // Check if chunk was modified
     const chunkFilePaths = Object.keys(chunkFiles)
     const chunkModified = chunkFilePaths.some(path => chunkFiles[path] !== this.originalFiles[path])
+
+    // Update original files content
+    Object.assign(this.originalFiles, chunkFiles)
 
     // Chunk was not modified? -> Use previous content
     if (!chunkModified) {
@@ -138,17 +141,15 @@ export class Rebundle extends Unit {
         if (sourcemap) await this.writeToDist(chunk.sourcemapFileName, sourcemap)
       }
 
+      // Return not modified status
       return false
     }
 
     // Build with rolldown
-    try {
-      const build = await rolldown({ ...chunkOptions.input, input: chunkPath })
-      await build.write({ sourcemap: !!this.config.build.sourcemap, ...chunkOptions.output, file: chunkPath })
-    } catch (error) {
-      console.error(error)
-      return
-    }
+    const [build] = await safe(rolldown({ ...chunkOptions.input, input: chunkPath }))
+    if (!build) return
+    const [_, error] = await safe(build.write({ ...chunkOptions.output, file: chunkPath }))
+    if (error) return
 
     // Log successful build
     const { size } = await stat(chunkPath)
@@ -169,6 +170,7 @@ export class Rebundle extends Unit {
       if (sourcemap) this.rebundledFiles[chunk.sourcemapFileName] = sourcemap
     }
 
+    // Return modified status
     return true
   }
 

@@ -25,7 +25,6 @@ export default defineConfig(async ({ mode }) => {
     output: {
       banner: jsSetupLayers,
       minify: mode !== 'development',
-      ...(name.startsWith('ex') ? { sourcemap: false } : {}),
     },
   })
 
@@ -55,8 +54,6 @@ export default defineConfig(async ({ mode }) => {
 
     build: {
       watch: mode === 'production' ? null : {},
-      sourcemap: mode === 'development',
-      minify: false,
       rolldownOptions: {
         input: {
           'cs': './src/entry/entry.cs.ts', // content script
@@ -70,6 +67,8 @@ export default defineConfig(async ({ mode }) => {
           'vw': './src/entry/entry.vw.ts', // view
         },
         output: {
+          minify: false,
+          sourcemap: false,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
         },

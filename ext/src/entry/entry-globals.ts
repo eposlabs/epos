@@ -34,6 +34,7 @@ declare global {
   var add: any
   var remove: any
   var eject: any
+  var install: any
 
   interface Node {
     epos?: boolean
