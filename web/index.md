@@ -8,6 +8,9 @@ hero:
   tagline: A Crafted Toolset for Rapid & Fun Development
   actions:
     - theme: brand
-      text: API Reference
-      link: /api
+      text: Get Epos
+      link: https://get.epos.dev
+    - theme: alt
+      text: Documentation
+      link: /docs/about
 ---
