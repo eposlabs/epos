@@ -20,6 +20,7 @@ export type GetInitialState = () => Obj | Model
 export type Versioner = Record<number, (state: MObject) => void>
 export type ModelClass = (new (...args: unknown[]) => unknown) & { [_modelVersioner_]?: Versioner }
 export type Model = InstanceType<ModelClass>
+export type Root = { data: MObject & { ':version'?: number } }
 
 // MobX node
 export type Parent = MNode | null
@@ -59,8 +60,6 @@ export type Options = {
  */
 export class State extends $exSw.Unit {
   id: string
-  data!: { root: MObject & { ':version'?: number } }
-  // root!: { data: MObject & { ':version'?: number } }
   location: Location
 
   static _meta_ = _meta_
@@ -69,6 +68,7 @@ export class State extends $exSw.Unit {
   static _modelCleanup_ = _modelCleanup_
   static _modelVersioner_ = _modelVersioner_
 
+  private root!: Root
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<$gl.Bus['create']>
   private models: Record<string, ModelClass>
@@ -84,6 +84,10 @@ export class State extends $exSw.Unit {
   private saveQueue = new this.$.utils.Queue()
   private saveTimeout: number | undefined = undefined
   private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // 2000
+
+  get data(): Obj {
+    return this.root.data
+  }
 
   static async create(parent: $exSw.Unit, location: Location, options: Options = {}) {
     const state = new State(parent, location, options)
@@ -142,14 +146,14 @@ export class State extends $exSw.Unit {
     // 2. Load state data
     if (this.$.env.is.sw) {
       const data = await this.$.idb.get<Obj>(...this.location)
-      this.data = this.attach(data ?? { root: {} }, null)
+      this.root = this.attach({ data: data ?? {} }, null) as Root
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
       this.applyingYjsToMobx = true
-      this.data = this.attach(yRoot, null)
+      this.root = this.attach(yRoot, null) as Root
       this.applyingYjsToMobx = false
     }
 
@@ -172,33 +176,30 @@ export class State extends $exSw.Unit {
         const versions = this.getVersionsAsc(this.versioner)
 
         // Empty state?
-        if (Object.keys(this.data.root).length === 0) {
+        if (Object.keys(this.root.data).length === 0) {
           // Set initial state
           const initial = this.$.is.function(this.initial) ? this.initial() : this.initial
-          this.data.root = initial
-          // Object.assign(this.data.root, initial)
-          console.warn('initial', initial)
-          // Object.keys(initial).forEach(key => this.set(this.data, key, initial[key]))
+          this.root.data = initial
 
           // State itself is a model? -> Don't use state versioner (model versioner will be used)
-          if (this.isModelNode(this.data.root)) return
+          if (this.isModelNode(this.root.data)) return
 
           // Set the latest version
           if (versions.length === 0) return
-          this.set(this.data.root, ':version', versions.at(-1))
+          this.set(this.root.data, ':version', versions.at(-1))
         }
 
         // Non-empty state?
         else {
           // State itself is a model? -> Don't run state versioner (model versioner will be run)
-          if (this.isModelNode(this.data.root)) return
+          if (this.isModelNode(this.root.data)) return
 
           // Run state versioner
           for (const version of versions) {
-            if (this.$.is.number(this.data.root[':version']) && this.data.root[':version'] >= version)
+            if (this.$.is.number(this.root.data[':version']) && this.root.data[':version'] >= version)
               continue
-            this.versioner[version].call(this.data.root, this.data.root)
-            this.data.root[':version'] = version
+            this.versioner[version].call(this.root.data, this.root.data)
+            this.root.data[':version'] = version
           }
         }
       })()
@@ -714,7 +715,7 @@ export class State extends $exSw.Unit {
   private async save() {
     if (!this.$.env.is.sw) return
     self.clearTimeout(this.saveTimeout)
-    const data = this.unwrap(this.data)
+    const data = this.unwrap(this.root.data)
     const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.location, data))
     if (error) this.log.error('Failed to save state to IndexedDB', error)
   }

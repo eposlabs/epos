@@ -53,7 +53,8 @@ export class PkgsInstaller extends $sw.Unit {
 
     // Ensure url path ends with '/epos.json'
     if (!parsed.pathname.endsWith('/epos.json')) {
-      url = new URL('epos.json', parsed.href).href
+      const pathname = parsed.pathname.endsWith('/') ? parsed.pathname : `${parsed.pathname}/`
+      url = new URL('epos.json', `${parsed.origin}${pathname}`).href
     }
 
     // Fetch epos.json

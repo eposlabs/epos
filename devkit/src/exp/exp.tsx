@@ -8,6 +8,9 @@ class Exp {
   [epos.state.symbols.modelInit]() {
     console.log('exp init')
   }
+  get chat() {
+    return chat
+  }
   show() {
     console.log('EXP', this.count, this.name)
   }
@@ -24,6 +27,14 @@ class Exp {
       this.messages = this.messages.map(m => ({ ...m, '@': 'Note' }))
     },
     7() {
+      this.messages = this.messages.map(m => ({ ...m, '@': 'Message' }))
+    },
+    8() {
+      console.warn('8')
+      this.messages = this.messages.map(m => ({ ...m, '@': 'Note' }))
+    },
+    9() {
+      console.warn('9')
       this.messages = this.messages.map(m => ({ ...m, '@': 'Message' }))
     },
   }
@@ -45,15 +56,53 @@ class Message {
   static [epos.state.symbols.modelVersioner]: any = {}
 }
 
-epos.state.registerModels({ Exp, Message })
+class Chat {
+  id = crypto.randomUUID()
+  title = 'Chat Title'
+  messages = [];
+  [epos.state.symbols.modelInit]() {
+    console.log('init chat')
+  }
+  static [epos.state.symbols.modelVersioner]: any = {
+    1() {
+      console.warn('1')
+    },
+    2() {
+      console.warn('2 model')
+      this['@'] = 'Chat3'
+    },
+  }
+}
+
+epos.state.registerModels({
+  Exp,
+  Message,
+  Note,
+  Chat40: Chat,
+})
+
+const mutex = (name, fn) => fn()
+
+let chat = await epos.state.connect('chat-01')
+if (chat['@'] === 'Chat3') chat['@'] = 'Chat'
+if (chat['@'] === 'Chat') chat['@'] = 'Chat2'
+if (chat['@'] === 'Chat2') {
+  console.warn('set')
+  chat['@'] = 'Chat40'
+} else {
+  console.warn('not set')
+}
+epos.state.disconnect('chat-01')
+chat = await epos.state.connect('chat-01', new Chat())
+
+Object.assign(self, { epos, state, $: state, chat })
 const state = await epos.state.connect('exp4', { exp: new Exp() })
-Object.assign(self, { epos, state, $: state })
 
 const Main = epos.component(() => {
   return (
     <div class="flex flex-col gap-4 p-4">
       <div>
-        {state.exp.count} - {state.exp.name}
+        {state.exp.count} - {state.exp.name}[{state.exp.chat.title}]
       </div>
       <pre>{JSON.stringify(state._, null, 2)}</pre>
     </div>

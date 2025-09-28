@@ -19,6 +19,7 @@ export class BootInjector extends $sw.Unit {
     'devtools:',
     'about:blank',
     'chrome-extension:',
+    'https://chrome.google.com/webstore/',
     'https://chromewebstore.google.com/',
   ]
 
@@ -54,7 +55,7 @@ export class BootInjector extends $sw.Unit {
     try {
       await this.injectTo(tab)
     } catch (error) {
-      this.log.error(error)
+      this.log.error(error, tab.url)
     }
   }
 
