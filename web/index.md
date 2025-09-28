@@ -12,5 +12,5 @@ hero:
       link: https://get.epos.dev
     - theme: alt
       text: Documentation
-      link: /docs/about
+      link: /docs/01
 ---

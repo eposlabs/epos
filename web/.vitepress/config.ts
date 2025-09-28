@@ -10,15 +10,16 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/docs/getting-started' },
+      { text: 'Documentation', link: '/docs/01' },
     ],
 
     sidebar: [
       {
-        text: 'Documentation',
+        text: 'Introduction',
+        collapsed: false,
         items: [
-          { text: 'About', link: '/docs/about' },
-          { text: 'Getting Started', link: '/docs/getting-started' },
+          { text: 'What is Epos?', link: '/docs/01' },
+          { text: 'Getting Started', link: '/docs/02' },
           { text: 'API Reference', link: '/docs/api' },
         ],
       },

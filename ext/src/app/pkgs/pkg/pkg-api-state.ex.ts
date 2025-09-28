@@ -31,7 +31,7 @@ export class PkgApiState extends $ex.Unit {
     name = this.prepareName(name)
     const location = this.getLocation(name)
     this.states[name] = await this.$.states.connect(location, { initial, versioner, models: this.models })
-    return this.states[name].data
+    return this.states[name].data.root
   }
 
   async disconnect(name?: string) {

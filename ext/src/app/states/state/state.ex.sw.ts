@@ -1,4 +1,4 @@
-// @ts-nocheck
+// ts-nocheck
 // TODO: (see dev.gl.ts) problem: when versioner is applied, this 'new' is initialized first, before other messages.
 // After reload, it is initialized first.
 // this.messages.push(new Message('new')).
@@ -59,7 +59,7 @@ export type Options = {
  */
 export class State extends $exSw.Unit {
   id: string
-  data!: MObject & { ':version'?: number }
+  data!: { root: MObject & { ':version'?: number } }
   // root!: { data: MObject & { ':version'?: number } }
   location: Location
 
@@ -142,7 +142,7 @@ export class State extends $exSw.Unit {
     // 2. Load state data
     if (this.$.env.is.sw) {
       const data = await this.$.idb.get<Obj>(...this.location)
-      this.data = this.attach(data ?? {}, null)
+      this.data = this.attach(data ?? { root: {} }, null)
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
@@ -172,30 +172,33 @@ export class State extends $exSw.Unit {
         const versions = this.getVersionsAsc(this.versioner)
 
         // Empty state?
-        if (Object.keys(this.data).length === 0) {
+        if (Object.keys(this.data.root).length === 0) {
           // Set initial state
           const initial = this.$.is.function(this.initial) ? this.initial() : this.initial
-          Object.assign(this.data, initial)
+          this.data.root = initial
+          // Object.assign(this.data.root, initial)
+          console.warn('initial', initial)
           // Object.keys(initial).forEach(key => this.set(this.data, key, initial[key]))
 
           // State itself is a model? -> Don't use state versioner (model versioner will be used)
-          // if (this.isModelNode(this.data)) return
+          if (this.isModelNode(this.data.root)) return
 
           // Set the latest version
           if (versions.length === 0) return
-          this.set(this.data, ':version', versions.at(-1))
+          this.set(this.data.root, ':version', versions.at(-1))
         }
 
         // Non-empty state?
         else {
           // State itself is a model? -> Don't run state versioner (model versioner will be run)
-          // if (this.isModelNode(this.data)) return
+          if (this.isModelNode(this.data.root)) return
 
           // Run state versioner
           for (const version of versions) {
-            if (this.$.is.number(this.data[':version']) && this.data[':version'] >= version) continue
-            this.versioner[version].call(this.data, this.data)
-            this.data[':version'] = version
+            if (this.$.is.number(this.data.root[':version']) && this.data.root[':version'] >= version)
+              continue
+            this.versioner[version].call(this.data.root, this.data.root)
+            this.data.root[':version'] = version
           }
         }
       })()
@@ -355,6 +358,7 @@ export class State extends $exSw.Unit {
   }
 
   private commit() {
+    // @ts-ignore
     const pretty = nodes => {
       return [...nodes].filter(n => this.isModelNode(n)).map(a => a._)
     }
@@ -363,7 +367,9 @@ export class State extends $exSw.Unit {
     if (!this.committing) {
       this.committing = true
 
+      // @ts-ignore
       this.topLevelPhase = 'model-versioner'
+      // @ts-ignore
       this.topLevelInitQueue = new Set(this.attachedNodes)
       // this.initialized = new Set()
       // console.warn(pretty(this.topLevelInitQueue))
@@ -378,13 +384,16 @@ export class State extends $exSw.Unit {
         }
       }
 
+      // @ts-ignore
       this.topLevelPhase = 'model-init'
       // console.warn(pretty(this.topLevelInitQueue))
+      // @ts-ignore
       for (const node of this.topLevelInitQueue) {
         if (this.detachedNodes.has(node)) continue
         if (this.isModelNode(node)) {
           // console.log('[init:0]', node._)
           const meta = this.getMeta(node)
+          // @ts-ignore
           meta.initialized = true
           this.runModelMethod(node, _modelInit_)
         }
@@ -393,6 +402,7 @@ export class State extends $exSw.Unit {
       for (const node of this.detachedNodes) {
         if (this.isModelNode(node)) {
           const meta = this.getMeta(node)
+          // @ts-ignore
           if (!meta.initialized) continue
           // console.log('[cleanup]', node._)
           this.runModelMethod(node, _modelCleanup_)
@@ -405,6 +415,7 @@ export class State extends $exSw.Unit {
         meta.unwire()
       }
 
+      // @ts-ignore
       this.initialized = new Set()
       this.committing = false
       this.detachedNodes.clear()
@@ -417,23 +428,30 @@ export class State extends $exSw.Unit {
 
       for (const node of newNodes) {
         if (this.isModelNode(node)) {
+          // @ts-ignore
           if (this.topLevelPhase === 'model-versioner') {
             // console.log('[versioner]', node._)
             this.runModelVersioner(node)
+            // @ts-ignore
             this.topLevelInitQueue = new Set([node, ...Array.from(this.topLevelInitQueue)])
-          } else if (this.topLevelPhase === 'model-init') {
+          }
+
+          // @ts-ignore
+          else if (this.topLevelPhase === 'model-init') {
             // console.log('[versioner]', node._)
             this.runModelVersioner(node)
           }
         }
       }
 
+      // @ts-ignore
       if (this.topLevelPhase === 'model-init') {
         for (const node of newNodes) {
           if (this.isModelNode(node)) {
             // console.log('[init]', node._)
             // this.initialized.add(node)
             const meta = this.getMeta(node)
+            // @ts-ignore
             meta.initialized = true
             this.runModelMethod(node, _modelInit_)
           }
