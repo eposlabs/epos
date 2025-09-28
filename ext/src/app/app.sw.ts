@@ -44,6 +44,12 @@ export class App extends $sw.Unit {
         id: 'cs',
         matches: ['<all_urls>'],
         js: ['/cs.js'],
+        // Exclude Chrome Web Store iframes
+        excludeMatches: [
+          'https://ogs.google.com/*',
+          'https://*.google.com/static/proxy.html?*',
+          'https://accounts.google.com/RotateCookiesPage?*',
+        ],
         runAt: 'document_start',
         world: 'ISOLATED',
         allFrames: true,

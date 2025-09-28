@@ -1,4 +1,3 @@
-// ts-nocheck
 // TODO: (see dev.gl.ts) problem: when versioner is applied, this 'new' is initialized first, before other messages.
 // After reload, it is initialized first.
 // this.messages.push(new Message('new')).
