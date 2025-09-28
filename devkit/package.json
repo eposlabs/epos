@@ -8,16 +8,16 @@
   },
   "dependencies": {
     "epos-manifest-parser": "^1.1.0",
-    "@eposlabs/utils": "^1.2.0",
-    "epos": "^1.8.3",
+    "@eposlabs/utils": "^1.2.1",
+    "epos": "^1.8.4",
     "epos-unit": "^1.1.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
     "@types/chrome": "^0.1.12",
-    "paralayer": "^1.1.2",
+    "paralayer": "^1.1.3",
     "rolldown-vite": "^7.1.13",
     "tailwindcss": "^4.1.13",
-    "vite-plugin-rebundle": "^1.3.3"
+    "vite-plugin-rebundle": "^1.3.4"
   }
 }
