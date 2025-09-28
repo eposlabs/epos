@@ -8,9 +8,9 @@
     "./template/tsconfig.json",
     "./template/vite.config.ts",
     "./template/src/app/app.gl.tsx",
-    "./template/src/entry/entry.gl.tsx",
-    "./template/src/entry/entry.gl.css",
-    "./template/src/entry/entry-units.ts"
+    "./template/src/core/units.ts",
+    "./template/src/gl.tsx",
+    "./template/src/gl.css"
   ],
   "targets": [
     // Main

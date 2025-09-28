@@ -11,23 +11,21 @@ export default defineConfig(async ({ mode }) => {
     watch: mode !== 'production',
   })
 
-  const bundle = (options: BuildOptions = {}): BuildOptions => ({
-    format: 'esm',
-    keepNames: true,
-    minify: mode !== 'development',
-    banner: { js: setupLayersJs },
-    ...options,
-  })
-
   return {
-    plugins: [epos(), tailwindcss(), rebundle({ gl: bundle() })],
+    plugins: [
+      epos(),
+      tailwindcss(),
+      rebundle({
+        gl: { output: { minify: mode !== 'development', banner: setupLayersJs } },
+      }),
+    ],
     build: {
       watch: mode === 'production' ? null : {},
       sourcemap: false,
       minify: false,
       rolldownOptions: {
         input: {
-          gl: './src/entry/entry.gl.tsx',
+          gl: './src/gl.tsx',
         },
         output: {
           entryFileNames: '[name].js',

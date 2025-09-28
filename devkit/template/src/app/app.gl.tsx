@@ -5,7 +5,6 @@ export class App extends $gl.Unit {
   ui() {
     return (
       <div class="flex max-w-[600px] flex-col gap-4 p-4">
-        <h1>Epos Template Package</h1>
         <input
           class="rounded-sm bg-gray-200 px-2 py-1 dark:bg-gray-500"
           value={this.text}
