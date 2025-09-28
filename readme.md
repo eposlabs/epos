@@ -34,6 +34,10 @@
   - epos.storage.clear
   - epos.storage.use
   - epos.storage.list
+- **Frame**
+  - epos.frame.open
+  - epos.frame.close
+  - epos.frame.list
 - **Assets**
   - epos.assets.url
   - epos.assets.load
@@ -41,14 +45,9 @@
   - epos.assets.unload
   - epos.assets.unloadAll
   - epos.assets.list
-- **Frames**
-  - epos.frames.create
-  - epos.frames.remove
-  - epos.frames.list
 - **Env**
   - epos.env.tabId
-  - epos.env.isTab
-  - epos.env.isFrame
+  - epos.env.isWeb
   - epos.env.isPopup
   - epos.env.isSidePanel
   - epos.env.isBackground

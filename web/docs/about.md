@@ -8,7 +8,7 @@ Compared to other extension engines like [WXT](https://wxt.dev/) or [Plasmo](htt
 
 ## Installation
 
-Epos is not provided as an NPM package, instead, Epos itself is an extension which you install from the [official Chrome WebStore page](https://get.epos.dev). Then you link your project's directory to the Epos extension and Epos will run your code in the browser. Technically, Epos can run any number of projects simultaneously.
+Epos is not provided as an NPM package, instead, Epos itself is an extension which you install from the official [Chrome Web Store page](https://get.epos.dev). Then you link your project's directory to the Epos extension and Epos will run your code in the browser. Technically, Epos can run any number of projects simultaneously.
 
 When you are finished with the development, you can click [export] button inside Epos interface and your project will be exported as a standard browser extension which you can publish to the Chrome Web Store.
 

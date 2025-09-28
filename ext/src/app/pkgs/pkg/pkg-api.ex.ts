@@ -3,7 +3,7 @@ export class PkgApi extends $ex.Unit {
   assets!: $ex.PkgApiAssets
   bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
   env = new $ex.PkgApiEnv(this)
-  frames = new $ex.PkgApiFrames(this)
+  frame = new $ex.PkgApiFrame(this)
   general!: $ex.PkgApiGeneral
   libs = new $ex.PkgApiLibs(this)
   state = new $ex.PkgApiState(this)
@@ -76,18 +76,17 @@ export class PkgApi extends $ex.Unit {
         list: this.$.utils.link(this.assets, 'list'),
       },
 
-      // Frames
-      frames: {
-        create: this.$.utils.link(this.frames, 'create'),
-        remove: this.$.utils.link(this.frames, 'remove'),
-        list: this.$.utils.link(this.frames, 'list'),
+      // Frame
+      frame: {
+        open: this.$.utils.link(this.frame, 'open'),
+        close: this.$.utils.link(this.frame, 'close'),
+        list: this.$.utils.link(this.frame, 'list'),
       },
 
       // Env
       env: {
         tabId: this.env.tabId,
-        isTab: this.env.isTab,
-        isFrame: this.env.isFrame,
+        isWeb: this.env.isWeb,
         isPopup: this.env.isPopup,
         isSidePanel: this.env.isSidePanel,
         isBackground: this.env.isBackground,

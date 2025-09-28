@@ -97,9 +97,19 @@ export interface Epos {
     list(): Promise<{ name: string | null }[]>
   }
 
+  // Frame
+  frame: {
+    /** Open frame in the background. */
+    open(name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
+    /** Remove background frame by its name. */
+    close(name: string): Promise<void>
+    /** Get list of all open background frames. */
+    list(): Promise<{ name: string; url: string }[]>
+  }
+
   // Assets
   assets: {
-    /** Get asset URL. Asset must be loaded first. */
+    /** Get asset URL. The asset must be loaded first. */
     url(path: string): string
     /** Load asset by path. */
     load(path: string): Promise<Blob>
@@ -109,38 +119,17 @@ export interface Epos {
     unload(path: string): void
     /** Unload all assets from memory. */
     unloadAll(): void
-    /** Get list of all available asset paths. */
+    /** Get list of all available assets. */
     list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
-  }
-
-  // Frames
-  frames: {
-    /** Create a new frame. */
-    create(name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
-    /** Remove frame by name. */
-    remove(name: string): Promise<void>
-    /** Get list of all created frames. */
-    list(): Promise<{ name: string; url: string }[]>
   }
 
   // Env
   env: {
-    /** Current tab ID. */
     tabId: number
-    /** True if running in a tab (top-level, not iframe). */
-    isTab: boolean
-    /** True if running in an iframe. */
-    isFrame: boolean
-    /** True if running in a popup or side panel (`<popup>` or `<sidePanel>`). */
-    isShell: boolean
-    /** True if running in a popup (`<popup>`). */
+    isWeb: boolean
     isPopup: boolean
-    /** True if running in a side panel (`<sidePanel>`). */
     isSidePanel: boolean
-    /** True if running in the background (`<background>`). */
     isBackground: boolean
-    /** True if running in the foreground (not `<background>` and not inside iframe). */
-    isForeground: boolean
   }
 
   // Libs
