@@ -24,7 +24,7 @@ export class Unit<TRoot = unknown> {
   // INIT
   // ---------------------------------------------------------------------------
 
-  [epos.state.symbols.model.init]() {
+  [epos.state.symbols.modelInit]() {
     const Unit = this.constructor
     const descriptors: Descriptors = Object.getOwnPropertyDescriptors(Unit.prototype)
     const keys = Reflect.ownKeys(descriptors)
@@ -65,7 +65,7 @@ export class Unit<TRoot = unknown> {
   // CLEANUP
   // ---------------------------------------------------------------------------
 
-  [epos.state.symbols.model.cleanup]() {
+  [epos.state.symbols.modelCleanup]() {
     // Call disposers
     this[_disposers_].forEach(disposer => disposer())
     this[_disposers_].clear()
@@ -78,7 +78,7 @@ export class Unit<TRoot = unknown> {
   // VERSIONER
   // ---------------------------------------------------------------------------
 
-  static get [epos.state.symbols.model.versioner]() {
+  static get [epos.state.symbols.modelVersioner]() {
     if (!('versioner' in this)) return null
     return this.versioner
   }
@@ -139,7 +139,7 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 
 function getParent(child: any) {
-  return child[_parent_] ?? child[epos.state.symbols.model.parent]
+  return child[_parent_] ?? child[epos.state.symbols.parent]
 }
 
 function findRoot(unit: Unit) {

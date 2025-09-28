@@ -26,6 +26,11 @@
     {
       "matches": ["<background>"],
       "load": ["./dist/bg.js"]
+    },
+    // Experiments
+    {
+      "matches": ["https://epos.dev/@exp"],
+      "load": ["./dist/exp.js", "./dist/exp.css"]
     }
   ],
 

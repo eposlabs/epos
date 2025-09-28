@@ -2,9 +2,11 @@ import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle } from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle/ts'
 
 export default defineConfig(async ({ mode }) => {
+  const minify = mode !== 'development'
+
   const mainLayersJs = await paralayer({
     input: './src/app',
     output: './src/layers',
@@ -23,18 +25,10 @@ export default defineConfig(async ({ mode }) => {
       epos(),
       tailwindcss(),
       rebundle({
-        gl: {
-          input: { keepNames: true },
-          output: { minify: mode !== 'development', banner: mainLayersJs },
-        },
-        fg: {
-          input: { keepNames: true },
-          output: { minify: mode !== 'development', banner: learnLayersJs },
-        },
-        bg: {
-          input: { keepNames: true },
-          output: { minify: mode !== 'development', banner: learnLayersJs },
-        },
+        gl: { output: { minify, banner: mainLayersJs } },
+        fg: { output: { minify, banner: learnLayersJs } },
+        bg: { output: { minify, banner: learnLayersJs } },
+        exp: { output: { minify } },
       }),
     ],
 
@@ -47,6 +41,7 @@ export default defineConfig(async ({ mode }) => {
           gl: './src/gl.tsx',
           fg: './src/learn/fg.tsx',
           bg: './src/learn/bg.ts',
+          exp: './src/exp/exp.tsx',
         },
         output: {
           entryFileNames: '[name].js',

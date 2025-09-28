@@ -13,8 +13,8 @@ export const _code_ = Symbol('rebundle:code')
 export const _sourcemap_ = Symbol('rebundle:sourcemap')
 
 export type RolldownOptions = {
-  input: InputOptions
-  output: OutputOptions
+  input?: InputOptions
+  output?: OutputOptions
 }
 
 export type Options = {
