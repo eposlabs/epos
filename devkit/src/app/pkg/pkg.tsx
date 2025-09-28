@@ -230,20 +230,22 @@ export class Pkg extends $gl.Unit {
         <div class="flex items-center justify-between">
           <div class="">
             {this.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
-            {this.time && <span class="ml-3 text-xs text-gray-500">{this.time}</span>}
           </div>
-          <div class="flex gap-2">
-            {!this.error && (
-              <div
-                onClick={this.export}
-                class="cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-800"
-              >
-                [export]
-              </div>
-            )}
+          <div class="flex items-baseline gap-2">
+            {this.time && <span class="mr-3 ml-3 text-xs text-gray-400">Updated at {this.time}</span>}
+            <div
+              onClick={this.export}
+              inert={!!this.error}
+              class={[
+                'cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700',
+                this.error && 'opacity-20',
+              ]}
+            >
+              [export]
+            </div>
             <div
               onClick={this.remove}
-              class="cursor-default px-1 py-0.5 hover:bg-red-200 dark:hover:bg-red-800"
+              class="cursor-default px-1 py-0.5 hover:bg-red-100 dark:hover:bg-red-800"
             >
               [remove]
             </div>

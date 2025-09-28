@@ -81,15 +81,15 @@ export class App extends $gl.Unit {
                 <div>epos</div>
               </div>
               <div class="flex gap-2">
-                <button onClick={this.addPkg} class="px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-800">
-                  [add]
+                <button onClick={this.addPkg} class="px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+                  [connect project]
                 </button>
-                <button
+                {/* <button
                   onClick={this.createNewPkg}
                   class="px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-800"
                 >
                   [new]
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -103,53 +103,6 @@ export class App extends $gl.Unit {
               <div class="flex items-center justify-between bg-white p-4 dark:bg-black">Creating...</div>
             )}
           </div>
-        </div>
-      </div>
-    )
-
-    return (
-      <div class="relative h-[100vh] w-[100vw] bg-white py-[12px] pl-[22px] dark:bg-black">
-        <div
-          class="absolute inset-0 text-gray-200 dark:text-gray-900"
-          style={{
-            backgroundSize: '44px 100%, 100% 24px',
-            backgroundPosition: '22px 0, 0 12px',
-            backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-          }}
-        ></div>
-        <div class="relative h-6 w-22 bg-gray-700"></div>
-      </div>
-    )
-
-    return (
-      <div class="flex flex-col items-center gap-5 p-5">
-        <div class="flex gap-5">
-          <button
-            class={[
-              'rounded-md bg-green-600 px-3 py-2 text-white shadow transition-colors',
-              'hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none',
-            ]}
-            onClick={this.createNewPkg}
-          >
-            NEW PACKAGE
-          </button>
-          <button
-            class={[
-              'rounded-md bg-blue-600 px-3 py-2 text-white shadow transition-colors',
-              'hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none',
-            ]}
-            onClick={this.addPkg}
-          >
-            CONNECT EXISTING
-          </button>
-        </div>
-        <div class="flex flex-wrap justify-center gap-4">
-          {this.pkgs.map(pkg => (
-            <pkg.ui key={pkg.id} />
-          ))}
         </div>
       </div>
     )
