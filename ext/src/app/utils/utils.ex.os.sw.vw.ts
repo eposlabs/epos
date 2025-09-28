@@ -1,4 +1,4 @@
-import { ensureArray, is, Queue, QueueMap, safe, unique, wait } from '@eposlabs/utils'
+import { ensureArray, is, Queue, QueueMap, safe, unique, wait } from '@eposlabs/utils/ts'
 import { convertImage } from './utils-convert-image'
 import { cx } from './utils-cx'
 import { equal } from './utils-equal'
