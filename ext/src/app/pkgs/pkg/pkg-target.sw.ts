@@ -31,6 +31,8 @@ export class PkgTarget extends $sw.Unit {
   private checkPattern(pattern: PositivePattern, url: string, frame: boolean) {
     const extOrigin = location.origin
 
+    // For special pages, we check against extension URL params.
+    // `frame` argument is ignored, it does not make sense for special pages.
     if (['<popup>', '<sidePanel>', '<background>'].includes(pattern)) {
       const { origin, searchParams } = new URL(url)
       if (origin !== extOrigin) return false
@@ -39,6 +41,7 @@ export class PkgTarget extends $sw.Unit {
       return pattern === type && (!pkgName || pkgName === this.$pkg.name)
     }
 
+    // For `frame=true`, only `frame:*` patterns should match
     if (frame) {
       if (!pattern.startsWith('frame:')) return false
       pattern = pattern.replace('frame:', '')

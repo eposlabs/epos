@@ -48,21 +48,20 @@ class EnvIs extends $gl.Unit {
   sw = BUNDLE === 'sw'
   vw = BUNDLE === 'vw'
 
-  // cs variations
-  csTab = this.cs && self === top
+  // [cs] variations
+  csTop = this.cs && self === top
   csFrame = this.cs && self !== top
 
-  // ex variations
-  exTab = this.ex && self === top
+  // [ex] variations by top/frame
+  exTop = this.ex && self === top
   exFrame = this.ex && self !== top
-  exFrameExtPopup = this.exFrame && this.$env.params.type === 'popup'
-  exFrameExtSidePanel = this.exFrame && this.$env.params.type === 'sidePanel'
-  exFrameExtBackground = this.exFrame && this.$env.params.type === 'background'
-  exFrameExt = this.exFrameExtPopup || this.exFrameExtSidePanel || this.exFrameExtBackground
-  exFrameWeb =
-    this.exFrame && !this.exFrameExtPopup && !this.exFrameExtSidePanel && !this.exFrameExtBackground
+  exFrameWeb = this.ex && !this.$env.params.type
+  exFrameExt = this.ex && !!this.$env.params.type
+  exFramePopup = this.ex && this.$env.params.type === 'popup'
+  exFrameSidePanel = this.ex && this.$env.params.type === 'sidePanel'
+  exFrameBackground = this.ex && this.$env.params.type === 'background'
 
-  // vw variations
+  // [vw] variations
   vwPopup = this.vw && this.$env.params.type === 'popup'
   vwSidePanel = this.vw && this.$env.params.type === 'sidePanel'
 }

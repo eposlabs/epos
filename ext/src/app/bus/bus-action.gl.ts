@@ -1,6 +1,5 @@
 export type TabId = number
-export type Frame = WindowProxy
-export type Target = TabId | Frame
+export type Target = TabId | WindowProxy
 
 export class BusAction extends $gl.Unit {
   name: string

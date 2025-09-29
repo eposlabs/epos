@@ -17,7 +17,9 @@ export class Pkg extends $os.Unit {
   update(data: Omit<ExecutionMeta, 'name' | 'popup'>) {
     this.dev = data.dev
     this.hash = data.hash
-    this.frame.src = this.getFrameUrl()
+    if (this.hash !== data.hash) {
+      this.frame.src = this.getFrameUrl()
+    }
   }
 
   removeFrame() {

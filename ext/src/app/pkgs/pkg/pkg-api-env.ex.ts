@@ -1,8 +1,8 @@
 export class PkgApiEnv extends $ex.Unit {
   private $pkg = this.up($ex.Pkg)!
   tabId = this.$pkg.tabId
-  isWeb = !this.$.env.is.exFrameExt
-  isPopup = this.$.env.is.exFrameExtPopup
-  isSidePanel = this.$.env.is.exFrameExtSidePanel
-  isBackground = this.$.env.is.exFrameExtBackground
+  isWeb = this.$.env.is.exFrameWeb
+  isPopup = this.$.env.is.exFramePopup
+  isSidePanel = this.$.env.is.exFrameSidePanel
+  isBackground = this.$.env.is.exFrameBackground
 }

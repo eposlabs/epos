@@ -24,17 +24,16 @@ export class Bus extends $gl.Unit {
   on(name: string, fn: Fn, thisValue?: unknown, target?: Target) {
     if (!fn) return
 
-    // Register proxy action.
-    // - [cs-tab] -> [sw]
-    // - [cs-frame] and [ex] inside tab (top + any iframes) -> [cs-tab]
-    // - [cs-frame] and [ex] inside [vw] / [os] (iframe + any sub-iframes) -> [vw] / [os]
+    // Register proxy action:
+    // - [csTop] -> [sw]
+    // - [csFrame] and [ex] -> [csTop] for tabs, [os] for offscreen and [vw] for popup and side panel
     if (this.$.env.is.cs || this.$.env.is.ex) {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
-        if (this.$.env.is.csTab) {
-          async: this.extBridge.send('bus.registerTabAction', name)
-        } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
-          async: this.pageBridge.sendToTop('bus.registerFrameAction', name)
+        if (this.$.env.is.csTop) {
+          async: this.extBridge.send('bus.registerProxyAction', name)
+        } else {
+          async: this.pageBridge.sendToTop('bus.registerProxyAction', name)
         }
       }
     }
@@ -58,10 +57,10 @@ export class Bus extends $gl.Unit {
     if (this.$.env.is.cs || this.$.env.is.ex) {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
-        if (this.$.env.is.csTab) {
-          async: this.extBridge.send('bus.unregisterTabAction', name)
-        } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
-          async: this.pageBridge.sendToTop('bus.unregisterFrameAction', name)
+        if (this.$.env.is.csTop) {
+          async: this.extBridge.send('bus.unregisterProxyAction', name)
+        } else {
+          async: this.pageBridge.sendToTop('bus.unregisterProxyAction', name)
         }
       }
     }
@@ -69,7 +68,7 @@ export class Bus extends $gl.Unit {
 
   async send<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
     let result: unknown
-    if (this.$.env.is.sw || this.$.env.is.csTab || this.$.env.is.vw || this.$.env.is.os) {
+    if (this.$.env.is.sw || this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {
       result = await this.utils.pick([
         this.extBridge.send(name, ...args),
         this.executeProxyActions(name, ...args),
@@ -78,7 +77,7 @@ export class Bus extends $gl.Unit {
       result = await this.pageBridge.sendToTop(name, ...args)
     }
 
-    if (this.utils.isThrow(result)) {
+    if (this.utils.isThrowObject(result)) {
       const error = new Error(result.message)
       Error.captureStackTrace(error, this.send)
       throw error

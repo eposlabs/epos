@@ -2,11 +2,9 @@ import type { Action, Manifest, Mode } from 'epos-manifest-parser'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
-export type SourceFilter = { modes?: Mode[]; lang?: 'js' | 'css' }
 
 export type Spec = {
   dev: boolean
-  // TODO: why name if manifest.name is the same?
   name: string
   sources: Sources
   manifest: Manifest
@@ -82,16 +80,16 @@ export class Pkg extends $sw.Unit {
   }
 
   getCss(url: string, frame = false) {
-    return this.getCode(url, frame, { modes: ['normal', 'lite'], lang: 'css' })
+    return this.getCode(url, frame, 'css', ['normal', 'lite'])
   }
 
   getLiteJs(url: string, frame = false) {
-    return this.getCode(url, frame, { modes: ['lite'], lang: 'js' })
+    return this.getCode(url, frame, 'js', ['lite'])
   }
 
   getPayload(url: string, frame = false): Payload | null {
-    const js = this.getCode(url, frame, { modes: ['normal', 'shadow'], lang: 'js' })
-    const shadowCss = this.getCode(url, frame, { modes: ['shadow'], lang: 'css' })
+    const js = this.getCode(url, frame, 'js', ['normal', 'shadow'])
+    const shadowCss = this.getCode(url, frame, 'css', ['shadow'])
     if (!js && !shadowCss) return null
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
@@ -135,24 +133,28 @@ export class Pkg extends $sw.Unit {
     }
   }
 
-  private getCode(url: string, frame = false, filter: SourceFilter = {}) {
-    const sourcePaths = this.getSourcePaths(url, frame, filter)
-    if (sourcePaths.length === 0) return null
-    return sourcePaths.map(path => this.getSource(path)).join('\n')
+  private getCode(url: string, frame = false, lang: 'js' | 'css', modes: Mode[]) {
+    const requiredSourcePaths = this.getRequiredSourcePaths(url, frame, { modes, lang })
+    if (requiredSourcePaths.length === 0) return null
+    return requiredSourcePaths.map(path => this.getSourceCode(path)).join('\n')
   }
 
   /** Used to determine if package must be reloaded. */
   async getExecutionHash(url: string, frame = false) {
-    const usedSourcePaths = this.getSourcePaths(url, frame).sort()
+    const requiredSourcePaths = this.getRequiredSourcePaths(url, frame).sort()
     return await this.$.utils.hash({
       dev: this.dev,
       assets: this.manifest.assets,
       targets: this.targets.map(target => ({ mode: target.mode })),
-      snippets: usedSourcePaths.map(path => this.getSource(path)),
+      snippets: requiredSourcePaths.map(path => this.getSourceCode(path)),
     })
   }
 
-  private getSourcePaths(url: string, frame = false, filter: SourceFilter = {}) {
+  private getRequiredSourcePaths(
+    url: string,
+    frame = false,
+    filter: { lang?: 'js' | 'css'; modes?: Mode[] } = {},
+  ) {
     return (
       this.targets
         // Filter targets by URI
@@ -168,7 +170,7 @@ export class Pkg extends $sw.Unit {
     )
   }
 
-  private getSource(path: string) {
+  private getSourceCode(path: string) {
     if (path.endsWith('.js')) return `(async () => {\n${this.sources[path]}\n})();`
     if (path.endsWith('.css')) return this.sources[path]
     throw this.never

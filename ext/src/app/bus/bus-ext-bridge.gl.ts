@@ -15,9 +15,9 @@ export class BusExtBridge extends $gl.Unit {
     super(parent)
 
     if (this.$.env.is.sw) {
-      this.setupServiceWorker()
-    } else if (this.$.env.is.csTab || this.$.env.is.vw || this.$.env.is.os) {
-      this.setupHost()
+      this.setupSw()
+    } else if (this.$.env.is.csTop || this.$.env.is.vw || this.$.env.is.os) {
+      this.setupCsTopVwOs()
     }
   }
 
@@ -32,7 +32,7 @@ export class BusExtBridge extends $gl.Unit {
     return await this.$bus.serializer.deserialize(result)
   }
 
-  async sendToTab(tabId: number, name: string, ...args: unknown[]) {
+  private async sendToTab(tabId: number, name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
     const [result, error] = await this.$.utils.safe(() => this.$.browser.tabs.sendMessage(tabId, req))
     if (error && this.isIgnoredError(error)) return null
@@ -43,19 +43,22 @@ export class BusExtBridge extends $gl.Unit {
     return await this.$bus.serializer.deserialize(result)
   }
 
-  private setupServiceWorker() {
+  private setupSw() {
+    // Remove proxy actions for closed tabs
     this.$.browser.tabs.onRemoved.addListener(tabId => {
       this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
     })
 
+    // Listen for runtime messages from [csTop], [os] and [vw]
     this.$.browser.runtime.onMessage.addListener((req, sender, respond) => {
       if (!this.isRequest(req)) return
 
-      // For messages from os / vw tab.id is undefined, for tabs it is a number
+      // For messages from [csTop], `tabId` is a number.
+      // For messages from [os] / [vw], `tabId` is undefined.
       const tabId = sender.tab?.id
 
-      // Register tab proxy for messages from [cs-tab]
-      if (req.name === 'bus.registerTabAction') {
+      // Register proxy action for [csTop]
+      if (req.name === 'bus.registerProxyAction') {
         async: (async () => {
           if (!this.$.is.number(tabId)) throw this.never
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -68,8 +71,8 @@ export class BusExtBridge extends $gl.Unit {
         return
       }
 
-      // Unregister tab proxy for messages from [cs-tab]
-      if (req.name === 'bus.unregisterTabAction') {
+      // Unregister proxy action for [csTop]
+      if (req.name === 'bus.unregisterProxyAction') {
         async: (async () => {
           if (!this.$.is.number(tabId)) throw this.never
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -81,14 +84,14 @@ export class BusExtBridge extends $gl.Unit {
         return
       }
 
-      // Unregister all tab proxies for [cs-tab]
-      if (req.name === 'bus.unregisterAllTabActions') {
+      // Clear proxy actions for specified tab
+      if (req.name === 'bus.clearTabProxyActions') {
         if (!this.$.is.number(tabId)) throw this.never
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
 
-      // From [os]
+      // Special method for blobs support, see bus-serializer for details
       if (req.name === 'bus.blobIdToObjectUrl') {
         async: (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -102,15 +105,15 @@ export class BusExtBridge extends $gl.Unit {
         return true
       }
 
-      // tabId is present only for messages from [cs-tab], exclude proxy action for this tab
+      // `tabId` is present only for messages from [csTop], exclude proxy action for this tab
       const actions = this.$bus.actions.filter(
         action => action.name === req.name && (!tabId || action.target !== tabId),
       )
 
-      // No actions? -> Ignore
+      // No actions? -> Ignore message
       if (actions.length === 0) return
 
-      // Call all matching actions
+      // Execute actions and respond with the result
       async: (async () => {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
         if (!this.$.is.array(args)) throw this.never
@@ -123,13 +126,14 @@ export class BusExtBridge extends $gl.Unit {
     })
   }
 
-  private setupHost() {
-    // Unregister all proxy actions left from previous tab's content script.
-    // This happens on tab refresh or navigation.
-    if (this.$.env.is.csTab) {
-      async: this.send('bus.unregisterAllTabActions')
+  private setupCsTopVwOs() {
+    // Remove all proxy actions left from the previous [csTop].
+    // This happens on tab refresh or page navigation.
+    if (this.$.env.is.csTop) {
+      async: this.send('bus.clearTabProxyActions')
     }
 
+    // Listen for runtime messages from other peers
     this.$.browser.runtime.onMessage.addListener((req, _, respond) => {
       if (!this.isRequest(req)) return
 

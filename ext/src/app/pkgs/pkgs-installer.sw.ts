@@ -15,6 +15,7 @@ export class PkgsInstaller extends $sw.Unit {
   }
 
   async install(input: string | Pack, dev = false) {
+    console.warn('install', input)
     if (this.$.is.object(input)) {
       await this.installFromPack(input)
     } else if (URL.canParse(input)) {

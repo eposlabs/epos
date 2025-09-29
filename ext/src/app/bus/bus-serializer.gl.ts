@@ -29,11 +29,19 @@ export class BusSerializer extends $gl.Unit {
   constructor(parent: $gl.Unit) {
     super(parent)
 
-    if (this.$.env.is.sw || this.$.env.is.os) {
+    if (this.$.env.is.sw) {
       this.channel = new BroadcastChannel('bus')
-      if (this.$.env.is.os) this.setupOffscreen()
+    }
+
+    if (this.$.env.is.os) {
+      this.channel = new BroadcastChannel('bus')
+      this.setupChannelListener()
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // SANITIZE
+  // ---------------------------------------------------------------------------
 
   sanitize(data: unknown) {
     const { $ } = this
@@ -64,10 +72,13 @@ export class BusSerializer extends $gl.Unit {
     return this.populate(JSON.parse(json), storage)
   }
 
+  // ---------------------------------------------------------------------------
+  // SERIALIZE
+  // ---------------------------------------------------------------------------
+
   serialize(data: unknown) {
     const { $, $bus, blobs } = this
 
-    // Serialize data
     return JSON.stringify(data, function (key: string) {
       const value = this[key]
 
@@ -118,11 +129,14 @@ export class BusSerializer extends $gl.Unit {
     })
   }
 
+  // ---------------------------------------------------------------------------
+  // DESERIALIZE
+  // ---------------------------------------------------------------------------
+
   async deserialize(json: string) {
     const storage: Storage = new Map()
     const promises: (Promise<void> | null)[] = []
 
-    // Deserialize data
     const data = JSON.parse(json, (_, value: unknown) => {
       // Regular value? -> Use as is
       if (!this.isRef(value)) return value
@@ -195,6 +209,10 @@ export class BusSerializer extends $gl.Unit {
     return this.populate(data, storage)
   }
 
+  // ---------------------------------------------------------------------------
+  // MISC
+  // ---------------------------------------------------------------------------
+
   async blobIdToObjectUrl(blobId: string) {
     const channel = this.channel
     if (!channel) throw this.never
@@ -251,7 +269,7 @@ export class BusSerializer extends $gl.Unit {
     return data
   }
 
-  private setupOffscreen() {
+  private setupChannelListener() {
     const channel = this.channel
     if (!channel) throw this.never
 

@@ -2,10 +2,10 @@ import type { Payload } from '../pkgs/pkg/pkg.sw'
 
 export class BootInjector extends $ex.Unit {
   async inject() {
-    // For [exTab]:
+    // For [exTop]:
     // - [cs] already injected globals + <epos/>
     // - [sw] already injected ex.js + pkgs
-    if (this.$.env.is.exTab) {
+    if (this.$.env.is.exTop) {
       await this.executePkgs()
       return
     }
@@ -94,16 +94,18 @@ export class BootInjector extends $ex.Unit {
   }
 
   private getTabId() {
-    if (this.$.env.is.exTab) {
+    if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
       if (!this.$.is.number(tabId)) throw this.never
       return tabId
     }
 
     if (this.$.env.is.exFrame) {
-      if (this.$.env.is.exFrameExtBackground) return null
-      if (this.$.env.is.exFrameExt) return Number(this.$.env.params.tabId)
-      if (this.$.env.is.exFrameWeb) return null // throw new Error('Not implemented')
+      return this.$.env.params.tabId ? Number(this.$.env.params.tabId) : null
+      // if (this.$.env.is.exFrameBackground) return null
+      // if (this.$.env.is.exFramePopup || this.$.env.is.exFrameSidePanel) return Number(this.$.env.params.tabId)
+      // // TODO: take proper tabId
+      // if (this.$.env.is.exFrameWeb) return null // throw new Error('Not implemented')
     }
 
     throw this.never
