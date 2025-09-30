@@ -12,16 +12,12 @@
   },
   "exports": {
     ".": {
+      "source": "./src/utils.ts",
       "import": "./dist/utils.js"
     },
     "./globals": {
+      "source": "./src/globals.ts",
       "import": "./dist/globals.js"
-    },
-    "./ts": {
-      "import": "./src/utils.ts"
-    },
-    "./globals/ts": {
-      "import": "./src/globals.ts"
     }
   },
   "files": [

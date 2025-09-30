@@ -1,4 +1,4 @@
-import { Unit } from 'epos-unit/ts'
+import { Unit } from 'epos-unit'
 
 import type { LearnApp as LearnAppBg } from '../app/learn-app.bg'
 import type { LearnApp as LearnAppFg } from '../app/learn-app.fg'

@@ -1,4 +1,4 @@
-import { is, QueueMap, safe, safeSync } from '@eposlabs/utils/ts'
+import { is, QueueMap, safe, safeSync } from '@eposlabs/utils'
 
 export class Utils extends $gl.Unit {
   declare is: typeof is

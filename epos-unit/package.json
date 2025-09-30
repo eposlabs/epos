@@ -13,10 +13,8 @@
   },
   "exports": {
     ".": {
+      "source": "./src/epos-unit.ts",
       "import": "./dist/epos-unit.js"
-    },
-    "./ts": {
-      "import": "./src/epos-unit.ts"
     }
   },
   "files": [

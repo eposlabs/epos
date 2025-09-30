@@ -20,10 +20,8 @@
   },
   "exports": {
     ".": {
+      "source": "./src/paralayer.ts",
       "import": "./dist/paralayer.js"
-    },
-    "./ts": {
-      "import": "./src/paralayer.ts"
     }
   },
   "files": [

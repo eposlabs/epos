@@ -1,5 +1,5 @@
 /// <reference types="rolldown-vite/client" />
-import '@eposlabs/utils/globals/ts'
+import '@eposlabs/utils/globals'
 import type { CsReadyData } from '../app/app.cs'
 
 type PkgDef = {

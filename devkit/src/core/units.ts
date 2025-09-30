@@ -1,4 +1,4 @@
-import { Unit } from 'epos-unit/ts'
+import { Unit } from 'epos-unit'
 import type { App as AppGl } from '../app/app'
 
 class UnitGl extends Unit<AppGl> {

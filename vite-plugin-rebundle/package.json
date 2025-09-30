@@ -16,10 +16,8 @@
   },
   "exports": {
     ".": {
+      "source": "./src/rebundle.ts",
       "import": "./dist/rebundle.js"
-    },
-    "./ts": {
-      "import": "./src/rebundle.ts"
     }
   },
   "files": [

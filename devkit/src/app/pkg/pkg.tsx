@@ -1,7 +1,6 @@
 // TODO: handle when adding pkg with the same name
 import type { Pack } from '@ext/app/pkgs/pkgs-installer.sw'
-import type { Manifest } from 'epos-spec-parser'
-import { parseEposSpec } from 'epos-spec-parser'
+import { parseEposSpec, type Manifest } from 'epos-spec-parser'
 
 export class Pkg extends $gl.Unit {
   id = this.$.utils.id()
