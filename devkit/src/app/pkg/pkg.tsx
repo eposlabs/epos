@@ -1,7 +1,7 @@
 // TODO: handle when adding pkg with the same name
 import type { Pack } from '@ext/app/pkgs/pkgs-installer.sw'
-import type { Manifest } from 'epos-manifest-parser'
-import { parseEposManifest } from 'epos-manifest-parser'
+import type { Manifest } from 'epos-spec-parser'
+import { parseEposSpec } from 'epos-spec-parser'
 
 export class Pkg extends $gl.Unit {
   id = this.$.utils.id()
@@ -240,7 +240,7 @@ export class Pkg extends $gl.Unit {
     const [json, jsonError] = await this.$.utils.safe(() => file.text())
     if (jsonError) throw new Error(`Failed to read epos.json content: ${jsonError.message}`)
 
-    const [manifest, manifestError] = this.$.utils.safeSync(() => parseEposManifest(json))
+    const [manifest, manifestError] = this.$.utils.safeSync(() => parseEposSpec(json))
     if (manifestError) throw new Error(`Failed to parse epos.json: ${manifestError.message}`)
 
     return manifest

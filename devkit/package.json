@@ -9,7 +9,7 @@
   "dependencies": {
     "@eposlabs/utils": "^1.2.2",
     "epos": "^1.8.5",
-    "epos-manifest-parser": "^1.1.0",
+    "epos-spec-parser": "*",
     "epos-unit": "^1.1.5"
   },
   "devDependencies": {

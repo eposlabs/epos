@@ -1,5 +1,5 @@
-import { parseEposManifest } from 'epos-manifest-parser'
 import { createLog } from '@eposlabs/utils'
+import { parseEposSpec } from 'epos-spec-parser'
 import Zip from 'jszip'
 import * as mobx from 'mobx'
 import stripJsonComments from 'strip-json-comments'
@@ -10,7 +10,7 @@ mobx.configure({ enforceActions: 'never' })
 export class Libs extends $sw.Unit {
   createLog = createLog
   mobx = mobx
-  parseEposManifest = parseEposManifest
+  parseEposSpec = parseEposSpec
   stripJsonComments = stripJsonComments
   yjs = yjs
   Zip = Zip

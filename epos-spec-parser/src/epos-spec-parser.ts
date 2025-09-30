@@ -34,7 +34,7 @@ const config = {
   },
 }
 
-export function parseEposManifest(json: string): Manifest {
+export function parseEposSpec(json: string): Manifest {
   json = stripJsonComments(json)
   const [manifest, error] = safeSync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
@@ -52,7 +52,7 @@ export function parseEposManifest(json: string): Manifest {
     popup: parsePopup(manifest),
     assets: parseAssets(manifest),
     targets: parseTargets(manifest),
-    manifest: parseExtensionManifest(manifest),
+    manifest: parseManifest(manifest),
   }
 }
 
@@ -211,7 +211,7 @@ function parsePaths(paths: string[]) {
   return paths
 }
 
-function parseExtensionManifest(manifest: Obj) {
+function parseManifest(manifest: Obj) {
   if (!('manifest' in manifest)) return null
   if (!is.object(manifest.manifest)) throw new Error(`'manifest' must be an object`)
   return manifest.manifest
@@ -265,4 +265,4 @@ function normalizePath(path: string) {
     .join('/')
 }
 
-export default parseEposManifest
+export default parseEposSpec

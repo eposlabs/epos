@@ -66,7 +66,7 @@ export class PkgsInstaller extends $sw.Unit {
     if (!json) throw new Error(`Failed to read ${url}`)
 
     // Parse manifest
-    const manifest = this.$.libs.parseEposManifest(json)
+    const manifest = this.$.libs.parseEposSpec(json)
 
     // Fetch assets
     const assets: Record<string, Blob> = {}

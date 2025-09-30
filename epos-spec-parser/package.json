@@ -1,6 +1,5 @@
 {
-  "name": "epos-manifest-parser",
-  "version": "1.1.0",
+  "name": "epos-spec-parser",
   "type": "module",
   "private": true,
   "scripts": {
@@ -8,7 +7,7 @@
   },
   "exports": {
     ".": {
-      "import": "./src/epos-manifest-parser.ts"
+      "source": "./src/epos-spec-parser.ts"
     }
   },
   "files": [

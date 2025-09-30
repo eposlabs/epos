@@ -28,6 +28,16 @@ export default defineConfig(async ({ mode }) => {
   })
 
   return {
+    resolve: {
+      conditions: ['source'],
+    },
+
+    define: {
+      'import.meta.env.DEV': json(mode === 'development'),
+      'import.meta.env.PROD': json(mode !== 'development'),
+      'process.env.NODE_ENV': 'process.env.NODE_ENV',
+    },
+
     plugins: [
       tailwindcss(),
       preact({ reactAliasesEnabled: false }),
@@ -44,12 +54,6 @@ export default defineConfig(async ({ mode }) => {
         'vw': bundle('vw'),
       }),
     ],
-
-    define: {
-      'import.meta.env.DEV': json(mode === 'development'),
-      'import.meta.env.PROD': json(mode !== 'development'),
-      'process.env.NODE_ENV': 'process.env.NODE_ENV',
-    },
 
     build: {
       watch: mode === 'production' ? null : {},
