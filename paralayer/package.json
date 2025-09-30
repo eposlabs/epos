@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsup src --format esm --dts --clean --no-splitting",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-patch} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "bin": {
     "paralayer": "./dist/bin.js",
