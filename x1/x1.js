@@ -1,8 +1,10 @@
 /// <reference types="epos" />
 
-console.warn('!')
-const state = await epos.state.connect(() => ({ title: 'abc' }))
-console.warn('x1', state.title)
+console.log('X1512323')
+
+// console.warn('!')
+// const state = await epos.state.connect(() => ({ title: 'abc' }))
+// console.warn('x1', state.title)
 
 // await epos.browser.declarativeNetRequest.updateDynamicRules({
 //   removeRuleIds: [3],

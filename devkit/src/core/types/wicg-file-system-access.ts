@@ -1,7 +1,7 @@
-// Patched version of https://www.npmjs.com/package/@types/wicg-file-system-access with minor type error fix.
-// See <patched>...</patched> comment below.
-
-export {}
+/**
+ * This is a patched version of https://www.npmjs.com/package/@types/wicg-file-system-access.
+ * Contains a minor type fix, see <patched>...</patched> comment below.
+ */
 
 declare global {
   interface FileSystemHandle {
@@ -257,3 +257,5 @@ declare global {
     writable?: boolean | undefined
   }
 }
+
+export {}

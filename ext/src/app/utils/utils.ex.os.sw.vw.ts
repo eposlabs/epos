@@ -1,4 +1,4 @@
-import { ensureArray, is, Queue, QueueMap, safe, unique, wait } from '@eposlabs/utils/ts'
+import { ensureArray, is, Queue, QueueMap, safe, safeSync, unique, wait } from '@eposlabs/utils/ts'
 import { convertImage } from './utils-convert-image'
 import { cx } from './utils-cx'
 import { equal } from './utils-equal'
@@ -33,6 +33,7 @@ export class Utils extends $exOsSwVw.Unit {
   Queue = Queue
   QueueMap = QueueMap
   safe = safe
+  safeSync = safeSync
   set = set
   time = time
   toPascalCase = toPascalCase

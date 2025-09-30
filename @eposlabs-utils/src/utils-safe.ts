@@ -12,7 +12,7 @@ export async function safe<T>(
   }
 }
 
-safe.sync = <T>(effect: () => T): [T, null] | [null, Error] => {
+export function safeSync<T>(effect: () => T): [T, null] | [null, Error] {
   try {
     const result = effect()
     return [result, null]

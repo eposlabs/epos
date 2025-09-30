@@ -4,9 +4,7 @@ A Vite plugin that guarantees **one standalone file per entry point**. Each entr
 
 ## Why?
 
-Sometimes you need bundles without dynamic imports. Vite/Rollup don’t provide this option when building with multiple entries. This plugin solves it by rebundling Vite’s output with rolldown to enforce single-file output.
-
-> ⚠️ This plugin runs **only during** `vite build`. It does not affect the Vite dev server.
+Sometimes you need bundles without dynamic imports. Vite/Rollup don’t provide this option when building with multiple entries. `vite-plugin-rebundle` solves this issue by rebundling Vite’s output with rolldown to enforce single-file output. This plugin runs only during `vite build`, and it does not affect the Vite dev server.
 
 ## Installation
 
@@ -18,7 +16,7 @@ npm install -D vite-plugin-rebundle
 
 ```javascript
 import { defineConfig } from 'vite'
-import rebundle from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig({
   plugins: [rebundle()],
@@ -38,18 +36,24 @@ export default defineConfig({
 
 ## Options
 
-You can provide **rolldown options per entry point**. This is useful, for example, to inject custom define variables into specific bundles:
+You can provide rolldown options per entry point. This is useful, for example, to inject custom define variables into specific bundles:
 
 ```javascript
 export default defineConfig({
   plugins: [
     rebundle({
       app: {
-        output: { define: { BUNDLE_NAME: JSON.stringify('app') } },
+        output: {
+          define: { BUNDLE_NAME: JSON.stringify('app') },
+        },
       },
       libs: {
-        input: { keepNames: true },
-        output: { define: { BUNDLE_NAME: JSON.stringify('libs') } },
+        input: {
+          keepNames: true,
+        },
+        output: {
+          define: { BUNDLE_NAME: JSON.stringify('libs') },
+        },
       },
     }),
   ],
@@ -75,11 +79,4 @@ When you run `vite build`, Rollup normally outputs multiple chunks per entry if 
 - Vite still handles the initial build (tree-shaking, asset pipeline, etc.).
 - Afterward, each entry is passed through rolldown.
 - The final result is one .js file per entry with no dynamic imports or shared chunks.
-- If sourcemaps are enabled, they are preserved — the rebundled files include correct mappings.
-
-## Limitations
-
-- **Build only** — this plugin affects only vite build, not the dev server.
-- **Bundle size** — since all shared chunks are inlined, resulting files can be larger than Rollup’s default output.
-- **Dynamic imports** — intentionally disabled; any import() calls are bundled inline.
-- **Code-splitting features** — manual chunks and vendor splitting are ignored.
+- Sourcemaps are ignored, as they would be inaccurate after rebundling.

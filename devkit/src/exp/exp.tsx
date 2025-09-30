@@ -1,5 +1,6 @@
 import 'epos'
-import './exp.css'
+
+console.warn(2)
 
 class Exp {
   count = 123

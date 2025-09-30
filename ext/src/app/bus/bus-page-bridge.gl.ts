@@ -54,7 +54,8 @@ export class BusPageBridge extends $gl.Unit {
       const req = e.data
       if (!this.isRequest(req)) return
       if (this.$bus.id == req.busId) return
-      const source = e.source as WindowProxy
+      const source = e.source as WindowProxy | null
+      if (!source) return
 
       // Register proxy action for [csFrame] and [ex]
       if (req.name === 'bus.registerProxyAction') {
@@ -80,8 +81,9 @@ export class BusPageBridge extends $gl.Unit {
         return
       }
 
-      if (req.name === 'bus.actualizeActions') {
-        this.actualizeActions()
+      // Remove all proxy actions whose targets no longer exist
+      if (req.name === 'bus.cleanupProxyActions') {
+        this.cleanupProxyActions()
         return
       }
 
@@ -93,7 +95,7 @@ export class BusPageBridge extends $gl.Unit {
       ])
 
       const res = this.createResponse(req.id, result)
-      source.postMessage(res, { targetOrigin: '*' })
+      source.postMessage(res, '*')
     })
   }
 
@@ -167,9 +169,9 @@ export class BusPageBridge extends $gl.Unit {
           const containsIframe = node instanceof HTMLIFrameElement || !!node.querySelector('iframe')
           if (!containsIframe) continue
           if (this.$.env.is.csFrame) {
-            this.sendToTop('bus.actualizeActions')
+            this.sendToTop('bus.cleanupProxyActions')
           } else {
-            this.actualizeActions()
+            this.cleanupProxyActions()
           }
         }
       }
@@ -182,7 +184,7 @@ export class BusPageBridge extends $gl.Unit {
   }
 
   /** Remove all proxy actions whose targets no longer exist. */
-  private actualizeActions() {
+  private cleanupProxyActions() {
     const existingTargets = new Set<WindowProxy>([self, ...this.getPageFrames()])
 
     this.$bus.actions = this.$bus.actions.filter(action => {

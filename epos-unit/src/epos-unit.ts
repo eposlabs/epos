@@ -9,11 +9,11 @@ export type Descriptors = Record<string | symbol, PropertyDescriptor>
 
 export class Unit<TRoot = unknown> {
   declare '@': string
-  declare log: Log
+  declare log: Log;
+  declare [':version']?: number
   declare private [_root_]: TRoot
   declare private [_parent_]: Unit<TRoot> | null // Parent reference for not-yet-attached units
-  declare private [_disposers_]: Set<() => void>;
-  [key: PropertyKey]: unknown
+  declare private [_disposers_]: Set<() => void>
 
   constructor(parent: Unit<TRoot> | null) {
     // Define parent for not-yet-attached units
@@ -25,6 +25,7 @@ export class Unit<TRoot = unknown> {
   // ---------------------------------------------------------------------------
 
   [epos.state.symbols.modelInit]() {
+    const _this = this as any
     const Unit = this.constructor
     const descriptors: Descriptors = Object.getOwnPropertyDescriptors(Unit.prototype)
     const keys = Reflect.ownKeys(descriptors)
@@ -39,7 +40,7 @@ export class Unit<TRoot = unknown> {
       const descriptor = descriptors[key]
       if (descriptor.get || descriptor.set) continue
       if (typeof descriptor.value !== 'function') continue
-      this[key] = descriptor.value.bind(this)
+      _this[key] = descriptor.value.bind(this)
     }
 
     // Wrap UI methods to components
@@ -48,9 +49,9 @@ export class Unit<TRoot = unknown> {
       if (!key.startsWith('ui')) continue
       const descriptor = descriptors[key]
       if (descriptor.get || descriptor.set) continue
-      if (typeof this[key] !== 'function') continue
+      if (typeof _this[key] !== 'function') continue
       const componentName = [this['@'], key.replace('ui', '')].filter(Boolean).join('-')
-      this[key] = epos.component(componentName, this[key] as FC)
+      _this[key] = epos.component(componentName, _this[key] as FC)
     }
 
     // Define log method
@@ -58,7 +59,7 @@ export class Unit<TRoot = unknown> {
     Reflect.defineProperty(this, 'log', { get: () => log })
 
     // Call init method
-    if (typeof this.init === 'function') this.init()
+    if (typeof _this.init === 'function') _this.init()
   }
 
   // ---------------------------------------------------------------------------
@@ -66,12 +67,14 @@ export class Unit<TRoot = unknown> {
   // ---------------------------------------------------------------------------
 
   [epos.state.symbols.modelCleanup]() {
+    const _this = this as any
+
     // Call disposers
     this[_disposers_].forEach(disposer => disposer())
     this[_disposers_].clear()
 
     // Call cleanup method
-    if (typeof this.cleanup === 'function') this.cleanup()
+    if (typeof _this.cleanup === 'function') _this.cleanup()
   }
 
   // ---------------------------------------------------------------------------

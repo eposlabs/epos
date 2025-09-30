@@ -13,15 +13,13 @@
     "./template/src/gl.css"
   ],
   "targets": [
-    // Main
     {
       "matches": ["<hub>"],
-      "load": ["./dist/gl.js", "./dist/gl.css"]
+      "load": ["./dist/gl.js", "./dist/tw.css"]
     },
-    // Learn
     {
       "matches": ["https://epos.dev/@learn"],
-      "load": ["./dist/fg.js", "./dist/fg.css"]
+      "load": ["./dist/fg.js", "./dist/tw.css"]
     },
     {
       "matches": ["<background>"],

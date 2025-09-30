@@ -1,7 +1,6 @@
 import './core/globals'
 import './core/units'
 import './layers/index.gl'
-import './gl.css'
 
 await epos.assets.load('public/icon.png')
 epos.state.registerModels({ ...$gl })

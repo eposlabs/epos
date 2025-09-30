@@ -34,11 +34,11 @@ export default defineConfig(async ({ mode }) => {
 
     build: {
       watch: mode === 'production' ? null : {},
-      sourcemap: mode === 'development',
       minify: false,
       rolldownOptions: {
         input: {
           gl: './src/gl.tsx',
+          tw: './src/tw.css',
           fg: './src/learn/fg.tsx',
           bg: './src/learn/bg.ts',
           exp: './src/exp/exp.tsx',

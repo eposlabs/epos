@@ -3,29 +3,34 @@
   "name": "x1",
   "title": "X1 Test Package",
   "action": "<hub>",
-  "popup": { "width": 500, "height": 600 },
+  "popup": { "width": 500, "height": 500 },
+  "assets": ["x1.css"],
   "targets": [
     {
-      "matches": ["<hub>", "https://x.com"],
-      "load": ["./x1-hub.js"]
-    },
-    {
-      "matches": ["frame:https://epos.dev/@x1-frame"],
-      "load": ["./x1-frame.js", "./x1-frame.css"]
-      // "mode": "lite"
-    },
-    {
-      "matches": ["frame:https://epos.dev/@x1-frame-2"],
-      "load": "./x1-frame-2.js"
-      // "mode": "lite"
-    },
-    {
-      "matches": ["<background>"],
-      "load": "./x1-bg.js"
-    },
-    {
-      "matches": ["<popup>", "<sidePanel>"],
-      "load": "./x1-popup.js"
+      "matches": "<hub>",
+      "load": ["x1.js", "x1-hub.js"]
     }
+    // {
+    //   "matches": ["<hub>", "https://x.com"],
+    //   "load": ["./x1-hub.js"]
+    // },
+    // {
+    //   "matches": ["frame:https://epos.dev/@x1-frame"],
+    //   "load": ["./x1-frame.js", "./x1-frame.css"]
+    //   // "mode": "lite"
+    // },
+    // {
+    //   "matches": ["frame:https://epos.dev/@x1-frame-2"],
+    //   "load": "./x1-frame-2.js"
+    //   // "mode": "lite"
+    // },
+    // {
+    //   "matches": ["<background>"],
+    //   "load": "./x1-bg.js"
+    // },
+    // {
+    //   "matches": ["<popup>", "<sidePanel>"],
+    //   "load": "./x1-popup.js"
+    // }
   ]
 }

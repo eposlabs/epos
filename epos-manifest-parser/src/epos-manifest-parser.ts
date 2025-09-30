@@ -1,4 +1,4 @@
-import { ensureArray, is, safe, unique, type Obj } from '@eposlabs/utils'
+import { ensureArray, is, safeSync, unique, type Obj } from '@eposlabs/utils'
 import stripJsonComments from 'strip-json-comments'
 
 export type Action = null | true | string
@@ -36,7 +36,7 @@ const config = {
 
 export function parseEposManifest(json: string): Manifest {
   json = stripJsonComments(json)
-  const [manifest, error] = safe.sync(() => JSON.parse(json))
+  const [manifest, error] = safeSync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
   if (!is.object(manifest)) throw new Error(`Manifest must be an object`)
 
@@ -234,7 +234,7 @@ function isValidUrl(value: unknown) {
 function isValidUrlPattern(value: unknown) {
   if (!is.string(value)) return false
   const pattern = replaceHubPrefix(value)
-  const [result] = safe.sync(() => new URLPattern(pattern))
+  const [result] = safeSync(() => new URLPattern(pattern))
   return !!result
 }
 

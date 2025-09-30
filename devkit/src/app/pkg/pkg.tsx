@@ -1,51 +1,64 @@
 // TODO: handle when adding pkg with the same name
-import { parseEposManifest } from 'epos-manifest-parser'
+import type { Pack } from '@ext/app/pkgs/pkgs-installer.sw'
 import type { Manifest } from 'epos-manifest-parser'
-
-const engine = (epos as any).engine
+import { parseEposManifest } from 'epos-manifest-parser'
 
 export class Pkg extends $gl.Unit {
-  id = crypto.randomUUID()
-  status: null | 'prompt' | 'denied' | 'granted' = null
+  id = this.$.utils.id()
+  handleId: string
   name: string | null = null
-  error: string | null = null
   manifest: Manifest | null = null
-  time: string | null = null
+  lastUpdatedAt: number | null = null
+
+  declare private initialized: boolean
+  declare private handle: FileSystemDirectoryHandle | null
+  declare private fileObservers: Set<FileSystemObserver>
+  declare private globalObserver: FileSystemObserver | null
   declare private timeout: number | undefined
-  declare private handle: FileSystemDirectoryHandle
-  declare private globalObserver: any
-  declare private fileObservers: Set<any>
+  declare private engine: any
+  declare private state: { error: string | null }
+  declare private pack: Pack | null
 
-  static async create(parent: $gl.Unit) {
-    const $ = parent.$
-    const [handle, error] = await $.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
-    if (error) return null
-
-    const pkg = new Pkg(parent)
-    await $.idb.set('pkg', 'handles', pkg.id, handle)
-
-    return pkg
+  constructor(parent: $gl.Unit, handleId: string) {
+    super(parent)
+    console.warn(6)
+    this.handleId = handleId
   }
 
   async init() {
-    // Handle was removed from IDB? -> Remove package
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('pkg', 'handles', this.id)
+    this.initialized = false
+    this.handle = null
+    this.fileObservers = new Set()
+    this.globalObserver = null
+    this.timeout = undefined
+    this.engine = (epos as any).engine
+    this.state = epos.state.local({ error: null })
+
+    // Pkg's handle was removed from IDB? -> Remove pkg itself
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', this.handleId)
     if (!handle) {
-      console.error('handle not found for', this.name)
-      // this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
+      this.remove()
+      return
+    }
+
+    // Check handle permission
+    // TODO: better handle different browser settings
+    const status = await handle.queryPermission({ mode: 'read' })
+    if (status !== 'granted') {
+      this.state.error = 'Enable file access in the browser'
       return
     }
 
     this.handle = handle
-    this.globalObserver = null
-    this.fileObservers = new Set()
-    this.status = await this.handle.queryPermission({ mode: 'read' })
-    this.setupGlobalObserver()
-    this.restartFileObservers()
+    this.engine = (epos as any).engine
+    this.globalObserver = this.createGlobalObserver()
+    this.start()
+    this.initialized = true
   }
 
   cleanup() {
-    this.stopFileObservers()
+    if (!this.initialized) return
+    this.stop()
     if (this.globalObserver) {
       this.globalObserver.disconnect()
       this.globalObserver = null
@@ -53,95 +66,164 @@ export class Pkg extends $gl.Unit {
   }
 
   async remove() {
-    await engine.bus.send('pkgs.remove', this.name)
+    await this.engine.bus.send('pkgs.remove', this.name)
     this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
   }
 
-  private setupGlobalObserver() {
-    this.globalObserver = new FileSystemObserver(async (records: any[]) => {
-      // this.log(`[global] ${record.type}`, path)
-      this.restartFileObservers()
-      return
+  // ---------------------------------------------------------------------------
+  // WATCHER
+  // ---------------------------------------------------------------------------
 
-      if (this.error) {
-        this.restartFileObservers()
-        return
-      }
+  private async start() {
+    this.state.error = null
 
-      for (const record of records) {
-        const path = record.relativePathComponents.join('/')
-        if (path === 'epos.json') {
-          this.restartFileObservers()
-          break
-        }
-      }
-    })
-
-    this.globalObserver.observe(this.handle, { recursive: true })
-  }
-
-  private async restartFileObservers() {
-    this.stopFileObservers()
-
+    // Read epos.json manifest
     const [manifest, manifestError] = await this.$.utils.safe(() => this.readManifest())
     if (manifestError) {
-      this.error = manifestError.message
+      this.state.error = manifestError.message
       return
     }
 
-    this.manifest = manifest
-    if (this.name !== manifest.name) await engine.bus.send('pkgs.remove', this.name)
-    this.name = manifest.name ?? null
-
-    const paths = this.getUsedManifestPaths()
-    for (const path of paths) {
-      const [observer, error] = await this.$.utils.safe(() => this.setupFileObserver(path))
-      if (error) {
-        this.error = error.message
-        this.stopFileObservers()
-        return
-      }
-      this.fileObservers.add(observer)
+    // Name has been changed? -> Uninstall pkg from epos
+    if (this.name !== manifest.name) {
+      await this.engine.bus.send('pkgs.remove', this.name)
     }
 
-    this.error = null
-    this.install()
+    // Update manifest and name
+    this.manifest = manifest
+    this.name = manifest.name ?? null
+
+    // Create file observers for all used paths
+    const paths = this.getUsedFilePathsFromManifest()
+    for (const path of paths) {
+      const [observer, error] = await this.$.utils.safe(() => this.createFileObserver(path))
+      if (observer) {
+        this.fileObservers.add(observer)
+      } else {
+        this.stop()
+        this.state.error = error.message
+      }
+    }
+
+    // Update pkg
+    this.update()
   }
 
-  private stopFileObservers() {
-    for (const observer of this.fileObservers) observer.disconnect()
+  private stop() {
+    for (const fileObserver of this.fileObservers) fileObserver.disconnect()
     this.fileObservers.clear()
   }
 
-  private async setupFileObserver(path: string) {
-    const [handle, error] = await this.$.utils.safe(() => this.getFileHandleByPath(path))
-    if (error) throw new Error(`File not found: ${path}`)
+  private async restart() {
+    this.stop()
+    await this.start()
+  }
 
-    const observer = new FileSystemObserver(async (records: any[]) => {
+  private createGlobalObserver() {
+    if (!this.handle) throw this.never()
+
+    const globalObserver = new FileSystemObserver(records => {
       for (const record of records) {
-        if (path === 'epos.json') continue
+        if (record.type === 'modified') {
+          this.log(record.type, record.relativePathComponents.join('/'))
+        }
+      }
 
+      const manifestChanged = records.some(record => record.relativePathComponents.join('/') === 'epos.json')
+      if (this.state.error || manifestChanged) {
+        async: this.restart()
+        return
+      }
+    })
+
+    globalObserver.observe(this.handle, { recursive: true })
+    return globalObserver
+  }
+
+  private async createFileObserver(path: string) {
+    const [fileHandle] = await this.$.utils.safe(() => this.getFileHandleByPath(path))
+    if (!fileHandle) throw new Error(`File not found: ${path}`)
+
+    // TODO: check if content was modified
+
+    const fileObserver = new FileSystemObserver(async records => {
+      for (const record of records) {
+        // File was removed? -> Stop and show error
         if (record.type === 'disappeared') {
-          this.stopFileObservers()
-          this.error = `File was deleted: ${path}`
+          this.stop()
+          this.state.error = `File not found: ${path}`
           break
         }
 
-        this.install()
+        // File was modified? -> Update pkg
+        this.log('modified', path)
+        this.update()
       }
     })
-    observer.observe(handle)
-    return observer
+
+    fileObserver.observe(fileHandle)
+    return fileObserver
   }
 
-  private async readFile(path: string) {
+  // ---------------------------------------------------------------------------
+  // UPDATE / EXPORT
+  // ---------------------------------------------------------------------------
+
+  private async update() {
+    this.lastUpdatedAt = Date.now()
+
+    self.clearTimeout(this.timeout)
+    this.timeout = self.setTimeout(async () => {
+      if (!this.manifest) return
+
+      const assets: Record<string, Blob> = {}
+      for (const path of this.manifest.assets) {
+        assets[path] = await this.readFileAsBlob(path)
+      }
+
+      const sources: Record<string, string> = {}
+      for (const target of this.manifest.targets) {
+        for (const path of target.load) {
+          if (sources[path]) continue
+          sources[path] = await this.readFileAsText(path)
+        }
+      }
+
+      const spec = {
+        dev: true,
+        name: this.manifest.name,
+        sources: sources,
+        manifest: this.manifest,
+      }
+
+      await this.engine.bus.send('pkgs.install', { spec, assets })
+    }, 100)
+  }
+
+  async export() {
+    const blob = await this.engine.bus.send('pkgs.export', this.name)
+    const url = URL.createObjectURL(blob)
+    await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
+    URL.revokeObjectURL(url)
+  }
+
+  // ---------------------------------------------------------------------------
+  // HELPERS
+  // ---------------------------------------------------------------------------
+
+  private async readFileAsBlob(path: string) {
     const handle = await this.getFileHandleByPath(path)
     const file = await handle.getFile()
     return new Blob([file], { type: file.type })
   }
 
-  private getUsedManifestPaths() {
-    if (!this.manifest) throw new Error('Manifest not loaded')
+  private async readFileAsText(path: string) {
+    const blob = await this.readFileAsBlob(path)
+    return await blob.text()
+  }
+
+  private getUsedFilePathsFromManifest() {
+    if (!this.manifest) throw this.never('Manifest is not loaded')
     const paths = new Set<string>()
     this.manifest.assets.forEach(path => paths.add(path))
     this.manifest.targets.forEach(target => target.load.forEach(path => paths.add(path)))
@@ -158,66 +240,31 @@ export class Pkg extends $gl.Unit {
     const [json, jsonError] = await this.$.utils.safe(() => file.text())
     if (jsonError) throw new Error(`Failed to read epos.json content: ${jsonError.message}`)
 
-    const [manifest, manifestError] = this.$.utils.safe.sync(() => parseEposManifest(json))
+    const [manifest, manifestError] = this.$.utils.safeSync(() => parseEposManifest(json))
     if (manifestError) throw new Error(`Failed to parse epos.json: ${manifestError.message}`)
 
     return manifest
   }
 
   private async getFileHandleByPath(path: string) {
-    const parts = path.split('/')
-    if (parts.length === 0) throw new Error(`File not found: ${path}`)
+    if (!this.handle) throw this.never()
 
-    const dirs = parts.slice(0, -1)
-    const fileName = parts.at(-1)
+    const pathParts = path.split('/')
+    const dirs = pathParts.slice(0, -1)
+    const fileName = pathParts.at(-1)
     if (!fileName) throw new Error(`File not found: ${path}`)
 
-    let dir: FileSystemDirectoryHandle = this.handle
-    for (const dirName of dirs) {
-      dir = await dir.getDirectoryHandle(dirName)
+    let dirHandle: FileSystemDirectoryHandle = this.handle
+    for (const dir of dirs) {
+      const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
+      if (!nextDirHandle) throw new Error(`File not found: ${path}`)
+      dirHandle = nextDirHandle
     }
 
-    const fileHandle = await dir.getFileHandle(fileName)
+    const [fileHandle] = await this.$.utils.safe(dirHandle.getFileHandle(fileName))
+    if (!fileHandle) throw new Error(`File not found: ${path}`)
+
     return fileHandle
-  }
-
-  private async install() {
-    this.time = new Date().toString().split(' ')[4]
-    self.clearTimeout(this.timeout)
-
-    this.timeout = self.setTimeout(async () => {
-      if (!this.manifest) return
-
-      const assets: Record<string, Blob> = {}
-      for (const path of this.manifest.assets) {
-        assets[path] = await this.readFile(path)
-      }
-
-      const sources: Record<string, string> = {}
-      for (const target of this.manifest.targets) {
-        for (const path of target.load) {
-          if (sources[path]) continue
-          const blob = await this.readFile(path)
-          sources[path] = await blob.text()
-        }
-      }
-
-      const spec = {
-        dev: true,
-        name: this.manifest.name,
-        sources: sources,
-        manifest: this.manifest,
-      }
-
-      await engine.bus.send('pkgs.install', { spec, assets })
-    }, 50)
-  }
-
-  async export() {
-    const blob = await engine.bus.send('pkgs.export', this.name)
-    const url = URL.createObjectURL(blob)
-    await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
-    URL.revokeObjectURL(url)
   }
 
   // ---------------------------------------------------------------------------
@@ -226,34 +273,46 @@ export class Pkg extends $gl.Unit {
 
   ui() {
     return (
-      <div class="group flex flex-col bg-white p-4 dark:bg-black">
-        <div class="flex items-center justify-between">
-          <div class="">
-            {this.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
+      <div class="flex flex-col bg-white p-4 dark:bg-black">
+        <div class="flex items-center justify-between gap-4">
+          {/* Name */}
+          <div class="text-nowrap">
+            {this.state.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
           </div>
+
+          {/* Right controls */}
           <div class="flex items-baseline gap-2">
-            {this.time && <span class="mr-3 ml-3 text-xs text-gray-400">Updated at {this.time}</span>}
-            <div
-              onClick={this.export}
-              inert={!!this.error}
-              class={[
-                'cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700',
-                this.error && 'opacity-20',
-              ]}
-            >
-              [export]
-            </div>
+            {/* Time of the last update */}
+            {this.lastUpdatedAt && (
+              <div class="mr-3 text-xs text-gray-400">
+                Updated at {new Date(this.lastUpdatedAt).toString().split(' ')[4]}
+              </div>
+            )}
+
+            {/* Export button */}
+            {!this.state.error && (
+              <div
+                onClick={this.export}
+                class="cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                [EXPORT]
+              </div>
+            )}
+
+            {/* Remove button */}
             <div
               onClick={this.remove}
-              class="cursor-default px-1 py-0.5 hover:bg-red-100 dark:hover:bg-red-800"
+              class="dar:hover:text-red-600 cursor-default px-1 py-0.5 hover:bg-gray-200 hover:text-red-600 dark:hover:bg-gray-700 dark:hover:text-red-400"
             >
-              [remove]
+              [REMOVE]
             </div>
           </div>
         </div>
-        {this.error && (
+
+        {/* Error */}
+        {this.state.error && (
           <div class="mt-4 bg-red-100 p-2.5 px-3 text-pretty text-gray-800 dark:bg-red-900 dark:text-white">
-            {this.error}
+            {this.state.error}
           </div>
         )}
       </div>
@@ -265,10 +324,9 @@ export class Pkg extends $gl.Unit {
   // ---------------------------------------------------------------------------
 
   static versioner: any = {
-    12() {
-      this.time = null
-      delete this.lastChanges
-      delete this.lastChange
+    1() {
+      delete this.time
+      this.lastUpdatedAt = null
     },
   }
 }

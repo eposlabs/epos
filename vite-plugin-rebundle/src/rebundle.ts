@@ -1,7 +1,7 @@
 import { safe, Unit } from '@eposlabs/utils'
 import chalk from 'chalk'
 import { filesize } from 'filesize'
-import { readdir, readFile, rmdir, stat, unlink, writeFile } from 'node:fs/promises'
+import { readdir, readFile, rmdir, stat, unlink } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
 import { getPort } from 'portfinder'
 import { rolldown, type InputOptions, type OutputOptions } from 'rolldown'
@@ -43,6 +43,7 @@ export class Rebundle extends Unit {
       config: this.onConfig,
       configResolved: this.onConfigResolved,
       buildEnd: this.onBuildEnd,
+      generateBundle: this.onGenerateBundle,
       writeBundle: this.onWriteBundle,
     }
   }
@@ -53,10 +54,10 @@ export class Rebundle extends Unit {
 
   private onConfig = async () => {
     this.port = await getPort({ port: 3100 })
+
     return {
-      define: {
-        'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port),
-      },
+      define: { 'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port) },
+      build: { sourcemap: false },
     }
   }
 
@@ -77,26 +78,42 @@ export class Rebundle extends Unit {
     this.hasError = !!error
   }
 
+  private onGenerateBundle = async (_options: NormalizedOutputOptions, bundle: OutputBundle) => {
+    // Prefix all entry chunks, so Vite writes to temporary files instead of final files
+    const chunks = this.getChunks(bundle)
+    for (const chunk of chunks) {
+      if (!chunk.isEntry) continue
+      chunk.fileName = this.prefixed(chunk.fileName)
+    }
+  }
+
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
     if (this.hasError) return
     if (!this.config) throw this.never
 
-    const chunks = Object.values(bundle).filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
-    const entryChunks = chunks.filter(chunk => chunk.isEntry)
-    const nonEntryChunks = chunks.filter(chunk => !chunk.isEntry)
+    const chunks = this.getChunks(bundle)
+    const modifiedChunkNames: string[] = []
 
     // Rebundle entry chunks
-    const modifiedChunkNames: string[] = []
     await Promise.all(
-      entryChunks.map(async chunk => {
+      chunks.map(async chunk => {
+        if (!chunk.isEntry) return
         const modified = await this.rebundleChunk(chunk, bundle)
         if (modified) modifiedChunkNames.push(chunk.name)
       }),
     )
 
     // Remove non-entry chunks
-    for (const chunk of nonEntryChunks) {
-      await this.removeChunk(chunk, bundle)
+    for (const chunk of chunks) {
+      if (chunk.isEntry) continue
+
+      // Remove from dist and bundle
+      await this.removeFromDist(chunk.fileName)
+      delete bundle[chunk.fileName]
+
+      // Recursively remove containing directory if empty
+      const dir = dirname(join(this.dist, chunk.fileName))
+      await this.removeDirectoryIfEmpty(dir)
     }
 
     // Notify about modified chunks
@@ -116,76 +133,51 @@ export class Rebundle extends Unit {
     // Delete chunk from bundle to hide log for rolldown-vite. Call for rollup for consistency.
     delete bundle[chunk.fileName]
 
-    const chunkPath = join(this.dist, chunk.fileName)
-    const chunkOptions = this.options[chunk.name] ?? {}
-
     // Read chunk files
     const chunkFiles = await this.readChunkFiles(chunk)
 
-    // Check if chunk was modified
+    // Check if some of chunk files were modified
     const chunkFilePaths = Object.keys(chunkFiles)
     const chunkModified = chunkFilePaths.some(path => chunkFiles[path] !== this.originalFiles[path])
 
-    // Update original files content
+    // Save chunk files content for next comparison
     Object.assign(this.originalFiles, chunkFiles)
 
-    // Chunk was not modified? -> Use previous content
+    // Chunk was not modified? -> Don't rebundle, just remove Vite's output
     if (!chunkModified) {
-      // Overwrite vite's output with previously rebundled code
-      const code = this.rebundledFiles[chunk.fileName]
-      await this.writeToDist(chunk.fileName, code)
-
-      // Overwrite vite's sourcemap
-      if (chunk.sourcemapFileName) {
-        const sourcemap = this.rebundledFiles[chunk.sourcemapFileName]
-        if (sourcemap) await this.writeToDist(chunk.sourcemapFileName, sourcemap)
-      }
-
-      // Return not modified status
+      await this.removeFromDist(chunk.fileName)
       return false
     }
 
     // Build with rolldown
-    const [build] = await safe(rolldown({ ...chunkOptions.input, input: chunkPath }))
-    if (!build) return
-    const [_, error] = await safe(build.write({ ...chunkOptions.output, file: chunkPath }))
-    if (error) return
+    const options = this.options[chunk.name] ?? {}
+    const [result] = await safe(async () => {
+      const inputPath = join(this.dist, chunk.fileName)
+      const outputPath = join(this.dist, this.unprefixed(chunk.fileName))
+      const build = await rolldown({ ...options.input, input: inputPath })
+      const result = await build.write({ ...options.output, sourcemap: false, file: outputPath })
+      return result
+    })
+    if (!result) return
 
     // Log successful build
-    const { size } = await stat(chunkPath)
+    const { size } = await stat(join(this.dist, chunk.fileName))
     const _dist_ = chalk.dim(`${this.dist}/`)
-    const _fileName_ = chalk.cyan(chunk.fileName)
+    const _fileName_ = chalk.cyan(this.unprefixed(chunk.fileName))
     const _rebundle_ = chalk.dim.cyan('[rebundle]')
     const _size_ = chalk.bold.dim(`${filesize(size)}`)
     console.log(`${_dist_}${_fileName_} ${_rebundle_} ${_size_}`)
 
     // Save code
-    const code = await this.readFromDist(chunk.fileName)
+    const code = result.output[0].code
     if (!code) throw this.never
     this.rebundledFiles[chunk.fileName] = code
 
-    // Save sourcemap
-    if (chunk.sourcemapFileName) {
-      const sourcemap = await this.readFromDist(chunk.sourcemapFileName)
-      if (sourcemap) this.rebundledFiles[chunk.sourcemapFileName] = sourcemap
-    }
+    // Remove Vite's output
+    await this.removeFromDist(chunk.fileName)
 
     // Return modified status
     return true
-  }
-
-  private async removeChunk(chunk: OutputChunk, bundle: OutputBundle) {
-    await this.removeFromDist(chunk.fileName)
-    delete bundle[chunk.fileName]
-
-    if (chunk.sourcemapFileName) {
-      await this.removeFromDist(chunk.sourcemapFileName)
-      delete bundle[chunk.sourcemapFileName]
-    }
-
-    // Recursively remove containing directory if empty
-    const dir = dirname(join(this.dist, chunk.fileName))
-    await this.removeDirectoryIfEmpty(dir)
   }
 
   private async readChunkFiles(chunk: OutputChunk) {
@@ -202,6 +194,10 @@ export class Rebundle extends Unit {
     return files
   }
 
+  private getChunks(bundle: OutputBundle) {
+    return Object.values(bundle).filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
+  }
+
   // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
@@ -211,13 +207,17 @@ export class Rebundle extends Unit {
     return this.config.build.outDir
   }
 
+  private prefixed(fileName: string) {
+    return `rebundle-original-${fileName}`
+  }
+
+  private unprefixed(fileName: string) {
+    return fileName.replace('rebundle-original-', '')
+  }
+
   private async readFromDist(path: string) {
     const [content] = await safe(readFile(join(this.dist, path), 'utf-8'))
     return content
-  }
-
-  private async writeToDist(path: string, content: string) {
-    await writeFile(join(this.dist, path), content, 'utf-8')
   }
 
   private async removeFromDist(path: string) {

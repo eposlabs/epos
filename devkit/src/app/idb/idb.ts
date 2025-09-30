@@ -13,7 +13,6 @@ export class Idb extends $gl.Unit {
   init() {
     this.dbs = {}
     this.queues = new this.$.utils.QueueMap()
-
     this.get = this.enqueue(this.get)
     this.has = this.enqueue(this.has)
     this.set = this.enqueue(this.set)
@@ -23,7 +22,7 @@ export class Idb extends $gl.Unit {
     this.deleteDatabase = this.enqueue(this.deleteDatabase)
   }
 
-  /** Gets a value from the store. */
+  /** Get a value from the store. */
   async get<T = unknown>(name: DbName, store: DbStore, key: DbKey) {
     // DB does not exist? -> Return null
     const exists = await this.exists(name)
@@ -42,7 +41,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Checks if a key exists in the store. */
+  /** Check if a key exists in the store. */
   async has(name: DbName, store: DbStore, key: DbKey) {
     // DB does not exist? -> Return false
     const exists = await this.exists(name)
@@ -61,7 +60,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Sets a value in the store. */
+  /** Set a value in the store. */
   async set<T = unknown>(name: DbName, store: DbStore, key: DbKey, value: T) {
     // Ensure store for the DB
     const db = await this.ensureStore(name, store)
@@ -76,7 +75,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Returns a list of all keys in the store of the database. */
+  /** Get a list of all keys in the store of the database. */
   async keys(name: DbName, store: DbStore) {
     // DB does not exist? -> Return []
     const exists = await this.exists(name)
@@ -95,7 +94,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Deletes a key from the store. */
+  /** Delete a key from the store. */
   async delete(name: DbName, store: DbStore, key: DbKey) {
     // DB does not exist? -> Done
     const exists = await this.exists(name)
@@ -114,7 +113,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Returns a list of all store names in the database. */
+  /** Get a list of all store names in the database. */
   async listStores(name: DbName) {
     const exists = await this.exists(name)
     if (!exists) return []
@@ -122,13 +121,13 @@ export class Idb extends $gl.Unit {
     return [...db.objectStoreNames]
   }
 
-  /** Returns a list of all database names. */
+  /** Get a list of all database names. */
   async listDatabases() {
     const dbs = await indexedDB.databases()
     return dbs.map(db => db.name).filter(this.$.utils.is.present)
   }
 
-  /** Deletes the store from the database. */
+  /** Delete the store from the database. */
   async deleteStore(name: DbName, store: DbStore) {
     // DB does not exist? -> Done
     const exists = await this.exists(name)
@@ -153,7 +152,7 @@ export class Idb extends $gl.Unit {
     this.register(name, newDb)
   }
 
-  /** Deletes the entire database. */
+  /** Delete the entire database. */
   async deleteDatabase(name: DbName) {
     // DB does not exist? -> Done
     const exists = await this.exists(name)
@@ -170,7 +169,7 @@ export class Idb extends $gl.Unit {
     })
   }
 
-  /** Deletes all databases. */
+  /** Delete all databases. */
   async purge() {
     const names = await this.listDatabases()
     for (const name of names) {
@@ -178,7 +177,7 @@ export class Idb extends $gl.Unit {
     }
   }
 
-  /** Checks if a database with the given name exists. */
+  /** Check if a database with the given name exists. */
   private async exists(name: DbName) {
     // Connected to the DB? -> true
     if (this.dbs[name]) return true
@@ -188,7 +187,7 @@ export class Idb extends $gl.Unit {
     return !!dbs.find(d => d.name === name)
   }
 
-  /** Ensures that the database with the given name exists and returns it. */
+  /** Ensure that the database with the given name exists and returns it. */
   private async ensureDb(name: DbName) {
     // Already connected? -> Just return DB
     if (this.dbs[name]) return this.dbs[name]
@@ -211,7 +210,7 @@ export class Idb extends $gl.Unit {
     return db
   }
 
-  /** Ensures that the store exists. Returns the database. */
+  /** Ensure that the store exists. Returns store's database. */
   private async ensureStore(name: DbName, store: DbStore) {
     // Ensure DB
     const db = await this.ensureDb(name)
@@ -252,7 +251,7 @@ export class Idb extends $gl.Unit {
     delete this.dbs[name]
   }
 
-  /** Runs wrapped method in a queue for the given database. */
+  /** Wrap method to be run in a queue for the given database. */
   private enqueue<T extends AsyncFn>(fn: T) {
     return (async (name: DbName, ...args: unknown[]) => {
       const queue = this.queues.ensure(name)

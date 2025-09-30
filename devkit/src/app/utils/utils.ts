@@ -1,15 +1,12 @@
-import { is, QueueMap, safe } from '@eposlabs/utils'
+import { is, QueueMap, safe, safeSync } from '@eposlabs/utils/ts'
 
 export class Utils extends $gl.Unit {
   declare is: typeof is
   declare QueueMap: typeof QueueMap
   declare safe: typeof safe
+  declare safeSync: typeof safeSync
 
-  init() {
-    this.safe.sync = safe.sync
-  }
-
-  uuid() {
+  id(): string {
     return crypto.randomUUID()
   }
 }
@@ -18,4 +15,5 @@ Object.assign(Utils.prototype, {
   is,
   QueueMap,
   safe,
+  safeSync,
 })
