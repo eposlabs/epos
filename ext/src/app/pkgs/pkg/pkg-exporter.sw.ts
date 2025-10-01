@@ -33,7 +33,7 @@ export class PkgExporter extends $sw.Unit {
       spec: this.$pkg.spec,
       sources: this.$pkg.sources,
     }
-    zip.file('pkg.json', JSON.stringify(bundle, null, 2))
+    zip.file('project.json', JSON.stringify(bundle, null, 2))
 
     const assets: Record<string, Blob> = {}
     const paths = await this.$.idb.keys(this.$pkg.name, ':assets')

@@ -27,8 +27,8 @@ export class Pkgs extends $sw.Unit {
     this.$.bus.on('pkgs.getActionData', this.getActionData, this)
     this.$.bus.on('pkgs.getExecutionData', this.getExecutionData, this)
     this.$.bus.on('pkgs.export', this.exportPkg, this)
-    this.loader = await $sw.PkgsLoader.create(this)
     await this.restoreFromIdb()
+    this.loader = await $sw.PkgsLoader.create(this)
   }
 
   private async exportPkg(pkgName: string) {

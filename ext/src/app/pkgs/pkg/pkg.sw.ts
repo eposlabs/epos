@@ -54,10 +54,10 @@ export class Pkg extends $sw.Unit {
   }
 
   async update(bundle: BundleNoAssets & { assets?: Assets }) {
-    this.name = bundle.spec.name
     this.dev = bundle.dev
-    this.sources = bundle.sources
+    this.name = bundle.spec.name
     this.spec = bundle.spec
+    this.sources = bundle.sources
     this.action = this.prepareAction(bundle.spec.action)
     this.targets = bundle.spec.targets.map(target => new $sw.PkgTarget(this, target))
 
@@ -94,9 +94,19 @@ export class Pkg extends $sw.Unit {
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
     const layers = [
-      ...['$gl', '$cs', '$ex', '$os', '$sm', '$sw', '$vw'],
-      ...['$exOs', '$exSw', '$osVw', '$swVw'],
-      ...['$exOsVw', '$exOsSwVw'],
+      '$cs',
+      '$ex',
+      '$gl',
+      '$os',
+      '$sm',
+      '$sw',
+      '$vw',
+      '$exOs',
+      '$exSw',
+      '$osVw',
+      '$swVw',
+      '$exOsVw',
+      '$exOsSwVw',
     ]
 
     return {
@@ -177,9 +187,9 @@ export class Pkg extends $sw.Unit {
   }
 
   private prepareAction(action: Action) {
-    if (action === null) return null
+    if (!action) return null
     if (action === true) return true
-    if (!action.startsWith('<hub>')) return action
-    return action.replace('<hub>', `${this.$.env.url.web}/@${this.name}`)
+    if (action.startsWith('<hub>')) return action.replace('<hub>', `${this.$.env.url.web}/@${this.name}`)
+    return action
   }
 }

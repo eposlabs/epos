@@ -1,5 +1,4 @@
 // TODO: handle when adding pkg with the same name
-import type { Pack } from '@ext/app/pkgs/pkgs-installer.sw'
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
 export class Pkg extends $gl.Unit {
@@ -16,7 +15,6 @@ export class Pkg extends $gl.Unit {
   declare private timeout: number | undefined
   declare private engine: any
   declare private state: { error: string | null }
-  declare private pack: Pack | null
 
   constructor(parent: $gl.Unit, handleId: string) {
     super(parent)
@@ -169,6 +167,7 @@ export class Pkg extends $gl.Unit {
   // ---------------------------------------------------------------------------
 
   private async update() {
+    // TODO: track what actually changed
     this.lastUpdatedAt = Date.now()
 
     self.clearTimeout(this.timeout)
@@ -188,14 +187,12 @@ export class Pkg extends $gl.Unit {
         }
       }
 
-      const spec = {
+      await this.engine.bus.send('pkgs.install', {
         dev: true,
-        name: this.spec.name,
+        spec: this.spec,
         sources: sources,
-        manifest: this.spec,
-      }
-
-      await this.engine.bus.send('pkgs.install', { spec, assets })
+        assets: assets,
+      })
     }, 100)
   }
 
