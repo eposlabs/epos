@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -20,7 +20,7 @@
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.5.0",
+    "@eposlabs/utils": "^1.8.0",
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
     "filesize": "^11.0.13",

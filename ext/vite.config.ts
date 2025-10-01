@@ -28,10 +28,6 @@ export default defineConfig(async ({ mode }) => {
   })
 
   return {
-    resolve: {
-      conditions: ['source'],
-    },
-
     define: {
       'import.meta.env.DEV': json(mode === 'development'),
       'import.meta.env.PROD': json(mode !== 'development'),

@@ -21,10 +21,6 @@ export default defineConfig(async ({ mode }) => {
   })
 
   return {
-    resolve: {
-      conditions: ['source'],
-    },
-
     plugins: [
       epos(),
       tailwindcss(),

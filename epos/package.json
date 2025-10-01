@@ -1,6 +1,6 @@
 {
   "name": "epos",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -19,8 +19,8 @@
   ],
   "dependencies": {
     "@types/chrome": "^0.1.16",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
+    "@types/react": "^19.1.17",
+    "@types/react-dom": "^19.1.11",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "react": "^19.1.1",

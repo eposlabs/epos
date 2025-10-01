@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -23,7 +23,7 @@
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.5.0",
+    "@eposlabs/utils": "^1.8.0",
     "chokidar": "^4.0.3",
     "minimist": "^1.2.8"
   },
