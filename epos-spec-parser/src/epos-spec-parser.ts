@@ -13,6 +13,8 @@ export type Spec = {
   name: string
   icon: string | null
   title: string | null
+  description: string | null
+  version: string
   action: Action
   popup: Popup
   assets: string[]
@@ -21,8 +23,10 @@ export type Spec = {
 }
 
 const config = {
-  keys: ['$schema', 'name', 'icon', 'title', 'action', 'popup', 'assets', 'targets', 'manifest'],
+  keys: ['$schema', 'name', 'icon', 'title', 'version', 'action', 'popup', 'assets', 'targets', 'manifest'],
   name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
+  description: { max: 132 },
+  version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
   popup: {
     keys: ['width', 'height'],
     width: { min: 150, max: 800, default: 400 },
@@ -48,6 +52,8 @@ export function parseEposSpec(json: string): Spec {
     name: parseName(spec),
     icon: parseIcon(spec),
     title: parseTitle(spec),
+    description: parseDescription(spec),
+    version: parseVersion(spec),
     action: parseAction(spec),
     popup: parsePopup(spec),
     assets: parseAssets(spec),
@@ -86,6 +92,28 @@ function parseTitle(spec: Obj): string | null {
   if (!is.string(title)) throw new Error(`'title' must be a string`)
 
   return title
+}
+
+function parseDescription(spec: Obj): string | null {
+  if (!('description' in spec)) return null
+
+  const description = spec.description
+  if (!is.string(description)) throw new Error(`'description' must be a string`)
+
+  const { max } = config.description
+  if (description.length > max) throw new Error(`'description' must be at most ${max} characters`)
+
+  return description
+}
+
+function parseVersion(spec: Obj): string {
+  if (!('version' in spec)) return '0.0.0'
+
+  const version = spec.version
+  if (!is.string(version)) throw new Error(`'version' must be a string`)
+  if (!config.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
+
+  return version
 }
 
 function parseAction(spec: Obj): Action {

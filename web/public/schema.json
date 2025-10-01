@@ -1,12 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Epos Spec Schema",
+  "$id": "https://epos.dev/schema.json",
+  "title": "epos.json",
+
   "type": "object",
   "properties": {
     "$schema": { "type": "string" },
     "name": { "$ref": "#/definitions/Name" },
     "icon": { "$ref": "#/definitions/Icon" },
     "title": { "$ref": "#/definitions/Title" },
+    "description": { "$ref": "#/definitions/Description" },
+    "version": { "$ref": "#/definitions/Version" },
     "action": { "$ref": "#/definitions/Action" },
     "popup": { "$ref": "#/definitions/Popup" },
     "assets": { "$ref": "#/definitions/Assets" },
@@ -23,7 +27,7 @@
     "Name": {
       "type": "string",
       "minLength": 2,
-      "maxLength": 50,
+      "maxLength": 45,
       "pattern": "^[a-z0-9\\-]+$"
     },
 
@@ -32,7 +36,19 @@
     },
 
     "Title": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 45
+    },
+
+    "Description": {
+      "type": "string",
+      "description": "A plain text description of the extension",
+      "maxLength": 132
+    },
+
+    "Version": {
+      "type": "string",
+      "pattern": "^(?:\\d{1,5}\\.){0,3}\\d{1,5}$"
     },
 
     "Action": {
@@ -101,7 +117,7 @@
     },
 
     "Manifest": {
-      "$ref": "https://json.schemastore.org/chrome-manifest.json"
+      "$ref": "./manifest.schema.json"
     }
   }
 }

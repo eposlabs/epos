@@ -1,7 +1,9 @@
 {
-  "$schema": "https://epos.dev/schema.json",
+  "$schema": "../web/public/schema.json",
   "name": "x1",
   "title": "X1 Test Package",
+  "version": "0.0.1",
+
   "action": "<hub>",
   "popup": { "width": 500, "height": 500 },
   "assets": ["x1.css"],
