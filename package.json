@@ -8,15 +8,20 @@
   ],
   "scripts": {
     "prettier": "prettier --write ./",
-    "edge": "ncu --upgrade --deep"
+    "edge": "ncu --upgrade --deep",
+    "release:all": "npm run release:epos; npm run release:utils; npm run release:rebundle; npm run release:paralayer",
+    "release:epos": "npm -w epos run release",
+    "release:utils": "npm -w @eposlabs/utils run release",
+    "release:rebundle": "npm -w vite-plugin-rebundle run release",
+    "release:paralayer": "npm -w paralayer run release"
   },
   "devDependencies": {
-    "lightningcss": "^1.30.1",
-    "npm-check-updates": "^18.3.0",
+    "lightningcss": "^1.30.2",
+    "npm-check-updates": "^19.0.0",
     "prettier": "^3.6.2",
     "prettier-plugin-embed": "^0.5.0",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

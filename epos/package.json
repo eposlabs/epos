@@ -1,6 +1,6 @@
 {
   "name": "epos",
-  "version": "1.9.0",
+  "version": "1.14.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -13,16 +13,12 @@
   },
   "exports": {
     ".": {
+      "source": "./src/epos.ts",
       "import": "./dist/epos.js"
     },
     "./vite": {
+      "source": "./src/vite.ts",
       "import": "./dist/vite.js"
-    },
-    "./ts": {
-      "import": "./src/epos.ts"
-    },
-    "./vite/ts": {
-      "import": "./src/vite.ts"
     }
   },
   "files": [
@@ -31,8 +27,8 @@
     "epos.schema.json"
   ],
   "dependencies": {
-    "@types/chrome": "^0.1.12",
-    "@types/react": "^19.1.15",
+    "@types/chrome": "^0.1.16",
+    "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
