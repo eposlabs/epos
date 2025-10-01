@@ -101,10 +101,10 @@ export class App extends $gl.Unit {
 //   const [handle, error] = await this.utils.safe(() => self.showDirectoryPicker({ mode: 'readwrite' }))
 //   if (error) return
 //   this.adding = true
-//   const assets = epos.assets.list()
+//   const assets = epos.static.list()
 //   for (const asset of assets) {
 //     if (!asset.path.startsWith('template/')) continue
-//     let blob = await epos.assets.load(asset.path)
+//     let blob = await epos.static.load(asset.path)
 //     let text = await blob.text()
 //     text = text.replace('epos-template-package', handle.name)
 //     blob = new Blob([text], { type: blob.type })

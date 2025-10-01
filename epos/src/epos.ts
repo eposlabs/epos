@@ -101,25 +101,27 @@ export interface Epos {
   frame: {
     /** Open frame in the background. */
     open(name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
-    /** Remove background frame by its name. */
+    /** Close background frame by its name. */
     close(name: string): Promise<void>
+    /** Check if background frame with the given name exists. */
+    exists(name: string): Promise<boolean>
     /** Get list of all open background frames. */
     list(): Promise<{ name: string; url: string }[]>
   }
 
-  // Assets
-  assets: {
-    /** Get asset URL. The asset must be loaded first. */
+  // Static
+  static: {
+    /** Get static file URL. The file must be loaded first via `epos.static.load`. */
     url(path: string): string
-    /** Load asset by path. */
+    /** Load static file by path. */
     load(path: string): Promise<Blob>
-    /** Load all assets. */
+    /** Load all static files. */
     loadAll(): Promise<Blob[]>
-    /** Unload asset from memory. */
+    /** Unload static file from memory. */
     unload(path: string): void
-    /** Unload all assets from memory. */
+    /** Unload all static files from memory. */
     unloadAll(): void
-    /** Get list of all available assets. */
+    /** Get list of all available static files. */
     list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 

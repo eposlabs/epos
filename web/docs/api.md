@@ -32,17 +32,18 @@
   - epos.storage.clear
   - epos.storage.use
   - epos.storage.list
+- **Static**
+  - epos.static.url
+  - epos.static.load
+  - epos.static.loadAll
+  - epos.static.unload
+  - epos.static.unloadAll
+  - epos.static.list
 - **Frame**
   - epos.frame.open
   - epos.frame.close
+  - epos.frame.exists
   - epos.frame.list
-- **Assets**
-  - epos.assets.url
-  - epos.assets.load
-  - epos.assets.loadAll
-  - epos.assets.unload
-  - epos.assets.unloadAll
-  - epos.assets.list
 - **Env**
   - epos.env.tabId
   - epos.env.isWeb

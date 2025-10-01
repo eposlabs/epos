@@ -9,6 +9,11 @@ export class ProjectApiFrame extends $ex.Unit {
     await this.$.bus.send('projects.removeProjectFrame', this.$project.name, name)
   }
 
+  async exists(name: string) {
+    const frames = await this.list()
+    return frames.some(frame => frame.name === name)
+  }
+
   async list() {
     return await this.$.bus.send<{ name: string; url: string }[]>(
       'projects.getProjectFrames',

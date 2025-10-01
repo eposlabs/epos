@@ -1,13 +1,13 @@
 export class ProjectApi extends $ex.Unit {
   private $project = this.up($ex.Project)!
-  assets!: $ex.ProjectApiAssets
-  bus = this.$.bus.create(`project[${this.$project.name}]`)
-  env = new $ex.ProjectApiEnv(this)
-  frame = new $ex.ProjectApiFrame(this)
   general!: $ex.ProjectApiGeneral
-  libs = new $ex.ProjectApiLibs(this)
+  bus = this.$.bus.create(`project[${this.$project.name}]`)
   state = new $ex.ProjectApiState(this)
   storage = new $ex.ProjectApiStorage(this)
+  static!: $ex.ProjectApiStatic
+  frame = new $ex.ProjectApiFrame(this)
+  env = new $ex.ProjectApiEnv(this)
+  libs = new $ex.ProjectApiLibs(this)
   epos!: ReturnType<$ex.ProjectApi['createEpos']>
 
   static async create(parent: $ex.Unit) {
@@ -18,7 +18,7 @@ export class ProjectApi extends $ex.Unit {
 
   private async init() {
     this.general = await $ex.ProjectApiGeneral.create(this)
-    this.assets = await $ex.ProjectApiAssets.create(this)
+    this.static = await $ex.ProjectApiStatic.create(this)
     this.epos = this.createEpos()
   }
 
@@ -66,20 +66,21 @@ export class ProjectApi extends $ex.Unit {
         list: this.$.utils.link(this.storage, 'list'),
       },
 
-      // Assets
-      assets: {
-        url: this.$.utils.link(this.assets, 'url'),
-        load: this.$.utils.link(this.assets, 'load'),
-        loadAll: this.$.utils.link(this.assets, 'loadAll'),
-        unload: this.$.utils.link(this.assets, 'unload'),
-        unloadAll: this.$.utils.link(this.assets, 'unloadAll'),
-        list: this.$.utils.link(this.assets, 'list'),
+      // Static
+      static: {
+        url: this.$.utils.link(this.static, 'url'),
+        load: this.$.utils.link(this.static, 'load'),
+        loadAll: this.$.utils.link(this.static, 'loadAll'),
+        unload: this.$.utils.link(this.static, 'unload'),
+        unloadAll: this.$.utils.link(this.static, 'unloadAll'),
+        list: this.$.utils.link(this.static, 'list'),
       },
 
       // Frame
       frame: {
         open: this.$.utils.link(this.frame, 'open'),
         close: this.$.utils.link(this.frame, 'close'),
+        exists: this.$.utils.link(this.frame, 'exists'),
         list: this.$.utils.link(this.frame, 'list'),
       },
 

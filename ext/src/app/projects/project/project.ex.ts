@@ -54,7 +54,7 @@ export class Project extends $ex.Unit {
 
   private async setPageFavicon() {
     if (!this.icon) return
-    await this.api.assets.load(this.icon)
+    await this.api.static.load(this.icon)
 
     // Remove existing favicon
     let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
@@ -63,7 +63,7 @@ export class Project extends $ex.Unit {
     // Create new favicon
     favicon = document.createElement('link')
     favicon.rel = 'icon'
-    favicon.href = this.api.assets.url(this.icon)!
+    favicon.href = this.api.static.url(this.icon)!
     document.head.append(favicon)
   }
 }

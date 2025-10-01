@@ -9,8 +9,9 @@
   "scripts": {
     "prettier": "prettier --write ./",
     "edge": "ncu --upgrade --deep",
-    "release:all": "npm run release:epos && npm run release:utils && npm run release:rebundle && npm run release:paralayer",
+    "release:all": "npm run release:epos && npm run release:epos-unit && npm run release:utils && npm run release:rebundle && npm run release:paralayer",
     "release:epos": "npm -w epos run release",
+    "release:epos-unit": "npm -w epos-unit run release",
     "release:utils": "npm -w @eposlabs/utils run release",
     "release:rebundle": "npm -w vite-plugin-rebundle run release",
     "release:paralayer": "npm -w paralayer run release"

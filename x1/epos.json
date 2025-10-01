@@ -6,7 +6,7 @@
 
   "action": "<hub>",
   "popup": { "width": 500, "height": 500 },
-  "assets": ["x1.css"],
+  "static": ["x1.css"],
   "targets": [
     {
       "matches": "<hub>",

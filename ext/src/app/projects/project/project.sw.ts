@@ -1,14 +1,14 @@
 import type { Action, Mode, Spec } from 'epos-spec-parser'
 
 export type Sources = Record<string, string>
-export type Assets = Record<string, Blob>
-export type BundleNoAssets = Omit<Bundle, 'assets'>
+export type StaticFiles = Record<string, Blob>
+export type BundleNoStatic = Omit<Bundle, 'staticFiles'>
 
 export type Bundle = {
   dev: boolean
   spec: Spec
   sources: Sources
-  assets: Assets
+  staticFiles: StaticFiles
 }
 
 export type Payload = {
@@ -47,13 +47,13 @@ export class Project extends $sw.Unit {
 
   static async restore(parent: $sw.Unit, name: string) {
     const project = new Project(parent)
-    const bundle = await project.$.idb.get<BundleNoAssets>(name, ':project', ':default')
+    const bundle = await project.$.idb.get<BundleNoStatic>(name, ':project', ':default')
     if (!bundle) return null
     await project.update(bundle)
     return project
   }
 
-  async update(bundle: BundleNoAssets & { assets?: Assets }) {
+  async update(bundle: BundleNoStatic & { staticFiles?: StaticFiles }) {
     this.dev = bundle.dev
     this.name = bundle.spec.name
     this.spec = bundle.spec
@@ -61,14 +61,14 @@ export class Project extends $sw.Unit {
     this.action = this.prepareAction(bundle.spec.action)
     this.targets = bundle.spec.targets.map(target => new $sw.ProjectTarget(this, target))
 
-    if (bundle.assets) {
-      await this.$.idb.deleteStore(this.name, ':assets')
-      for (const [path, blob] of Object.entries(bundle.assets)) {
-        await this.$.idb.set(this.name, ':assets', path, blob)
+    if (bundle.staticFiles) {
+      await this.$.idb.deleteStore(this.name, ':static')
+      for (const [path, blob] of Object.entries(bundle.staticFiles)) {
+        await this.$.idb.set(this.name, ':static', path, blob)
       }
     }
 
-    await this.$.idb.set<BundleNoAssets>(this.name, ':project', ':default', {
+    await this.$.idb.set<BundleNoStatic>(this.name, ':project', ':default', {
       dev: this.dev,
       spec: this.spec,
       sources: this.sources,
@@ -154,7 +154,7 @@ export class Project extends $sw.Unit {
     const requiredSourcePaths = this.getRequiredSourcePaths(url, frame).sort()
     return await this.$.utils.hash({
       dev: this.dev,
-      assets: this.spec.assets,
+      static: this.spec.static,
       targets: this.targets.map(target => ({ mode: target.mode })),
       snippets: requiredSourcePaths.map(path => this.getSourceCode(path)),
     })
