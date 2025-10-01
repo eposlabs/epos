@@ -1,13 +1,13 @@
-import type { ActionData, ExecutionData } from './pkgs.sw'
+import type { ActionData, ExecutionData } from './projects.sw'
 
-export type PkgName = string
+export type ProjectName = string
 export type OnUpdate = (delta: Delta, data: Data) => void
 
 export type Delta = {
-  added: PkgName[]
-  removed: PkgName[]
+  added: ProjectName[]
+  removed: ProjectName[]
   // TODO: implement properly (required for auto-refresh)
-  updated: PkgName[]
+  updated: ProjectName[]
 }
 
 export type Data = {
@@ -16,18 +16,18 @@ export type Data = {
   hasSidePanel: boolean
 }
 
-export class PkgsWatcher extends $exOsVw.Unit {
+export class ProjectsWatcher extends $exOsVw.Unit {
   private executionData: ExecutionData = {}
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
-    this.$.bus.on('pkgs.changed', () => this.update(onUpdate))
+    this.$.bus.on('projects.changed', () => this.update(onUpdate))
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actionData = await this.$.bus.send<ActionData>('pkgs.getActionData')
-    const executionData = await this.$.bus.send<ExecutionData>('pkgs.getExecutionData', location.href)
-    const hasSidePanel = await this.$.bus.send<boolean>('pkgs.hasSidePanel')
+    const actionData = await this.$.bus.send<ActionData>('projects.getActionData')
+    const executionData = await this.$.bus.send<ExecutionData>('projects.getExecutionData', location.href)
+    const hasSidePanel = await this.$.bus.send<boolean>('projects.hasSidePanel')
 
     const executionData1 = this.executionData
     const executionData2 = executionData

@@ -1,30 +1,30 @@
-export class PkgApi extends $ex.Unit {
-  private $pkg = this.up($ex.Pkg)!
-  assets!: $ex.PkgApiAssets
-  bus = this.$.bus.create(`pkg[${this.$pkg.name}]`)
-  env = new $ex.PkgApiEnv(this)
-  frame = new $ex.PkgApiFrame(this)
-  general!: $ex.PkgApiGeneral
-  libs = new $ex.PkgApiLibs(this)
-  state = new $ex.PkgApiState(this)
-  storage = new $ex.PkgApiStorage(this)
-  epos!: ReturnType<$ex.PkgApi['createEpos']>
+export class ProjectApi extends $ex.Unit {
+  private $project = this.up($ex.Project)!
+  assets!: $ex.ProjectApiAssets
+  bus = this.$.bus.create(`project[${this.$project.name}]`)
+  env = new $ex.ProjectApiEnv(this)
+  frame = new $ex.ProjectApiFrame(this)
+  general!: $ex.ProjectApiGeneral
+  libs = new $ex.ProjectApiLibs(this)
+  state = new $ex.ProjectApiState(this)
+  storage = new $ex.ProjectApiStorage(this)
+  epos!: ReturnType<$ex.ProjectApi['createEpos']>
 
   static async create(parent: $ex.Unit) {
-    const api = new PkgApi(parent)
+    const api = new ProjectApi(parent)
     await api.init()
     return api
   }
 
   private async init() {
-    this.general = await $ex.PkgApiGeneral.create(this)
-    this.assets = await $ex.PkgApiAssets.create(this)
+    this.general = await $ex.ProjectApiGeneral.create(this)
+    this.assets = await $ex.ProjectApiAssets.create(this)
     this.epos = this.createEpos()
   }
 
   private createEpos() {
     const epos = {
-      // TODO: change to package API
+      // TODO: change to project API
       engine: this.$,
 
       // General

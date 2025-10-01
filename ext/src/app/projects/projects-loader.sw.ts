@@ -1,11 +1,11 @@
-import type { BundleNoAssets } from './pkg/pkg.sw'
+import type { BundleNoAssets } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
-export class PkgsLoader extends $sw.Unit {
-  private $pkgs = this.up($sw.Pkgs)!
+export class ProjectsLoader extends $sw.Unit {
+  private $projects = this.up($sw.Projects)!
 
   static async create(parent: $sw.Unit) {
-    const loader = new PkgsLoader(parent)
+    const loader = new ProjectsLoader(parent)
     await loader.init()
     return loader
   }
@@ -18,14 +18,14 @@ export class PkgsLoader extends $sw.Unit {
     if (!manifest) return
 
     const name = bundle.spec.name
-    const pkg = this.$pkgs.map[name]
-    if (!pkg) return
+    const project = this.$projects.map[name]
+    if (!project) return
 
-    // const shouldLoad = !pkg || manifest.version < bundle.spec.manifest.version
-    // if (this.$pkgs.map[bundle.spec.name]) {
+    // const shouldLoad = !project || manifest.version < bundle.spec.manifest.version
+    // if (this.$projects.map[bundle.spec.name]) {
     // }
 
-    await this.$.idb.set(bundle.spec.name, ':pkg', ':default', bundle)
+    await this.$.idb.set(bundle.spec.name, ':project', ':default', bundle)
 
     for (const path of bundle.spec.assets) {
       const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))

@@ -30,27 +30,27 @@ export type ExecutionMeta = {
   hash: string
 }
 
-export class Pkg extends $sw.Unit {
+export class Project extends $sw.Unit {
   declare name: string
   declare dev: boolean
   declare sources: Sources
   declare spec: Spec
   declare action: null | true | string
-  declare targets: $sw.PkgTarget[]
-  exporter = new $sw.PkgExporter(this)
+  declare targets: $sw.ProjectTarget[]
+  exporter = new $sw.ProjectExporter(this)
 
   static async create(parent: $sw.Unit, bundle: Bundle) {
-    const pkg = new Pkg(parent)
-    await pkg.update(bundle)
-    return pkg
+    const project = new Project(parent)
+    await project.update(bundle)
+    return project
   }
 
   static async restore(parent: $sw.Unit, name: string) {
-    const pkg = new Pkg(parent)
-    const bundle = await pkg.$.idb.get<BundleNoAssets>(name, ':pkg', ':default')
+    const project = new Project(parent)
+    const bundle = await project.$.idb.get<BundleNoAssets>(name, ':project', ':default')
     if (!bundle) return null
-    await pkg.update(bundle)
-    return pkg
+    await project.update(bundle)
+    return project
   }
 
   async update(bundle: BundleNoAssets & { assets?: Assets }) {
@@ -59,7 +59,7 @@ export class Pkg extends $sw.Unit {
     this.spec = bundle.spec
     this.sources = bundle.sources
     this.action = this.prepareAction(bundle.spec.action)
-    this.targets = bundle.spec.targets.map(target => new $sw.PkgTarget(this, target))
+    this.targets = bundle.spec.targets.map(target => new $sw.ProjectTarget(this, target))
 
     if (bundle.assets) {
       await this.$.idb.deleteStore(this.name, ':assets')
@@ -68,7 +68,7 @@ export class Pkg extends $sw.Unit {
       }
     }
 
-    await this.$.idb.set<BundleNoAssets>(this.name, ':pkg', ':default', {
+    await this.$.idb.set<BundleNoAssets>(this.name, ':project', ':default', {
       dev: this.dev,
       spec: this.spec,
       sources: this.sources,
@@ -92,7 +92,7 @@ export class Pkg extends $sw.Unit {
     const shadowCss = this.getCode(url, frame, 'css', ['shadow'])
     if (!js && !shadowCss) return null
 
-    // Layer variables are passed as arguments (undefineds) to isolate engine layers from pkg code
+    // Layer variables are passed as arguments (undefineds) to isolate engine layers from project code
     const layers = [
       '$cs',
       '$ex',
@@ -149,7 +149,7 @@ export class Pkg extends $sw.Unit {
     return requiredSourcePaths.map(path => this.getSourceCode(path)).join('\n')
   }
 
-  /** Used to determine if package must be reloaded. */
+  /** Used to determine if project must be reloaded. */
   async getExecutionHash(url: string, frame = false) {
     const requiredSourcePaths = this.getRequiredSourcePaths(url, frame).sort()
     return await this.$.utils.hash({

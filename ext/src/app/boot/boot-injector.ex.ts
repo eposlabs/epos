@@ -1,29 +1,29 @@
-import type { Payload } from '../pkgs/pkg/pkg.sw'
+import type { Payload } from '../projects/project/project.sw'
 
 export class BootInjector extends $ex.Unit {
   async inject() {
     // For [exTop]:
     // - [cs] already injected globals + <epos/>
-    // - [sw] already injected ex.js + pkgs
+    // - [sw] already injected ex.js + projects
     if (this.$.env.is.exTop) {
-      await this.executePkgs()
+      await this.executeProjects()
       return
     }
 
     // For [exFrameExt]:
     // - No need for globals patching
     // - Need to create <epos/> ([cs] is absent)
-    // - Need to inject pkgs code ([sw] can't inject to frame.html)
+    // - Need to inject projects code ([sw] can't inject to frame.html)
     if (this.$.env.is.exFrameExt) {
       this.createEposElement()
       await this.injectCode()
-      await this.executePkgs()
+      await this.executeProjects()
       return
     }
 
     // For [exFrameWeb]:
     if (this.$.env.is.exFrameWeb) {
-      await this.executePkgs()
+      await this.executeProjects()
       return
     }
   }
@@ -36,21 +36,21 @@ export class BootInjector extends $ex.Unit {
 
   private async injectCode() {
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('pkgs.getLiteJs', location.href)
+    const liteJs = await this.$.bus.send<string>('projects.getLiteJs', location.href)
     if (liteJs) await this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('pkgs.getCss', location.href)
+    const css = await this.$.bus.send<string>('projects.getCss', location.href)
     if (css) this.injectCss(css)
 
-    // Inject pkgs defs
-    const payloads = await this.$.bus.send<Payload[]>('pkgs.getPayloads', location.href)
+    // Inject projects defs
+    const payloads = await this.$.bus.send<Payload[]>('projects.getPayloads', location.href)
     if (payloads.length === 0) return
-    const js = `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`
+    const js = `this.__eposProjectDefs = [${payloads.map(payload => payload.script).join(',')}];`
     await this.injectJs(js)
   }
 
-  // It is important to wait for 'onload', otherwise '__eposPkgDefs' will be undefined for 'executePkgs'
+  // It is important to wait for 'onload', otherwise '__eposProjectDefs' will be undefined for 'executeProjects'
   private async injectJs(js: string) {
     const ready$ = Promise.withResolvers()
     const blob = new Blob([js], { type: 'application/javascript' })
@@ -73,14 +73,14 @@ export class BootInjector extends $ex.Unit {
     self.__eposElement.prepend(link)
   }
 
-  private async executePkgs() {
-    const defs = self.__eposPkgDefs ?? []
+  private async executeProjects() {
+    const defs = self.__eposProjectDefs ?? []
     const tabId = this.getTabId()
     this.deleteEposVars()
 
     for (const def of defs) {
-      // Create package
-      const pkg = await this.$.pkgs.create({
+      // Create project
+      const project = await this.$.projects.create({
         name: def.name,
         icon: def.icon,
         title: def.title,
@@ -88,8 +88,8 @@ export class BootInjector extends $ex.Unit {
         shadowCss: def.shadowCss,
       })
 
-      // Execute package
-      def.fn.call(undefined, pkg.api.epos)
+      // Execute project
+      def.fn.call(undefined, project.api.epos)
     }
   }
 
@@ -117,6 +117,6 @@ export class BootInjector extends $ex.Unit {
     // Reflect.deleteProperty(self, '__eposElement')
     // Reflect.deleteProperty(self, '__eposTabId')
     // Reflect.deleteProperty(self, '__eposBusToken')
-    // Reflect.deleteProperty(self, '__eposPkgDefs')
+    // Reflect.deleteProperty(self, '__eposProjectDefs')
   }
 }

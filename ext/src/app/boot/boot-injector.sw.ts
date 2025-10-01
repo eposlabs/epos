@@ -30,7 +30,7 @@ export class BootInjector extends $sw.Unit {
   }
 
   async init() {
-    // Dev versions are absent for exported packages
+    // Dev versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
     const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(r => r.text()))
     this.ex.full.dev = exFullDev ?? ''
@@ -66,7 +66,7 @@ export class BootInjector extends $sw.Unit {
     if (injected) return
 
     // Inject lite js and injection flag
-    const liteJs = this.$.pkgs.getLiteJs(tab.url)
+    const liteJs = this.$.projects.getLiteJs(tab.url)
     const injectionFlagJs = `self.__eposInjected = true;`
     async: this.injectJs(tab, `${injectionFlagJs}${liteJs}`, 'function')
 
@@ -74,10 +74,10 @@ export class BootInjector extends $sw.Unit {
     const csData = await this.waitCsReady(tab)
 
     // Inject css
-    const css = this.$.pkgs.getCss(tab.url)
+    const css = this.$.projects.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
 
-    // Inject ex.js + pkgs
+    // Inject ex.js + projects
     const jsData = this.getJsData(tab, csData.busToken as any)
     if (!jsData) return
     async: this.injectJs(tab, jsData.js, jsData.dev ? 'script' : 'script-auto-revoke')
@@ -142,7 +142,7 @@ export class BootInjector extends $sw.Unit {
   }
 
   private getJsData(tab: Tab, busToken: string, frame = false): JsData | null {
-    const payloads = this.$.pkgs.getPayloads(tab.url, frame)
+    const payloads = this.$.projects.getPayloads(tab.url, frame)
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)
@@ -153,7 +153,7 @@ export class BootInjector extends $sw.Unit {
       `(() => {`,
       `this.__eposTabId = ${JSON.stringify(tab.id)};`,
       `this.__eposBusToken = ${JSON.stringify(busToken)};`,
-      `this.__eposPkgDefs = [${payloads.map(payload => payload.script).join(',')}];`,
+      `this.__eposProjectDefs = [${payloads.map(payload => payload.script).join(',')}];`,
       patchGlobalsJs,
       `(async () => {`,
       exJs,

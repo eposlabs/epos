@@ -1,13 +1,13 @@
-import type { Bundle } from './pkg/pkg.sw'
+import type { Bundle } from './project/project.sw'
 
-export class PkgsInstaller extends $sw.Unit {
-  private $pkgs = this.up($sw.Pkgs)!
+export class ProjectsInstaller extends $sw.Unit {
+  private $projects = this.up($sw.Projects)!
   private queue = new this.$.utils.Queue()
 
   constructor(parent: $sw.Unit) {
     super(parent)
-    this.$.bus.on('pkgs.install', this.install, this)
-    this.$.bus.on('pkgs.remove', this.remove, this)
+    this.$.bus.on('projects.install', this.install, this)
+    this.$.bus.on('projects.remove', this.remove, this)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
   }
@@ -21,7 +21,7 @@ export class PkgsInstaller extends $sw.Unit {
       await this.installByName(input, dev)
     }
 
-    this.broadcast('pkgs.changed')
+    this.broadcast('projects.changed')
   }
 
   async remove(name: string) {
@@ -33,10 +33,10 @@ export class PkgsInstaller extends $sw.Unit {
       }
     }
 
-    await this.$.bus.send('pkgs.removeAllPkgFrames', name)
+    await this.$.bus.send('projects.removeAllProjectFrames', name)
     await this.$.idb.deleteDatabase(name)
-    delete this.$pkgs.map[name]
-    this.broadcast('pkgs.changed')
+    delete this.$projects.map[name]
+    this.broadcast('projects.changed')
   }
 
   private async installByName(name: string, dev = false) {
@@ -95,12 +95,12 @@ export class PkgsInstaller extends $sw.Unit {
   }
 
   private async installFromBundle(bundle: Bundle) {
-    if (this.$pkgs.map[bundle.spec.name]) {
-      const pkg = this.$pkgs.map[bundle.spec.name]
-      await pkg.update(bundle)
+    if (this.$projects.map[bundle.spec.name]) {
+      const project = this.$projects.map[bundle.spec.name]
+      await project.update(bundle)
     } else {
-      const pkg = await $sw.Pkg.create(this, bundle)
-      this.$pkgs.map[bundle.spec.name] = pkg
+      const project = await $sw.Project.create(this, bundle)
+      this.$projects.map[bundle.spec.name] = project
     }
   }
 

@@ -1,20 +1,20 @@
 import type { FC, ReactNode } from 'react'
 import type { Container } from 'react-dom/client'
 
-export class PkgApiGeneral extends $ex.Unit {
-  private $pkg = this.up($ex.Pkg)!
+export class ProjectApiGeneral extends $ex.Unit {
+  private $project = this.up($ex.Project)!
   fetch = this.$.utils.link(this.$.kit.fetcher, 'fetch')
   browser!: typeof chrome
-  element = this.createPkgElement()
+  element = this.createProjectElement()
 
   static async create(parent: $ex.Unit) {
-    const pkgApiGeneral = new PkgApiGeneral(parent)
-    await pkgApiGeneral.init()
-    return pkgApiGeneral
+    const projectApiGeneral = new ProjectApiGeneral(parent)
+    await projectApiGeneral.init()
+    return projectApiGeneral
   }
 
   private async init() {
-    this.browser = await this.$.kit.browser.create(this.$pkg.name)
+    this.browser = await this.$.kit.browser.create(this.$project.name)
   }
 
   render(children: ReactNode, container?: Container) {
@@ -32,19 +32,19 @@ export class PkgApiGeneral extends $ex.Unit {
     return this.$.ui.component(name, Component)
   }
 
-  private createPkgElement() {
+  private createProjectElement() {
     const eposElement = document.querySelector('epos')
     if (!eposElement) throw this.never
 
-    const pkgElement = document.createElement('div')
-    pkgElement.epos = true
-    pkgElement.setAttribute('pkgs.ge', this.$pkg.name)
-    eposElement.append(pkgElement)
+    const projectElement = document.createElement('div')
+    projectElement.epos = true
+    projectElement.setAttribute('projects.ge', this.$project.name)
+    eposElement.append(projectElement)
 
-    this.attachRoot(pkgElement)
-    this.attachShadow(pkgElement)
+    this.attachRoot(projectElement)
+    this.attachShadow(projectElement)
 
-    return pkgElement
+    return projectElement
   }
 
   private attachRoot(target: HTMLElement | ShadowRoot) {
@@ -54,13 +54,13 @@ export class PkgApiGeneral extends $ex.Unit {
   }
 
   private attachShadow(element: HTMLElement) {
-    if (!this.$pkg.shadowCss) return
+    if (!this.$project.shadowCss) return
     const shadow = element.attachShadow({ mode: 'open' })
 
     // Hoist @property rules to the root DOM.
     // They don't work inside shadow DOM but are inherited from the root DOM.
     const sheet = new CSSStyleSheet()
-    sheet.replaceSync(this.$pkg.shadowCss)
+    sheet.replaceSync(this.$project.shadowCss)
     const rules = [...sheet.cssRules]
     const propertyRules = rules.filter(rule => rule.cssText.startsWith('@property'))
     if (propertyRules.length > 0) {
@@ -75,7 +75,7 @@ export class PkgApiGeneral extends $ex.Unit {
     }
 
     // Create <link/> for shadow CSS
-    const blob = new Blob([this.$pkg.shadowCss], { type: 'text/css' })
+    const blob = new Blob([this.$project.shadowCss], { type: 'text/css' })
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = URL.createObjectURL(blob)
@@ -86,7 +86,7 @@ export class PkgApiGeneral extends $ex.Unit {
   }
 
   private getContainer() {
-    if (!this.$pkg.shadowCss) {
+    if (!this.$project.shadowCss) {
       const root = this.element.querySelector('[root]')
       if (!root) throw this.never
       return root

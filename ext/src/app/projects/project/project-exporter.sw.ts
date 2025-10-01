@@ -1,7 +1,7 @@
-import type { BundleNoAssets } from './pkg.sw'
+import type { BundleNoAssets } from './project.sw'
 
-export class PkgExporter extends $sw.Unit {
-  private $pkg = this.up($sw.Pkg)!
+export class ProjectExporter extends $sw.Unit {
+  private $project = this.up($sw.Project)!
 
   async export() {
     const zip = new this.$.libs.Zip()
@@ -19,7 +19,7 @@ export class PkgExporter extends $sw.Unit {
       'offscreen.html',
     ]
 
-    if (this.$pkg.name === 'devkit') {
+    if (this.$project.name === 'devkit') {
       engineFiles.push('ex.dev.js', 'ex-mini.dev.js')
     }
 
@@ -30,15 +30,15 @@ export class PkgExporter extends $sw.Unit {
 
     const bundle: BundleNoAssets = {
       dev: false,
-      spec: this.$pkg.spec,
-      sources: this.$pkg.sources,
+      spec: this.$project.spec,
+      sources: this.$project.sources,
     }
     zip.file('project.json', JSON.stringify(bundle, null, 2))
 
     const assets: Record<string, Blob> = {}
-    const paths = await this.$.idb.keys(this.$pkg.name, ':assets')
+    const paths = await this.$.idb.keys(this.$project.name, ':assets')
     for (const path of paths) {
-      const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
+      const blob = await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
       if (!blob) throw this.never
       assets[path] = blob
       zip.file(`assets/${path}`, blob)
@@ -54,14 +54,14 @@ export class PkgExporter extends $sw.Unit {
     zip.file('icon.png', icon128)
 
     const urlFilters = new Set<string>()
-    for (const target of this.$pkg.targets) {
+    for (const target of this.$project.targets) {
       for (let pattern of target.matches) {
         if (pattern.startsWith('!')) continue
         if (pattern.startsWith('frame:')) pattern = pattern.replace('frame:', '')
         if (pattern === '<popup>') continue
         if (pattern === '<sidePanel>') continue
         if (pattern === '<background>') continue
-        if (pattern === '<hub>') pattern = `${this.$.env.url.web}/@${this.$pkg.name}/*`
+        if (pattern === '<hub>') pattern = `${this.$.env.url.web}/@${this.$project.name}/*`
         urlFilters.add(pattern)
       }
     }
@@ -74,9 +74,9 @@ export class PkgExporter extends $sw.Unit {
 
     const manifest = {
       ...engineManifest,
-      name: this.$pkg.spec.title ?? this.$pkg.spec.name,
-      action: { default_title: this.$pkg.spec.title ?? this.$pkg.spec.name },
-      ...(this.$pkg.spec.manifest ?? {}),
+      name: this.$project.spec.title ?? this.$project.spec.name,
+      action: { default_title: this.$project.spec.title ?? this.$project.spec.name },
+      ...(this.$project.spec.manifest ?? {}),
     }
 
     zip.file('manifest.json', JSON.stringify(manifest, null, 2))

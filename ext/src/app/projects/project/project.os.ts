@@ -1,6 +1,6 @@
-import type { ExecutionMeta } from './pkg.sw'
+import type { ExecutionMeta } from './project.sw'
 
-export class Pkg extends $os.Unit {
+export class Project extends $os.Unit {
   dev: ExecutionMeta['dev']
   name: ExecutionMeta['name']
   hash: ExecutionMeta['hash']

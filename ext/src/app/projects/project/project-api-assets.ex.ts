@@ -1,16 +1,16 @@
-export class PkgApiAssets extends $ex.Unit {
-  private $pkg = this.up($ex.Pkg)!
+export class ProjectApiAssets extends $ex.Unit {
+  private $project = this.up($ex.Project)!
   private assets: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 
   static async create(parent: $ex.Unit) {
-    const pkgApiAssets = new PkgApiAssets(parent)
-    await pkgApiAssets.init()
-    return pkgApiAssets
+    const projectApiAssets = new ProjectApiAssets(parent)
+    await projectApiAssets.init()
+    return projectApiAssets
   }
 
   private async init() {
-    this.paths = await this.$.idb.keys(this.$pkg.name, ':assets')
+    this.paths = await this.$.idb.keys(this.$project.name, ':assets')
   }
 
   url(path: string) {
@@ -22,7 +22,7 @@ export class PkgApiAssets extends $ex.Unit {
   async load(path: string) {
     path = this.normalizePath(path)
     if (this.assets[path]) return this.assets[path].blob
-    const blob = await this.$.idb.get<Blob>(this.$pkg.name, ':assets', path)
+    const blob = await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
     if (!blob) throw new Error(`Asset not found: ${path}`)
     this.assets[path] = { url: URL.createObjectURL(blob), blob }
     return blob

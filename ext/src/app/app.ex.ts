@@ -11,7 +11,7 @@ export class App extends $ex.Unit {
   idb = new $ex.Idb(this)
   kit = new $ex.Kit(this)
   peer = new $exOs.Peer(this)
-  pkgs = new $ex.Pkgs(this)
+  projects = new $ex.Projects(this)
   states = new $exSw.States(this)
   ui = new $ex.Ui(this)
 

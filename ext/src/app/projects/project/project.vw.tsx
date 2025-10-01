@@ -1,6 +1,6 @@
-import type { ExecutionMeta } from './pkg.sw'
+import type { ExecutionMeta } from './project.sw'
 
-export class Pkg extends $vw.Unit {
+export class Project extends $vw.Unit {
   dev: ExecutionMeta['dev']
   name: ExecutionMeta['name']
   hash: ExecutionMeta['hash']
@@ -25,7 +25,7 @@ export class Pkg extends $vw.Unit {
   }
 
   ui = () => {
-    const selected = this.$.pkgs.selectedPkgName === this.name
+    const selected = this.$.projects.selectedProjectName === this.name
     if (!this.invoked) this.invoked = selected
 
     let width: number | string

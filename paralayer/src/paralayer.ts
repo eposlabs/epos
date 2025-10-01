@@ -204,7 +204,7 @@ export class Paralayer extends Unit {
       `}`,
     ]
 
-    return [...imports, '', ...assign, '', ...globals, ''].join('\n')
+    return ['// @ts-ignore', '', ...imports, '', ...assign, '', ...globals, ''].join('\n')
   }
 
   private generateIndexContent(topLayer: string, allLayers: string[]) {

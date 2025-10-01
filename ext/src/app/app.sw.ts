@@ -13,7 +13,7 @@ export class App extends $sw.Unit {
   kit = new $sw.Kit(this)
   net!: $sw.Net
   peer = new $sw.Peer(this)
-  pkgs!: $sw.Pkgs
+  projects!: $sw.Projects
   states = new $exSw.States(this)
 
   static async create() {
@@ -25,7 +25,7 @@ export class App extends $sw.Unit {
   private async init() {
     self.$ = this
     this.net = await $sw.Net.create(this)
-    this.pkgs = await $sw.Pkgs.create(this)
+    this.projects = await $sw.Projects.create(this)
     this.boot = await $sw.Boot.create(this)
     await this.setupContentScript()
     await this.setupOffscreen()
@@ -68,9 +68,9 @@ export class App extends $sw.Unit {
   }
 
   private defineGlobalMethods() {
-    self.add = (name: string, dev = false) => this.pkgs.installer.install(name, dev)
-    self.remove = (name: string) => this.pkgs.installer.remove(name)
-    self.eject = (name: string) => this.pkgs.map[name].exporter.export()
+    self.add = (name: string, dev = false) => this.projects.installer.install(name, dev)
+    self.remove = (name: string) => this.projects.installer.remove(name)
+    self.eject = (name: string) => this.projects.map[name].exporter.export()
     self.install = self.add
   }
 }

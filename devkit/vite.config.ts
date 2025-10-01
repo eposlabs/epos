@@ -1,8 +1,8 @@
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
-import { paralayer } from 'paralayer'
+import { paralayer } from 'paralayer/source'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle } from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle/source'
 
 export default defineConfig(async ({ mode }) => {
   const minify = mode !== 'development'

@@ -2,7 +2,7 @@
 import '@eposlabs/utils/globals'
 import type { CsReadyData } from '../app/app.cs'
 
-type PkgDef = {
+type ProjectDef = {
   name: string
   icon: string | null
   title: string | null
@@ -23,7 +23,7 @@ declare global {
   var __eposElement: HTMLElement
   var __eposTabId: number | null
   var __eposBusToken: string | null
-  var __eposPkgDefs: PkgDef[]
+  var __eposProjectDefs: ProjectDef[]
   var __eposInjected: boolean
 
   // Ready flag for [cs]

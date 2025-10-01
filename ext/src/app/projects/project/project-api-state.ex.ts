@@ -1,7 +1,7 @@
 import type { Location, ModelClass, Initial, Versioner } from '../../states/state/state.ex.sw'
 
-export class PkgApiState extends $ex.Unit {
-  private $pkg = this.up($ex.Pkg)!
+export class ProjectApiState extends $ex.Unit {
+  private $project = this.up($ex.Project)!
   private states: { [stateName: string]: $exSw.State } = {}
   private models: { [modelName: string]: ModelClass } = {}
 
@@ -57,11 +57,11 @@ export class PkgApiState extends $ex.Unit {
   }
 
   async list(filter: { connected?: boolean } = {}) {
-    const names = await this.$.idb.keys(this.$pkg.name, ':state')
+    const names = await this.$.idb.keys(this.$project.name, ':state')
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.states.isConnected([this.$pkg.name, ':state', name]),
+        connected: this.$.states.isConnected([this.$project.name, ':state', name]),
       }))
       .filter(state => {
         if (this.$.is.undefined(filter.connected)) return true
@@ -75,7 +75,7 @@ export class PkgApiState extends $ex.Unit {
   }
 
   private getLocation(name: string): Location {
-    return [this.$pkg.name, ':state', name]
+    return [this.$project.name, ':state', name]
   }
 
   private prepareName(name?: string) {

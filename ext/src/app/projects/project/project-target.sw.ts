@@ -1,7 +1,7 @@
 import type { Mode, Pattern, PositivePattern, Target } from 'epos-spec-parser'
 
-export class PkgTarget extends $sw.Unit {
-  private $pkg = this.up($sw.Pkg)!
+export class ProjectTarget extends $sw.Unit {
+  private $project = this.up($sw.Project)!
   matches: Pattern[]
   load: string[]
   mode: Mode
@@ -37,8 +37,8 @@ export class PkgTarget extends $sw.Unit {
       const { origin, searchParams } = new URL(url)
       if (origin !== extOrigin) return false
       const type = `<${searchParams.get('type')}>`
-      const pkgName = searchParams.get('name')
-      return pattern === type && (!pkgName || pkgName === this.$pkg.name)
+      const projectName = searchParams.get('name')
+      return pattern === type && (!projectName || projectName === this.$project.name)
     }
 
     // For `frame=true`, only `frame:*` patterns should match
@@ -48,7 +48,7 @@ export class PkgTarget extends $sw.Unit {
     }
 
     if (pattern.startsWith('<hub>')) {
-      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$pkg.name}`)
+      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$project.name}`)
       return new URLPattern(pattern).test(url)
     }
 

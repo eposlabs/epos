@@ -6,18 +6,18 @@ export type Props = {
   shadowCss: string
 }
 
-export class Pkg extends $ex.Unit {
+export class Project extends $ex.Unit {
   name: string
   icon: string | null
   title: string | null
   tabId: number | null
   shadowCss: string
-  api!: $ex.PkgApi
+  api!: $ex.ProjectApi
 
   static async create(parent: $ex.Unit, props: Props) {
-    const pkg = new Pkg(parent, props)
-    await pkg.init()
-    return pkg
+    const project = new Project(parent, props)
+    await project.init()
+    return project
   }
 
   constructor(parent: $ex.Unit, props: Props) {
@@ -30,7 +30,7 @@ export class Pkg extends $ex.Unit {
   }
 
   private async init() {
-    this.api = await $ex.PkgApi.create(this)
+    this.api = await $ex.ProjectApi.create(this)
     await this.initHub()
   }
 

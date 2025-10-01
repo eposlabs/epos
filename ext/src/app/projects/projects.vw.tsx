@@ -1,21 +1,21 @@
-import type { ActionData } from './pkgs.sw'
+import type { ActionData } from './projects.sw'
 
-export class Pkgs extends $vw.Unit {
-  map: { [name: string]: $vw.Pkg } = {}
+export class Projects extends $vw.Unit {
+  map: { [name: string]: $vw.Project } = {}
   hasSidePanel = false
   actionData: ActionData = {}
-  selectedPkgName: string | null = localStorage.getItem('pkgs.selectedPkgName')
-  dock = new $vw.PkgsDock(this)
-  watcher = new $exOsVw.PkgsWatcher(this)
+  selectedProjectName: string | null = localStorage.getItem('projects.selectedProjectName')
+  dock = new $vw.ProjectsDock(this)
+  watcher = new $exOsVw.ProjectsWatcher(this)
 
   list() {
     return Object.values(this.map)
   }
 
   static async create(parent: $vw.Unit) {
-    const pkgs = new Pkgs(parent)
-    await pkgs.init()
-    return pkgs
+    const projects = new Projects(parent)
+    await projects.init()
+    return projects
   }
 
   private async init() {
@@ -23,34 +23,34 @@ export class Pkgs extends $vw.Unit {
   }
 
   getSelected() {
-    if (!this.selectedPkgName) return null
-    return this.map[this.selectedPkgName] ?? null
+    if (!this.selectedProjectName) return null
+    return this.map[this.selectedProjectName] ?? null
   }
 
   select(name: string) {
     if (!this.map[name]) throw this.never
-    this.selectedPkgName = name
+    this.selectedProjectName = name
     this.$.refresh()
-    localStorage.setItem('pkgs.selectedPkgName', name)
+    localStorage.setItem('projects.selectedProjectName', name)
   }
 
   private async initWatcher() {
     await this.watcher.start((delta, data) => {
-      // Update packages
+      // Update projects
       for (const meta of Object.values(data.execution)) {
-        const pkg = this.map[meta.name]
-        if (!pkg) continue
-        pkg.update(meta)
+        const project = this.map[meta.name]
+        if (!project) continue
+        project.update(meta)
       }
 
-      // Add packages
+      // Add projects
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.map[meta.name] = new $vw.Pkg(this, meta)
+        this.map[meta.name] = new $vw.Project(this, meta)
       }
 
-      // Remove packages
+      // Remove projects
       for (const name of delta.removed) {
         if (!this.map[name]) throw this.never
         delete this.map[name]
@@ -61,16 +61,16 @@ export class Pkgs extends $vw.Unit {
       this.actionData = data.action
 
       // Close view if nothing to show
-      const noPkgs = this.list().length === 0
+      const noProjects = this.list().length === 0
       const noActions = Object.keys(this.actionData).length === 0
-      if (noPkgs && noActions) {
+      if (noProjects && noActions) {
         self.close()
         return
       }
 
-      // Select first package if none selected
-      if (!this.selectedPkgName || !this.map[this.selectedPkgName]) {
-        this.selectedPkgName = this.list()[0]?.name ?? null
+      // Select first project if none selected
+      if (!this.selectedProjectName || !this.map[this.selectedProjectName]) {
+        this.selectedProjectName = this.list()[0]?.name ?? null
       }
 
       // Refresh UI
@@ -82,8 +82,8 @@ export class Pkgs extends $vw.Unit {
     if (this.list().length === 0) return null
     return (
       <div onMouseEnter={() => this.dock.hide()}>
-        {this.list().map(pkg => (
-          <pkg.ui key={pkg.name} />
+        {this.list().map(project => (
+          <project.ui key={project.name} />
         ))}
       </div>
     )

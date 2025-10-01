@@ -1,10 +1,10 @@
 import type { TargetedEvent } from 'preact'
 
-export class PkgsDock extends $vw.Unit {
-  private $pkgs = this.up($vw.Pkgs)!
+export class ProjectsDock extends $vw.Unit {
+  private $projects = this.up($vw.Projects)!
   // private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
-  private selectedPkg: $vw.Pkg | null = null
+  private selectedProject: $vw.Project | null = null
   private hidden = true
   private timeout: number | undefined = undefined
 
@@ -30,11 +30,11 @@ export class PkgsDock extends $vw.Unit {
   }
 
   ui = () => {
-    // if (!this.$pkgs.selectedPkgName) return null
+    // if (!this.$projects.selectedProjectName) return null
 
     const items = this.getItems()
     this.uniqueItemNames = this.$.utils.unique(items.map(item => item.name))
-    this.selectedPkg = this.$pkgs.getSelected()
+    this.selectedProject = this.$projects.getSelected()
 
     return (
       <div
@@ -43,7 +43,7 @@ export class PkgsDock extends $vw.Unit {
         class={this.$.utils.cx([
           'fixed top-0 right-0 z-10 h-28 bg-brand font-mono font-semibold text-black',
           'transition delay-30 duration-200 select-none',
-          !!(this.hidden && this.selectedPkg) &&
+          !!(this.hidden && this.selectedProject) &&
             'transform-[translate(calc(100%-min(100%,32px)),calc(-100%+7px))] text-transparent',
         ])}
       >
@@ -63,25 +63,25 @@ export class PkgsDock extends $vw.Unit {
     const onChange = async (e: TargetedEvent<HTMLSelectElement>) => {
       const value = e.currentTarget.value
       const isAction = value.startsWith('action:')
-      const pkgName = isAction ? value.replace('action:', '') : value
+      const projectName = isAction ? value.replace('action:', '') : value
 
       if (isAction) {
-        await this.processAction(pkgName)
+        await this.processAction(projectName)
       } else {
-        this.$pkgs.select(pkgName)
+        this.$projects.select(projectName)
         this.hide()
       }
     }
 
     return (
       <div class="relative flex h-full items-center gap-5 pr-8 pl-9">
-        {this.selectedPkg && (
+        {this.selectedProject && (
           <>
-            <div class="text-[12px]">{this.selectedPkg.title ?? this.selectedPkg.name}</div>
+            <div class="text-[12px]">{this.selectedProject.title ?? this.selectedProject.name}</div>
             <div class="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
             {/* Native select */}
             <select
-              value={this.selectedPkg.name}
+              value={this.selectedProject.name}
               onChange={onChange}
               class="absolute inset-0 opacity-0 outline-none"
             >
@@ -94,14 +94,14 @@ export class PkgsDock extends $vw.Unit {
           </>
         )}
 
-        {!this.selectedPkg && (
+        {!this.selectedProject && (
           <>
             <div class="text-[12px]">Select</div>
             <div class="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
             {/* Native select */}
             <select value={'0'} onChange={onChange} class="absolute inset-0 opacity-0 outline-none">
               <option value="0" disabled>
-                Select package
+                Select project
               </option>
               {this.getItems().map(item => (
                 <option key={item.value} value={item.value}>
@@ -117,14 +117,14 @@ export class PkgsDock extends $vw.Unit {
 
   private ActionButton = () => {
     if (this.uniqueItemNames.length > 1) return null
-    const selectedPkg = this.selectedPkg
-    if (!selectedPkg) return null
-    const meta = this.$pkgs.actionData[selectedPkg.name]
+    const selectedProject = this.selectedProject
+    if (!selectedProject) return null
+    const meta = this.$projects.actionData[selectedProject.name]
     if (!meta) return null
 
     return (
       <button
-        onClick={() => this.processAction(selectedPkg.name)}
+        onClick={() => this.processAction(selectedProject.name)}
         class="flex h-full w-28 items-center justify-center not-only:pl-3 only:box-content only:px-2"
       >
         <div class="text-[14px]">→</div>
@@ -134,7 +134,7 @@ export class PkgsDock extends $vw.Unit {
 
   private SidePanelButton = () => {
     if (!this.$.env.is.vwPopup) return null
-    if (!this.$pkgs.hasSidePanel) return null
+    if (!this.$projects.hasSidePanel) return null
 
     return (
       <button
@@ -148,12 +148,12 @@ export class PkgsDock extends $vw.Unit {
 
   private getItems() {
     return [
-      ...this.$pkgs.list().map(pkg => ({
-        name: pkg.name,
-        value: pkg.name,
-        label: pkg.title ?? pkg.name,
+      ...this.$projects.list().map(project => ({
+        name: project.name,
+        value: project.name,
+        label: project.title ?? project.name,
       })),
-      ...Object.values(this.$pkgs.actionData).map(meta => ({
+      ...Object.values(this.$projects.actionData).map(meta => ({
         name: meta.name,
         value: `action:${meta.name}`,
         label: `${meta.title ?? meta.name} →`,
@@ -161,12 +161,12 @@ export class PkgsDock extends $vw.Unit {
     ].sort((item1, item2) => item1.label.localeCompare(item2.label))
   }
 
-  private async processAction(pkgName: string) {
-    const meta = this.$pkgs.actionData[pkgName]
+  private async processAction(projectName: string) {
+    const meta = this.$projects.actionData[projectName]
     if (!meta) throw this.never
 
     if (this.$.is.boolean(meta.action)) {
-      const bus = this.$.bus.create(`pkg[${pkgName}]`)
+      const bus = this.$.bus.create(`project[${projectName}]`)
       await bus.send('action')
     } else if (this.$.is.string(meta.action)) {
       await this.$.boot.medium.openTab(meta.action)

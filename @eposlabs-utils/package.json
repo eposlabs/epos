@@ -1,28 +1,24 @@
 {
   "name": "@eposlabs/utils",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "scripts": {
-    "build": "tsup src --format esm --dts --clean --no-splitting",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
   },
   "exports": {
     ".": {
-      "source": "./src/utils.ts",
-      "import": "./dist/utils.js"
+      "import": "./src/utils.ts"
     },
     "./globals": {
-      "source": "./src/globals.ts",
-      "import": "./dist/globals.js"
+      "import": "./src/globals.ts"
     }
   },
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "publishConfig": {
     "access": "public"

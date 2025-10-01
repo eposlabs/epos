@@ -14,7 +14,7 @@ export class App extends $vw.Unit {
 
   boot = new $vw.Boot(this)
   dev!: $gl.Dev
-  pkgs!: $vw.Pkgs
+  projects!: $vw.Projects
 
   static async create() {
     const app = new App()
@@ -24,7 +24,7 @@ export class App extends $vw.Unit {
 
   private async init() {
     self.$ = this
-    this.pkgs = await $vw.Pkgs.create(this)
+    this.projects = await $vw.Projects.create(this)
     this.render()
     this.dev = await $gl.Dev.create(this)
   }
@@ -48,8 +48,8 @@ export class App extends $vw.Unit {
     return (
       <props.context.Provider value={renderId}>
         <div class="min-h-200 min-w-240">
-          <this.$.pkgs.dock.ui />
-          <this.$.pkgs.ui />
+          <this.$.projects.dock.ui />
+          <this.$.projects.ui />
         </div>
       </props.context.Provider>
     )

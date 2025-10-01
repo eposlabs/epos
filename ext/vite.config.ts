@@ -1,8 +1,8 @@
 import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import { paralayer } from 'paralayer'
+import { paralayer } from 'paralayer/source'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
+import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle/source'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig(async ({ mode }) => {
