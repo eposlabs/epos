@@ -9,7 +9,7 @@ export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | `<hub
 export type NegativePattern = `!<hub>${string}` | `!${string}`
 export type Mode = 'normal' | 'shadow' | 'lite'
 
-export type Manifest = {
+export type Spec = {
   name: string
   icon: string | null
   title: string | null
@@ -34,32 +34,32 @@ const config = {
   },
 }
 
-export function parseEposSpec(json: string): Manifest {
+export function parseEposSpec(json: string): Spec {
   json = stripJsonComments(json)
-  const [manifest, error] = safeSync(() => JSON.parse(json))
+  const [spec, error] = safeSync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
-  if (!is.object(manifest)) throw new Error(`Manifest must be an object`)
+  if (!is.object(spec)) throw new Error(`Epos spec must be an object`)
 
   const keys = [...config.keys, ...config.target.keys]
-  const badKey = Object.keys(manifest).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown manifest key: ${JSON.stringify(badKey)}`)
+  const badKey = Object.keys(spec).find(key => !keys.includes(key))
+  if (badKey) throw new Error(`Unknown spec key: ${JSON.stringify(badKey)}`)
 
   return {
-    name: parseName(manifest),
-    icon: parseIcon(manifest),
-    title: parseTitle(manifest),
-    action: parseAction(manifest),
-    popup: parsePopup(manifest),
-    assets: parseAssets(manifest),
-    targets: parseTargets(manifest),
-    manifest: parseManifest(manifest),
+    name: parseName(spec),
+    icon: parseIcon(spec),
+    title: parseTitle(spec),
+    action: parseAction(spec),
+    popup: parsePopup(spec),
+    assets: parseAssets(spec),
+    targets: parseTargets(spec),
+    manifest: parseManifest(spec),
   }
 }
 
-function parseName(manifest: Obj) {
-  if (!('name' in manifest)) throw new Error(`'name' field is required`)
+function parseName(spec: Obj) {
+  if (!('name' in spec)) throw new Error(`'name' field is required`)
 
-  const name = manifest.name
+  const name = spec.name
   const { min, max, regex } = config.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
@@ -69,27 +69,27 @@ function parseName(manifest: Obj) {
   return name
 }
 
-function parseIcon(manifest: Obj) {
-  if (!('icon' in manifest)) return null
+function parseIcon(spec: Obj) {
+  if (!('icon' in spec)) return null
 
-  const icon = manifest.icon
+  const icon = spec.icon
   if (!is.string(icon)) throw new Error(`'icon' must be a string`)
 
   const iconPath = parsePaths([icon])[0]
   return iconPath
 }
 
-function parseTitle(manifest: Obj): string | null {
-  if (!('title' in manifest)) return null
+function parseTitle(spec: Obj): string | null {
+  if (!('title' in spec)) return null
 
-  const title = manifest.title
+  const title = spec.title
   if (!is.string(title)) throw new Error(`'title' must be a string`)
 
   return title
 }
 
-function parseAction(manifest: Obj): Action {
-  const action = manifest.action ?? null
+function parseAction(spec: Obj): Action {
+  const action = spec.action ?? null
   if (action === null) return null
   if (action === true) return true
 
@@ -99,8 +99,8 @@ function parseAction(manifest: Obj): Action {
   return action
 }
 
-function parsePopup(manifest: Obj) {
-  const popup = structuredClone(manifest.popup ?? null)
+function parsePopup(spec: Obj) {
+  const popup = structuredClone(spec.popup ?? null)
   if (popup === null) return null
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
 
@@ -121,27 +121,27 @@ function parsePopup(manifest: Obj) {
   return popup
 }
 
-function parseAssets(manifest: Obj) {
-  const assets = structuredClone(manifest.assets ?? [])
+function parseAssets(spec: Obj) {
+  const assets = structuredClone(spec.assets ?? [])
   if (!isArrayOfStrings(assets)) throw new Error(`'assets' must be an array of strings`)
 
   // Add icon to assets
-  const icon = parseIcon(manifest)
+  const icon = parseIcon(spec)
   if (icon) assets.push(icon)
 
   return parsePaths(assets)
 }
 
-function parseTargets(manifest: Obj) {
-  const targets = structuredClone(manifest.targets ?? [])
+function parseTargets(spec: Obj) {
+  const targets = structuredClone(spec.targets ?? [])
   if (!is.array(targets)) throw new Error(`'targets' must be an array`)
 
   // Move top-level target to 'targets'
-  if ('matches' in manifest || 'load' in manifest || 'mode' in manifest) {
+  if ('matches' in spec || 'load' in spec || 'mode' in spec) {
     targets.unshift({
-      matches: structuredClone(manifest.matches ?? []),
-      load: structuredClone(manifest.load ?? []),
-      mode: structuredClone(manifest.mode ?? 'normal'),
+      matches: structuredClone(spec.matches ?? []),
+      load: structuredClone(spec.load ?? []),
+      mode: structuredClone(spec.mode ?? 'normal'),
     })
   }
 
@@ -211,10 +211,10 @@ function parsePaths(paths: string[]) {
   return paths
 }
 
-function parseManifest(manifest: Obj) {
-  if (!('manifest' in manifest)) return null
-  if (!is.object(manifest.manifest)) throw new Error(`'manifest' must be an object`)
-  return manifest.manifest
+function parseManifest(spec: Obj) {
+  if (!('manifest' in spec)) return null
+  if (!is.object(spec.manifest)) throw new Error(`'manifest' must be an object`)
+  return spec.manifest
 }
 
 // ---------------------------------------------------------------------------

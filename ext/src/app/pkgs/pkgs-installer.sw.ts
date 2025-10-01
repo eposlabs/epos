@@ -65,12 +65,12 @@ export class PkgsInstaller extends $sw.Unit {
     const [json] = await this.$.utils.safe(res.text())
     if (!json) throw new Error(`Failed to read ${url}`)
 
-    // Parse manifest
-    const manifest = this.$.libs.parseEposSpec(json)
+    // Parse epos.json
+    const spec = this.$.libs.parseEposSpec(json)
 
     // Fetch assets
     const assets: Record<string, Blob> = {}
-    for (const path of manifest.assets) {
+    for (const path of spec.assets) {
       const assetUrl = new URL(path, url)
       const [res] = await this.$.utils.safe(fetch(assetUrl))
       if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
@@ -81,7 +81,7 @@ export class PkgsInstaller extends $sw.Unit {
 
     // Fetch sources
     const sources: Record<string, string> = {}
-    for (const target of manifest.targets) {
+    for (const target of spec.targets) {
       for (const path of target.load) {
         if (path in sources) continue
         const sourceUrl = new URL(path, url).href
@@ -94,7 +94,7 @@ export class PkgsInstaller extends $sw.Unit {
     }
 
     await this.installFromPack({
-      spec: { dev, name: manifest.name, manifest, sources },
+      spec: { dev, name: spec.name, manifest: spec, sources },
       assets: assets,
     })
   }

@@ -1,12 +1,12 @@
 // TODO: handle when adding pkg with the same name
 import type { Pack } from '@ext/app/pkgs/pkgs-installer.sw'
-import { parseEposSpec, type Manifest } from 'epos-spec-parser'
+import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
 export class Pkg extends $gl.Unit {
   id = this.$.utils.id()
   handleId: string
   name: string | null = null
-  manifest: Manifest | null = null
+  spec: Spec | null = null
   lastUpdatedAt: number | null = null
 
   declare private initialized: boolean
@@ -76,24 +76,24 @@ export class Pkg extends $gl.Unit {
   private async start() {
     this.state.error = null
 
-    // Read epos.json manifest
-    const [manifest, manifestError] = await this.$.utils.safe(() => this.readManifest())
-    if (manifestError) {
-      this.state.error = manifestError.message
+    // Read epos.json spec
+    const [spec, specError] = await this.$.utils.safe(() => this.readSpec())
+    if (specError) {
+      this.state.error = specError.message
       return
     }
 
     // Name has been changed? -> Uninstall pkg from epos
-    if (this.name !== manifest.name) {
+    if (this.name !== spec.name) {
       await this.engine.bus.send('pkgs.remove', this.name)
     }
 
-    // Update manifest and name
-    this.manifest = manifest
-    this.name = manifest.name ?? null
+    // Update spec and name
+    this.spec = spec
+    this.name = spec.name ?? null
 
     // Create file observers for all used paths
-    const paths = this.getUsedFilePathsFromManifest()
+    const paths = this.getUsedFilePathsFromSpec()
     for (const path of paths) {
       const [observer, error] = await this.$.utils.safe(() => this.createFileObserver(path))
       if (observer) {
@@ -128,8 +128,8 @@ export class Pkg extends $gl.Unit {
         }
       }
 
-      const manifestChanged = records.some(record => record.relativePathComponents.join('/') === 'epos.json')
-      if (this.state.error || manifestChanged) {
+      const specChanged = records.some(record => record.relativePathComponents.join('/') === 'epos.json')
+      if (this.state.error || specChanged) {
         async: this.restart()
         return
       }
@@ -173,15 +173,15 @@ export class Pkg extends $gl.Unit {
 
     self.clearTimeout(this.timeout)
     this.timeout = self.setTimeout(async () => {
-      if (!this.manifest) return
+      if (!this.spec) return
 
       const assets: Record<string, Blob> = {}
-      for (const path of this.manifest.assets) {
+      for (const path of this.spec.assets) {
         assets[path] = await this.readFileAsBlob(path)
       }
 
       const sources: Record<string, string> = {}
-      for (const target of this.manifest.targets) {
+      for (const target of this.spec.targets) {
         for (const path of target.load) {
           if (sources[path]) continue
           sources[path] = await this.readFileAsText(path)
@@ -190,9 +190,9 @@ export class Pkg extends $gl.Unit {
 
       const spec = {
         dev: true,
-        name: this.manifest.name,
+        name: this.spec.name,
         sources: sources,
-        manifest: this.manifest,
+        manifest: this.spec,
       }
 
       await this.engine.bus.send('pkgs.install', { spec, assets })
@@ -221,28 +221,31 @@ export class Pkg extends $gl.Unit {
     return await blob.text()
   }
 
-  private getUsedFilePathsFromManifest() {
-    if (!this.manifest) throw this.never('Manifest is not loaded')
+  private getUsedFilePathsFromSpec() {
+    if (!this.spec) throw this.never('epos.json is not loaded')
     const paths = new Set<string>()
-    this.manifest.assets.forEach(path => paths.add(path))
-    this.manifest.targets.forEach(target => target.load.forEach(path => paths.add(path)))
+    this.spec.assets.forEach(path => paths.add(path))
+    this.spec.targets.forEach(target => target.load.forEach(path => paths.add(path)))
     return [...paths]
   }
 
-  private async readManifest() {
-    const [handle, handleError] = await this.$.utils.safe(() => this.handle.getFileHandle('epos.json'))
-    if (handleError) throw new Error('epos.json not found')
+  private async readSpec() {
+    const rootDirHandle = this.handle
+    if (!rootDirHandle) throw this.never()
 
-    const [file, fileError] = await this.$.utils.safe(() => handle.getFile())
+    const [specHandle] = await this.$.utils.safe(() => rootDirHandle.getFileHandle('epos.json'))
+    if (!specHandle) throw new Error('epos.json not found')
+
+    const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
     if (fileError) throw new Error(`Failed to read epos.json: ${fileError.message}`)
 
-    const [json, jsonError] = await this.$.utils.safe(() => file.text())
+    const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
     if (jsonError) throw new Error(`Failed to read epos.json content: ${jsonError.message}`)
 
-    const [manifest, manifestError] = this.$.utils.safeSync(() => parseEposSpec(json))
-    if (manifestError) throw new Error(`Failed to parse epos.json: ${manifestError.message}`)
+    const [spec, specError] = this.$.utils.safeSync(() => parseEposSpec(specJson))
+    if (specError) throw new Error(`Failed to parse epos.json: ${specError.message}`)
 
-    return manifest
+    return spec
   }
 
   private async getFileHandleByPath(path: string) {
