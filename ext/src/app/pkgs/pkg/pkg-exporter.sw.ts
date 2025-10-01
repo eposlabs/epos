@@ -1,4 +1,4 @@
-import type { Spec } from './pkg.sw'
+import type { BundleNoAssets } from './pkg.sw'
 
 export class PkgExporter extends $sw.Unit {
   private $pkg = this.up($sw.Pkg)!
@@ -28,13 +28,12 @@ export class PkgExporter extends $sw.Unit {
       zip.file(path, blob)
     }
 
-    const pkg: Spec = {
-      name: this.$pkg.name,
+    const bundle: BundleNoAssets = {
       dev: false,
+      spec: this.$pkg.spec,
       sources: this.$pkg.sources,
-      manifest: this.$pkg.manifest,
     }
-    zip.file('pkg.json', JSON.stringify(pkg, null, 2))
+    zip.file('pkg.json', JSON.stringify(bundle, null, 2))
 
     const assets: Record<string, Blob> = {}
     const paths = await this.$.idb.keys(this.$pkg.name, ':assets')
@@ -45,7 +44,7 @@ export class PkgExporter extends $sw.Unit {
       zip.file(`assets/${path}`, blob)
     }
 
-    const icon = pkg.manifest.icon ? assets[pkg.manifest.icon] : await fetch('/icon.png').then(r => r.blob())
+    const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
     const icon128 = await this.$.utils.convertImage(icon, {
       type: 'image/png',
       quality: 1,
@@ -75,9 +74,9 @@ export class PkgExporter extends $sw.Unit {
 
     const manifest = {
       ...engineManifest,
-      name: this.$pkg.manifest.title ?? this.$pkg.manifest.name,
-      action: { default_title: this.$pkg.manifest.title ?? this.$pkg.manifest.name },
-      ...(this.$pkg.manifest.manifest ?? {}),
+      name: this.$pkg.spec.title ?? this.$pkg.spec.name,
+      action: { default_title: this.$pkg.spec.title ?? this.$pkg.spec.name },
+      ...(this.$pkg.spec.manifest ?? {}),
     }
 
     zip.file('manifest.json', JSON.stringify(manifest, null, 2))

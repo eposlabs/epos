@@ -1,6 +1,4 @@
-import type { Spec, Assets } from './pkg/pkg.sw'
-
-export type Pack = { spec: Spec; assets: Assets }
+import type { Bundle } from './pkg/pkg.sw'
 
 export class PkgsInstaller extends $sw.Unit {
   private $pkgs = this.up($sw.Pkgs)!
@@ -14,9 +12,9 @@ export class PkgsInstaller extends $sw.Unit {
     this.remove = this.queue.wrap(this.remove, this)
   }
 
-  async install(input: string | Pack, dev = false) {
+  async install(input: Bundle | string, dev = false) {
     if (this.$.is.object(input)) {
-      await this.installFromPack(input)
+      await this.installFromBundle(input)
     } else if (URL.canParse(input)) {
       await this.installFromUrl(input, dev)
     } else {
@@ -68,17 +66,6 @@ export class PkgsInstaller extends $sw.Unit {
     // Parse epos.json
     const spec = this.$.libs.parseEposSpec(json)
 
-    // Fetch assets
-    const assets: Record<string, Blob> = {}
-    for (const path of spec.assets) {
-      const assetUrl = new URL(path, url)
-      const [res] = await this.$.utils.safe(fetch(assetUrl))
-      if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
-      const [blob] = await this.$.utils.safe(res.blob())
-      if (!blob) throw new Error(`Failed to fetch: ${assetUrl.href}`)
-      assets[path] = blob
-    }
-
     // Fetch sources
     const sources: Record<string, string> = {}
     for (const target of spec.targets) {
@@ -93,19 +80,27 @@ export class PkgsInstaller extends $sw.Unit {
       }
     }
 
-    await this.installFromPack({
-      spec: { dev, name: spec.name, manifest: spec, sources },
-      assets: assets,
-    })
+    // Fetch assets
+    const assets: Record<string, Blob> = {}
+    for (const path of spec.assets) {
+      const assetUrl = new URL(path, url)
+      const [res] = await this.$.utils.safe(fetch(assetUrl))
+      if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
+      const [blob] = await this.$.utils.safe(res.blob())
+      if (!blob) throw new Error(`Failed to fetch: ${assetUrl.href}`)
+      assets[path] = blob
+    }
+
+    await this.installFromBundle({ dev, spec, sources, assets })
   }
 
-  private async installFromPack(pack: Pack) {
-    if (this.$pkgs.map[pack.spec.manifest.name]) {
-      const pkg = this.$pkgs.map[pack.spec.manifest.name]
-      await pkg.update(pack.spec, pack.assets)
+  private async installFromBundle(bundle: Bundle) {
+    if (this.$pkgs.map[bundle.spec.name]) {
+      const pkg = this.$pkgs.map[bundle.spec.name]
+      await pkg.update(bundle)
     } else {
-      const pkg = await $sw.Pkg.create(this, pack.spec, pack.assets)
-      this.$pkgs.map[pack.spec.manifest.name] = pkg
+      const pkg = await $sw.Pkg.create(this, bundle)
+      this.$pkgs.map[bundle.spec.name] = pkg
     }
   }
 

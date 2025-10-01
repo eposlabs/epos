@@ -1,4 +1,4 @@
-import type { Message } from './kit-logger.sw'
+// import type { Message } from './kit-logger.sw'
 
 export class KitLogger extends $ex.Unit {
   constructor(parent: $ex.Unit) {
@@ -9,11 +9,11 @@ export class KitLogger extends $ex.Unit {
     }
   }
 
-  private handleRejections() {
-    self.addEventListener('unhandledrejection', async e => {
-      const name = this.$.env.params.name
-      const message: Message = { type: 'rejection', name, args: [e.reason.message] }
-      await this.$.bus.send('kit.print', message)
-    })
-  }
+  // private handleRejections() {
+  //   self.addEventListener('unhandledrejection', async e => {
+  //     const name = this.$.env.params.name
+  //     const message: Message = { type: 'rejection', name, args: [e.reason.message] }
+  //     await this.$.bus.send('kit.print', message)
+  //   })
+  // }
 }

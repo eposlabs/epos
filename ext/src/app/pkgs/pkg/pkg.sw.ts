@@ -1,13 +1,14 @@
-import type { Action, Manifest, Mode } from 'epos-spec-parser'
+import type { Action, Mode, Spec } from 'epos-spec-parser'
 
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
+export type BundleNoAssets = Omit<Bundle, 'assets'>
 
-export type Spec = {
+export type Bundle = {
   dev: boolean
-  name: string
+  spec: Spec
   sources: Sources
-  manifest: Manifest
+  assets: Assets
 }
 
 export type Payload = {
@@ -17,15 +18,15 @@ export type Payload = {
 
 export type ActionMeta = {
   name: string
-  title: Manifest['title']
+  title: Spec['title']
   action: Exclude<Action, null>
 }
 
 export type ExecutionMeta = {
   dev: boolean
   name: string
-  title: Manifest['title']
-  popup: Manifest['popup']
+  title: Spec['title']
+  popup: Spec['popup']
   hash: string
 }
 
@@ -33,45 +34,44 @@ export class Pkg extends $sw.Unit {
   declare name: string
   declare dev: boolean
   declare sources: Sources
-  declare manifest: Manifest
+  declare spec: Spec
   declare action: null | true | string
   declare targets: $sw.PkgTarget[]
   exporter = new $sw.PkgExporter(this)
 
-  static async create(parent: $sw.Unit, spec: Spec, assets?: Assets) {
+  static async create(parent: $sw.Unit, bundle: Bundle) {
     const pkg = new Pkg(parent)
-    await pkg.update(spec, assets)
+    await pkg.update(bundle)
     return pkg
   }
 
   static async restore(parent: $sw.Unit, name: string) {
     const pkg = new Pkg(parent)
-    const spec = await pkg.$.idb.get<Spec>(name, ':pkg', ':default')
-    if (!spec) return null
-    await pkg.update(spec)
+    const bundle = await pkg.$.idb.get<BundleNoAssets>(name, ':pkg', ':default')
+    if (!bundle) return null
+    await pkg.update(bundle)
     return pkg
   }
 
-  async update(spec: Spec, assets?: Assets) {
-    this.name = spec.name
-    this.dev = spec.dev
-    this.sources = spec.sources
-    this.manifest = spec.manifest
-    this.action = this.prepareAction(spec.manifest.action)
-    this.targets = spec.manifest.targets.map(target => new $sw.PkgTarget(this, target))
+  async update(bundle: BundleNoAssets & { assets?: Assets }) {
+    this.name = bundle.spec.name
+    this.dev = bundle.dev
+    this.sources = bundle.sources
+    this.spec = bundle.spec
+    this.action = this.prepareAction(bundle.spec.action)
+    this.targets = bundle.spec.targets.map(target => new $sw.PkgTarget(this, target))
 
-    if (assets) {
+    if (bundle.assets) {
       await this.$.idb.deleteStore(this.name, ':assets')
-      for (const [path, blob] of Object.entries(assets)) {
+      for (const [path, blob] of Object.entries(bundle.assets)) {
         await this.$.idb.set(this.name, ':assets', path, blob)
       }
     }
 
-    await this.$.idb.set<Spec>(this.name, ':pkg', ':default', {
-      name: this.name,
-      sources: this.sources,
-      manifest: this.manifest,
+    await this.$.idb.set<BundleNoAssets>(this.name, ':pkg', ':default', {
       dev: this.dev,
+      spec: this.spec,
+      sources: this.sources,
     })
   }
 
@@ -104,8 +104,8 @@ export class Pkg extends $sw.Unit {
       script: [
         `{`,
         `  name: ${JSON.stringify(this.name)},`,
-        `  icon: ${JSON.stringify(this.manifest.icon)},`,
-        `  title: ${JSON.stringify(this.manifest.title)},`,
+        `  icon: ${JSON.stringify(this.spec.icon)},`,
+        `  title: ${JSON.stringify(this.spec.title)},`,
         `  shadowCss: ${JSON.stringify(shadowCss)},`,
         `  async fn(epos, React = epos.libs.react, ${layers.join(', ')}) { ${js} },`,
         `}`,
@@ -117,7 +117,7 @@ export class Pkg extends $sw.Unit {
     if (!this.action) return null
     return {
       name: this.name,
-      title: this.manifest.title,
+      title: this.spec.title,
       action: this.action,
     }
   }
@@ -127,8 +127,8 @@ export class Pkg extends $sw.Unit {
     return {
       dev: this.dev,
       name: this.name,
-      title: this.manifest.title,
-      popup: this.manifest.popup,
+      title: this.spec.title,
+      popup: this.spec.popup,
       hash: await this.getExecutionHash(url, frame),
     }
   }
@@ -144,7 +144,7 @@ export class Pkg extends $sw.Unit {
     const requiredSourcePaths = this.getRequiredSourcePaths(url, frame).sort()
     return await this.$.utils.hash({
       dev: this.dev,
-      assets: this.manifest.assets,
+      assets: this.spec.assets,
       targets: this.targets.map(target => ({ mode: target.mode })),
       snippets: requiredSourcePaths.map(path => this.getSourceCode(path)),
     })
