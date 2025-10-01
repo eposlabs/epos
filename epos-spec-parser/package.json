@@ -6,9 +6,7 @@
     "lint": "tsc --noEmit"
   },
   "exports": {
-    ".": {
-      "source": "./src/epos-spec-parser.ts"
-    }
+    ".": "./src/epos-spec-parser.ts"
   },
   "files": [
     "src"

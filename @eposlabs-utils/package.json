@@ -10,12 +10,8 @@
     "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
   },
   "exports": {
-    ".": {
-      "import": "./src/utils.ts"
-    },
-    "./globals": {
-      "import": "./src/globals.ts"
-    }
+    ".": "./src/utils.ts",
+    "./globals": "./src/globals.ts"
   },
   "files": [
     "src"

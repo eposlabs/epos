@@ -7,24 +7,15 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "build": "tsup src --format esm --dts --clean --no-splitting",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
   },
   "exports": {
-    ".": {
-      "source": "./src/epos.ts",
-      "import": "./dist/epos.js"
-    },
-    "./vite": {
-      "source": "./src/vite.ts",
-      "import": "./dist/vite.js"
-    }
+    ".": "./src/epos.ts",
+    "./vite": "./src/vite.ts"
   },
   "files": [
-    "src",
-    "dist",
-    "epos.schema.json"
+    "src"
   ],
   "dependencies": {
     "@types/chrome": "^0.1.16",

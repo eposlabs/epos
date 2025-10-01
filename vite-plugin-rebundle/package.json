@@ -10,22 +10,14 @@
     "vite-plugin"
   ],
   "scripts": {
-    "build": "tsup src --format esm --dts --clean --no-splitting",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
   },
   "exports": {
-    ".": {
-      "source": "./src/rebundle.ts",
-      "import": "./dist/rebundle.js"
-    },
-    "./source": {
-      "import": "./src/rebundle.ts"
-    }
+    ".": "./src/rebundle.ts"
   },
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.5.0",
