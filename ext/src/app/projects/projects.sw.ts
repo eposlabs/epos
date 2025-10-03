@@ -3,16 +3,16 @@ import type { ActionMeta, Bundle, ExecutionMeta } from './project/project.sw'
 export type ActionData = { [name: string]: ActionMeta }
 export type ExecutionData = { [name: string]: ExecutionMeta }
 
-export class Projects extends $sw.Unit {
-  map: { [name: string]: $sw.Project } = {}
-  installer = new $sw.ProjectsInstaller(this)
-  loader!: $sw.ProjectsLoader
+export class Projects extends sw.Unit {
+  map: { [name: string]: sw.Project } = {}
+  installer = new sw.ProjectsInstaller(this)
+  loader!: sw.ProjectsLoader
 
   list() {
     return Object.values(this.map)
   }
 
-  static async create(parent: $sw.Unit) {
+  static async create(parent: sw.Unit) {
     const projects = new Projects(parent)
     await projects.init()
     return projects
@@ -28,7 +28,7 @@ export class Projects extends $sw.Unit {
     this.$.bus.on('projects.getExecutionData', this.getExecutionData, this)
     this.$.bus.on('projects.export', this.exportProject, this)
     await this.restoreFromIdb()
-    this.loader = await $sw.ProjectsLoader.create(this)
+    this.loader = await sw.ProjectsLoader.create(this)
   }
 
   private async exportProject(projectName: string) {
@@ -42,7 +42,7 @@ export class Projects extends $sw.Unit {
       const project = this.map[bundle.spec.name]
       await project.update(bundle)
     } else {
-      const project = await $sw.Project.create(this, bundle)
+      const project = await sw.Project.create(this, bundle)
       this.map[bundle.spec.name] = project
     }
   }
@@ -102,7 +102,7 @@ export class Projects extends $sw.Unit {
   private async restoreFromIdb() {
     const names = await this.$.idb.listDatabases()
     for (const name of names) {
-      const project = await $sw.Project.restore(this, name)
+      const project = await sw.Project.restore(this, name)
       if (!project) continue
       this.map[name] = project
     }

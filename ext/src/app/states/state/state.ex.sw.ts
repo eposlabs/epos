@@ -57,7 +57,7 @@ export type Options = {
  * #### How Sync Works
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
-export class State extends $exSw.Unit {
+export class State extends exSw.Unit {
   id: string
   location: Location
 
@@ -69,7 +69,7 @@ export class State extends $exSw.Unit {
 
   private root!: Root
   private doc = new this.$.libs.yjs.Doc()
-  private bus: ReturnType<$gl.Bus['create']>
+  private bus: ReturnType<gl.Bus['create']>
   private models: Record<string, ModelClass>
   private versioner: Versioner
   private initial: Initial
@@ -88,13 +88,13 @@ export class State extends $exSw.Unit {
     return this.root.data
   }
 
-  static async create(parent: $exSw.Unit, location: Location, options: Options = {}) {
+  static async create(parent: exSw.Unit, location: Location, options: Options = {}) {
     const state = new State(parent, location, options)
     await state.$.peer.mutex(`state.setup[${state.id}]`, () => state.init())
     return state
   }
 
-  constructor(parent: $exSw.Unit, location: Location, options: Options = {}) {
+  constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
@@ -245,10 +245,12 @@ export class State extends $exSw.Unit {
 
     if (this.$.is.object(source)) {
       const object = source
-      const Model = this.getModelByName(object['@']) ?? this.getModelByInstance(object)
+      const ModelByName = this.getModelByName(object['@'])
+      const ModelByInstance = this.getModelByInstance(object)
+      const Model = ModelByName ?? ModelByInstance
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: !Model })
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
-      this.wire(mObject, yMap, parent, Model, object.constructor === Model)
+      this.wire(mObject, yMap, parent, Model, !!ModelByInstance)
       // It is important to use Object.keys instead for..in, because for..in also iterates over prototype properties
       // this.keys because object can be observable s.items = [s.items[0]]
       this.keys(object).forEach(key => this.set(mObject, key, object[key]))
@@ -781,7 +783,12 @@ export class State extends $exSw.Unit {
   }
 
   private getModelByInstance(instance: Obj) {
-    return Object.values(this.models).find(Model => instance.constructor === Model) ?? null
+    if (instance.constructor === Object) return null
+    return (
+      Object.values(this.models).find(Model => instance.constructor === Model) ||
+      Object.values(this.models).find(Model => Model.prototype instanceof instance.constructor) ||
+      null
+    )
   }
 
   private getModelName(Model: ModelClass) {

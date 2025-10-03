@@ -12,7 +12,7 @@ import { set } from './utils-set'
 import { time } from './utils-time'
 import { toPascalCase } from './utils-to-pascal-case'
 
-export class Utils extends $exOsSwVw.Unit {
+export class Utils extends exOsSwVw.Unit {
   initOs() {
     this.$.bus.on('utils.convertImage', this.convertImage, this)
     this.$.bus.on('utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))

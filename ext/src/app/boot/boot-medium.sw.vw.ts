@@ -1,5 +1,5 @@
-export class BootMedium extends $swVw.Unit {
-  constructor(parent: $swVw.Unit) {
+export class BootMedium extends swVw.Unit {
+  constructor(parent: swVw.Unit) {
     super(parent)
 
     if (this.$.env.is.vwPopup) {

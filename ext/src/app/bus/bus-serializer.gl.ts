@@ -21,12 +21,12 @@ export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
 export type Storage = Map<string, unknown>
 export type StorageLink = { [STORAGE_KEY]: string }
 
-export class BusSerializer extends $gl.Unit {
-  private $bus = this.up($gl.Bus)!
+export class BusSerializer extends gl.Unit {
+  private $bus = this.up(gl.Bus)!
   private blobs = new Map<string, Blob>() // [sw] only
   private channel: BroadcastChannel | null = null // [sw] and [os] only, for blob transfer
 
-  constructor(parent: $gl.Unit) {
+  constructor(parent: gl.Unit) {
     super(parent)
 
     if (this.$.env.is.sw) {

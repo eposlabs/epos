@@ -1,24 +1,24 @@
-export class ProjectApi extends $ex.Unit {
-  private $project = this.up($ex.Project)!
-  general!: $ex.ProjectApiGeneral
+export class ProjectApi extends ex.Unit {
+  private $project = this.up(ex.Project)!
+  general!: ex.ProjectApiGeneral
   bus = this.$.bus.create(`project[${this.$project.name}]`)
-  state = new $ex.ProjectApiState(this)
-  storage = new $ex.ProjectApiStorage(this)
-  static!: $ex.ProjectApiStatic
-  frame = new $ex.ProjectApiFrame(this)
-  env = new $ex.ProjectApiEnv(this)
-  libs = new $ex.ProjectApiLibs(this)
-  epos!: ReturnType<$ex.ProjectApi['createEpos']>
+  state = new ex.ProjectApiState(this)
+  storage = new ex.ProjectApiStorage(this)
+  static!: ex.ProjectApiStatic
+  frame = new ex.ProjectApiFrame(this)
+  env = new ex.ProjectApiEnv(this)
+  libs = new ex.ProjectApiLibs(this)
+  epos!: ReturnType<ex.ProjectApi['createEpos']>
 
-  static async create(parent: $ex.Unit) {
+  static async create(parent: ex.Unit) {
     const api = new ProjectApi(parent)
     await api.init()
     return api
   }
 
   private async init() {
-    this.general = await $ex.ProjectApiGeneral.create(this)
-    this.static = await $ex.ProjectApiStatic.create(this)
+    this.general = await ex.ProjectApiGeneral.create(this)
+    this.static = await ex.ProjectApiStatic.create(this)
     this.epos = this.createEpos()
   }
 

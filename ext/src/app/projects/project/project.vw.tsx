@@ -1,6 +1,6 @@
 import type { ExecutionMeta } from './project.sw'
 
-export class Project extends $vw.Unit {
+export class Project extends vw.Unit {
   dev: ExecutionMeta['dev']
   name: ExecutionMeta['name']
   hash: ExecutionMeta['hash']
@@ -8,7 +8,7 @@ export class Project extends $vw.Unit {
   popup: ExecutionMeta['popup']
   invoked = false
 
-  constructor(parent: $vw.Unit, data: ExecutionMeta) {
+  constructor(parent: vw.Unit, data: ExecutionMeta) {
     super(parent)
     this.dev = data.dev
     this.name = data.name

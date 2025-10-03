@@ -11,6 +11,7 @@ export default defineConfig(async ({ mode }) => {
     input: './src/app',
     output: './src/layers',
     watch: mode !== 'production',
+    globalLayerName: 'gl',
     defaultLayerName: 'gl',
   })
 

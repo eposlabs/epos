@@ -8,7 +8,7 @@ type Opts = {
   cover?: boolean
 }
 
-export async function convertImage(this: $exOsSwVw.Unit, blob: Blob, opts: Opts) {
+export async function convertImage(this: exOsSwVw.Unit, blob: Blob, opts: Opts) {
   let image: HTMLImageElement | ImageBitmap
 
   // SVG? -> Use <img/> because createImageBitmap does not support SVGs

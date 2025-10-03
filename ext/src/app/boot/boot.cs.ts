@@ -1,3 +1,3 @@
-export class Boot extends $cs.Unit {
-  injector = new $cs.BootInjector(this)
+export class Boot extends cs.Unit {
+  injector = new cs.BootInjector(this)
 }

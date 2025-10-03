@@ -7,11 +7,11 @@ export type ExtRequest = {
   busId: string
 }
 
-export class BusExtBridge extends $gl.Unit {
-  private $bus = this.up($gl.Bus)!
+export class BusExtBridge extends gl.Unit {
+  private $bus = this.up(gl.Bus)!
   static EXT_REQUEST = EXT_REQUEST
 
-  constructor(parent: $gl.Unit) {
+  constructor(parent: gl.Unit) {
     super(parent)
 
     if (this.$.env.is.sw) {

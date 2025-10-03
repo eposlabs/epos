@@ -1,6 +1,6 @@
 import type * as react from 'react'
 
-export class ProjectApiLibs extends $ex.Unit {
+export class ProjectApiLibs extends ex.Unit {
   mobx = this.$.libs.mobx
   mobxReactLite = this.$.libs.mobxReactLite
   react = this.$.ui.react as typeof react

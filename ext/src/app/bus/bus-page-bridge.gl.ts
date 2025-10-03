@@ -15,13 +15,13 @@ export type PageResponse = {
   result: unknown
 }
 
-export class BusPageBridge extends $gl.Unit {
-  private $bus = this.up($gl.Bus)!
+export class BusPageBridge extends gl.Unit {
+  private $bus = this.up(gl.Bus)!
   static PAGE_REQUEST = PAGE_REQUEST
   static PAGE_RESPONSE = PAGE_RESPONSE
   private removedTargetListeners = new Set<(target: WindowProxy) => void>()
 
-  constructor(parent: $gl.Unit) {
+  constructor(parent: gl.Unit) {
     super(parent)
 
     if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {

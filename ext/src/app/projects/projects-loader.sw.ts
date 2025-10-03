@@ -1,10 +1,10 @@
 import type { BundleNoStatic, StaticFiles } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
-export class ProjectsLoader extends $sw.Unit {
-  private $projects = this.up($sw.Projects)!
+export class ProjectsLoader extends sw.Unit {
+  private $projects = this.up(sw.Projects)!
 
-  static async create(parent: $sw.Unit) {
+  static async create(parent: sw.Unit) {
     const loader = new ProjectsLoader(parent)
     await loader.init()
     return loader

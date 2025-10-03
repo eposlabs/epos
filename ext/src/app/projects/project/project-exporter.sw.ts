@@ -1,7 +1,7 @@
 import type { BundleNoStatic } from './project.sw'
 
-export class ProjectExporter extends $sw.Unit {
-  private $project = this.up($sw.Project)!
+export class ProjectExporter extends sw.Unit {
+  private $project = this.up(sw.Project)!
 
   async export() {
     const zip = new this.$.libs.Zip()

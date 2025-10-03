@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-export class Dev extends $gl.Unit {
-  static async create(parent: $gl.Unit) {
+export class Dev extends gl.Unit {
+  static async create(parent: gl.Unit) {
     const dev = new Dev(parent)
     await dev.init()
     return dev
@@ -41,7 +41,7 @@ export class Dev extends $gl.Unit {
     let $ = this.$
 
     if (this.$.env.is.sw) {
-      const { _init_, _cleanup_, _versioner_ } = $exSw.State
+      const { _init_, _cleanup_, _versioner_ } = exSw.State
       class Node {
         name: string
         nodes: Node[] = []
@@ -51,7 +51,7 @@ export class Dev extends $gl.Unit {
           this.name = name
         }
 
-        [$exSw.State._init_]() {
+        [exSw.State._init_]() {
           console.log('[init]', this.name)
 
           if (this.name === 'a') {
@@ -76,11 +76,11 @@ export class Dev extends $gl.Unit {
           }
         }
 
-        [$exSw.State._cleanup_]() {
+        [exSw.State._cleanup_]() {
           console.log('[cleanup]', this.name)
         }
 
-        static [$exSw.State._versioner_] = {
+        static [exSw.State._versioner_] = {
           4() {
             console.log('[versioner]', this.name)
             if (this.name === 'a1') {
@@ -95,10 +95,10 @@ export class Dev extends $gl.Unit {
         constructor(text: string) {
           this.text = text ?? crypto.randomUUID().slice(0, 4)
         }
-        [$exSw.State._init_]() {
+        [exSw.State._init_]() {
           console.log('[init] message', this.text)
         }
-        [$exSw.State._cleanup_]() {
+        [exSw.State._cleanup_]() {
           console.log('[cleanup] message', this.text)
         }
       }
@@ -106,13 +106,13 @@ export class Dev extends $gl.Unit {
       class Chat {
         messages: Message[] = []
         top = null;
-        [$exSw.State._init_]() {
+        [exSw.State._init_]() {
           console.log('[init] chat', this.messages.length)
         }
-        [$exSw.State._cleanup_]() {
+        [exSw.State._cleanup_]() {
           console.log('[cleanup] chat', this.messages.length)
         }
-        static [$exSw.State._versioner_] = {
+        static [exSw.State._versioner_] = {
           5() {
             this.messages = this.messages.slice(0, 2)
           },

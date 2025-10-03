@@ -1,20 +1,20 @@
-export class App extends $sw.Unit {
+export class App extends sw.Unit {
   browser = chrome
-  libs = new $sw.Libs(this)
-  utils = new $exOsSwVw.Utils(this)
+  libs = new sw.Libs(this)
+  utils = new exOsSwVw.Utils(this)
   is = this.utils.is
-  env = new $gl.Env(this)
-  bus = new $gl.Bus(this)
+  env = new gl.Env(this)
+  bus = new gl.Bus(this)
 
-  alive = new $sw.Alive(this)
-  boot!: $sw.Boot
-  dev!: $gl.Dev
-  idb = new $sw.Idb(this)
-  kit = new $sw.Kit(this)
-  net!: $sw.Net
-  peer = new $sw.Peer(this)
-  projects!: $sw.Projects
-  states = new $exSw.States(this)
+  alive = new sw.Alive(this)
+  boot!: sw.Boot
+  dev!: gl.Dev
+  idb = new sw.Idb(this)
+  kit = new sw.Kit(this)
+  net!: sw.Net
+  peer = new sw.Peer(this)
+  projects!: sw.Projects
+  states = new exSw.States(this)
 
   static async create() {
     const app = new App()
@@ -24,13 +24,13 @@ export class App extends $sw.Unit {
 
   private async init() {
     self.$ = this
-    this.net = await $sw.Net.create(this)
-    this.projects = await $sw.Projects.create(this)
-    this.boot = await $sw.Boot.create(this)
+    this.net = await sw.Net.create(this)
+    this.projects = await sw.Projects.create(this)
+    this.boot = await sw.Boot.create(this)
     await this.setupContentScript()
     await this.setupOffscreen()
     this.defineGlobalMethods()
-    this.dev = await $gl.Dev.create(this)
+    this.dev = await gl.Dev.create(this)
   }
 
   private async setupContentScript() {

@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-export class Dev extends $gl.Unit {
-  static async create(parent: $gl.Unit) {
+export class Dev extends gl.Unit {
+  static async create(parent: gl.Unit) {
     const dev = new Dev(parent)
     await dev.init()
     return dev
@@ -36,7 +36,7 @@ export class Dev extends $gl.Unit {
     if (!import.meta.env.DEV) return
 
     if (this.$.env.is.sw) {
-      const { _init_, _cleanup_, _versioner_ } = $exSw.State
+      const { _init_, _cleanup_, _versioner_ } = exSw.State
       class Node {
         name: string
         nodes: Node[] = []
@@ -46,7 +46,7 @@ export class Dev extends $gl.Unit {
           this.name = name
         }
 
-        [$exSw.State._init_]() {
+        [exSw.State._init_]() {
           console.log('[init]', this.name)
 
           if (this.name === 'a') {
@@ -71,11 +71,11 @@ export class Dev extends $gl.Unit {
           }
         }
 
-        [$exSw.State._cleanup_]() {
+        [exSw.State._cleanup_]() {
           console.log('[cleanup]', this.name)
         }
 
-        static [$exSw.State._versioner_] = {
+        static [exSw.State._versioner_] = {
           4() {
             console.log('[versioner]', this.name)
             if (this.name === 'a1') {

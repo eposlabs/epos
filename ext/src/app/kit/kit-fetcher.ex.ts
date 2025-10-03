@@ -17,7 +17,7 @@ export type Res = {
   }
 }
 
-export class KitFetcher extends $ex.Unit {
+export class KitFetcher extends ex.Unit {
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
     url = String(url)
     const res = await this.$.bus.send<ResData>('kit.fetch', url, init)

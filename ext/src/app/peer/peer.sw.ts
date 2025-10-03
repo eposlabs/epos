@@ -1,9 +1,9 @@
 // TODO: what if mutex fn fails? test
-export class Peer extends $sw.Unit {
+export class Peer extends sw.Unit {
   id = 'sw'
   private queues = new this.$.utils.QueueMap()
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.$.bus.on('peer.start', this.start, this)
   }

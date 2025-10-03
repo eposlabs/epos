@@ -1,6 +1,6 @@
 import type { Payload } from '../projects/project/project.sw'
 
-export class BootInjector extends $ex.Unit {
+export class BootInjector extends ex.Unit {
   async inject() {
     // For [exTop]:
     // - [cs] already injected globals + <epos/>

@@ -1,4 +1,4 @@
-export class App extends $gl.Unit {
+export class App extends gl.Unit {
   text = 'Welcome'
   value = 0
 

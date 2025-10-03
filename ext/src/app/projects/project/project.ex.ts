@@ -6,21 +6,21 @@ export type Props = {
   shadowCss: string
 }
 
-export class Project extends $ex.Unit {
+export class Project extends ex.Unit {
   name: string
   icon: string | null
   title: string | null
   tabId: number | null
   shadowCss: string
-  api!: $ex.ProjectApi
+  api!: ex.ProjectApi
 
-  static async create(parent: $ex.Unit, props: Props) {
+  static async create(parent: ex.Unit, props: Props) {
     const project = new Project(parent, props)
     await project.init()
     return project
   }
 
-  constructor(parent: $ex.Unit, props: Props) {
+  constructor(parent: ex.Unit, props: Props) {
     super(parent)
     this.name = props.name
     this.icon = props.icon
@@ -30,7 +30,7 @@ export class Project extends $ex.Unit {
   }
 
   private async init() {
-    this.api = await $ex.ProjectApi.create(this)
+    this.api = await ex.ProjectApi.create(this)
     await this.initHub()
   }
 

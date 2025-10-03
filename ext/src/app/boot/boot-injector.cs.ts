@@ -16,8 +16,8 @@ import type { JsData } from './boot-injector.sw'
  * ContentScript always runs _before_ Page, that's why globals interception and <epos/> element
  * creation are implemented in ContentScript (not Injection).
  */
-export class BootInjector extends $cs.Unit {
-  constructor(parent: $cs.Unit) {
+export class BootInjector extends cs.Unit {
+  constructor(parent: cs.Unit) {
     super(parent)
     this.executeJs(setupElementJs)
     this.executeJs(setupGlobalsJs)

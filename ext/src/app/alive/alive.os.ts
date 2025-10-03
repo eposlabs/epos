@@ -1,5 +1,5 @@
-export class Alive extends $os.Unit {
-  constructor(parent: $os.Unit) {
+export class Alive extends os.Unit {
+  constructor(parent: os.Unit) {
     super(parent)
     this.keepBgAlive()
   }

@@ -1,6 +1,5 @@
 import './core/globals'
 import './core/units'
-import './layers/index.gl'
 import './layers/index.ex'
 
 $: (async () => {

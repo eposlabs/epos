@@ -5,20 +5,20 @@ const _id_ = Symbol('id')
 export type Root = typeof chrome
 export type Callback = Fn & { [_id_]?: string }
 
-export class KitBrowserApi extends $ex.Unit {
+export class KitBrowserApi extends ex.Unit {
   root!: Root
   // @ts-ignore
   private scope: string
   private listenerIds = new Set<string>()
   static _id_ = _id_
 
-  static async create(parent: $ex.Unit, scope: string) {
+  static async create(parent: ex.Unit, scope: string) {
     const api = new KitBrowserApi(parent, scope)
     await api.init()
     return api
   }
 
-  constructor(parent: $ex.Unit, scope: string) {
+  constructor(parent: ex.Unit, scope: string) {
     super(parent)
     this.scope = scope
   }

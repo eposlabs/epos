@@ -1,3 +1,3 @@
-export class Kit extends $sm.Unit {
-  browser = new $sm.KitBrowser(this)
+export class Kit extends sm.Unit {
+  browser = new sm.KitBrowser(this)
 }

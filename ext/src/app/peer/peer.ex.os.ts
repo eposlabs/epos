@@ -1,7 +1,7 @@
-export class Peer extends $exOs.Unit {
+export class Peer extends exOs.Unit {
   id = this.$.utils.id()
 
-  constructor(parent: $exOs.Unit) {
+  constructor(parent: exOs.Unit) {
     super(parent)
     this.$.bus.on(`peer.ping[${this.id}]`, () => true)
   }

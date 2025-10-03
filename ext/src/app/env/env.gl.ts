@@ -1,4 +1,4 @@
-export class Env extends $gl.Unit {
+export class Env extends gl.Unit {
   params = this.getParams()
   url = new EnvUrl(this)
   is = new EnvIs(this)
@@ -10,7 +10,7 @@ export class Env extends $gl.Unit {
   }
 }
 
-class EnvUrl extends $gl.Unit {
+class EnvUrl extends gl.Unit {
   web = 'https://epos.dev'
   offscreen = '/offscreen.html?type=background'
 
@@ -33,7 +33,7 @@ class EnvUrl extends $gl.Unit {
   }
 }
 
-class EnvIs extends $gl.Unit {
+class EnvIs extends gl.Unit {
   private $env = this.up(Env)!
 
   // Environment

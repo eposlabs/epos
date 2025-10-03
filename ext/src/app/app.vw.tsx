@@ -2,19 +2,19 @@ import type { Context } from 'preact'
 import type { Dispatch, StateUpdater } from 'preact/hooks'
 import './app.vw.css'
 
-export class App extends $vw.Unit {
+export class App extends vw.Unit {
   private setRenderId: Dispatch<StateUpdater<string>> | null = null
 
   browser = chrome
-  libs = new $osVw.Libs(this)
-  utils = new $exOsSwVw.Utils(this)
+  libs = new osVw.Libs(this)
+  utils = new exOsSwVw.Utils(this)
   is = this.utils.is
-  env = new $gl.Env(this)
-  bus = new $gl.Bus(this)
+  env = new gl.Env(this)
+  bus = new gl.Bus(this)
 
-  boot = new $vw.Boot(this)
-  dev!: $gl.Dev
-  projects!: $vw.Projects
+  boot = new vw.Boot(this)
+  dev!: gl.Dev
+  projects!: vw.Projects
 
   static async create() {
     const app = new App()
@@ -24,9 +24,9 @@ export class App extends $vw.Unit {
 
   private async init() {
     self.$ = this
-    this.projects = await $vw.Projects.create(this)
+    this.projects = await vw.Projects.create(this)
     this.render()
-    this.dev = await $gl.Dev.create(this)
+    this.dev = await gl.Dev.create(this)
   }
 
   refresh() {

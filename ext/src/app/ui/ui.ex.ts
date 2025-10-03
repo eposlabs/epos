@@ -1,11 +1,11 @@
 import type { createElement, FC } from 'react'
 import type { jsx, jsxs } from 'react/jsx-runtime'
 
-export class Ui extends $ex.Unit {
-  react: ReturnType<$ex.Ui['createReact']>
-  reactJsxRuntime: ReturnType<$ex.Ui['createReactJsxRuntime']>
+export class Ui extends ex.Unit {
+  react: ReturnType<ex.Ui['createReact']>
+  reactJsxRuntime: ReturnType<ex.Ui['createReactJsxRuntime']>
 
-  constructor(parent: $ex.Unit) {
+  constructor(parent: ex.Unit) {
     super(parent)
     this.react = this.createReact()
     this.reactJsxRuntime = this.createReactJsxRuntime()

@@ -1,12 +1,12 @@
 import type { ExecutionMeta } from './project.sw'
 
-export class Project extends $os.Unit {
+export class Project extends os.Unit {
   dev: ExecutionMeta['dev']
   name: ExecutionMeta['name']
   hash: ExecutionMeta['hash']
   frame: HTMLIFrameElement
 
-  constructor(parent: $os.Unit, data: Omit<ExecutionMeta, 'popup'>) {
+  constructor(parent: os.Unit, data: Omit<ExecutionMeta, 'popup'>) {
     super(parent)
     this.dev = data.dev
     this.name = data.name

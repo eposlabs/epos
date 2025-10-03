@@ -5,12 +5,12 @@ export type DbStore = string
 export type DbKey = string
 export type Database = IDBDatabase & { [_cleanup_]?: () => void }
 
-export class Idb extends $sw.Unit {
+export class Idb extends sw.Unit {
   private dbs: { [name: DbName]: Database } = {}
   private queues = new this.$.utils.QueueMap()
   static _cleanup_ = _cleanup_
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
 
     this.get = this.enqueue(this.get)

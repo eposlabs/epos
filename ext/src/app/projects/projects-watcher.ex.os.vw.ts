@@ -16,7 +16,7 @@ export type Data = {
   hasSidePanel: boolean
 }
 
-export class ProjectsWatcher extends $exOsVw.Unit {
+export class ProjectsWatcher extends exOsVw.Unit {
   private executionData: ExecutionData = {}
 
   async start(onUpdate: OnUpdate) {

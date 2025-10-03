@@ -1,12 +1,12 @@
-export class App extends $sm.Unit {
+export class App extends sm.Unit {
   browser = chrome
-  utils = new $sm.Utils(this)
+  utils = new sm.Utils(this)
   is = this.utils.is
-  env = new $gl.Env(this)
-  bus = new $gl.Bus(this)
+  env = new gl.Env(this)
+  bus = new gl.Bus(this)
 
-  dev!: $gl.Dev
-  kit = new $sm.Kit(this)
+  dev!: gl.Dev
+  kit = new sm.Kit(this)
 
   static async create() {
     const app = new App()
@@ -17,6 +17,6 @@ export class App extends $sm.Unit {
   private async init() {
     self.$ = this
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
-    this.dev = await $gl.Dev.create(this)
+    this.dev = await gl.Dev.create(this)
   }
 }

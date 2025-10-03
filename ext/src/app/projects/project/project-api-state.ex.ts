@@ -1,15 +1,15 @@
 import type { Location, ModelClass, Initial, Versioner } from '../../states/state/state.ex.sw'
 
-export class ProjectApiState extends $ex.Unit {
-  private $project = this.up($ex.Project)!
-  private states: { [stateName: string]: $exSw.State } = {}
+export class ProjectApiState extends ex.Unit {
+  private $project = this.up(ex.Project)!
+  private states: { [stateName: string]: exSw.State } = {}
   private models: { [modelName: string]: ModelClass } = {}
 
   symbols = {
-    parent: $exSw.State._parent_,
-    modelInit: $exSw.State._modelInit_,
-    modelCleanup: $exSw.State._modelCleanup_,
-    modelVersioner: $exSw.State._modelVersioner_,
+    parent: exSw.State._parent_,
+    modelInit: exSw.State._modelInit_,
+    modelCleanup: exSw.State._modelCleanup_,
+    modelVersioner: exSw.State._modelVersioner_,
   }
 
   async connect(initial?: Initial, versioner?: Versioner): Promise<Obj>

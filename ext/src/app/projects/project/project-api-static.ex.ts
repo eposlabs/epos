@@ -1,9 +1,9 @@
-export class ProjectApiStatic extends $ex.Unit {
-  private $project = this.up($ex.Project)!
+export class ProjectApiStatic extends ex.Unit {
+  private $project = this.up(ex.Project)!
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 
-  static async create(parent: $ex.Unit) {
+  static async create(parent: ex.Unit) {
     const projectApiStatic = new ProjectApiStatic(parent)
     await projectApiStatic.init()
     return projectApiStatic

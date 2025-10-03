@@ -1,5 +1,5 @@
-export class ProjectApiStorage extends $ex.Unit {
-  private $project = this.up($ex.Project)!
+export class ProjectApiStorage extends ex.Unit {
+  private $project = this.up(ex.Project)!
 
   async get(key: string, name?: string) {
     name = this.prepareName(name)

@@ -1,13 +1,13 @@
 import type { FC, ReactNode } from 'react'
 import type { Container } from 'react-dom/client'
 
-export class ProjectApiGeneral extends $ex.Unit {
-  private $project = this.up($ex.Project)!
+export class ProjectApiGeneral extends ex.Unit {
+  private $project = this.up(ex.Project)!
   fetch = this.$.utils.link(this.$.kit.fetcher, 'fetch')
   browser!: typeof chrome
   element = this.createProjectElement()
 
-  static async create(parent: $ex.Unit) {
+  static async create(parent: ex.Unit) {
     const projectApiGeneral = new ProjectApiGeneral(parent)
     await projectApiGeneral.init()
     return projectApiGeneral

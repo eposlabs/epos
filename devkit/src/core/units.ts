@@ -7,10 +7,11 @@ class UnitGl extends Unit<AppGl> {
   }
 }
 
-$gl.Unit = UnitGl
+gl.Unit = UnitGl
 
 // prettier-ignore
 declare global {
-  interface $Gl { Unit: typeof UnitGl }
-  namespace $gl { export type Unit = UnitGl }
+  interface Gl { Unit: typeof UnitGl }
+  interface gl { Unit: UnitGl }
+  namespace gl { export type Unit = UnitGl }
 }

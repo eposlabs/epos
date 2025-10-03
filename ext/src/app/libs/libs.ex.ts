@@ -16,7 +16,7 @@ const reactJsxRuntime: reactJsxRuntime = BUNDLE === 'ex' ? require('react/jsx-ru
 
 mobx.configure({ enforceActions: 'never' })
 
-export class Libs extends $ex.Unit {
+export class Libs extends ex.Unit {
   createLog = createLog
   mobx = mobx
   mobxReactLite = mobxReactLite

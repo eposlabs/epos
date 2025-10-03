@@ -1,7 +1,7 @@
-export class Alive extends $sw.Unit {
+export class Alive extends sw.Unit {
   private startedAt = Date.now()
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.initBus()
     async: this.initAlarm()

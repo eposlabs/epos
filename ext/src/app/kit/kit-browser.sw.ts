@@ -3,10 +3,10 @@ export type UpdateRuleOptions = {
   removeRuleIds?: chrome.declarativeNetRequest.UpdateRuleOptions['removeRuleIds']
 }
 
-export class KitBrowser extends $sw.Unit {
+export class KitBrowser extends sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.$.bus.on('kit.browser.getApiTree', () => this.getApiTree(this.$.browser))
     this.$.bus.on('kit.browser.callMethod', this.callMethod, this)

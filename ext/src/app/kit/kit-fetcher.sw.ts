@@ -24,10 +24,10 @@ export type ReqInit = {
   referrerPolicy: RequestInit['referrerPolicy']
 }
 
-export class KitFetcher extends $sw.Unit {
+export class KitFetcher extends sw.Unit {
   private responses: { [id: string]: Response } = {}
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.$.bus.on('kit.fetch', this.fetch, this)
     this.$.bus.on('kit.readAsText', this.readAsText, this)

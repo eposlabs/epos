@@ -4,7 +4,7 @@ export type Tab = { id: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 export type JsData = { js: string; dev: boolean }
 
-export class BootInjector extends $sw.Unit {
+export class BootInjector extends sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -23,7 +23,7 @@ export class BootInjector extends $sw.Unit {
     'https://chromewebstore.google.com/',
   ]
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.injectOnNavigation()
     this.$.bus.on('boot.getJsData', this.getJsData, this)

@@ -3,8 +3,8 @@ import type { Location, Options } from './state/state.ex.sw'
 export const _local_ = Symbol('local')
 export const _exclude_ = Symbol('exclude')
 
-export class States extends $exSw.Unit {
-  map: Record<string, $exSw.State> = {}
+export class States extends exSw.Unit {
+  map: Record<string, exSw.State> = {}
   private queue = new this.$.utils.Queue()
   private persistentIds = new Set<string>() // For [sw] only
 
@@ -12,7 +12,7 @@ export class States extends $exSw.Unit {
     return Object.values(this.map)
   }
 
-  constructor(parent: $exSw.Unit) {
+  constructor(parent: exSw.Unit) {
     super(parent)
 
     this.connect = this.queue.wrap(this.connect, this)
@@ -38,7 +38,7 @@ export class States extends $exSw.Unit {
     if (this.$.env.is.ex) await this.$.bus.send('states.swConnect', location)
 
     // Create state
-    const state = await $exSw.State.create(this, location, options)
+    const state = await exSw.State.create(this, location, options)
     this.map[id] = state
 
     // Mark [ex] as connected

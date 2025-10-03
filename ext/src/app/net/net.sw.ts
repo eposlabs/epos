@@ -1,9 +1,9 @@
 export type Rule = Omit<chrome.declarativeNetRequest.Rule, 'id'>
 
-export class Net extends $sw.Unit {
+export class Net extends sw.Unit {
   private nextRuleId = 1
 
-  static async create(parent: $sw.Unit) {
+  static async create(parent: sw.Unit) {
     const net = new Net(parent)
     await net.init()
     return net

@@ -1,4 +1,4 @@
-export class LearnApp extends $sh.LearnApp<$fg.Permission> {
+export class LearnApp extends $sh.LearnApp<fg.Permission> {
   async init() {
     await epos.browser.contextMenus.removeAll()
 

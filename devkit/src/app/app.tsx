@@ -1,11 +1,11 @@
-export class App extends $gl.Unit {
-  utils = new $gl.Utils(this)
-  idb = new $gl.Idb(this)
-  projects: $gl.Project[] = []
+export class App extends gl.Unit {
+  utils = new gl.Utils(this)
+  idb = new gl.Idb(this)
+  projects: gl.Project[] = []
 
   async init() {
     // Ensure only one tab is open and it is pinned
-    const tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@devkit' })
+    const tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
     if (tabs.length > 1) {
       await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
@@ -37,7 +37,7 @@ export class App extends $gl.Unit {
     await this.$.idb.set('devkit', 'handles', handleId, handle)
 
     // Create project
-    this.projects.push(new $gl.Project(this, handleId))
+    this.projects.push(new gl.Project(this, handleId))
   }
 
   async readProjectHandle(handleId: string) {
@@ -117,7 +117,7 @@ export class App extends $gl.Unit {
 //     await this.writeFile(handle, asset.path.replace('template/', ''), blob)
 //   }
 //   this.adding = false
-//   const pkg = new $gl.Pkg(this)
+//   const pkg = new gl.Pkg(this)
 //   await this.$.idb.set('pkg', 'handles', pkg.id, handle)
 //   this.$.pkgs.push(pkg)
 // }

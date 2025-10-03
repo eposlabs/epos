@@ -30,22 +30,22 @@ export type ExecutionMeta = {
   hash: string
 }
 
-export class Project extends $sw.Unit {
+export class Project extends sw.Unit {
   declare name: string
   declare dev: boolean
   declare sources: Sources
   declare spec: Spec
   declare action: null | true | string
-  declare targets: $sw.ProjectTarget[]
-  exporter = new $sw.ProjectExporter(this)
+  declare targets: sw.ProjectTarget[]
+  exporter = new sw.ProjectExporter(this)
 
-  static async create(parent: $sw.Unit, bundle: Bundle) {
+  static async create(parent: sw.Unit, bundle: Bundle) {
     const project = new Project(parent)
     await project.update(bundle)
     return project
   }
 
-  static async restore(parent: $sw.Unit, name: string) {
+  static async restore(parent: sw.Unit, name: string) {
     const project = new Project(parent)
     const bundle = await project.$.idb.get<BundleNoStatic>(name, ':project', ':default')
     if (!bundle) return null
@@ -59,7 +59,7 @@ export class Project extends $sw.Unit {
     this.spec = bundle.spec
     this.sources = bundle.sources
     this.action = this.prepareAction(bundle.spec.action)
-    this.targets = bundle.spec.targets.map(target => new $sw.ProjectTarget(this, target))
+    this.targets = bundle.spec.targets.map(target => new sw.ProjectTarget(this, target))
 
     if (bundle.staticFiles) {
       await this.$.idb.deleteStore(this.name, ':static')
@@ -94,19 +94,19 @@ export class Project extends $sw.Unit {
 
     // Layer variables are passed as arguments (undefineds) to isolate engine layers from project code
     const layers = [
-      '$cs',
-      '$ex',
-      '$gl',
-      '$os',
-      '$sm',
-      '$sw',
-      '$vw',
-      '$exOs',
-      '$exSw',
-      '$osVw',
-      '$swVw',
-      '$exOsVw',
-      '$exOsSwVw',
+      'cs',
+      'ex',
+      'gl',
+      'os',
+      'sm',
+      'sw',
+      'vw',
+      'exOs',
+      'exSw',
+      'osVw',
+      'swVw',
+      'exOsVw',
+      'exOsSwVw',
     ]
 
     return {

@@ -1,7 +1,7 @@
 // import type { Message } from './kit-logger.sw'
 
-export class KitLogger extends $ex.Unit {
-  constructor(parent: $ex.Unit) {
+export class KitLogger extends ex.Unit {
+  constructor(parent: ex.Unit) {
     super(parent)
 
     if (this.$.env.is.exFrameBackground) {

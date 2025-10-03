@@ -1,18 +1,18 @@
 import type { ActionData } from './projects.sw'
 
-export class Projects extends $vw.Unit {
-  map: { [name: string]: $vw.Project } = {}
+export class Projects extends vw.Unit {
+  map: { [name: string]: vw.Project } = {}
   hasSidePanel = false
   actionData: ActionData = {}
   selectedProjectName: string | null = localStorage.getItem('projects.selectedProjectName')
-  dock = new $vw.ProjectsDock(this)
-  watcher = new $exOsVw.ProjectsWatcher(this)
+  dock = new vw.ProjectsDock(this)
+  watcher = new exOsVw.ProjectsWatcher(this)
 
   list() {
     return Object.values(this.map)
   }
 
-  static async create(parent: $vw.Unit) {
+  static async create(parent: vw.Unit) {
     const projects = new Projects(parent)
     await projects.init()
     return projects
@@ -47,7 +47,7 @@ export class Projects extends $vw.Unit {
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.map[meta.name] = new $vw.Project(this, meta)
+        this.map[meta.name] = new vw.Project(this, meta)
       }
 
       // Remove projects

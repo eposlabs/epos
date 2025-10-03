@@ -4,8 +4,8 @@ export type Message = {
   args: unknown[]
 }
 
-export class KitLogger extends $sw.Unit {
-  constructor(parent: $sw.Unit) {
+export class KitLogger extends sw.Unit {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.$.bus.on('kit.print', this.print, this)
   }

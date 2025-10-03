@@ -2,7 +2,7 @@
 import type { Bundle } from '@ext/app/projects/project/project.sw'
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
-export class Project extends $gl.Unit {
+export class Project extends gl.Unit {
   id = this.$.utils.id()
   handleId: string
   name: string | null = null
@@ -17,7 +17,7 @@ export class Project extends $gl.Unit {
   declare private engine: any
   declare private state: { error: string | null }
 
-  constructor(parent: $gl.Unit, handleId: string) {
+  constructor(parent: gl.Unit, handleId: string) {
     super(parent)
     this.handleId = handleId
   }

@@ -1,10 +1,10 @@
 import type { Bundle } from './project/project.sw'
 
-export class ProjectsInstaller extends $sw.Unit {
-  private $projects = this.up($sw.Projects)!
+export class ProjectsInstaller extends sw.Unit {
+  private $projects = this.up(sw.Projects)!
   private queue = new this.$.utils.Queue()
 
-  constructor(parent: $sw.Unit) {
+  constructor(parent: sw.Unit) {
     super(parent)
     this.$.bus.on('projects.install', this.install, this)
     this.$.bus.on('projects.remove', this.remove, this)

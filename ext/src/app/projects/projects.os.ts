@@ -1,10 +1,10 @@
 import type { Rule } from '../net/net.sw'
 
-export class Projects extends $os.Unit {
-  map: { [name: string]: $os.Project } = {}
-  watcher = new $exOsVw.ProjectsWatcher(this)
+export class Projects extends os.Unit {
+  map: { [name: string]: os.Project } = {}
+  watcher = new exOsVw.ProjectsWatcher(this)
 
-  static async create(parent: $os.Unit) {
+  static async create(parent: os.Unit) {
     const projects = new Projects(parent)
     await projects.init()
     return projects
@@ -28,7 +28,7 @@ export class Projects extends $os.Unit {
       for (const name of delta.added) {
         const meta = data.execution[name]
         if (!meta) throw this.never
-        this.map[name] = new $os.Project(this, meta)
+        this.map[name] = new os.Project(this, meta)
       }
 
       // Remove projects

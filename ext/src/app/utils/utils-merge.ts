@@ -1,4 +1,4 @@
-export function merge(this: $exOsSwVw.Unit, data1: unknown, data2: unknown) {
+export function merge(this: exOsSwVw.Unit, data1: unknown, data2: unknown) {
   if (this.$.is.object(data1) && this.$.is.object(data2)) {
     const merged = { ...data1 }
     for (const key in data2) {

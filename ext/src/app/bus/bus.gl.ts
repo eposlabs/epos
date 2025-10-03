@@ -1,12 +1,12 @@
 import type { Target } from './bus-action.gl'
 
-export class Bus extends $gl.Unit {
+export class Bus extends gl.Unit {
   id = this.$.utils.id()
-  actions: $gl.BusAction[] = []
-  utils = new $gl.BusUtils(this)
-  serializer = new $gl.BusSerializer(this)
-  extBridge = new $gl.BusExtBridge(this)
-  pageBridge = new $gl.BusPageBridge(this)
+  actions: gl.BusAction[] = []
+  utils = new gl.BusUtils(this)
+  serializer = new gl.BusSerializer(this)
+  extBridge = new gl.BusExtBridge(this)
+  pageBridge = new gl.BusPageBridge(this)
 
   create(scope: string) {
     const scoped = (name: string) => `{${scope}}:${name}`
@@ -39,7 +39,7 @@ export class Bus extends $gl.Unit {
     }
 
     // Add action
-    const action = new $gl.BusAction(this, name, fn, thisValue, target)
+    const action = new gl.BusAction(this, name, fn, thisValue, target)
     this.actions.push(action)
   }
 

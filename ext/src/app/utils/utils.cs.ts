@@ -3,7 +3,7 @@ import { id } from './utils-id'
 import { link } from './utils-link'
 import { time } from './utils-time'
 
-export class Utils extends $cs.Unit {
+export class Utils extends cs.Unit {
   id = id
   is = is
   link = link

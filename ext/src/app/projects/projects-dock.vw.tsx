@@ -1,10 +1,10 @@
 import type { TargetedEvent } from 'preact'
 
-export class ProjectsDock extends $vw.Unit {
-  private $projects = this.up($vw.Projects)!
+export class ProjectsDock extends vw.Unit {
+  private $projects = this.up(vw.Projects)!
   // private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
-  private selectedProject: $vw.Project | null = null
+  private selectedProject: vw.Project | null = null
   private hidden = true
   private timeout: number | undefined = undefined
 
