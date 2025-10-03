@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.5.0",
+  "version": "1.9.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -10,20 +10,27 @@
     "vite-plugin"
   ],
   "scripts": {
+    "dev": "tsup src --dts --format esm --out-dir dist --clean --watch",
+    "build": "tsup src --dts --format esm --out-dir dist --clean",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "bin": {
-    "paralayer": "./src/bin.ts"
+    "paralayer": "./src/bin.js"
   },
   "exports": {
-    ".": "./src/paralayer.ts"
+    ".": {
+      "source": "./src/paralayer.ts",
+      "import": "./dist/paralayer.js",
+      "types": "./dist/paralayer.d.ts"
+    }
   },
   "files": [
-    "src"
+    "src",
+    "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.8.0",
+    "@eposlabs/utils": "^1.9.0",
     "chokidar": "^4.0.3",
     "minimist": "^1.2.8"
   },

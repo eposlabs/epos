@@ -7,17 +7,17 @@
     "build": "vite build --mode production"
   },
   "dependencies": {
-    "@eposlabs/utils": "^1.8.0",
-    "epos": "^1.16.0",
+    "@eposlabs/utils": "^1.9.0",
+    "epos": "^1.17.0",
     "epos-spec-parser": "*",
-    "epos-unit": "^1.5.0"
+    "epos-unit": "^1.6.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.14",
-    "@types/chrome": "^0.1.17",
-    "paralayer": "^1.5.0",
-    "rolldown-vite": "^7.1.14",
+    "@types/chrome": "^0.1.21",
+    "paralayer": "^1.6.0",
+    "rolldown-vite": "^7.1.15",
     "tailwindcss": "^4.1.14",
-    "vite-plugin-rebundle": "^1.7.0"
+    "vite-plugin-rebundle": "^1.8.0"
   }
 }

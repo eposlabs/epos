@@ -1,7 +1,7 @@
 export class App extends $gl.Unit {
   utils = new $gl.Utils(this)
   idb = new $gl.Idb(this)
-  pkgs: $gl.Pkg[] = []
+  projects: $gl.Project[] = []
 
   async init() {
     // Ensure only one tab is open and it is pinned
@@ -20,15 +20,15 @@ export class App extends $gl.Unit {
     await this.$.idb.deleteDatabase('pkg')
 
     // Delete obsolete directory handles from IDB
-    const pkgHandleIds = new Set(this.$.pkgs.map(pkg => pkg.handleId))
+    const projectHandleIds = new Set(this.$.projects.map(project => project.handleId))
     const idbHandleIds = await this.$.idb.keys('devkit', 'handles')
     for (const handleId of idbHandleIds) {
-      if (pkgHandleIds.has(handleId)) continue
+      if (projectHandleIds.has(handleId)) continue
       await this.$.idb.delete('devkit', 'handles', handleId)
     }
   }
 
-  async addPkg() {
+  async addProject() {
     const [handle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
     if (!handle) return
 
@@ -36,11 +36,11 @@ export class App extends $gl.Unit {
     const handleId = this.$.utils.id()
     await this.$.idb.set('devkit', 'handles', handleId, handle)
 
-    // Create pkg
-    this.pkgs.push(new $gl.Pkg(this, handleId))
+    // Create project
+    this.projects.push(new $gl.Project(this, handleId))
   }
 
-  async readPkgHandle(handleId: string) {
+  async readProjectHandle(handleId: string) {
     return await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', handleId)
   }
 
@@ -66,24 +66,25 @@ export class App extends $gl.Unit {
 
         {/* Content */}
         <div class="flex w-[580px] flex-col items-center gap-4">
-          {/* Pkg cards */}
-          {this.pkgs.length > 0 && (
+          {/* Project cards */}
+          {this.projects.length > 0 && (
             <div class="flex w-full flex-col justify-center gap-4">
-              {this.pkgs.map(pkg => (
-                <pkg.ui key={pkg.id} />
+              {this.projects.map(project => (
+                <project.ui key={project.id} />
               ))}
             </div>
           )}
 
           {/* Add project button */}
           <button
-            onClick={this.addPkg}
+            onClick={this.addProject}
             class={[
-              'px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700',
-              this.pkgs.length > 0 && 'absolute right-4 bottom-4',
+              'group relative cursor-default rounded-sm',
+              this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute',
             ]}
           >
-            [ADD PROJECT]
+            <div class="absolute inset-0 hidden bg-lime-100 transition not-group-hover:opacity-0 dark:bg-lime-800" />
+            <span class="relative">[ADD PROJECT]</span>
           </button>
         </div>
       </div>
@@ -94,7 +95,12 @@ export class App extends $gl.Unit {
   // VERSIONER
   // ---------------------------------------------------------------------------
 
-  static versioner: any = {}
+  static versioner: any = {
+    1() {
+      delete this.pkgs
+      this.projects = []
+    },
+  }
 }
 
 // async createNewPkg() {

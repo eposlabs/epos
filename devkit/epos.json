@@ -1,16 +1,18 @@
 {
-  "$schema": "https://epos.dev/schema.json?v=1",
+  "$schema": "https://epos.dev/schema.json",
   "name": "devkit",
+  "title": "[epos]",
+  "version": "1.3.2",
   "static": [
-    "./public/icon.png",
-    "./template/epos.json",
-    "./template/package.json",
-    "./template/tsconfig.json",
-    "./template/vite.config.ts",
-    "./template/src/app/app.gl.tsx",
-    "./template/src/core/units.ts",
-    "./template/src/gl.tsx",
-    "./template/src/gl.css"
+    // "./public/icon.png"
+    // "./template/epos.json",
+    // "./template/package.json",
+    // "./template/tsconfig.json",
+    // "./template/vite.config.ts",
+    // "./template/src/app/app.gl.tsx",
+    // "./template/src/core/units.ts",
+    // "./template/src/gl.tsx",
+    // "./template/src/gl.css"
   ],
   "targets": [
     {
@@ -20,11 +22,11 @@
     {
       "matches": ["https://epos.dev/@learn"],
       "load": ["./dist/fg.js", "./dist/tw.css"]
-    },
-    {
-      "matches": ["<background>"],
-      "load": ["./dist/bg.js"]
     }
+    // {
+    //   "matches": ["<background>"],
+    //   "load": ["./dist/bg.js"]
+    // }
     // Experiments
     // {
     //   "matches": ["https://epos.dev/@exp"],

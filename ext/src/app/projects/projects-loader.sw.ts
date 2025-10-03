@@ -1,4 +1,4 @@
-import type { BundleNoStatic } from './project/project.sw'
+import type { BundleNoStatic, StaticFiles } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
 export class ProjectsLoader extends $sw.Unit {
@@ -14,23 +14,34 @@ export class ProjectsLoader extends $sw.Unit {
     const [bundle] = await this.$.utils.safe<BundleNoStatic>(fetch('/project.json').then(res => res.json()))
     if (!bundle) return
 
-    const [manifest] = await this.$.utils.safe<Manifest>(fetch('/manifest.json').then(res => res.json()))
-    if (!manifest) return
-
     const name = bundle.spec.name
     const project = this.$projects.map[name]
-    if (!project) return
 
-    // const shouldLoad = !project || manifest.version < bundle.spec.manifest.version
-    // if (this.$projects.map[bundle.spec.name]) {
-    // }
+    // Already latest version? -> Skip
+    if (project && this.compareSemver(project.spec.version, bundle.spec.version) >= 0) return
 
-    await this.$.idb.set(bundle.spec.name, ':project', ':default', bundle)
-
+    // Load static files
+    const staticFiles: StaticFiles = {}
     for (const path of bundle.spec.static) {
       const [blob] = await this.$.utils.safe(fetch(`/static/${path}`).then(r => r.blob()))
       if (!blob) continue
-      await this.$.idb.set(bundle.spec.name, ':static', path, blob)
+      staticFiles[path] = blob
     }
+
+    await this.$projects.createOrUpdate({ ...bundle, staticFiles })
+  }
+
+  private compareSemver(semver1: string, semver2: string) {
+    const parts1 = semver1.split('.').map(Number)
+    const parts2 = semver2.split('.').map(Number)
+
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] || 0
+      const part2 = parts2[i] || 0
+      if (part1 > part2) return 1
+      if (part1 < part2) return -1
+    }
+
+    return 0
   }
 }

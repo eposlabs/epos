@@ -5,7 +5,7 @@ import './layers/index.ex'
 
 $: (async () => {
   try {
-    await $ex.App.create()
+    await ex.App.create()
   } catch (e) {
     console.error(e)
   }

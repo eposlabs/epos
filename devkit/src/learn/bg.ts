@@ -7,4 +7,3 @@ epos.state.registerModels({ ...$sh, ...$bg })
 const state = await epos.state.connect('learn', () => ({ app: new $bg.LearnApp(null) }))
 
 Object.assign(self, { epos, state, $: state.app })
-console.warn(4)

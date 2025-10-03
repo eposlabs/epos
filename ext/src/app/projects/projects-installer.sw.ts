@@ -95,13 +95,7 @@ export class ProjectsInstaller extends $sw.Unit {
   }
 
   private async installFromBundle(bundle: Bundle) {
-    if (this.$projects.map[bundle.spec.name]) {
-      const project = this.$projects.map[bundle.spec.name]
-      await project.update(bundle)
-    } else {
-      const project = await $sw.Project.create(this, bundle)
-      this.$projects.map[bundle.spec.name] = project
-    }
+    await this.$projects.createOrUpdate(bundle)
   }
 
   private broadcast(event: string) {

@@ -1,7 +1,8 @@
-// TODO: handle when adding pkg with the same name
+// TODO: handle when adding project with the same name
+import type { Bundle } from '@ext/app/projects/project/project.sw'
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
-export class Pkg extends $gl.Unit {
+export class Project extends $gl.Unit {
   id = this.$.utils.id()
   handleId: string
   name: string | null = null
@@ -18,7 +19,6 @@ export class Pkg extends $gl.Unit {
 
   constructor(parent: $gl.Unit, handleId: string) {
     super(parent)
-    console.warn(6)
     this.handleId = handleId
   }
 
@@ -31,7 +31,7 @@ export class Pkg extends $gl.Unit {
     this.engine = (epos as any).engine
     this.state = epos.state.local({ error: null })
 
-    // Pkg's handle was removed from IDB? -> Remove pkg itself
+    // Project's handle was removed from IDB? -> Remove project itself
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', this.handleId)
     if (!handle) {
       this.remove()
@@ -63,8 +63,8 @@ export class Pkg extends $gl.Unit {
   }
 
   async remove() {
-    await this.engine.bus.send('pkgs.remove', this.name)
-    this.$.pkgs.splice(this.$.pkgs.indexOf(this), 1)
+    await this.engine.bus.send('projects.remove', this.name)
+    this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
   // ---------------------------------------------------------------------------
@@ -81,9 +81,9 @@ export class Pkg extends $gl.Unit {
       return
     }
 
-    // Name has been changed? -> Uninstall pkg from epos
+    // Name has been changed? -> Remove project from epos extension
     if (this.name !== spec.name) {
-      await this.engine.bus.send('pkgs.remove', this.name)
+      await this.engine.bus.send('projects.remove', this.name)
     }
 
     // Update spec and name
@@ -102,7 +102,7 @@ export class Pkg extends $gl.Unit {
       }
     }
 
-    // Update pkg
+    // Update project
     this.update()
   }
 
@@ -122,7 +122,7 @@ export class Pkg extends $gl.Unit {
     const globalObserver = new FileSystemObserver(records => {
       for (const record of records) {
         if (record.type === 'modified') {
-          this.log(record.type, record.relativePathComponents.join('/'))
+          // this.log(record.type, record.relativePathComponents.join('/'))
         }
       }
 
@@ -152,8 +152,8 @@ export class Pkg extends $gl.Unit {
           break
         }
 
-        // File was modified? -> Update pkg
-        this.log('modified', path)
+        // File was modified? -> Update project
+        // this.log('modified', path)
         this.update()
       }
     })
@@ -187,17 +187,19 @@ export class Pkg extends $gl.Unit {
         }
       }
 
-      await this.engine.bus.send('pkgs.install', {
+      const bundle: Bundle = {
         dev: true,
         spec: this.spec,
         sources: sources,
-        static: staticFiles,
-      })
+        staticFiles: staticFiles,
+      }
+
+      await this.engine.bus.send('projects.install', bundle)
     }, 100)
   }
 
   async export() {
-    const blob = await this.engine.bus.send('pkgs.export', this.name)
+    const blob = await this.engine.bus.send('projects.export', this.name)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
@@ -290,20 +292,16 @@ export class Pkg extends $gl.Unit {
 
             {/* Export button */}
             {!this.state.error && (
-              <div
-                onClick={this.export}
-                class="cursor-default px-1 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                [EXPORT]
+              <div onClick={this.export} class="group relative cursor-default rounded-sm">
+                <div class="absolute inset-0 hidden bg-gray-100 transition not-group-hover:opacity-0 dark:bg-gray-600" />
+                <span class="relative">[EXPORT]</span>
               </div>
             )}
 
             {/* Remove button */}
-            <div
-              onClick={this.remove}
-              class="dar:hover:text-red-600 cursor-default px-1 py-0.5 hover:bg-gray-200 hover:text-red-600 dark:hover:bg-gray-700 dark:hover:text-red-400"
-            >
-              [REMOVE]
+            <div onClick={this.remove} class="group relative cursor-default">
+              <div class="absolute inset-0 hidden bg-red-100 transition not-group-hover:opacity-0 dark:bg-red-800" />
+              <span class="_group-hover:border-b _group-hover:text-red-500 relative">[REMOVE]</span>
             </div>
           </div>
         </div>

@@ -1,24 +1,35 @@
 {
   "name": "epos",
-  "version": "1.16.0",
+  "version": "1.18.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
   "scripts": {
+    "dev": "tsup --config ../tsup.config.ts --watch",
+    "build": "tsup --config ../tsup.config.ts",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./src/epos.ts",
-    "./vite": "./src/vite.ts"
+    ".": {
+      "source": "./src/epos.ts",
+      "import": "./dist/epos.js",
+      "types": "./dist/epos.d.ts"
+    },
+    "./vite": {
+      "source": "./src/vite.ts",
+      "import": "./dist/vite.js",
+      "types": "./dist/vite.d.ts"
+    }
   },
   "files": [
-    "src"
+    "src",
+    "dist"
   ],
   "dependencies": {
-    "@types/chrome": "^0.1.17",
+    "@types/chrome": "^0.1.21",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "mobx": "^6.15.0",
@@ -27,7 +38,7 @@
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "vite": "^7.1.7"
+    "vite": "^7.1.9"
   },
   "peerDependencies": {
     "vite": "^7.1.4"

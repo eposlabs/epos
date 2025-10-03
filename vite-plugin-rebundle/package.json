@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -10,24 +10,31 @@
     "vite-plugin"
   ],
   "scripts": {
+    "dev": "tsup --config ../tsup.config.ts --watch",
+    "build": "tsup --config ../tsup.config.ts",
     "lint": "tsc --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm publish' --"
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./src/rebundle.ts"
+    ".": {
+      "source": "./src/rebundle.ts",
+      "import": "./dist/rebundle.js",
+      "types": "./dist/rebundle.d.ts"
+    }
   },
   "files": [
-    "src"
+    "src",
+    "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.8.0",
+    "@eposlabs/utils": "^1.9.0",
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
     "rolldown": "^1.0.0-beta.41",
-    "rollup": "^4.52.3",
-    "vite": "^7.1.7",
+    "rollup": "^4.52.4",
+    "vite": "^7.1.9",
     "ws": "^8.18.3"
   }
 }

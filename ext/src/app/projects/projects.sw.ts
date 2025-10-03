@@ -1,4 +1,4 @@
-import type { ActionMeta, ExecutionMeta } from './project/project.sw'
+import type { ActionMeta, Bundle, ExecutionMeta } from './project/project.sw'
 
 export type ActionData = { [name: string]: ActionMeta }
 export type ExecutionData = { [name: string]: ExecutionMeta }
@@ -35,6 +35,16 @@ export class Projects extends $sw.Unit {
     const project = this.map[projectName]
     if (!project) throw new Error(`No such project: ${projectName}`)
     return await project.exporter.export()
+  }
+
+  async createOrUpdate(bundle: Bundle) {
+    if (this.map[bundle.spec.name]) {
+      const project = this.map[bundle.spec.name]
+      await project.update(bundle)
+    } else {
+      const project = await $sw.Project.create(this, bundle)
+      this.map[bundle.spec.name] = project
+    }
   }
 
   hasPopup() {

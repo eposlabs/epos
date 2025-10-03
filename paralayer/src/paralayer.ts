@@ -1,4 +1,4 @@
-import { Queue, safe, Unit } from '@eposlabs/utils'
+import { Queue, Unit, safe } from '@eposlabs/utils'
 import type { FSWatcher } from 'chokidar'
 import { watch } from 'chokidar'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
@@ -17,6 +17,8 @@ export type Options = {
   watch?: boolean
   /** Whether the layer variables should be exposed globally. */
   globalize?: boolean
+  /** If provided, other layers will extend this layer. */
+  globalLayerName?: string | null
   /** If a file name does not have layer tags, default layer name will be used. */
   defaultLayerName?: string | null
 }
@@ -172,8 +174,8 @@ export class Paralayer extends Unit {
   }
 
   private generateLayerContent(layer: string, layerPaths: string[]) {
-    const $LayerName = this.getLayerName(layer, '$Pascal')
-    const $layerName = this.getLayerName(layer, '$camel')
+    const layerName = this.getLayerName(layer, 'camel')
+    const LayerName = this.getLayerName(layer, 'Pascal')
     const allNames = layerPaths.flatMap(path => this.files[path]?.names ?? [])
 
     const imports = layerPaths
@@ -188,23 +190,34 @@ export class Paralayer extends Unit {
       })
       .filter(Boolean)
 
-    const assign = [`Object.assign(${$layerName}, {`, ...allNames.map(name => `  ${name},`), `})`]
+    const assign = [`Object.assign(${layerName}, {`, ...allNames.map(name => `  ${name},`), `})`]
+
+    let extendPascal = ''
+    let extendCamel = ''
+    if (this.options.globalLayerName && layer !== this.options.globalLayerName) {
+      extendPascal = `extends ${this.getLayerName(this.options.globalLayerName, 'Pascal')} `
+      extendCamel = `extends ${this.getLayerName(this.options.globalLayerName, 'camel')} `
+    }
 
     const globals = [
       `declare global {`,
-      `  var ${$layerName}: ${$LayerName}`,
+      `  var ${layerName}: ${LayerName}`,
       ``,
-      `  interface ${$LayerName} {`,
+      `  interface ${LayerName} ${extendPascal}{`,
       ...allNames.map(name => `    ${name}: typeof ${name}`),
       `  }`,
       ``,
-      `  namespace ${$layerName} {`,
+      `  interface ${layerName} ${extendCamel}{`,
+      ...allNames.map(name => `    ${name}: ${name}`),
+      `  }`,
+      ``,
+      `  namespace ${layerName} {`,
       ...allNames.map(name => `    export type ${name} = ${name}Type`),
       `  }`,
       `}`,
     ]
 
-    return ['// @ts-ignore', '', ...imports, '', ...assign, '', ...globals, ''].join('\n')
+    return [...imports, '', ...assign, '', ...globals, ''].join('\n')
   }
 
   private generateIndexContent(topLayer: string, allLayers: string[]) {
@@ -216,6 +229,10 @@ export class Paralayer extends Unit {
       })
       .map(layer => `import './layer.${layer}.ts'`)
 
+    if (this.options.globalLayerName && topLayer !== this.options.globalLayerName) {
+      imports.unshift(`import './layer.${this.options.globalLayerName}.ts'`)
+    }
+
     return [...imports].join('\n')
   }
 
@@ -226,9 +243,9 @@ export class Paralayer extends Unit {
     })
 
     const vars = layers.map(layer => {
-      const $layerName = this.getLayerName(layer, '$camel')
-      if (this.options.globalize) return `globalThis.${$layerName} = {}`
-      return `const ${$layerName} = {}`
+      const layerName = this.getLayerName(layer, 'camel')
+      if (this.options.globalize) return `globalThis.${layerName} = {}`
+      return `const ${layerName} = {}`
     })
 
     return [...vars].join('\n')
@@ -241,10 +258,10 @@ export class Paralayer extends Unit {
     return this.options.defaultLayerName ?? ''
   }
 
-  private getLayerName(layer: string, style: '$camel' | '$Pascal') {
+  private getLayerName(layer: string, style: 'camel' | 'Pascal') {
     const LayerName = layer.split('.').map(this.capitalize).join('')
-    if (style === '$camel') return `$${this.decapitalize(LayerName)}`
-    if (style === '$Pascal') return `$${LayerName}`
+    if (style === 'camel') return this.decapitalize(LayerName)
+    if (style === 'Pascal') return LayerName
     throw this.never
   }
 

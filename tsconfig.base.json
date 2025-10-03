@@ -4,6 +4,7 @@
     "target": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "customConditions": ["source"],
 
     "allowImportingTsExtensions": true,
     "declaration": true,
