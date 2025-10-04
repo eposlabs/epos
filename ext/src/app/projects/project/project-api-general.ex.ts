@@ -38,7 +38,7 @@ export class ProjectApiGeneral extends ex.Unit {
 
     const projectElement = document.createElement('div')
     projectElement.epos = true
-    projectElement.setAttribute('projects.ge', this.$project.name)
+    projectElement.setAttribute('project', this.$project.name)
     eposElement.append(projectElement)
 
     this.attachRoot(projectElement)

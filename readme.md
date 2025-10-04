@@ -14,6 +14,8 @@
   - epos.bus.send
   - epos.bus.emit
   - epos.bus.once
+  - epos.bus.setSignal
+  - epos.bus.waitSignal
 - **State**
   - epos.state.connect
   - epos.state.disconnect
