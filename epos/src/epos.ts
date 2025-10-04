@@ -50,6 +50,8 @@ export interface Epos {
     send<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
     /** Emit event locally (calls local listeners only). */
     emit<T = unknown>(eventName: string, ...args: unknown[]): Promise<T>
+    setSignal(name: string, value?: unknown): void
+    waitSignal(name: string, timeout?: number): Promise<void>
   }
 
   // State

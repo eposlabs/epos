@@ -15,11 +15,10 @@ export class Project extends os.Unit {
   }
 
   update(data: Omit<ExecutionMeta, 'name' | 'popup'>) {
+    const hashChanged = this.hash !== data.hash
     this.dev = data.dev
     this.hash = data.hash
-    if (this.hash !== data.hash) {
-      this.frame.src = this.getFrameUrl()
-    }
+    if (hashChanged) this.frame.src = this.getFrameUrl()
   }
 
   removeFrame() {

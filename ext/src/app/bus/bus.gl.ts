@@ -103,13 +103,15 @@ export class Bus extends gl.Unit {
     this.on(name, handler, thisValue)
   }
 
-  setSignal(name: string, ...args: unknown[]) {
-    const value = args[0] ?? true
+  setSignal(name: string, value: unknown = true) {
+    name = `signal[${name}]`
     this.on(name, () => value)
     async: this.send(name, value)
   }
 
   async waitSignal(name: string, timeout?: number) {
+    name = `signal[${name}]`
+
     // Setup listener
     const listener$ = Promise.withResolvers<unknown>()
     const listener = (value: unknown) => listener$.resolve(value)

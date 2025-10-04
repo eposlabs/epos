@@ -1,5 +1,5 @@
 // TODO: handle when adding project with the same name
-import type { Bundle } from '@ext/app/projects/project/project.sw'
+// import type { Bundle } from '@ext/app/projects/project/project.sw'
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
 export class Project extends gl.Unit {
@@ -187,7 +187,7 @@ export class Project extends gl.Unit {
         }
       }
 
-      const bundle: Bundle = {
+      const bundle /* Bundle */ = {
         dev: true,
         spec: this.spec,
         sources: sources,
@@ -282,7 +282,7 @@ export class Project extends gl.Unit {
           </div>
 
           {/* Right controls */}
-          <div class="flex items-baseline gap-2">
+          <div class="flex items-baseline gap-3">
             {/* Time of the last update */}
             {this.lastUpdatedAt && (
               <div class="mr-3 text-xs text-gray-400">
@@ -292,16 +292,20 @@ export class Project extends gl.Unit {
 
             {/* Export button */}
             {!this.state.error && (
-              <div onClick={this.export} class="group relative cursor-default rounded-sm">
-                <div class="absolute inset-0 hidden bg-gray-100 transition not-group-hover:opacity-0 dark:bg-gray-600" />
-                <span class="relative">[EXPORT]</span>
+              <div onClick={this.export} class="group relative flex cursor-pointer">
+                {/* <div class="absolute inset-0 bg-current opacity-10 blur-[4px] transition not-group-hover:opacity-0 dark:opacity-20" /> */}
+                <div class="">[</div>
+                <div class="relative">EXPORT</div>
+                <div class="">]</div>
               </div>
             )}
 
             {/* Remove button */}
-            <div onClick={this.remove} class="group relative cursor-default">
-              <div class="absolute inset-0 hidden bg-red-100 transition not-group-hover:opacity-0 dark:bg-red-800" />
-              <span class="_group-hover:border-b _group-hover:text-red-500 relative">[REMOVE]</span>
+            <div onClick={this.remove} class="group relative cursor-pointer">
+              {/* <div class="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-red-500 opacity-50 blur-xs not-group-hover:opacity-0 dark:opacity-80" /> */}
+              <span class="">[</span>
+              <span class="relative">REMOVE</span>
+              <span class="">]</span>
             </div>
           </div>
         </div>

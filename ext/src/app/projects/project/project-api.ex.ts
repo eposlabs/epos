@@ -41,6 +41,8 @@ export class ProjectApi extends ex.Unit {
         once: this.$.utils.link(this.bus, 'once'),
         send: this.$.utils.link(this.bus, 'send'),
         emit: this.$.utils.link(this.bus, 'emit'),
+        setSignal: this.$.utils.link(this.bus, 'setSignal'),
+        waitSignal: this.$.utils.link(this.bus, 'waitSignal'),
       },
 
       // State

@@ -79,7 +79,7 @@ export class App extends gl.Unit {
           <button
             onClick={this.addProject}
             class={[
-              'group relative cursor-default rounded-sm',
+              'group relative cursor-pointer rounded-sm',
               this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute',
             ]}
           >
