@@ -195,7 +195,7 @@ export class Idb extends sw.Unit {
 
     // Check if DB exists
     const dbs = await indexedDB.databases()
-    return !!dbs.find(d => d.name === name)
+    return !!dbs.find(db => db.name === name)
   }
 
   /** Ensure that the database with the given name exists and returns it. */
@@ -205,7 +205,7 @@ export class Idb extends sw.Unit {
 
     // Get DB version if it exists, or start with version 1
     const dbs = await indexedDB.databases()
-    const meta = dbs.find(d => d.name === name)
+    const meta = dbs.find(db => db.name === name)
     const version = meta?.version || 1
 
     // Create DB / connnect to the existing one

@@ -29,6 +29,7 @@ export class KitFetcher extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
+
     this.$.bus.on('kit.fetch', this.fetch, this)
     this.$.bus.on('kit.readAsText', this.readAsText, this)
     this.$.bus.on('kit.readAsJson', this.readAsJson, this)

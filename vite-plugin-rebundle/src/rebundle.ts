@@ -9,6 +9,7 @@ import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { WebSocketServer } from 'ws'
 
+// TODO support for general input/output options, not only per bundke
 export const _code_ = Symbol('rebundle:code')
 export const _sourcemap_ = Symbol('rebundle:sourcemap')
 

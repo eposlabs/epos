@@ -73,4 +73,11 @@ export class App extends sw.Unit {
     self.eject = (name: string) => this.projects.map[name].exporter.export()
     self.install = self.add
   }
+
+  async export() {
+    await install('http://localhost:3022/devkit')
+    const blob = await eject('devkit')
+    const url = await $.bus.send('utils.createObjectUrl', blob)
+    this.$.browser.tabs.create({ url, active: true })
+  }
 }

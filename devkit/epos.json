@@ -3,6 +3,16 @@
   "name": "devkit",
   "title": "[epos]",
   "version": "1.3",
+  "targets": [
+    {
+      "matches": ["<hub>"],
+      "load": ["./dist/gl.js", "./dist/tw.css"]
+    },
+    {
+      "matches": ["https://epos.dev/@learn"],
+      "load": ["./dist/ln.js", "./dist/tw.css"]
+    }
+  ],
   "static": [
     // "./public/icon.png"
     // "./template/epos.json",
@@ -13,24 +23,5 @@
     // "./template/src/core/units.ts",
     // "./template/src/gl.tsx",
     // "./template/src/gl.css"
-  ],
-  "targets": [
-    {
-      "matches": ["<hub>"],
-      "load": ["./dist/gl.js", "./dist/tw.css"]
-    },
-    {
-      "matches": ["https://epos.dev/@learn"],
-      "load": ["./dist/fg.js", "./dist/tw.css"]
-    }
-    // {
-    //   "matches": ["<background>"],
-    //   "load": ["./dist/bg.js"]
-    // }
-    // Experiments
-    // {
-    //   "matches": ["https://epos.dev/@exp"],
-    //   "load": ["./dist/exp.js", "./dist/exp.css"]
-    // }
   ]
 }

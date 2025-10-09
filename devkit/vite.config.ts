@@ -2,23 +2,20 @@ import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
 import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle } from 'vite-plugin-rebundle'
+import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
-  const minify = mode !== 'development'
-
-  const mainLayersJs = await paralayer({
-    input: './src/app',
+  const setupLayersJs = await paralayer({
+    input: ['./src/app', './src/learn-app'],
     output: './src/layers',
     watch: mode !== 'production',
-    globalLayerName: 'gl',
-    defaultLayerName: 'gl',
   })
 
-  const learnLayersJs = await paralayer({
-    input: './src/learn/app',
-    output: './src/learn/layers',
-    watch: mode !== 'production',
+  const bundle = (): RolldownOptions => ({
+    output: {
+      minify: mode !== 'development',
+      banner: setupLayersJs,
+    },
   })
 
   return {
@@ -26,10 +23,8 @@ export default defineConfig(async ({ mode }) => {
       epos(),
       tailwindcss(),
       rebundle({
-        gl: { output: { minify, banner: mainLayersJs } },
-        fg: { output: { minify, banner: learnLayersJs } },
-        bg: { output: { minify, banner: learnLayersJs } },
-        exp: { output: { minify } },
+        gl: bundle(),
+        ln: bundle(),
       }),
     ],
 
@@ -39,10 +34,8 @@ export default defineConfig(async ({ mode }) => {
       rolldownOptions: {
         input: {
           gl: './src/gl.tsx',
+          ln: './src/ln.tsx',
           tw: './src/tw.css',
-          fg: './src/learn/fg.tsx',
-          bg: './src/learn/bg.ts',
-          exp: './src/exp/exp.tsx',
         },
         output: {
           entryFileNames: '[name].js',
