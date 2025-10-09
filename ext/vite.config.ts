@@ -39,7 +39,7 @@ export default defineConfig(async ({ mode }) => {
       tailwindcss(),
       preact({ reactAliasesEnabled: false }),
       viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
-      rebundle({
+      rebundle(null, {
         'cs': bundle('cs'),
         'ex': bundle('ex'),
         'ex.dev': bundle('ex', true),
@@ -69,7 +69,7 @@ export default defineConfig(async ({ mode }) => {
         output: {
           minify: false,
           sourcemap: false,
-          entryFileNames: '[name].js',
+          entryFileNames: 'app/[name].js',
           assetFileNames: '[name].[ext]',
         },
         experimental: {

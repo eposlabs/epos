@@ -52,9 +52,8 @@ export class Paralayer extends Unit {
     await this.ready$.promise
     await this.queue.run(() => this.build())
     if (!this.options.watch) await this.watcher.close()
-  }
 
-  async readSetupJs() {
+    // Return content of setup.js
     const setupJsPath = join(this.options.output, 'setup.js')
     return await readFile(setupJsPath, 'utf-8')
   }
@@ -285,9 +284,8 @@ export class Paralayer extends Unit {
 }
 
 export async function paralayer(options: Options) {
-  const pl = new Paralayer(options)
-  await pl.start()
-  return await pl.readSetupJs()
+  const setupLayersJs = await new Paralayer(options).start()
+  return setupLayersJs
 }
 
 export default paralayer

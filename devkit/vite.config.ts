@@ -11,20 +11,15 @@ export default defineConfig(async ({ mode }) => {
     watch: mode !== 'production',
   })
 
-  const bundle = (): RolldownOptions => ({
-    output: {
-      minify: mode !== 'development',
-      banner: setupLayersJs,
-    },
-  })
-
   return {
     plugins: [
       epos(),
       tailwindcss(),
       rebundle({
-        gl: bundle(),
-        ln: bundle(),
+        output: {
+          minify: mode !== 'development',
+          banner: setupLayersJs,
+        },
       }),
     ],
 

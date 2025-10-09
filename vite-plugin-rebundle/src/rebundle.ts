@@ -1,4 +1,4 @@
-import { safe, Unit } from '@eposlabs/utils'
+import { safe, Unit, is } from '@eposlabs/utils'
 import chalk from 'chalk'
 import { filesize } from 'filesize'
 import { readdir, readFile, rmdir, stat, unlink } from 'node:fs/promises'
@@ -9,7 +9,6 @@ import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { WebSocketServer } from 'ws'
 
-// TODO support for general input/output options, not only per bundke
 export const _code_ = Symbol('rebundle:code')
 export const _sourcemap_ = Symbol('rebundle:sourcemap')
 
@@ -18,12 +17,13 @@ export type RolldownOptions = {
   output?: OutputOptions
 }
 
-export type Options = {
+export type BundleOptions = {
   [bundleName: string]: RolldownOptions
 }
 
 export class Rebundle extends Unit {
-  private options: Options
+  private generalOptions: RolldownOptions
+  private bundleOptions: BundleOptions
   private config: ResolvedConfig | null = null
   private originalFiles: Record<string, string> = {}
   private rebundledFiles: Record<string, string> = {}
@@ -31,9 +31,10 @@ export class Rebundle extends Unit {
   private port: number | null = null
   private ws: WebSocketServer | null = null
 
-  constructor(options: Options) {
+  constructor(generalOptions: RolldownOptions | null, bundleOptions?: BundleOptions) {
     super()
-    this.options = options
+    this.generalOptions = generalOptions ?? {}
+    this.bundleOptions = bundleOptions ?? {}
   }
 
   get vite(): Plugin {
@@ -111,10 +112,6 @@ export class Rebundle extends Unit {
       // Remove from dist and bundle
       await this.removeFromDist(chunk.fileName)
       delete bundle[chunk.fileName]
-
-      // Recursively remove containing directory if empty
-      const dir = dirname(join(this.dist, chunk.fileName))
-      await this.removeDirectoryIfEmpty(dir)
     }
 
     // Notify about modified chunks
@@ -151,12 +148,21 @@ export class Rebundle extends Unit {
     }
 
     // Build with rolldown
-    const options = this.options[chunk.name] ?? {}
     const [result] = await safe(async () => {
       const inputPath = join(this.dist, chunk.fileName)
       const outputPath = join(this.dist, this.unprefixed(chunk.fileName))
-      const build = await rolldown({ ...options.input, input: inputPath })
-      const result = await build.write({ ...options.output, sourcemap: false, file: outputPath })
+
+      const build = await rolldown({
+        ...this.merge(this.generalOptions.input ?? {}, this.bundleOptions[chunk.name]?.input ?? {}),
+        input: inputPath,
+      })
+
+      const result = await build.write({
+        ...this.merge(this.generalOptions.output ?? {}, this.bundleOptions[chunk.name]?.output ?? {}),
+        sourcemap: false,
+        file: outputPath,
+      })
+
       return result
     })
     if (!result) return
@@ -222,7 +228,10 @@ export class Rebundle extends Unit {
   }
 
   private async removeFromDist(path: string) {
-    await safe(unlink(join(this.dist, path)))
+    path = join(this.dist, path)
+    const dir = dirname(path)
+    await safe(unlink(path))
+    await this.removeDirectoryIfEmpty(dir)
   }
 
   private async ensureWs() {
@@ -238,10 +247,23 @@ export class Rebundle extends Unit {
     await rmdir(dir)
     await this.removeDirectoryIfEmpty(dirname(dir))
   }
+
+  private merge(obj1: Record<string, any>, obj2: Record<string, any>) {
+    const result: Record<string, any> = { ...obj1 }
+    for (const key in obj2) {
+      if (is.object(obj1[key]) && is.object(obj2[key])) {
+        result[key] = this.merge(obj1[key], obj2[key])
+      } else {
+        result[key] = obj2[key]
+      }
+    }
+
+    return result
+  }
 }
 
-export function rebundle(options: Options = {}) {
-  return new Rebundle(options).vite
+export function rebundle(generalOptions: RolldownOptions | null, bundleOptions?: BundleOptions) {
+  return new Rebundle(generalOptions, bundleOptions).vite
 }
 
 export default rebundle

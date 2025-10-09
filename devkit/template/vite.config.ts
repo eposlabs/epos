@@ -16,7 +16,10 @@ export default defineConfig(async ({ mode }) => {
       epos(),
       tailwindcss(),
       rebundle({
-        gl: { output: { minify: mode !== 'development', banner: setupLayersJs } },
+        output: {
+          minify: mode !== 'development',
+          banner: setupLayersJs,
+        },
       }),
     ],
     build: {

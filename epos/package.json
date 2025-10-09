@@ -29,9 +29,9 @@
     "dist"
   ],
   "dependencies": {
-    "@types/chrome": "^0.1.21",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
+    "@types/chrome": "^0.1.22",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "react": "^19.2.0",
