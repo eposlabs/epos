@@ -9,6 +9,7 @@ export class ProjectApiState extends ex.Unit {
     parent: exSw.State._parent_,
     modelInit: exSw.State._modelInit_,
     modelCleanup: exSw.State._modelCleanup_,
+    modelStrict: exSw.State._modelStrict_,
     modelVersioner: exSw.State._modelVersioner_,
   }
 

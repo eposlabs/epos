@@ -10,16 +10,20 @@ export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')
 export const _modelInit_ = Symbol('modelInit')
 export const _modelCleanup_ = Symbol('modelCleanup')
+export const _modelStrict_ = Symbol('modelStrict')
 export const _modelVersioner_ = Symbol('modelVersioner')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStore, DbKey]
 export type Initial = Obj | Model | (() => Obj | Model)
-export type GetInitialState = () => Obj | Model
 export type Versioner = Record<number, (state: MObject) => void>
-export type ModelClass = (new (...args: unknown[]) => unknown) & { [_modelVersioner_]?: Versioner }
-export type Model = InstanceType<ModelClass>
 export type Root = { data: MObject & { ':version'?: number } }
+
+export type Model = InstanceType<ModelClass>
+export type ModelClass = (new (...args: unknown[]) => unknown) & {
+  [_modelStrict_]?: boolean
+  [_modelVersioner_]?: Versioner
+}
 
 // MobX node
 export type Parent = MNode | null
@@ -65,6 +69,7 @@ export class State extends exSw.Unit {
   static _parent_ = _parent_
   static _modelInit_ = _modelInit_
   static _modelCleanup_ = _modelCleanup_
+  static _modelStrict_ = _modelStrict_
   static _modelVersioner_ = _modelVersioner_
 
   private root!: Root
@@ -227,7 +232,8 @@ export class State extends exSw.Unit {
     if (source instanceof this.$.libs.yjs.Map) {
       const yMap = source
       const Model = this.getModelByName(yMap.get('@'))
-      const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: !Model })
+      const useProxy = Model ? !Model[_modelStrict_] : true
+      const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       this.wire(mObject, yMap, parent, Model)
       yMap.forEach((value, key) => this.set(mObject, key, value))
       this.attachedNodes.add(mObject)
@@ -248,16 +254,13 @@ export class State extends exSw.Unit {
       const ModelByName = this.getModelByName(object['@'])
       const ModelByInstance = this.getModelByInstance(object)
       const Model = ModelByName ?? ModelByInstance
-      const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: !Model })
+      const useProxy = Model ? !Model[_modelStrict_] : true
+      const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
       this.wire(mObject, yMap, parent, Model, !!ModelByInstance)
-      // It is important to use Object.keys instead for..in, because for..in also iterates over prototype properties
+      // It is important to use Object.keys instead of for..in, because for..in iterates over prototype properties as well
       // this.keys because object can be observable s.items = [s.items[0]]
       this.keys(object).forEach(key => this.set(mObject, key, object[key]))
-      // const dkeys = new Set(this.keys(object))
-      // const staticKeys = new Set(Object.keys(object)).difference(dkeys)
-      // for (const key of staticKeys) mObject[key] = object[key]
-
       this.attachedNodes.add(mObject)
       return mObject
     }
@@ -282,8 +285,21 @@ export class State extends exSw.Unit {
       return source
     }
 
-    console.error('Unsupported state value:', source)
-    throw new Error('Unsupported state value')
+    self.requestIdleCallback(() => {
+      const supportedTypes = `object, array, string, number, boolean, null, undefined`
+      console.error('%cSupported state types:', 'font-weight: bold', `${supportedTypes}`)
+      console.error('%cInvalid value container:', 'font-weight: bold', parent)
+      console.error('%cInvalid value:', 'font-weight: bold', source)
+    })
+
+    let displayValue: string
+    if (this.$.is.function(source)) {
+      displayValue = 'function'
+    } else {
+      displayValue = String(source).slice(0, 100)
+    }
+
+    throw new Error(`Unsupported state value: ${displayValue}`)
   }
 
   private detach(target: unknown) {

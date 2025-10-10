@@ -15,6 +15,10 @@ export class Unit<TRoot = unknown> {
   declare private [_parent_]: Unit<TRoot> | null // Parent reference for not-yet-attached units
   declare private [_disposers_]: Set<() => void>
 
+  static get [epos.state.symbols.modelStrict]() {
+    return true
+  }
+
   constructor(parent: Unit<TRoot> | null) {
     // Define parent for not-yet-attached units
     Reflect.defineProperty(this, _parent_, { get: () => parent })

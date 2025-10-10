@@ -77,6 +77,7 @@ export interface Epos {
       readonly parent: unique symbol
       readonly modelInit: unique symbol
       readonly modelCleanup: unique symbol
+      readonly modelStrict: unique symbol
       readonly modelVersioner: unique symbol
     }
   }
