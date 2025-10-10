@@ -1,9 +1,11 @@
-import type { Location, ModelClass, Initial, Versioner } from '../../states/state/state.ex.sw'
+import type { Location, ModelClass, Initial, Versioner, Config } from '../../states/state/state.ex.sw'
 
 export class ProjectApiState extends ex.Unit {
+  private $api = this.up(ex.ProjectApi)!
   private $project = this.up(ex.Project)!
   private states: { [stateName: string]: exSw.State } = {}
   private models: { [modelName: string]: ModelClass } = {}
+  private config: Config = {}
 
   symbols = {
     parent: exSw.State._parent_,
@@ -29,21 +31,28 @@ export class ProjectApiState extends ex.Unit {
       versioner = (args[1] ?? {}) as Versioner
     }
 
-    name = this.prepareName(name)
+    name = this.prepareName(name, this.connect)
     const location = this.getLocation(name)
-    this.states[name] = await this.$.states.connect(location, { initial, versioner, models: this.models })
+
+    this.states[name] = await this.$.states.connect(location, {
+      initial,
+      versioner,
+      config: this.config,
+      models: this.models,
+    })
+
     return this.states[name].data
   }
 
   async disconnect(name?: string) {
-    name = this.prepareName(name)
+    name = this.prepareName(name, this.disconnect)
     const location = this.getLocation(name)
     await this.$.states.disconnect(location)
     delete this.states[name]
   }
 
   async destroy(name?: string) {
-    name = this.prepareName(name)
+    name = this.prepareName(name, this.destroy)
     const location = this.getLocation(name)
     await this.$.states.remove(location)
     delete this.states[name]
@@ -55,6 +64,11 @@ export class ProjectApiState extends ex.Unit {
 
   transaction(fn: () => void) {
     this.$.states.transaction(fn)
+  }
+
+  configure(config: Config) {
+    this.config = config
+    Object.values(this.states).forEach(state => state.setConfig(config))
   }
 
   async list(filter: { connected?: boolean } = {}) {
@@ -72,17 +86,18 @@ export class ProjectApiState extends ex.Unit {
 
   registerModels(models: Record<string, ModelClass>) {
     Object.assign(this.models, models)
-    Object.values(this.states).forEach(state => state.addModels(models))
+    Object.values(this.states).forEach(state => state.registerModels(models))
   }
 
   private getLocation(name: string): Location {
     return [this.$project.name, ':state', name]
   }
 
-  private prepareName(name: string | null | undefined) {
+  private prepareName(name: string | null | undefined, caller: Fn) {
     if (this.$.is.absent(name)) return ':default'
-    if (name === '') throw new Error('State name cannot be an empty string')
-    if (name.startsWith(':')) throw new Error(`State name cannot start with ':'`)
+    if (name === '') throw this.$api.error('State name cannot be an empty string', caller)
+    if (name.startsWith(':')) throw this.$api.error(`State name cannot start with ':'`, caller)
+
     return name
   }
 }

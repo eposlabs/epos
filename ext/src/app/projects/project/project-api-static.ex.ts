@@ -1,4 +1,5 @@
 export class ProjectApiStatic extends ex.Unit {
+  private $api = this.up(ex.ProjectApi)!
   private $project = this.up(ex.Project)!
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
@@ -15,8 +16,8 @@ export class ProjectApiStatic extends ex.Unit {
 
   url(path: string) {
     path = this.normalizePath(path)
-    if (!this.paths.includes(path)) throw new Error(`File does not exist: ${path}`)
-    if (!this.files[path]) throw new Error(`File is not loaded: ${path}`)
+    if (!this.paths.includes(path)) throw this.$api.error(`File does not exist: ${path}`, this.url)
+    if (!this.files[path]) throw this.$api.error(`File is not loaded: ${path}`, this.url)
     return this.files[path].url
   }
 
@@ -24,7 +25,7 @@ export class ProjectApiStatic extends ex.Unit {
     path = this.normalizePath(path)
     if (this.files[path]) return this.files[path].blob
     const blob = await this.$.idb.get<Blob>(this.$project.name, ':static', path)
-    if (!blob) throw new Error(`File not found: ${path}`)
+    if (!blob) throw this.$api.error(`File not found: ${path}`, this.load)
     this.files[path] = { url: URL.createObjectURL(blob), blob }
     return blob
   }

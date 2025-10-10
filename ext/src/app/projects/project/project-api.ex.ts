@@ -16,6 +16,12 @@ export class ProjectApi extends ex.Unit {
     return api
   }
 
+  error(message: string, caller: Fn) {
+    const error = new Error(`[epos] ${message}`)
+    Error.captureStackTrace(error, caller)
+    return error
+  }
+
   private async init() {
     this.general = await ex.ProjectApiGeneral.create(this)
     this.static = await ex.ProjectApiStatic.create(this)
@@ -51,6 +57,7 @@ export class ProjectApi extends ex.Unit {
         disconnect: this.$.utils.link(this.state, 'disconnect'),
         transaction: this.$.utils.link(this.state, 'transaction'),
         local: this.$.utils.link(this.state, 'local'),
+        configure: this.$.utils.link(this.state, 'configure'),
         list: this.$.utils.link(this.state, 'list'),
         destroy: this.$.utils.link(this.state, 'destroy'),
         registerModels: this.$.utils.link(this.state, 'registerModels'),

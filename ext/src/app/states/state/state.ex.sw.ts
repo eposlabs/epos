@@ -18,11 +18,15 @@ export type Location = [DbName, DbStore, DbKey]
 export type Initial = Obj | Model | (() => Obj | Model)
 export type Versioner = Record<number, (state: MObject) => void>
 export type Root = { data: MObject & { ':version'?: number } }
-
 export type Model = InstanceType<ModelClass>
+
 export type ModelClass = (new (...args: unknown[]) => unknown) & {
   [_modelStrict_]?: boolean
   [_modelVersioner_]?: Versioner
+}
+
+export type Config = {
+  allowMissingModels?: boolean | string[]
 }
 
 // MobX node
@@ -53,6 +57,7 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
 
 export type Options = {
   initial?: Initial
+  config?: Config
   models?: Record<string, ModelClass>
   versioner?: Versioner
 }
@@ -73,6 +78,7 @@ export class State extends exSw.Unit {
   static _modelVersioner_ = _modelVersioner_
 
   private root!: Root
+  private config: Config = {}
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<gl.Bus['create']>
   private models: Record<string, ModelClass>
@@ -104,6 +110,7 @@ export class State extends exSw.Unit {
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
     this.location = location
+    this.config = options.config ?? {}
     this.models = options.models ?? {}
     this.initial = options.initial ?? {}
     this.versioner = options.versioner ?? {}
@@ -132,7 +139,11 @@ export class State extends exSw.Unit {
     })
   }
 
-  addModels(models: Record<string, ModelClass>) {
+  setConfig(config: Config) {
+    this.config = config
+  }
+
+  registerModels(models: Record<string, ModelClass>) {
     Object.assign(this.models, models)
   }
 
@@ -231,7 +242,9 @@ export class State extends exSw.Unit {
   private attach<T>(source: T, parent: Parent) {
     if (source instanceof this.$.libs.yjs.Map) {
       const yMap = source
-      const Model = this.getModelByName(yMap.get('@'))
+      const modelName: unknown = yMap.get('@')
+      const Model = this.$.is.string(modelName) ? this.getModelByName(modelName) : null
+      this.checkForMissingModel(Model, modelName, () => yMap.toJSON())
       const useProxy = Model ? !Model[_modelStrict_] : true
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       this.wire(mObject, yMap, parent, Model)
@@ -251,9 +264,11 @@ export class State extends exSw.Unit {
 
     if (this.$.is.object(source)) {
       const object = source
-      const ModelByName = this.getModelByName(object['@'])
+      const modelName = object['@']
+      const ModelByName = this.$.is.string(modelName) ? this.getModelByName(modelName) : null
       const ModelByInstance = this.getModelByInstance(object)
       const Model = ModelByName ?? ModelByInstance
+      this.checkForMissingModel(Model, modelName, () => object)
       const useProxy = Model ? !Model[_modelStrict_] : true
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
@@ -285,12 +300,11 @@ export class State extends exSw.Unit {
       return source
     }
 
-    self.requestIdleCallback(() => {
-      const supportedTypes = `object, array, string, number, boolean, null, undefined`
-      console.error('%cSupported state types:', 'font-weight: bold', `${supportedTypes}`)
-      console.error('%cInvalid value container:', 'font-weight: bold', parent)
-      console.error('%cInvalid value:', 'font-weight: bold', source)
-    })
+    self.setTimeout(() => {
+      console.warn(`[epos] Supported state types: object, array, string, number, boolean, null, undefined.`)
+      console.warn('[epos] Invalid value container:', parent)
+      console.warn('[epos] Invalid value:', source)
+    }, 10)
 
     let displayValue: string
     if (this.$.is.function(source)) {
@@ -299,7 +313,7 @@ export class State extends exSw.Unit {
       displayValue = String(source).slice(0, 100)
     }
 
-    throw new Error(`Unsupported state value: ${displayValue}`)
+    throw new Error(`[epos] Unsupported state value: ${displayValue}`)
   }
 
   private detach(target: unknown) {
@@ -675,6 +689,27 @@ export class State extends exSw.Unit {
   // ---------------------------------------------------------------------------
   // MODEL MANAGEMENT
   // ---------------------------------------------------------------------------
+
+  private checkForMissingModel(Model: ModelClass | null, modelName: unknown, getValue: () => unknown) {
+    if (this.$.env.is.sw) return
+    if (Model) return
+    if (!this.$.is.string(modelName)) return
+
+    const { allowMissingModels } = this.config
+    if (allowMissingModels === true) return
+    if (this.$.is.array(allowMissingModels) && allowMissingModels.includes(modelName)) return
+
+    self.setTimeout(() => {
+      console.warn(
+        '[epos] Make sure the model is registered before calling epos.state.connect(...)',
+        'and included in your bundle.',
+      )
+      console.warn('[epos] To allow missing models, use epos.state.configure({ allowMissingModels: true }).')
+      console.warn('[epos] Object with the missing model:', getValue())
+    }, 10)
+
+    throw new Error(`[epos] Missing model: ${modelName}`)
+  }
 
   private runModelVersioner(model: MObject) {
     const Model = this.getModelByInstance(model)

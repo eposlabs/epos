@@ -14,6 +14,10 @@ export type ModelClass = new (...args: any[]) => any
 export type Model = InstanceType<ModelClass>
 export type Initial<T extends Obj | Model> = T | (() => T)
 
+export type StateConfig = {
+  allowMissingModels?: boolean | string[]
+}
+
 export type Storage = {
   /** Get value from the storage. */
   get<T = unknown>(key: string): Promise<T>
@@ -67,6 +71,8 @@ export interface Epos {
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
     local<T extends Obj = {}>(state?: T): T
+    /** Configure state. */
+    configure: (config: StateConfig) => void
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
