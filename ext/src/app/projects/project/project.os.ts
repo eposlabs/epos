@@ -18,14 +18,26 @@ export class Project extends os.Unit {
     const hashChanged = this.hash !== data.hash
     this.dev = data.dev
     this.hash = data.hash
-    if (hashChanged) this.frame.src = this.getFrameUrl()
+    if (hashChanged) {
+      if (this.dev) console.log(`%c[${this.name}]`, 'font-weight: bold', 'Restarting <background> process')
+      this.frame.src = this.getFrameUrl()
+    }
   }
 
   removeFrame() {
+    if (this.dev) console.log(`%c[${this.name}]`, 'font-weight: bold', 'Stopping <background> process')
     this.frame.remove()
   }
 
   private createFrame() {
+    if (this.dev) {
+      console.log(`%c[${this.name}]`, 'font-weight: bold', 'Starting <background> process')
+      console.log(
+        '%cTo inspect it, select "lex" from the DevTools context dropdown',
+        'font-style: italic; color: gray;',
+      )
+    }
+
     const frame = document.createElement('iframe')
     frame.src = this.getFrameUrl()
     frame.name = this.name

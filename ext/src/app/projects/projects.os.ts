@@ -54,7 +54,21 @@ export class Projects extends os.Unit {
     url: string,
     attrs: Record<string, unknown> = {},
   ) {
-    await this.removeProjectFrame(projectName, frameName)
+    const project = this.map[projectName]
+    if (!project) throw this.never
+    const exist = !!document.querySelector(`iframe[data-project="${projectName}"][data-name="${frameName}"]`)
+
+    if (exist) {
+      if (project.dev) {
+        console.log(`%c[${projectName}]`, 'font-weight: bold', `Reopening "${frameName}" frame, ${url}`)
+      }
+    } else {
+      if (project.dev) {
+        console.log(`%c[${projectName}]`, 'font-weight: bold', `Opening "${frameName}" frame, ${url}`)
+      }
+    }
+
+    await this.removeProjectFrame(projectName, frameName, false)
 
     const ruleId = await this.$.bus.send('net.addSessionRule', {
       condition: {
@@ -86,9 +100,15 @@ export class Projects extends os.Unit {
     document.body.append(frame)
   }
 
-  private async removeProjectFrame(projectName: string, frameName: string) {
+  private async removeProjectFrame(projectName: string, frameName: string, shouldLog = true) {
     const frame = document.querySelector(`iframe[data-project="${projectName}"][data-name="${frameName}"]`)
     if (!frame) return
+    if (shouldLog) {
+      const project = this.map[projectName]
+      if (project.dev) {
+        console.log(`%c[${projectName}]`, 'font-weight: bold', `Closing "${frameName}" frame`)
+      }
+    }
     const ruleId = Number(frame.getAttribute('data-rule-id'))
     await this.$.bus.send('net.removeSessionRule', ruleId)
     frame.remove()

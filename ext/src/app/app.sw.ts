@@ -31,6 +31,19 @@ export class App extends sw.Unit {
     await this.setupOffscreen()
     this.defineGlobalMethods()
     this.dev = await gl.Dev.create(this)
+
+    if (
+      this.projects.list().length === 0 ||
+      this.projects.list().some(project => project.dev) ||
+      this.projects.list().some(project => project.name === 'devkit')
+    ) {
+      console.log('ᛃ epos is running | https://epos.dev/docs/api')
+      console.log(
+        '%cTo inspect <background>, open offscreen.html from the extension Details page',
+        'font-style: italic; color: gray;',
+      )
+      console.log('')
+    }
   }
 
   private async setupContentScript() {

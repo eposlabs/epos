@@ -108,15 +108,12 @@ export interface Epos {
 
   // Frame
   frame: {
-    /** Open frame in the background. */
-    open: {
-      (url: string, attributes?: Record<string, unknown>): Promise<void>
-      (name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
-    }
+    /** Open background frame. */
+    open(name: string, url: string, attributes?: Record<string, unknown>): Promise<void>
     /** Close background frame by its name. */
-    close(name?: string): Promise<void>
+    close(name: string): Promise<void>
     /** Check if background frame with the given name exists. */
-    exists(name?: string): Promise<boolean>
+    exists(name: string): Promise<boolean>
     /** Get list of all open background frames. */
     list(): Promise<{ name: string | null; url: string }[]>
   }

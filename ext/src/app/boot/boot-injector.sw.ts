@@ -115,7 +115,6 @@ export class BootInjector extends sw.Unit {
       if (result.error.includes('Content Security Policy')) {
         await this.fixCspError(tab)
       } else if (result.error.includes('No tab with id')) {
-        console.warn('caught-good')
         return
       } else {
         this.log.error(`Failed to inject js to ${tab.url}.`, result.error)

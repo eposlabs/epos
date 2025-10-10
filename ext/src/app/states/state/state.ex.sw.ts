@@ -701,8 +701,7 @@ export class State extends exSw.Unit {
 
     self.setTimeout(() => {
       console.warn(
-        '[epos] Make sure the model is registered before calling epos.state.connect(...)',
-        'and included in your bundle.',
+        '[epos] Make sure the model is included in your bundle and registered before epos.state.connect(...)',
       )
       console.warn('[epos] To allow missing models, use epos.state.configure({ allowMissingModels: true }).')
       console.warn('[epos] Object with the missing model:', getValue())

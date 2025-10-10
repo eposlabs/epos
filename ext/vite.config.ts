@@ -23,7 +23,8 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     output: {
-      banner: setupLayersJs,
+      banner: `(async () => {${setupLayersJs}`,
+      footer: '})()',
       minify: mode !== 'development',
     },
   })
