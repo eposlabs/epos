@@ -1,6 +1,6 @@
 {
   "name": "epos-unit",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -25,6 +25,6 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.10.0",
-    "epos": "^1.19.0"
+    "epos": "^1.20.0"
   }
 }

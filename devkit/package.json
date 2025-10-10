@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@eposlabs/utils": "^1.10.0",
-    "epos": "^1.19.0",
+    "epos": "^1.20.0",
     "epos-spec-parser": "*",
-    "epos-unit": "^1.7.0"
+    "epos-unit": "^1.8.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.14",
@@ -18,6 +18,6 @@
     "paralayer": "^1.9.0",
     "rolldown-vite": "^7.1.16",
     "tailwindcss": "^4.1.14",
-    "vite-plugin-rebundle": "^1.9.0"
+    "vite-plugin-rebundle": "^1.11.0"
   }
 }
