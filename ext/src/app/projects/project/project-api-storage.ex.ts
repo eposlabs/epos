@@ -43,7 +43,7 @@ export class ProjectApiStorage extends ex.Unit {
     return names.map(name => ({ name: name === ':storage' ? null : name }))
   }
 
-  private prepareName(name?: string) {
+  private prepareName(name: string | null | undefined) {
     if (this.$.is.absent(name)) return ':storage'
     if (name === '') throw new Error('Storage name cannot be empty string')
     if (name.startsWith(':')) throw new Error(`Storage name cannot start with ':'`)

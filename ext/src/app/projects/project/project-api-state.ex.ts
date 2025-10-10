@@ -15,7 +15,7 @@ export class ProjectApiState extends ex.Unit {
   async connect(initial?: Initial, versioner?: Versioner): Promise<Obj>
   async connect(name: string, initial?: Initial, versioner?: Versioner): Promise<Obj>
   async connect(...args: unknown[]): Promise<Obj> {
-    let name: string | undefined
+    let name: string | null
     let initial: Initial
     let versioner: Versioner
     if (this.$.is.string(args[0])) {
@@ -23,7 +23,7 @@ export class ProjectApiState extends ex.Unit {
       initial = (args[1] ?? {}) as Initial
       versioner = (args[2] ?? {}) as Versioner
     } else {
-      name = undefined
+      name = null
       initial = (args[0] ?? {}) as Initial
       versioner = (args[1] ?? {}) as Versioner
     }
@@ -78,7 +78,7 @@ export class ProjectApiState extends ex.Unit {
     return [this.$project.name, ':state', name]
   }
 
-  private prepareName(name?: string) {
+  private prepareName(name: string | null | undefined) {
     if (this.$.is.absent(name)) return ':default'
     if (name === '') throw new Error('State name cannot be an empty string')
     if (name.startsWith(':')) throw new Error(`State name cannot start with ':'`)

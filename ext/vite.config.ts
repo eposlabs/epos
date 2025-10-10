@@ -69,7 +69,7 @@ export default defineConfig(async ({ mode }) => {
         output: {
           minify: false,
           sourcemap: false,
-          entryFileNames: 'app/[name].js',
+          entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
         },
         experimental: {
