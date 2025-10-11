@@ -31,7 +31,7 @@ export class Rebundle extends Unit {
   private port: number | null = null
   private ws: WebSocketServer | null = null
 
-  constructor(generalOptions: RolldownOptions | null, bundleOptions?: BundleOptions) {
+  constructor(generalOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
     super()
     this.generalOptions = generalOptions ?? {}
     this.bundleOptions = bundleOptions ?? {}
@@ -262,7 +262,7 @@ export class Rebundle extends Unit {
   }
 }
 
-export function rebundle(generalOptions: RolldownOptions | null, bundleOptions?: BundleOptions) {
+export function rebundle(generalOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
   return new Rebundle(generalOptions, bundleOptions).vite
 }
 

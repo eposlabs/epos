@@ -39,8 +39,8 @@ export class App extends sw.Unit {
     ) {
       console.log('ᛃ epos is running | https://epos.dev/docs/api')
       console.log(
-        '%cTo inspect <background>, open offscreen.html from the extension Details page',
-        'font-style: italic; color: gray;',
+        '%cTo inspect <background> process, open offscreen.html from the extension details page',
+        'color: gray;',
       )
       console.log('')
     }

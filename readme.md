@@ -21,12 +21,14 @@
   - epos.state.disconnect
   - epos.state.transaction
   - epos.state.local
-  - epos.state.list
+  - epos.state.configure
   - epos.state.destroy
+  - epos.state.list
   - epos.state.registerModels
   - epos.state.symbols.parent
   - epos.state.symbols.modelInit
   - epos.state.symbols.modelCleanup
+  - epos.state.symbols.modelStrict
   - epos.state.symbols.modelVersioner
 - **Storage**
   - epos.storage.get

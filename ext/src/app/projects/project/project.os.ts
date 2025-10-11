@@ -19,22 +19,36 @@ export class Project extends os.Unit {
     this.dev = data.dev
     this.hash = data.hash
     if (hashChanged) {
-      if (this.dev) console.log(`%c[${this.name}]`, 'font-weight: bold', 'Restarting <background> process')
+      if (this.dev) {
+        console.log(`%c[${this.name}]`, 'font-weight: bold', 'Restart <background>')
+      }
       this.frame.src = this.getFrameUrl()
     }
   }
 
   removeFrame() {
-    if (this.dev) console.log(`%c[${this.name}]`, 'font-weight: bold', 'Stopping <background> process')
+    if (this.dev) {
+      console.log(
+        `%c[${this.name}] %cStop <background> %c${this.getTime()}`,
+        'font-weight: bold',
+        'font-weight: normal',
+        'color: gray',
+      )
+    }
     this.frame.remove()
+  }
+
+  private getTime() {
+    return new Date().toString().split(' ')[4]
   }
 
   private createFrame() {
     if (this.dev) {
-      console.log(`%c[${this.name}]`, 'font-weight: bold', 'Starting <background> process')
       console.log(
-        '%cTo inspect it, select "lex" from the DevTools context dropdown',
-        'font-style: italic; color: gray;',
+        `%c[${this.name}] %cStart <background> %c${this.getTime()} | Select "${this.name}" from the DevTools context dropdown to switch to it`,
+        `font-weight: bold`,
+        'font-weight: normal',
+        `color: gray`,
       )
     }
 

@@ -60,11 +60,21 @@ export class Projects extends os.Unit {
 
     if (exist) {
       if (project.dev) {
-        console.log(`%c[${projectName}]`, 'font-weight: bold', `Reopening "${frameName}" frame, ${url}`)
+        console.log(
+          `%c[${projectName}] %cReopen "${frameName}" frame ${url} %c${this.getTime()}`,
+          'font-weight: bold',
+          'font-weight: normal',
+          'color: gray',
+        )
       }
     } else {
       if (project.dev) {
-        console.log(`%c[${projectName}]`, 'font-weight: bold', `Opening "${frameName}" frame, ${url}`)
+        console.log(
+          `%c[${projectName}] %cOpen "${frameName}" frame ${url} %c${this.getTime()}`,
+          'font-weight: bold',
+          'font-weight: normal',
+          'color: gray',
+        )
       }
     }
 
@@ -106,7 +116,12 @@ export class Projects extends os.Unit {
     if (shouldLog) {
       const project = this.map[projectName]
       if (project.dev) {
-        console.log(`%c[${projectName}]`, 'font-weight: bold', `Closing "${frameName}" frame`)
+        console.log(
+          `%c[${projectName}] %cClose "${frameName}" frame %c${this.getTime()}`,
+          'font-weight: bold',
+          'font-weight: normal',
+          'color: gray',
+        )
       }
     }
     const ruleId = Number(frame.getAttribute('data-rule-id'))
@@ -122,5 +137,9 @@ export class Projects extends os.Unit {
   private getProjectFrames(projectName: string) {
     const frames = document.querySelectorAll<HTMLIFrameElement>(`iframe[data-project="${projectName}"]`)
     return [...frames].map(frame => ({ name: frame.getAttribute('data-name')!, url: frame.src }))
+  }
+
+  private getTime() {
+    return new Date().toString().split(' ')[4]
   }
 }

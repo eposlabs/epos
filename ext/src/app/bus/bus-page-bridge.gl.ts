@@ -102,10 +102,9 @@ export class BusPageBridge extends gl.Unit {
   private setupCsFrameEx() {
     // Remove all proxy actions left from the previous [csFrame] and [exFrame].
     // This happens on iframe refresh or page navigation inside iframe.
-    // Check is performed for [csFrame] only, because related [exFrame] runs in the same WindowProxy.
-    if (this.$.env.is.csFrame) {
-      async: this.sendToTop('bus.clearFrameProxyActions')
-    }
+    // [csFrame] and [exFrame] run in the same WindowProxy, but we call for both, because for <background>
+    // frames we have [exFrame] only and for web frames, [exFrame] can be absent.
+    async: this.sendToTop('bus.clearFrameProxyActions')
 
     // Listen for messages from [csTop], [vw] and [os].
     // We listen on self, so only targeted messages are handled.

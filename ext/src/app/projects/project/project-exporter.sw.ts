@@ -77,6 +77,7 @@ export class ProjectExporter extends sw.Unit {
     const manifest = {
       ...engineManifest,
       name: this.$project.spec.title ?? this.$project.spec.name,
+      description: this.$project.spec.description ?? '',
       version: this.$project.spec.version,
       action: { default_title: this.$project.spec.title ?? this.$project.spec.name },
       ...(this.$project.spec.manifest ?? {}),

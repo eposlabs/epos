@@ -23,7 +23,19 @@ export type Spec = {
 }
 
 const config = {
-  keys: ['$schema', 'name', 'icon', 'title', 'version', 'action', 'popup', 'static', 'targets', 'manifest'],
+  keys: [
+    '$schema',
+    'name',
+    'icon',
+    'title',
+    'description',
+    'version',
+    'action',
+    'popup',
+    'static',
+    'targets',
+    'manifest',
+  ],
   name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },

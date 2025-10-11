@@ -1,88 +1,93 @@
 # API
 
-The Epos API is divided into several sections, each focusing on a specific area of functionality.
+This is a comprehensive list of all available Epos API methods and properties.
 
-- **General** `epos.*` — core utilities and helpers available globally, including DOM rendering, component wrapping, browser API access, and fetch helpers.
+## [General](/docs/api-general)
 
-- **Bus** `epos.bus.*` — handles messaging between different extension contexts (popup, background, content script, etc.).
+Сore utilities and helpers.
 
-- **State** `epos.state.*` — manages reactive shared state across contexts, supporting transactions, synchronization, and local data.
+- [epos.fetch](/docs/api-general#epos-fetch)
+- [epos.browser](/docs/api-general#epos-browser)
+- [epos.element](/docs/api-general#epos-element)
+- [epos.render](/docs/api-general#epos-render)
+- [epos.component](/docs/api-general#epos-component)
 
-- **Storage** `epos.storage.*` — provides persistent key–value storage for project data.
+## [Bus](/docs/api-bus)
 
-- **Static** `epos.static.*` — manages static assets such as images, scripts, and other files used by the project.
+Messaging system for inter-context communication.
 
-- **Frame** `epos.frame.*` — controls background or embedded frames, allowing creation, tracking, and cleanup of iframes.
+- [epos.bus.on](/docs/api-bus#epos-bus-on)
+- [epos.bus.off](/docs/api-bus#epos-bus-off)
+- [epos.bus.send](/docs/api-bus#epos-bus-send)
+- [epos.bus.emit](/docs/api-bus#epos-bus-emit)
+- [epos.bus.once](/docs/api-bus#epos-bus-once)
+- 🎓 [epos.bus.setSignal](/docs/api-bus#epos-bus-setSignal)
+- 🎓 [epos.bus.waitSignal](/docs/api-bus#epos-bus-waitSignal)
 
-- **Environment** `epos.env.*` — exposes runtime information about the current context (tab, popup, side panel, background).
+## [State](/docs/api-state)
 
-- **Libs** `epos.libs.*` — gives access to core libraries bundled with Epos, like React, MobX, and Yjs.
+Reactive state management with synchronization across all contexts and persistence.
 
-## Full API Reference
+- [epos.state.connect](/docs/api-state#epos-state-connect)
+- [epos.state.disconnect](/docs/api-state#epos-state-disconnect)
+- [epos.state.transaction](/docs/api-state#epos-state-transaction)
+- [epos.state.local](/docs/api-state#epos-state-local)
+- [epos.state.configure](/docs/api-state#epos-state-configure)
+- [epos.state.destroy](/docs/api-state#epos-state-destroy)
+- [epos.state.list](/docs/api-state#epos-state-list)
+- 🎓 [epos.state.symbols](/docs/api-state#epos-state-symbols)
+- 🎓 [epos.state.registerModels](/docs/api-state#epos-state-register-models)
 
-This is a comprehensive list of all available API methods and properties, organized by section.
+## [Storage](/docs/api-storage)
 
-- [General](/docs/api-general)
-  - [epos.fetch](/docs/api-general#epos-fetch)
-  - [epos.browser](/docs/api-general#epos-browser)
-  - [epos.element](/docs/api-general#epos-element)
-  - [epos.render](/docs/api-general#epos-render)
-  - [epos.component](/docs/api-general#epos-component)
+Persistent key–value storage. Saves data to IndexedDB.
 
-- [Bus](/docs/api-bus)
-  - [epos.bus.on](/docs/api-bus#epos-bus-on)
-  - [epos.bus.off](/docs/api-bus#epos-bus-off)
-  - [epos.bus.send](/docs/api-bus#epos-bus-send)
-  - [epos.bus.emit](/docs/api-bus#epos-bus-emit)
-  - [epos.bus.once](/docs/api-bus#epos-bus-once)
-  - 🎓 [epos.bus.setSignal](/docs/api-bus#epos-bus-setSignal)
-  - 🎓 [epos.bus.waitSignal](/docs/api-bus#epos-bus-waitSignal)
+- [epos.storage.get](/docs/api-storage#epos-storage-get)
+- [epos.storage.set](/docs/api-storage#epos-storage-set)
+- [epos.storage.delete](/docs/api-storage#epos-storage-delete)
+- [epos.storage.keys](/docs/api-storage#epos-storage-keys)
+- [epos.storage.clear](/docs/api-storage#epos-storage-clear)
+- [epos.storage.use](/docs/api-storage#epos-storage-use)
+- [epos.storage.list](/docs/api-storage#epos-storage-list)
 
-- [State](/docs/api-state)
-  - [epos.state.connect](/docs/api-state#epos-state-connect)
-  - [epos.state.disconnect](/docs/api-state#epos-state-disconnect)
-  - [epos.state.transaction](/docs/api-state#epos-state-transaction)
-  - [epos.state.local](/docs/api-state#epos-state-local)
-  - [epos.state.destroy](/docs/api-state#epos-state-destroy)
-  - [epos.state.list](/docs/api-state#epos-state-list)
-  - 🎓 [epos.state.symbols](/docs/api-state#epos-state-symbols)
-  - 🎓 [epos.state.register](/docs/api-state#epos-state-register)
+## [Frame](/docs/api-frame)
 
-- [Storage](#storage)
-  - [epos.storage.get](#epos-storage-get)
-  - [epos.storage.set](#epos-storage-set)
-  - [epos.storage.delete](#epos-storage-delete)
-  - [epos.storage.keys](#epos-storage-keys)
-  - [epos.storage.clear](#epos-storage-clear)
-  - [epos.storage.use](#epos-storage-use)
-  - [epos.storage.list](#epos-storage-list)
+Manage
 
-- [Frame](#frame)
-  - [epos.frame.open](#epos-frame-open)
-  - [epos.frame.close](#epos-frame-close)
-  - [epos.frame.exists](#epos-frame-exists)
-  - [epos.frame.list](#epos-frame-list)
+- [epos.frame.open](/docs/api-frame#epos-frame-open)
+- [epos.frame.close](/docs/api-frame#epos-frame-close)
+- [epos.frame.exists](/docs/api-frame#epos-frame-exists)
+- [epos.frame.list](/docs/api-frame#epos-frame-list)
 
-- [Static](#static)
-  - [epos.static.url](#epos-static-url)
-  - [epos.static.load](#epos-static-load)
-  - [epos.static.loadAll](#epos-static-loadAll)
-  - [epos.static.unload](#epos-static-unload)
-  - [epos.static.unloadAll](#epos-static-unloadAll)
-  - [epos.static.list](#epos-static-list)
+## [Static](/docs/api-static)
 
-- [Environment](#environment)
-  - [epos.env.tabId](#epos-env-tabId)
-  - [epos.env.isWeb](#epos-env-isWeb)
-  - [epos.env.isPopup](#epos-env-isPopup)
-  - [epos.env.isSidePanel](#epos-env-isSidePanel)
-  - [epos.env.isBackground](#epos-env-isBackground)
+Static assets management.
 
-- [Libs](#libs)
-  - [epos.libs.mobx](#epos-libs-mobx)
-  - [epos.libs.mobxReactLite](#epos-libs-mobxReactLite)
-  - [epos.libs.react](#epos-libs-react)
-  - [epos.libs.reactDom](#epos-libs-reactDom)
-  - [epos.libs.reactDomClient](#epos-libs-reactDomClient)
-  - [epos.libs.reactJsxRuntime](#epos-libs-reactJsxRuntime)
-  - [epos.libs.yjs](#epos-libs-yjs)
+- [epos.static.url](/docs/api-static#epos-static-url)
+- [epos.static.load](/docs/api-static#epos-static-load)
+- [epos.static.loadAll](/docs/api-static#epos-static-loadAll)
+- [epos.static.unload](/docs/api-static#epos-static-unload)
+- [epos.static.unloadAll](/docs/api-static#epos-static-unloadAll)
+- [epos.static.list](/docs/api-static#epos-static-list)
+
+## [Environment](/docs/api-env)
+
+Runtime context information.
+
+- [epos.env.tabId](/docs/api-env#epos-env-tabId)
+- [epos.env.isWeb](/docs/api-env#epos-env-isWeb)
+- [epos.env.isPopup](/docs/api-env#epos-env-isPopup)
+- [epos.env.isSidePanel](/docs/api-env#epos-env-isSidePanel)
+- [epos.env.isBackground](/docs/api-env#epos-env-isBackground)
+
+## [Libs](/docs/api-libs)
+
+Core bundled libraries used by Epos. Exposed as `epos.libs.*` for convenience.
+
+- [epos.libs.mobx](/docs/api-libs#epos-libs-mobx)
+- [epos.libs.mobxReactLite](/docs/api-libs#epos-libs-mobxReactLite)
+- [epos.libs.react](/docs/api-libs#epos-libs-react)
+- [epos.libs.reactDom](/docs/api-libs#epos-libs-reactDom)
+- [epos.libs.reactDomClient](/docs/api-libs#epos-libs-reactDomClient)
+- [epos.libs.reactJsxRuntime](/docs/api-libs#epos-libs-reactJsxRuntime)
+- [epos.libs.yjs](/docs/api-libs#epos-libs-yjs)
