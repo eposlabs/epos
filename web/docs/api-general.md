@@ -56,7 +56,9 @@ epos.browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 ```
 
 ::: details How does this work?
-`epos.browser` proxies all API calls to the extension's service worker process, which has full access to the Chrome Extensions API. So calling `epos.browser.tabs.query()` will call `chrome.tabs.query()` in the service worker. This technique allows you to use chrome API from contexts where they would normally be unavailable.
+`epos.browser` proxies all API calls to the extension's service worker process, which has full access to the Chrome Extensions API. So calling `epos.browser.tabs.query()` will call `chrome.tabs.query()` in the service worker. This technique allows you to use chrome APIs from contexts where they are normally unavailable.
+
+For listeners, Epos generates a unique ID for each listener and registers it in the service worker. When the event is triggered, the service worker sends a message back to the page, which then calls the appropriate listener function. When the listener is removed, Epos unregisters it in the service worker as well by its ID.
 :::
 
 ## `epos.element`
@@ -91,10 +93,10 @@ You can use this element as a container for your app, but in most cases, you’l
 ## `epos.render`
 
 Renders a React component (or any JSX element) into the DOM.
-If no container is provided, Epos creates **default container** inside `epos.element`.
+If no container is provided, Epos creates a **default container** inside `epos.element`.
 When a container is passed, rendering happens inside that element instead.
 
-Basically, this is a thin wrapper around `ReactDOM.createRoot(...).render(...)` with some extra logic to handle default container creation. All jsx elements are automatically wrapped in `<React.StrictMode>`, which helps catch potential issues in development.
+Basically, this is a thin wrapper around `ReactDOM.createRoot(...).render(...)` with some extra logic to handle default container creation. Additionally, `epos.render` wraps rendered JSX into `<React.StrictMode>`.
 
 **Syntax:**
 
@@ -112,8 +114,8 @@ epos.render(<App />)
 epos.render(<App />, document.getElementById('root'))
 ```
 
-::: details What is "default container"?
-By default, Epos creates `<div root/>` inside `epos.element`:
+::: details What is a "default container"?
+Default container is a `<div root></div>` element that Epos automatically creates inside `epos.element` if no container is provided to `epos.render`.
 
 <!-- prettier-ignore -->
 ```html
@@ -139,8 +141,6 @@ If `mode: "shadow"` is set in your `epos.json`, this container is placed inside 
 ```
 
 :::
-
----
 
 ## `epos.component`
 

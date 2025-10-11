@@ -2,54 +2,58 @@
 
 Reactive, shared, and persisted state for your project. Connect a state once and use it like a plain object — changes propagate to all contexts (tabs, popup, background, etc.) and are automatically **persisted in IndexedDB** so they survive refreshes.
 
-- [epos.state.connect](/docs/api-state#epos-state-connect)
-- [epos.state.disconnect](/docs/api-state#epos-state-disconnect)
-- [epos.state.transaction](/docs/api-state#epos-state-transaction)
-- [epos.state.local](/docs/api-state#epos-state-local)
-- [epos.state.destroy](/docs/api-state#epos-state-destroy)
-- [epos.state.list](/docs/api-state#epos-state-list)
-- 🎓 [epos.state.symbols](/docs/api-state#epos-state-symbols)
-- 🎓 [epos.state.register](/docs/api-state#epos-state-register)
-
-```js
-// Connect (create or open) a named state
-const state = await epos.state.connect('profile', { username: 'World' })
-
-// Use like a normal object — updates sync across contexts and persist to IDB
-state.username = 'Epos'
-```
-
 ## `epos.state.connect`
 
 Connects to a state. If it doesn’t exist, it’s created with the provided initial value.
 Returns a **reactive** object you can mutate directly.
 
+**Syntax:**
+
 ```ts
-// Syntax
-epos.state.connect(initial?: Initial, versioner?: Versioner) {}
+// Connect to the default state
+epos.state.connect(initial?: Initial, versioner?: Versioner)
+
+// Connect to a specific named state
 epos.state.connect(name?, initial?: Initial, versioner?: Versioner)
 ```
 
-// Types
+**Types:**
 
 ```ts
 type Initial<T extends Record<string, any>> = T | (() => T)
 type Versioner = Record<number, () => void>
 ```
 
-// Example
+**Examples:**
+
+```ts
+// Connect to the default state
 const state = await epos.state.connect({ count: 0 })
-state.count // 0
-state.count += 1 // reactive + sync + persist
+console.log(state.count) // 0 initially, then +1 on each reload
+state.count += 1 // Reactive update, synced across contexts and saved to IDB
 
-````
+// Using lazy initial state
+const state = await epos.state.connect(() => ({ count: 0 }))
 
-**Example**
+// Connect to a named state
+const chat = await epos.state.connect('chat', { messages: [] })
 
-```js
-const prefs = await epos.state.connect('prefs', { theme: 'dark', volume: 0.8 })
-prefs.theme = 'light' // sync + persist
-````
+// Using versioning (migrations)
+const state = await epos.state.connect(
+  { count: 0 },
+  {
+    // Migration from version 0 (no version) to version 1
+    1() {
+      this.count = 1
+    },
+    // Migration from version 1 to version 2
+    2() {
+      delete this.count
+      this.newProp = true
+    },
+  },
+)
+```
 
 ::: details Versioning & migrations
 Use a **versioner** to evolve state shape safely over time.

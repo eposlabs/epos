@@ -4,7 +4,7 @@ This is a comprehensive list of all available Epos API methods and properties.
 
 ## [General](/docs/api-general)
 
-Сore utilities and helpers.
+Misc general-purpose APIs that do not fit into separate namespace and live under the `epos.*` directly.
 
 - [epos.fetch](/docs/api-general#epos-fetch)
 - [epos.browser](/docs/api-general#epos-browser)
@@ -26,15 +26,15 @@ Messaging system for inter-context communication.
 
 ## [State](/docs/api-state)
 
-Reactive state management with synchronization across all contexts and persistence.
+Reactive state management with synchronization across all contexts.
 
 - [epos.state.connect](/docs/api-state#epos-state-connect)
 - [epos.state.disconnect](/docs/api-state#epos-state-disconnect)
-- [epos.state.transaction](/docs/api-state#epos-state-transaction)
 - [epos.state.local](/docs/api-state#epos-state-local)
-- [epos.state.configure](/docs/api-state#epos-state-configure)
+- [epos.state.transaction](/docs/api-state#epos-state-transaction)
 - [epos.state.destroy](/docs/api-state#epos-state-destroy)
 - [epos.state.list](/docs/api-state#epos-state-list)
+- [epos.state.configure](/docs/api-state#epos-state-configure)
 - 🎓 [epos.state.symbols](/docs/api-state#epos-state-symbols)
 - 🎓 [epos.state.registerModels](/docs/api-state#epos-state-register-models)
 
@@ -52,7 +52,7 @@ Persistent key–value storage. Saves data to IndexedDB.
 
 ## [Frame](/docs/api-frame)
 
-Manage
+Background iframes management. Useful for running background website automations.
 
 - [epos.frame.open](/docs/api-frame#epos-frame-open)
 - [epos.frame.close](/docs/api-frame#epos-frame-close)
@@ -70,9 +70,9 @@ Static assets management.
 - [epos.static.unloadAll](/docs/api-static#epos-static-unloadAll)
 - [epos.static.list](/docs/api-static#epos-static-list)
 
-## [Environment](/docs/api-env)
+## [Env](/docs/api-env)
 
-Runtime context information.
+Runtime environment information.
 
 - [epos.env.tabId](/docs/api-env#epos-env-tabId)
 - [epos.env.isWeb](/docs/api-env#epos-env-isWeb)
@@ -82,12 +82,12 @@ Runtime context information.
 
 ## [Libs](/docs/api-libs)
 
-Core bundled libraries used by Epos. Exposed as `epos.libs.*` for convenience.
+Core libraries used by Epos. Exposed as `epos.libs.*` for convenience.
 
-- [epos.libs.mobx](/docs/api-libs#epos-libs-mobx)
-- [epos.libs.mobxReactLite](/docs/api-libs#epos-libs-mobxReactLite)
 - [epos.libs.react](/docs/api-libs#epos-libs-react)
 - [epos.libs.reactDom](/docs/api-libs#epos-libs-reactDom)
 - [epos.libs.reactDomClient](/docs/api-libs#epos-libs-reactDomClient)
 - [epos.libs.reactJsxRuntime](/docs/api-libs#epos-libs-reactJsxRuntime)
+- [epos.libs.mobx](/docs/api-libs#epos-libs-mobx)
+- [epos.libs.mobxReactLite](/docs/api-libs#epos-libs-mobxReactLite)
 - [epos.libs.yjs](/docs/api-libs#epos-libs-yjs)

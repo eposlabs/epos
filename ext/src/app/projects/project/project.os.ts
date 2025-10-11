@@ -20,7 +20,12 @@ export class Project extends os.Unit {
     this.hash = data.hash
     if (hashChanged) {
       if (this.dev) {
-        console.log(`%c[${this.name}]`, 'font-weight: bold', 'Restart <background>')
+        console.log(
+          `%c[${this.name}] %cRestart <background> %c${this.getTime()}`,
+          'font-weight: bold',
+          'font-weight: normal',
+          'color: gray',
+        )
       }
       this.frame.src = this.getFrameUrl()
     }

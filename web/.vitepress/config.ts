@@ -26,6 +26,13 @@ export default defineConfig({
         ],
       },
       // {
+      //   text: 'epos.json',
+      //   items: [
+      //     { text: 'Basic setup', link: '/docs/spec' },
+      //     { text: 'Multiple targets', link: '/docs/spec-multiple-targets' },
+      //   ],
+      // },
+      // {
       //   text: 'Guide',
       //   items: [
       //     { text: 'Project Structure', link: '/docs/guide-project-structure' },
