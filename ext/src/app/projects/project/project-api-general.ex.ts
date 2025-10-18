@@ -6,6 +6,7 @@ export class ProjectApiGeneral extends ex.Unit {
   fetch = this.$.utils.link(this.$.kit.fetcher, 'fetch')
   browser!: typeof chrome
   element = this.createProjectElement()
+  component = this.$.utils.link(this.$.ui, 'component')
 
   static async create(parent: ex.Unit) {
     const projectApiGeneral = new ProjectApiGeneral(parent)
@@ -23,13 +24,6 @@ export class ProjectApiGeneral extends ex.Unit {
     const { StrictMode } = this.$.ui.react!
     const { jsx } = this.$.ui.reactJsxRuntime!
     root.render(jsx(StrictMode, { children }))
-  }
-
-  component<P>(Component: FC<P>): typeof Component
-  component<P>(name: string, Component: FC<P>): typeof Component
-  component(...args: unknown[]) {
-    const [name, Component] = args.length === 1 ? [null, args[0] as FC] : [args[0] as string, args[1] as FC]
-    return this.$.ui.component(name, Component)
   }
 
   private createProjectElement() {

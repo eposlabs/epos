@@ -47,15 +47,15 @@ export class Unit<TRoot = unknown> {
       _this[key] = descriptor.value.bind(this)
     }
 
-    // Wrap UI methods to components
+    // Create components out of `View` methods
     for (const key of keys) {
       if (typeof key === 'symbol') continue
-      if (!key.startsWith('ui')) continue
+      if (!key.endsWith('View')) continue
       const descriptor = descriptors[key]
       if (descriptor.get || descriptor.set) continue
       if (typeof _this[key] !== 'function') continue
-      const componentName = [this['@'], key.replace('ui', '')].filter(Boolean).join('-')
-      _this[key] = epos.component(componentName, _this[key] as FC)
+      _this[key] = epos.component(_this[key] as FC)
+      _this[key].displayName = `${this['@']}.${key}`
     }
 
     // Define log method

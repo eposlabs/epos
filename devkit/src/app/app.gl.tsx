@@ -1,6 +1,7 @@
 export class App extends gl.Unit {
   utils = new gl.Utils(this)
   idb = new gl.Idb(this)
+  ui = new gl.Ui(this)
   projects: gl.Project[] = []
 
   async init() {
@@ -16,39 +17,41 @@ export class App extends gl.Unit {
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
     }
 
-    // Delete obsolete 'pkg' database
-    await this.$.idb.deleteDatabase('pkg')
-
     // Delete obsolete directory handles from IDB
-    const projectHandleIds = new Set(this.$.projects.map(project => project.handleId))
     const idbHandleIds = await this.$.idb.keys('devkit', 'handles')
-    for (const handleId of idbHandleIds) {
-      if (projectHandleIds.has(handleId)) continue
-      await this.$.idb.delete('devkit', 'handles', handleId)
+    const projectHandleIds = new Set(this.$.projects.map(project => project.handleId))
+    for (const idbHandleId of idbHandleIds) {
+      if (projectHandleIds.has(idbHandleId)) continue
+      await this.$.idb.delete('devkit', 'handles', idbHandleId)
     }
   }
 
   async addProject() {
-    const [handle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
-    if (!handle) return
+    const [projectHandle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
+    if (!projectHandle) return
 
     // Save handle to IDB
-    const handleId = this.$.utils.id()
-    await this.$.idb.set('devkit', 'handles', handleId, handle)
+    const projectHandleId = this.$.utils.id()
+    await this.$.idb.set('devkit', 'handles', projectHandleId, projectHandle)
 
     // Create project
-    this.projects.push(new gl.Project(this, handleId))
+    const project = new gl.Project(this, projectHandleId)
+    this.projects.push(project)
   }
 
-  async readProjectHandle(handleId: string) {
-    return await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', handleId)
-  }
+  // TODO: ui -> ends with View ?
+  // <this.project.View />
+  // <this.project.HeaderView />
+  // <this.project.CalendarView />
+  // <this.project.ScreenView />
+  // <this.project.AssetView />
+  // <this.project.MainScreenView />
 
   // ---------------------------------------------------------------------------
-  // UI
+  // VIEW
   // ---------------------------------------------------------------------------
 
-  ui() {
+  View() {
     return (
       <div
         class={[
@@ -70,22 +73,17 @@ export class App extends gl.Unit {
           {this.projects.length > 0 && (
             <div class="flex w-full flex-col justify-center gap-4">
               {this.projects.map(project => (
-                <project.ui key={project.id} />
+                <project.View key={project.id} />
               ))}
             </div>
           )}
 
           {/* Add project button */}
-          <button
+          <this.ui.Button
+            label="ADD PROJECT"
             onClick={this.addProject}
-            class={[
-              'group relative cursor-pointer rounded-sm',
-              this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute',
-            ]}
-          >
-            <div class="absolute inset-0 hidden bg-lime-100 transition not-group-hover:opacity-0 dark:bg-lime-800" />
-            <span class="relative">[ADD PROJECT]</span>
-          </button>
+            className={this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute'}
+          />
         </div>
       </div>
     )
@@ -99,6 +97,19 @@ export class App extends gl.Unit {
     1() {
       delete this.pkgs
       this.projects = []
+    },
+    2() {
+      this.view = {}
+    },
+    3() {
+      delete this.view
+    },
+    4() {
+      this.view = {}
+    },
+    5() {
+      this.ui = new gl.Ui(this)
+      delete this.view
     },
   }
 }

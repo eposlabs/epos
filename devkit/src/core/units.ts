@@ -7,7 +7,7 @@ class BaseUnit<T> extends Unit<T> {
 }
 
 class UnitGl<T extends gl = gl> extends BaseUnit<T['App']> {}
-class UnitLn<T extends ln = ln> extends BaseUnit<T['App']> {}
+class UnitLn<T extends ln = ln> extends BaseUnit<T['LearnApp']> {}
 
 gl.Unit = UnitGl
 ln.Unit = UnitLn

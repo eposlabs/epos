@@ -11,25 +11,9 @@ export class Ui extends ex.Unit {
     this.reactJsxRuntime = this.createReactJsxRuntime()
   }
 
-  component(name: string | null, render: FC): FC {
+  component(render: FC): FC {
     if (!this.$.libs.mobxReactLite) return render
-
-    const Component = this.$.libs.mobxReactLite.observer(props => {
-      const result = render(props)
-
-      if (!name) return result
-      if (!this.$.is.object(result)) return result
-
-      const node = result as any
-      const className = this.concatClassNames(name, node.props.className)
-      return { ...node, props: { ...node.props, className } }
-    })
-
-    if (name) {
-      Component.displayName = name
-    }
-
-    return Component
+    return this.$.libs.mobxReactLite.observer(render)
   }
 
   private createReact() {

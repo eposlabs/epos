@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@eposlabs/utils": "^1.10.0",
+    "clsx": "^2.1.1",
     "epos": "^1.20.0",
     "epos-spec-parser": "*",
     "epos-unit": "^1.8.0"

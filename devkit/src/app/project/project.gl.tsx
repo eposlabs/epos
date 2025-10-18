@@ -269,10 +269,10 @@ export class Project extends gl.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // UI
+  // VIEW
   // ---------------------------------------------------------------------------
 
-  ui() {
+  View() {
     return (
       <div class="flex flex-col bg-white p-4 dark:bg-black">
         <div class="flex items-center justify-between gap-4">

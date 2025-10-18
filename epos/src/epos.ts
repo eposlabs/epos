@@ -39,10 +39,7 @@ export interface Epos {
   browser: typeof chrome
   element: HTMLDivElement
   render(node: react.ReactNode, container?: reactDomClient.Container): void
-  component: {
-    <P>(Component: react.FC<P>): typeof Component
-    <P>(name: string, Component: react.FC<P>): typeof Component
-  }
+  component<T>(Component: react.FC<T>): typeof Component
 
   // Bus
   bus: {
