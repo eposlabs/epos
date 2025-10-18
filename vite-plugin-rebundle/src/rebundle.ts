@@ -168,7 +168,7 @@ export class Rebundle extends Unit {
     if (!result) return
 
     // Log successful build
-    const { size } = await stat(join(this.dist, chunk.fileName))
+    const { size } = await stat(join(this.dist, this.unprefixed(chunk.fileName)))
     const _dist_ = chalk.dim(`${this.dist}/`)
     const _fileName_ = chalk.cyan(this.unprefixed(chunk.fileName))
     const _rebundle_ = chalk.dim.cyan('[rebundle]')

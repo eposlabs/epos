@@ -1,4 +1,4 @@
-# Static
+# Static API
 
 The **Static API** manages your project’s static assets — images, scripts, styles, or any other bundled files.  
 Files are loaded into memory as `Blob`s and can then be accessed via generated object URLs.  

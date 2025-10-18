@@ -1,3 +1,5 @@
+import './chrome-types.d.ts'
+
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'

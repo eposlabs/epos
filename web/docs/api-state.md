@@ -1,4 +1,4 @@
-# State
+# State API
 
 Reactive, shared, and persisted state for your project. Connect a state once and use it like a plain object — changes propagate to all contexts (tabs, popup, background, etc.) and are automatically **persisted in IndexedDB** so they survive refreshes.
 

@@ -1,4 +1,4 @@
-# Frame
+# Frame API
 
 The **Frame API** lets you manage background frames — hidden iframes running in the background of your extension.  
 Frames are useful for running isolated scripts, maintaining hidden state, or hosting background UI such as invisible canvases or offscreen views.

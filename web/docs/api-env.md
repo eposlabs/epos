@@ -1,4 +1,4 @@
-# Environment
+# Env API
 
 The **Environment API** provides information about the current Epos runtime context.  
 It helps you detect where your code is running — in a web page, popup, side panel, or background — and identify the active tab.
