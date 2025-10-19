@@ -3,10 +3,4 @@ import './core/live-reload.sw'
 import './core/units'
 import './layers/index.sw'
 
-$: (async () => {
-  try {
-    await sw.App.create()
-  } catch (e) {
-    console.error(e)
-  }
-})()
+await sw.App.create()

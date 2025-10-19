@@ -39,14 +39,6 @@ export class App extends gl.Unit {
     this.projects.push(project)
   }
 
-  // TODO: ui -> ends with View ?
-  // <this.project.View />
-  // <this.project.HeaderView />
-  // <this.project.CalendarView />
-  // <this.project.ScreenView />
-  // <this.project.AssetView />
-  // <this.project.MainScreenView />
-
   // ---------------------------------------------------------------------------
   // VIEW
   // ---------------------------------------------------------------------------

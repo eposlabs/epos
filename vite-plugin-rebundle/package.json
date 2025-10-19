@@ -20,6 +20,9 @@
       "source": "./src/rebundle.ts",
       "import": "./dist/rebundle.js",
       "types": "./dist/rebundle.d.ts"
+    },
+    "./ts": {
+      "import": "./src/rebundle.ts"
     }
   },
   "files": [

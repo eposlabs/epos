@@ -155,7 +155,7 @@ export interface Epos {
 }
 
 declare global {
-  var epos: Epos
+  const epos: Epos
 
   namespace React {
     interface HTMLAttributes<T> {

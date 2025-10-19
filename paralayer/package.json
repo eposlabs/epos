@@ -23,6 +23,9 @@
       "source": "./src/paralayer.ts",
       "import": "./dist/paralayer.js",
       "types": "./dist/paralayer.d.ts"
+    },
+    "./ts": {
+      "import": "./src/paralayer.ts"
     }
   },
   "files": [

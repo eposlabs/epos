@@ -19,7 +19,7 @@ export type Options = {
   globalize?: boolean
   /** If provided, other layers will extend this layer. */
   globalLayerName?: string | null
-  /** If a file name does not have layer tags, default layer name will be used. */
+  /** If a file name does not have any layer tags, default layer name will be used. */
   defaultLayerName?: string | null
 }
 
@@ -200,7 +200,7 @@ export class Paralayer extends Unit {
 
     const globals = [
       `declare global {`,
-      `  var ${layerName}: ${LayerName}`,
+      `  const ${layerName}: ${LayerName}`,
       ``,
       `  interface ${LayerName} ${extendPascal}{`,
       ...allNames.map(name => `    ${name}: typeof ${name}`),

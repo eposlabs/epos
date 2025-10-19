@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type { Container } from 'react-dom/client'
 
 export class ProjectApiGeneral extends ex.Unit {

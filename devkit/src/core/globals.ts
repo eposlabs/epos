@@ -1,25 +1,20 @@
 import './types/file-system-observer'
 import './types/wicg-file-system-access'
-import clsx, { type ClassValue } from 'clsx'
+import { clsx, type ClassValue } from 'clsx'
 import type * as types from '@eposlabs/utils/types'
 import 'epos'
 
-// gl.cx
-gl.cx = clsx
+// cx
 declare global {
-  interface Gl {
-    cx: typeof clsx
-  }
+  const cx: typeof clsx
 }
 
-// gl.Props
+// Props
 declare global {
-  namespace gl {
-    export type Props<T extends Obj> = { className?: ClassValue } & T
-  }
+  type Props<T extends Obj> = { className?: ClassValue } & T
 }
 
-// Useful type shortcuts
+// General-purpose types
 declare global {
   type Obj = types.Obj
   type Arr = types.Arr

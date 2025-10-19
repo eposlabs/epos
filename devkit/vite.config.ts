@@ -1,8 +1,8 @@
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
-import { paralayer } from 'paralayer'
+import { paralayer } from 'paralayer/ts'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
+import { rebundle } from 'vite-plugin-rebundle/ts'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({
@@ -26,6 +26,7 @@ export default defineConfig(async ({ mode }) => {
     build: {
       watch: mode === 'production' ? null : {},
       minify: false,
+      reportCompressedSize: false,
       rolldownOptions: {
         input: {
           gl: './src/gl.tsx',

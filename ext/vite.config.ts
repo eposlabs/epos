@@ -1,9 +1,8 @@
 import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import { paralayer } from 'paralayer'
+import { paralayer } from 'paralayer/ts'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle/ts'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
@@ -23,7 +22,7 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     output: {
-      banner: `(async () => {${setupLayersJs}`,
+      banner: `(async () => {\n${setupLayersJs}\n`,
       footer: '})()',
       minify: mode !== 'development',
     },
@@ -39,7 +38,6 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       tailwindcss(),
       preact({ reactAliasesEnabled: false }),
-      viteStaticCopy({ targets: [{ src: './public/*', dest: './' }] }),
       rebundle(null, {
         'cs': bundle('cs'),
         'ex': bundle('ex'),
@@ -55,6 +53,8 @@ export default defineConfig(async ({ mode }) => {
 
     build: {
       watch: mode === 'production' ? null : {},
+      minify: false,
+      reportCompressedSize: false,
       rolldownOptions: {
         input: {
           'cs': './src/cs.ts', // Content Script
@@ -68,7 +68,6 @@ export default defineConfig(async ({ mode }) => {
           'vw': './src/vw.ts', // View
         },
         output: {
-          minify: false,
           sourcemap: false,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',

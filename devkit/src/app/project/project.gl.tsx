@@ -274,45 +274,45 @@ export class Project extends gl.Unit {
 
   View() {
     return (
-      <div class="flex flex-col bg-white p-4 dark:bg-black">
-        <div class="flex items-center justify-between gap-4">
+      <div className="flex flex-col bg-white p-4 dark:bg-black">
+        <div className="flex items-center justify-between gap-4">
           {/* Name */}
-          <div class="text-nowrap">
+          <div className="text-nowrap">
             {this.state.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
           </div>
 
           {/* Right controls */}
-          <div class="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-3">
             {/* Time of the last update */}
             {this.lastUpdatedAt && (
-              <div class="mr-3 text-xs text-gray-400">
+              <div className="mr-3 text-xs text-gray-400">
                 Updated at {new Date(this.lastUpdatedAt).toString().split(' ')[4]}
               </div>
             )}
 
             {/* Export button */}
             {!this.state.error && (
-              <div onClick={this.export} class="group relative flex cursor-pointer">
+              <div onClick={this.export} className="group relative flex cursor-pointer">
                 {/* <div class="absolute inset-0 bg-current opacity-10 blur-[4px] transition not-group-hover:opacity-0 dark:opacity-20" /> */}
-                <div class="">[</div>
-                <div class="relative">EXPORT</div>
-                <div class="">]</div>
+                <div className="">[</div>
+                <div className="relative">EXPORT</div>
+                <div className="">]</div>
               </div>
             )}
 
             {/* Remove button */}
-            <div onClick={this.remove} class="group relative cursor-pointer">
-              {/* <div class="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-red-500 opacity-50 blur-xs not-group-hover:opacity-0 dark:opacity-80" /> */}
-              <span class="">[</span>
-              <span class="relative">REMOVE</span>
-              <span class="">]</span>
+            <div onClick={this.remove} className="group relative cursor-pointer">
+              {/* <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-red-500 opacity-50 blur-xs not-group-hover:opacity-0 dark:opacity-80" /> */}
+              <span className="">[</span>
+              <span className="relative">REMOVE</span>
+              <span className="">]</span>
             </div>
           </div>
         </div>
 
         {/* Error */}
         {this.state.error && (
-          <div class="mt-4 bg-red-100 p-2.5 px-3 text-pretty text-gray-800 dark:bg-red-900 dark:text-white">
+          <div className="mt-4 bg-red-100 p-2.5 px-3 text-pretty text-gray-800 dark:bg-red-900 dark:text-white">
             {this.state.error}
           </div>
         )}

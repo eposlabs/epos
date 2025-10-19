@@ -2,10 +2,4 @@ import './core/globals'
 import './core/units'
 import './layers/index.sm'
 
-$: (async () => {
-  try {
-    await sm.App.create()
-  } catch (e) {
-    console.error(e)
-  }
-})()
+await sm.App.create()

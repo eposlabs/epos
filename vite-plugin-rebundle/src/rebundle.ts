@@ -1,16 +1,13 @@
-import { safe, Unit, is } from '@eposlabs/utils'
+import { is, safe } from '@eposlabs/utils'
 import chalk from 'chalk'
 import { filesize } from 'filesize'
-import { readdir, readFile, rmdir, stat, unlink } from 'node:fs/promises'
+import { readdir, rmdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
 import { getPort } from 'portfinder'
 import { rolldown, type InputOptions, type OutputOptions } from 'rolldown'
-import type { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup'
+import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { WebSocketServer } from 'ws'
-
-export const _code_ = Symbol('rebundle:code')
-export const _sourcemap_ = Symbol('rebundle:sourcemap')
 
 export type RolldownOptions = {
   input?: InputOptions
@@ -21,19 +18,17 @@ export type BundleOptions = {
   [bundleName: string]: RolldownOptions
 }
 
-export class Rebundle extends Unit {
-  private generalOptions: RolldownOptions
+export class Rebundle {
+  private commonOptions: RolldownOptions
   private bundleOptions: BundleOptions
   private config: ResolvedConfig | null = null
-  private originalFiles: Record<string, string> = {}
-  private rebundledFiles: Record<string, string> = {}
-  private hasError = false
+  private originals: Record<string, string> = {}
+  private rebundled: Record<string, string> = {}
   private port: number | null = null
   private ws: WebSocketServer | null = null
 
-  constructor(generalOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
-    super()
-    this.generalOptions = generalOptions ?? {}
+  constructor(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
+    this.commonOptions = commonOptions ?? {}
     this.bundleOptions = bundleOptions ?? {}
   }
 
@@ -44,8 +39,6 @@ export class Rebundle extends Unit {
       enforce: 'post',
       config: this.onConfig,
       configResolved: this.onConfigResolved,
-      buildEnd: this.onBuildEnd,
-      generateBundle: this.onGenerateBundle,
       writeBundle: this.onWriteBundle,
     }
   }
@@ -56,7 +49,6 @@ export class Rebundle extends Unit {
 
   private onConfig = async () => {
     this.port = await getPort({ port: 3100 })
-
     return {
       define: { 'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port) },
       build: { sourcemap: false },
@@ -76,45 +68,74 @@ export class Rebundle extends Unit {
     }
   }
 
-  private onBuildEnd = (error?: Error) => {
-    this.hasError = !!error
-  }
-
-  private onGenerateBundle = async (_options: NormalizedOutputOptions, bundle: OutputBundle) => {
-    // Prefix all entry chunks, so Vite writes to temporary files instead of final files
-    const chunks = this.getChunks(bundle)
-    for (const chunk of chunks) {
-      if (!chunk.isEntry) continue
-      chunk.fileName = this.prefixed(chunk.fileName)
-    }
-  }
-
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
-    if (this.hasError) return
-    if (!this.config) throw this.never
-
-    const chunks = this.getChunks(bundle)
     const modifiedChunkNames: string[] = []
 
     // Rebundle entry chunks
     await Promise.all(
-      chunks.map(async chunk => {
-        if (!chunk.isEntry) return
-        const modified = await this.rebundleChunk(chunk, bundle)
-        if (modified) modifiedChunkNames.push(chunk.name)
+      Object.values(bundle).map(async chunkOrAsset => {
+        // Only process entry chunks
+        const chunk = chunkOrAsset.type === 'chunk' && chunkOrAsset.isEntry ? chunkOrAsset : null
+        if (!chunk) return
+        const chunkFilePath = join(this.dist, chunk.fileName)
+
+        // Check if chunk is modified
+        const modified = [chunk.fileName, ...chunk.imports].some(name => {
+          return bundle[name].type === 'chunk' && bundle[name].code !== this.originals[name]
+        })
+
+        // Not modified? -> Overwrite Vite's output with cached rebundled content
+        if (!modified) {
+          await writeFile(chunkFilePath, this.rebundled[chunk.fileName])
+          return
+        }
+
+        // Modified? -> Rebundle with rolldown
+        const build = await rolldown({
+          ...this.merge(this.commonOptions.input ?? {}, this.bundleOptions[chunk.name]?.input ?? {}),
+          input: chunkFilePath,
+        })
+        const result = await build.write({
+          ...this.merge(this.commonOptions.output ?? {}, this.bundleOptions[chunk.name]?.output ?? {}),
+          sourcemap: false,
+          file: chunkFilePath,
+        })
+
+        // Log successful build
+        const { size } = await stat(join(this.dist, chunk.fileName))
+        const _dist_ = chalk.dim(`${this.dist}/`)
+        const _fileName_ = chalk.cyan(chunk.fileName)
+        const _rebundle_ = chalk.dim.cyan('[rebundle]')
+        const _size_ = chalk.bold.dim(`${filesize(size)}`)
+        console.log(`${_dist_}${_fileName_} ${_rebundle_} ${_size_}`)
+
+        // Keep track of modified chunks
+        modifiedChunkNames.push(chunk.name)
+
+        // Cache rebundled code
+        this.rebundled[chunk.fileName] = result.output[0].code
       }),
     )
 
-    // Remove non-entry chunks
-    for (const chunk of chunks) {
-      if (chunk.isEntry) continue
+    for (const chunkOrAsset of Object.values(bundle)) {
+      // Process chunks only
+      const chunk = chunkOrAsset.type === 'chunk' ? chunkOrAsset : null
+      if (!chunk) continue
 
-      // Remove from dist and bundle
-      await this.removeFromDist(chunk.fileName)
+      // Save original chunk code
+      this.originals[chunk.fileName] = chunk.code
+
+      // Delete chunk from the `bundle` to hide log for `rolldown-vite`. Call for `rollup` for consistency.
       delete bundle[chunk.fileName]
+
+      // Non-entry chunk? -> Remove its file
+      if (!chunk.isEntry) {
+        await this.removeFromDist(chunk.fileName)
+      }
     }
 
     // Notify about modified chunks
+    if (!this.config) throw 'never'
     if (this.config.build.watch && modifiedChunkNames.length > 0) {
       const ws = await this.ensureWs()
       ws.clients.forEach(client => client.send(JSON.stringify(modifiedChunkNames)))
@@ -122,109 +143,12 @@ export class Rebundle extends Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // CHUNK METHODS
-  // ---------------------------------------------------------------------------
-
-  async rebundleChunk(chunk: OutputChunk, bundle: OutputBundle) {
-    if (!this.config) throw this.never
-
-    // Delete chunk from bundle to hide log for rolldown-vite. Call for rollup for consistency.
-    delete bundle[chunk.fileName]
-
-    // Read chunk files
-    const chunkFiles = await this.readChunkFiles(chunk)
-
-    // Check if some of chunk files were modified
-    const chunkFilePaths = Object.keys(chunkFiles)
-    const chunkModified = chunkFilePaths.some(path => chunkFiles[path] !== this.originalFiles[path])
-
-    // Save chunk files content for next comparison
-    Object.assign(this.originalFiles, chunkFiles)
-
-    // Chunk was not modified? -> Don't rebundle, just remove Vite's output
-    if (!chunkModified) {
-      await this.removeFromDist(chunk.fileName)
-      return false
-    }
-
-    // Build with rolldown
-    const [result] = await safe(async () => {
-      const inputPath = join(this.dist, chunk.fileName)
-      const outputPath = join(this.dist, this.unprefixed(chunk.fileName))
-
-      const build = await rolldown({
-        ...this.merge(this.generalOptions.input ?? {}, this.bundleOptions[chunk.name]?.input ?? {}),
-        input: inputPath,
-      })
-
-      const result = await build.write({
-        ...this.merge(this.generalOptions.output ?? {}, this.bundleOptions[chunk.name]?.output ?? {}),
-        sourcemap: false,
-        file: outputPath,
-      })
-
-      return result
-    })
-    if (!result) return
-
-    // Log successful build
-    const { size } = await stat(join(this.dist, this.unprefixed(chunk.fileName)))
-    const _dist_ = chalk.dim(`${this.dist}/`)
-    const _fileName_ = chalk.cyan(this.unprefixed(chunk.fileName))
-    const _rebundle_ = chalk.dim.cyan('[rebundle]')
-    const _size_ = chalk.bold.dim(`${filesize(size)}`)
-    console.log(`${_dist_}${_fileName_} ${_rebundle_} ${_size_}`)
-
-    // Save code
-    const code = result.output[0].code
-    if (!code) throw this.never
-    this.rebundledFiles[chunk.fileName] = code
-
-    // Remove Vite's output
-    await this.removeFromDist(chunk.fileName)
-
-    // Return modified status
-    return true
-  }
-
-  private async readChunkFiles(chunk: OutputChunk) {
-    const files: Record<string, string> = {}
-    const usedPaths = [chunk.fileName, ...chunk.imports]
-
-    await Promise.all(
-      usedPaths.map(async path => {
-        const content = await this.readFromDist(path)
-        files[path] = content ?? ''
-      }),
-    )
-
-    return files
-  }
-
-  private getChunks(bundle: OutputBundle) {
-    return Object.values(bundle).filter(chunkOrAsset => chunkOrAsset.type === 'chunk')
-  }
-
-  // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
 
   private get dist() {
-    if (!this.config) throw this.never
+    if (!this.config) throw 'never'
     return this.config.build.outDir
-  }
-
-  private prefixed(fileName: string) {
-    return `rebundle-original-${fileName}`
-  }
-
-  private unprefixed(fileName: string) {
-    return fileName.replace('rebundle-original-', '')
-  }
-
-  private async readFromDist(path: string) {
-    const [content] = await safe(readFile(join(this.dist, path), 'utf-8'))
-    return content
   }
 
   private async removeFromDist(path: string) {
@@ -236,7 +160,7 @@ export class Rebundle extends Unit {
 
   private async ensureWs() {
     if (this.ws) return this.ws
-    if (!this.port) throw this.never
+    if (!this.port) throw 'never'
     this.ws = new WebSocketServer({ port: this.port })
     return this.ws
   }
@@ -262,8 +186,8 @@ export class Rebundle extends Unit {
   }
 }
 
-export function rebundle(generalOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
-  return new Rebundle(generalOptions, bundleOptions).vite
+export function rebundle(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
+  return new Rebundle(commonOptions, bundleOptions).vite
 }
 
 export default rebundle
