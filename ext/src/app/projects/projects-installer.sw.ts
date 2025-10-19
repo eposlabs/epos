@@ -80,18 +80,18 @@ export class ProjectsInstaller extends sw.Unit {
       }
     }
 
-    // Fetch static files
-    const staticFiles: Record<string, Blob> = {}
-    for (const path of spec.static) {
+    // Fetch assets
+    const assets: Record<string, Blob> = {}
+    for (const path of spec.assets) {
       const assetUrl = new URL(path, url)
       const [res] = await this.$.utils.safe(fetch(assetUrl))
       if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
       const [blob] = await this.$.utils.safe(res.blob())
       if (!blob) throw new Error(`Failed to fetch: ${assetUrl.href}`)
-      staticFiles[path] = blob
+      assets[path] = blob
     }
 
-    await this.installFromBundle({ dev, spec, sources, staticFiles })
+    await this.installFromBundle({ dev, spec, sources, assets })
   }
 
   private async installFromBundle(bundle: Bundle) {

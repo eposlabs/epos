@@ -4,7 +4,7 @@ export class ProjectApi extends ex.Unit {
   bus = this.$.bus.create(`project[${this.$project.name}]`)
   state = new ex.ProjectApiState(this)
   storage = new ex.ProjectApiStorage(this)
-  static!: ex.ProjectApiStatic
+  assets!: ex.ProjectApiAssets
   frame = new ex.ProjectApiFrame(this)
   env = new ex.ProjectApiEnv(this)
   libs = new ex.ProjectApiLibs(this)
@@ -24,7 +24,7 @@ export class ProjectApi extends ex.Unit {
 
   private async init() {
     this.general = await ex.ProjectApiGeneral.create(this)
-    this.static = await ex.ProjectApiStatic.create(this)
+    this.assets = await ex.ProjectApiAssets.create(this)
     this.epos = this.createEpos()
   }
 
@@ -75,22 +75,20 @@ export class ProjectApi extends ex.Unit {
         list: this.$.utils.link(this.storage, 'list'),
       },
 
-      // Static
-      static: {
-        url: this.$.utils.link(this.static, 'url'),
-        load: this.$.utils.link(this.static, 'load'),
-        loadAll: this.$.utils.link(this.static, 'loadAll'),
-        unload: this.$.utils.link(this.static, 'unload'),
-        unloadAll: this.$.utils.link(this.static, 'unloadAll'),
-        list: this.$.utils.link(this.static, 'list'),
-      },
-
       // Frame
       frame: {
         open: this.$.utils.link(this.frame, 'open'),
         close: this.$.utils.link(this.frame, 'close'),
         exists: this.$.utils.link(this.frame, 'exists'),
         list: this.$.utils.link(this.frame, 'list'),
+      },
+
+      // Assets
+      assets: {
+        url: this.$.utils.link(this.assets, 'url'),
+        load: this.$.utils.link(this.assets, 'load'),
+        unload: this.$.utils.link(this.assets, 'unload'),
+        list: this.$.utils.link(this.assets, 'list'),
       },
 
       // Env

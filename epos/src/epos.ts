@@ -117,19 +117,25 @@ export interface Epos {
     list(): Promise<{ name: string | null; url: string }[]>
   }
 
-  // Static
-  static: {
-    /** Get static file URL. The file must be loaded first via `epos.static.load`. */
+  // Assets
+  assets: {
+    /** Get asset URL. The asset must be loaded first via `epos.assets.load`. */
     url(path: string): string
-    /** Load static file by path. */
-    load(path: string): Promise<Blob>
-    /** Load all static files. */
-    loadAll(): Promise<Blob[]>
-    /** Unload static file from memory. */
-    unload(path: string): void
-    /** Unload all static files from memory. */
-    unloadAll(): void
-    /** Get list of all available static files. */
+    /** Load either all assets or a specific asset by its path. */
+    load: {
+      /** Load all assets. */
+      (): Promise<void>
+      /** Load asset by path. */
+      (path: string): Promise<Blob>
+    }
+    /** Unload either all assets from memory or a specific asset by its path. */
+    unload: {
+      /** Unload all assets from memory. */
+      (): void
+      /** Unload asset by path. */
+      (path: string): void
+    }
+    /** Get list of all available asset files. */
     list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://epos.dev/schema.json",
+  "$schema": "https://epos.dev/schema.json?v=1",
   "name": "devkit",
   "title": "[epos]",
   "description": "Epos helps you to develop browser extensions.",
@@ -14,7 +14,7 @@
       "load": ["./dist/ln.js", "./dist/tw.css"]
     }
   ],
-  "static": [
+  "assets": [
     // "./public/icon.png"
     // "./template/epos.json",
     // "./template/package.json",

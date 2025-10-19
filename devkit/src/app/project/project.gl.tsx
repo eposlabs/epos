@@ -174,9 +174,9 @@ export class Project extends gl.Unit {
     this.timeout = self.setTimeout(async () => {
       if (!this.spec) return
 
-      const staticFiles: Record<string, Blob> = {}
-      for (const path of this.spec.static) {
-        staticFiles[path] = await this.readFileAsBlob(path)
+      const assets: Record<string, Blob> = {}
+      for (const path of this.spec.assets) {
+        assets[path] = await this.readFileAsBlob(path)
       }
 
       const sources: Record<string, string> = {}
@@ -191,7 +191,7 @@ export class Project extends gl.Unit {
         dev: true,
         spec: this.spec,
         sources: sources,
-        staticFiles: staticFiles,
+        assets: assets,
       }
 
       await this.engine.bus.send('projects.install', bundle)
@@ -223,7 +223,7 @@ export class Project extends gl.Unit {
   private getUsedFilePathsFromSpec() {
     if (!this.spec) throw this.never('epos.json is not loaded')
     const paths = new Set<string>()
-    this.spec.static.forEach(path => paths.add(path))
+    this.spec.assets.forEach(path => paths.add(path))
     this.spec.targets.forEach(target => target.load.forEach(path => paths.add(path)))
     return [...paths]
   }

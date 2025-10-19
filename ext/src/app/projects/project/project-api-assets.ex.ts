@@ -1,17 +1,17 @@
-export class ProjectApiStatic extends ex.Unit {
+export class ProjectApiAssets extends ex.Unit {
   private $api = this.up(ex.ProjectApi)!
   private $project = this.up(ex.Project)!
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 
   static async create(parent: ex.Unit) {
-    const projectApiStatic = new ProjectApiStatic(parent)
-    await projectApiStatic.init()
-    return projectApiStatic
+    const instance = new ProjectApiAssets(parent)
+    await instance.init()
+    return instance
   }
 
   private async init() {
-    this.paths = await this.$.idb.keys(this.$project.name, ':static')
+    this.paths = await this.$.idb.keys(this.$project.name, ':assets')
   }
 
   url(path: string) {
@@ -22,26 +22,36 @@ export class ProjectApiStatic extends ex.Unit {
   }
 
   async load(path: string) {
+    if (arguments.length === 0) {
+      await this.loadAll()
+      return
+    }
+
     path = this.normalizePath(path)
     if (this.files[path]) return this.files[path].blob
-    const blob = await this.$.idb.get<Blob>(this.$project.name, ':static', path)
+    const blob = await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
     if (!blob) throw this.$api.error(`File not found: ${path}`, this.load)
     this.files[path] = { url: URL.createObjectURL(blob), blob }
     return blob
   }
 
-  async loadAll() {
-    return await Promise.all(this.paths.map(path => this.load(path)))
-  }
-
   unload(path: string) {
+    if (arguments.length === 0) {
+      this.unloadAll()
+      return
+    }
+
     path = this.normalizePath(path)
     if (!this.files[path]) return
     URL.revokeObjectURL(this.files[path].url)
     delete this.files[path]
   }
 
-  unloadAll() {
+  private async loadAll() {
+    return await Promise.all(this.paths.map(path => this.load(path)))
+  }
+
+  private unloadAll() {
     Object.keys(this.files).forEach(path => this.unload(path))
   }
 

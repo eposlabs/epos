@@ -13,7 +13,7 @@
     "version": { "$ref": "#/definitions/Version" },
     "action": { "$ref": "#/definitions/Action" },
     "popup": { "$ref": "#/definitions/Popup" },
-    "static": { "$ref": "#/definitions/Static" },
+    "assets": { "$ref": "#/definitions/Assets" },
     "targets": { "$ref": "#/definitions/Targets" },
     "matches": { "$ref": "#/definitions/Matches" },
     "load": { "$ref": "#/definitions/Load" },
@@ -64,7 +64,7 @@
       "additionalProperties": false
     },
 
-    "Static": {
+    "Assets": {
       "type": "array",
       "items": { "type": "string" }
     },

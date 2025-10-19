@@ -1,4 +1,4 @@
-import type { BundleNoStatic, StaticFiles } from './project/project.sw'
+import type { BundleNoAssets, Assets } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
 export class ProjectsLoader extends sw.Unit {
@@ -11,7 +11,7 @@ export class ProjectsLoader extends sw.Unit {
   }
 
   private async init() {
-    const [bundle] = await this.$.utils.safe<BundleNoStatic>(fetch('/project.json').then(res => res.json()))
+    const [bundle] = await this.$.utils.safe<BundleNoAssets>(fetch('/project.json').then(res => res.json()))
     if (!bundle) return
 
     const name = bundle.spec.name
@@ -20,15 +20,15 @@ export class ProjectsLoader extends sw.Unit {
     // Already latest version? -> Skip
     if (project && this.compareSemver(project.spec.version, bundle.spec.version) >= 0) return
 
-    // Load static files
-    const staticFiles: StaticFiles = {}
-    for (const path of bundle.spec.static) {
-      const [blob] = await this.$.utils.safe(fetch(`/static/${path}`).then(r => r.blob()))
+    // Load assets
+    const assets: Assets = {}
+    for (const path of bundle.spec.assets) {
+      const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
       if (!blob) continue
-      staticFiles[path] = blob
+      assets[path] = blob
     }
 
-    await this.$projects.createOrUpdate({ ...bundle, staticFiles })
+    await this.$projects.createOrUpdate({ ...bundle, assets })
   }
 
   private compareSemver(semver1: string, semver2: string) {

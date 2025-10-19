@@ -1,4 +1,4 @@
-import type { BundleNoStatic } from './project.sw'
+import type { BundleNoAssets } from './project.sw'
 
 export class ProjectExporter extends sw.Unit {
   private $project = this.up(sw.Project)!
@@ -28,25 +28,23 @@ export class ProjectExporter extends sw.Unit {
       zip.file(path, blob)
     }
 
-    const bundle: BundleNoStatic = {
+    const bundle: BundleNoAssets = {
       dev: false,
       spec: this.$project.spec,
       sources: this.$project.sources,
     }
     zip.file('project.json', JSON.stringify(bundle, null, 2))
 
-    const staticFiles: Record<string, Blob> = {}
-    const paths = await this.$.idb.keys(this.$project.name, ':static')
+    const assets: Record<string, Blob> = {}
+    const paths = await this.$.idb.keys(this.$project.name, ':assets')
     for (const path of paths) {
-      const blob = await this.$.idb.get<Blob>(this.$project.name, ':static', path)
+      const blob = await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
       if (!blob) throw this.never
-      staticFiles[path] = blob
-      zip.file(`static/${path}`, blob)
+      assets[path] = blob
+      zip.file(`assets/${path}`, blob)
     }
 
-    const icon = bundle.spec.icon
-      ? staticFiles[bundle.spec.icon]
-      : await fetch('/icon.png').then(r => r.blob())
+    const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
     const icon128 = await this.$.utils.convertImage(icon, {
       type: 'image/png',
       quality: 1,

@@ -17,7 +17,7 @@ export type Spec = {
   version: string
   action: Action
   popup: Popup
-  static: string[]
+  assets: string[]
   targets: Target[]
   manifest: Obj | null
 }
@@ -32,7 +32,7 @@ const config = {
     'version',
     'action',
     'popup',
-    'static',
+    'assets',
     'targets',
     'manifest',
   ],
@@ -68,7 +68,7 @@ export function parseEposSpec(json: string): Spec {
     version: parseVersion(spec),
     action: parseAction(spec),
     popup: parsePopup(spec),
-    static: parseStatic(spec),
+    assets: parseAssets(spec),
     targets: parseTargets(spec),
     manifest: parseManifest(spec),
   }
@@ -161,15 +161,15 @@ function parsePopup(spec: Obj) {
   return popup
 }
 
-function parseStatic(spec: Obj) {
-  const staticFiles = structuredClone(spec.static ?? [])
-  if (!isArrayOfStrings(staticFiles)) throw new Error(`'static' must be an array of strings`)
+function parseAssets(spec: Obj) {
+  const assets = structuredClone(spec.assets ?? [])
+  if (!isArrayOfStrings(assets)) throw new Error(`'assets' must be an array of strings`)
 
-  // Add icon to static files
+  // Add icon to assets
   const icon = parseIcon(spec)
-  if (icon) staticFiles.push(icon)
+  if (icon) assets.push(icon)
 
-  return parsePaths(staticFiles)
+  return parsePaths(assets)
 }
 
 function parseTargets(spec: Obj) {
