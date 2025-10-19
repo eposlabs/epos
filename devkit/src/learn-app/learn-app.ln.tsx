@@ -28,10 +28,10 @@ export class LearnApp extends ln.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // UI
+  // VIEW
   // ---------------------------------------------------------------------------
 
-  ui() {
+  View() {
     return (
       <div class="mx-auto mt-5 mb-12 flex max-w-100 flex-col gap-3 px-5">
         <div>Test Browser API:</div>

@@ -5,8 +5,9 @@ import type * as types from '@eposlabs/utils/types'
 import 'epos'
 
 // cx
+cx = clsx
 declare global {
-  const cx: typeof clsx
+  var cx: typeof clsx
 }
 
 // Props

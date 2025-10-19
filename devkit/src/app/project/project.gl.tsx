@@ -8,14 +8,15 @@ export class Project extends gl.Unit {
   name: string | null = null
   spec: Spec | null = null
   lastUpdatedAt: number | null = null
+  watcher = new gl.ProjectWatcher(this)
 
   declare private initialized: boolean
   declare private handle: FileSystemDirectoryHandle | null
   declare private fileObservers: Set<FileSystemObserver>
   declare private globalObserver: FileSystemObserver | null
   declare private timeout: number | undefined
-  declare private engine: any
   declare private state: { error: string | null }
+  declare private engine: any
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
@@ -28,8 +29,8 @@ export class Project extends gl.Unit {
     this.fileObservers = new Set()
     this.globalObserver = null
     this.timeout = undefined
-    this.engine = (epos as any).engine
     this.state = epos.state.local({ error: null })
+    this.engine = (epos as any).engine
 
     // Project's handle was removed from IDB? -> Remove project itself
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', this.handleId)
@@ -47,7 +48,6 @@ export class Project extends gl.Unit {
     }
 
     this.handle = handle
-    this.engine = (epos as any).engine
     this.globalObserver = this.createGlobalObserver()
     this.start()
     this.initialized = true
@@ -328,6 +328,9 @@ export class Project extends gl.Unit {
     1() {
       delete this.time
       this.lastUpdatedAt = null
+    },
+    2() {
+      this.watcher = new gl.ProjectWatcher(this)
     },
   }
 }

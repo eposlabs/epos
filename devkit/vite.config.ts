@@ -18,7 +18,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: setupLayersJs,
+          banner: `let cx;\n${setupLayersJs}`,
         },
       }),
     ],
