@@ -1,12 +1,12 @@
-import { is, safe } from '@eposlabs/utils'
+import { is } from '@eposlabs/utils'
 import chalk from 'chalk'
 import { filesize } from 'filesize'
-import { readdir, rmdir, stat, unlink, writeFile } from 'node:fs/promises'
-import { dirname, extname, join } from 'node:path'
+import { rm, stat } from 'node:fs/promises'
+import { extname, join } from 'node:path'
 import { getPort } from 'portfinder'
 import { rolldown, type InputOptions, type OutputOptions } from 'rolldown'
 import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
-import type { Plugin, ResolvedConfig } from 'vite'
+import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import { WebSocketServer } from 'ws'
 
 export type RolldownOptions = {
@@ -23,9 +23,11 @@ export class Rebundle {
   private bundleOptions: BundleOptions
   private config: ResolvedConfig | null = null
   private originals: Record<string, string> = {}
-  private rebundled: Record<string, string> = {}
   private port: number | null = null
   private ws: WebSocketServer | null = null
+  private isRollupVite = false
+  private isRolldownVite = false
+  private ORIGINALS_DIR = 'rebundle-originals'
 
   constructor(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
     this.commonOptions = commonOptions ?? {}
@@ -39,6 +41,7 @@ export class Rebundle {
       enforce: 'post',
       config: this.onConfig,
       configResolved: this.onConfigResolved,
+      generateBundle: this.onGenerateBundle,
       writeBundle: this.onWriteBundle,
     }
   }
@@ -47,8 +50,12 @@ export class Rebundle {
   // VITE HOOKS
   // ---------------------------------------------------------------------------
 
-  private onConfig = async () => {
-    this.port = await getPort({ port: 3100 })
+  private onConfig = async (config: UserConfig) => {
+    if (config.build?.watch) {
+      this.port = await getPort({ port: 3100 })
+      this.ws = new WebSocketServer({ port: this.port })
+    }
+
     return {
       define: { 'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port) },
       build: { sourcemap: false },
@@ -56,89 +63,91 @@ export class Rebundle {
   }
 
   private onConfigResolved = async (config: ResolvedConfig) => {
+    // Detect Vite variant
+    this.isRollupVite = !('oxc' in config)
+    this.isRolldownVite = !this.isRollupVite
+
     // Save resolved config
     this.config = config
 
-    // Hide js files from output logs (rollup only, not supported in rolldown)
-    const info = this.config.logger.info
-    this.config.logger.info = (message, options) => {
-      const path = message.split(/\s+/)[0]
-      if (extname(path) === '.js') return
-      info(message, options)
+    // Hide js files from output logs for rollup Vite
+    if (this.isRollupVite) {
+      const info = this.config.logger.info
+      this.config.logger.info = (message, options) => {
+        const path = message.split(/\s+/)[0]
+        if (extname(path) === '.js') return
+        info(message, options)
+      }
+    }
+  }
+
+  private onGenerateBundle = async (_options: NormalizedOutputOptions, bundle: OutputBundle) => {
+    for (const chunk of this.getChunks(bundle)) {
+      const originalFileName = chunk.fileName
+
+      // Move all chunks to a temporary subfolder
+      chunk.fileName = this.prefixed(originalFileName)
+      chunk.imports = chunk.imports.map(name => this.prefixed(name))
+
+      // Use prefixed names as bundle keys for rollup Vite (rolldown Vite does this automatically)
+      if (this.isRollupVite) {
+        bundle[chunk.fileName] = chunk
+        delete bundle[originalFileName]
+      }
     }
   }
 
   private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
-    const modifiedChunkNames: string[] = []
+    // Get modified entry chunks
+    const modifiedEntryChunks = this.getEntryChunks(bundle).filter(chunk => {
+      const usedPaths = [chunk.fileName, ...chunk.imports]
+      return usedPaths.some(path => 'code' in bundle[path] && bundle[path].code !== this.originals[path])
+    })
 
-    // Rebundle entry chunks
+    // No modified entry chunks? -> Skip rebundle
+    if (modifiedEntryChunks.length === 0) return
+
+    // Rebundle modified entry chunks
     await Promise.all(
-      Object.values(bundle).map(async chunkOrAsset => {
-        // Only process entry chunks
-        const chunk = chunkOrAsset.type === 'chunk' && chunkOrAsset.isEntry ? chunkOrAsset : null
-        if (!chunk) return
-        const chunkFilePath = join(this.dist, chunk.fileName)
+      modifiedEntryChunks.map(async chunk => {
+        const originalFileName = this.unprefixed(chunk.fileName)
 
-        // Check if chunk is modified
-        const modified = [chunk.fileName, ...chunk.imports].some(name => {
-          return bundle[name].type === 'chunk' && bundle[name].code !== this.originals[name]
-        })
-
-        // Not modified? -> Overwrite Vite's output with cached rebundled content
-        if (!modified) {
-          await writeFile(chunkFilePath, this.rebundled[chunk.fileName])
-          return
-        }
-
-        // Modified? -> Rebundle with rolldown
+        // Build with rolldown
         const build = await rolldown({
           ...this.merge(this.commonOptions.input ?? {}, this.bundleOptions[chunk.name]?.input ?? {}),
-          input: chunkFilePath,
+          input: join(this.dist, chunk.fileName),
         })
-        const result = await build.write({
+        await build.write({
           ...this.merge(this.commonOptions.output ?? {}, this.bundleOptions[chunk.name]?.output ?? {}),
           sourcemap: false,
-          file: chunkFilePath,
+          file: join(this.dist, originalFileName),
         })
 
         // Log successful build
-        const { size } = await stat(join(this.dist, chunk.fileName))
-        const _dist_ = chalk.dim(`${this.dist}/`)
-        const _fileName_ = chalk.cyan(chunk.fileName)
-        const _rebundle_ = chalk.dim.cyan('[rebundle]')
-        const _size_ = chalk.bold.dim(`${filesize(size)}`)
-        console.log(`${_dist_}${_fileName_} ${_rebundle_} ${_size_}`)
-
-        // Keep track of modified chunks
-        modifiedChunkNames.push(chunk.name)
-
-        // Cache rebundled code
-        this.rebundled[chunk.fileName] = result.output[0].code
+        const { size } = await stat(join(this.dist, originalFileName))
+        const $dist = chalk.dim(`${this.dist}/`)
+        const $fileName = chalk.cyan(originalFileName)
+        const $rebundle = chalk.dim.cyan('[rebundle]')
+        const $size = chalk.bold.dim(`${filesize(size)}`)
+        console.log(`${$dist}${$fileName} ${$rebundle} ${$size}`)
       }),
     )
 
-    for (const chunkOrAsset of Object.values(bundle)) {
-      // Process chunks only
-      const chunk = chunkOrAsset.type === 'chunk' ? chunkOrAsset : null
-      if (!chunk) continue
-
+    for (const chunk of this.getChunks(bundle)) {
       // Save original chunk code
       this.originals[chunk.fileName] = chunk.code
 
-      // Delete chunk from the `bundle` to hide log for `rolldown-vite`. Call for `rollup` for consistency.
-      delete bundle[chunk.fileName]
-
-      // Non-entry chunk? -> Remove its file
-      if (!chunk.isEntry) {
-        await this.removeFromDist(chunk.fileName)
-      }
+      // Delete chunk from the bundle to hide Vite's output log
+      if (this.isRolldownVite) delete bundle[chunk.fileName]
     }
 
+    // Remove folder with original chunks
+    await rm(join(this.dist, this.ORIGINALS_DIR), { recursive: true })
+
     // Notify about modified chunks
-    if (!this.config) throw 'never'
-    if (this.config.build.watch && modifiedChunkNames.length > 0) {
-      const ws = await this.ensureWs()
-      ws.clients.forEach(client => client.send(JSON.stringify(modifiedChunkNames)))
+    if (this.ws && modifiedEntryChunks.length > 0) {
+      const names = modifiedEntryChunks.map(chunk => chunk.name)
+      this.ws.clients.forEach(client => client.send(JSON.stringify(names)))
     }
   }
 
@@ -151,25 +160,22 @@ export class Rebundle {
     return this.config.build.outDir
   }
 
-  private async removeFromDist(path: string) {
-    path = join(this.dist, path)
-    const dir = dirname(path)
-    await safe(unlink(path))
-    await this.removeDirectoryIfEmpty(dir)
+  private prefixed(path: string) {
+    return join(this.ORIGINALS_DIR, path)
   }
 
-  private async ensureWs() {
-    if (this.ws) return this.ws
-    if (!this.port) throw 'never'
-    this.ws = new WebSocketServer({ port: this.port })
-    return this.ws
+  private unprefixed(path: string) {
+    return path.replace(`${this.ORIGINALS_DIR}/`, '')
   }
 
-  private async removeDirectoryIfEmpty(dir: string) {
-    const files = await readdir(dir)
-    if (files.length > 0) return
-    await rmdir(dir)
-    await this.removeDirectoryIfEmpty(dirname(dir))
+  private getChunks(bundle: OutputBundle) {
+    return Object.values(bundle).filter(item => item.type === 'chunk')
+  }
+
+  private getEntryChunks(bundle: OutputBundle) {
+    return Object.values(bundle)
+      .filter(item => item.type === 'chunk')
+      .filter(chunk => chunk.isEntry)
   }
 
   private merge(obj1: Record<string, any>, obj2: Record<string, any>) {
