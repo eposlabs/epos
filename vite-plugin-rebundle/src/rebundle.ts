@@ -27,7 +27,7 @@ export class Rebundle {
   private ws: WebSocketServer | null = null
   private isRollupVite = false
   private isRolldownVite = false
-  private ORIGINALS_DIR = 'rebundle-originals'
+  private ORIGINALS_DIR = 'REBUNDLE_originals'
 
   constructor(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
     this.commonOptions = commonOptions ?? {}
@@ -103,9 +103,6 @@ export class Rebundle {
       const usedPaths = [chunk.fileName, ...chunk.imports]
       return usedPaths.some(path => 'code' in bundle[path] && bundle[path].code !== this.originals[path])
     })
-
-    // No modified entry chunks? -> Skip rebundle
-    if (modifiedEntryChunks.length === 0) return
 
     // Rebundle modified entry chunks
     await Promise.all(
