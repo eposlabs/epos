@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "name": "[epos]",
-  "description": "Build browser extensions.",
+  "description": "Build browser extensions",
   "version": "1.6",
   "manifest_version": 3,
   "action": { "default_title": "epos" },
