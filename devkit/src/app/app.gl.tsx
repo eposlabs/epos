@@ -113,37 +113,3 @@ export class App extends gl.Unit {
     },
   }
 }
-
-// async createNewPkg() {
-//   const [handle, error] = await this.utils.safe(() => self.showDirectoryPicker({ mode: 'readwrite' }))
-//   if (error) return
-//   this.adding = true
-//   const assets = epos.static.list()
-//   for (const asset of assets) {
-//     if (!asset.path.startsWith('template/')) continue
-//     let blob = await epos.static.load(asset.path)
-//     let text = await blob.text()
-//     text = text.replace('epos-template-package', handle.name)
-//     blob = new Blob([text], { type: blob.type })
-//     await this.writeFile(handle, asset.path.replace('template/', ''), blob)
-//   }
-//   this.adding = false
-//   const pkg = new gl.Pkg(this)
-//   await this.$.idb.set('pkg', 'handles', pkg.id, handle)
-//   this.$.pkgs.push(pkg)
-// }
-// async writeFile(rootHandle: FileSystemDirectoryHandle, path: string, blob: Blob) {
-//   const parts = path.split('/')
-//   const fileName = parts.pop()!
-//   // Walk/create subfolders
-//   let dir = rootHandle
-//   for (const part of parts) {
-//     dir = await dir.getDirectoryHandle(part, { create: true })
-//   }
-//   // Get file handle
-//   const fileHandle = await dir.getFileHandle(fileName, { create: true })
-//   // Write blob
-//   const writable = await fileHandle.createWritable()
-//   await writable.write(blob)
-//   await writable.close()
-// }

@@ -1,8 +1,10 @@
 import { Unit } from 'epos-unit'
 
 class BaseUnit<T> extends Unit<T> {
-  never(message = 'Never') {
-    throw new Error(`🔴 [${this['@']}] ${message}`)
+  never(message = 'This should never happen') {
+    const error = new Error(`🔴 [${this['@']}] ${message}`)
+    Error.captureStackTrace(error, this.never)
+    throw error
   }
 }
 

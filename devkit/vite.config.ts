@@ -1,5 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
-import { epos } from 'epos/vite'
+import { epos } from 'epos/vite/ts'
 import { paralayer } from 'paralayer/ts'
 import { defineConfig } from 'rolldown-vite'
 import { rebundle } from 'vite-plugin-rebundle/ts'

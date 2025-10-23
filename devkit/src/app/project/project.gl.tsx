@@ -1,22 +1,25 @@
-// TODO: handle when adding project with the same name
-// import type { Bundle } from '@ext/app/projects/project/project.sw'
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
+
+export type Bundle = {
+  dev: boolean
+  spec: Spec
+  sources: Record<string, string>
+  assets: Record<string, Blob>
+}
 
 export class Project extends gl.Unit {
   id = this.$.utils.id()
   handleId: string
   name: string | null = null
   spec: Spec | null = null
-  lastUpdatedAt: number | null = null
-  watcher = new gl.ProjectWatcher(this)
+  updatedAt: number | null = null
+  fs = new gl.ProjectFs(this)
 
-  declare private initialized: boolean
-  declare private handle: FileSystemDirectoryHandle | null
-  declare private fileObservers: Set<FileSystemObserver>
-  declare private globalObserver: FileSystemObserver | null
-  declare private timeout: number | undefined
-  declare private state: { error: string | null }
+  /** Root project dir handle. */
+  declare handle: FileSystemDirectoryHandle | null
   declare private engine: any
+  declare private updateTimer: number | undefined
+  declare state: { error: string | null }
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
@@ -24,13 +27,13 @@ export class Project extends gl.Unit {
   }
 
   async init() {
-    this.initialized = false
     this.handle = null
-    this.fileObservers = new Set()
-    this.globalObserver = null
-    this.timeout = undefined
-    this.state = epos.state.local({ error: null })
     this.engine = (epos as any).engine
+    this.updateTimer = undefined
+    this.state = epos.state.local({ error: null })
+
+    const q = new this.$.utils.Queue()
+    this.update = q.wrap(this.update, this)
 
     // Project's handle was removed from IDB? -> Remove project itself
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', this.handleId)
@@ -40,7 +43,7 @@ export class Project extends gl.Unit {
     }
 
     // Check handle permission
-    // TODO: better handle different browser settings
+    // TODO: handle different browser settings
     const status = await handle.queryPermission({ mode: 'read' })
     if (status !== 'granted') {
       this.state.error = 'Enable file access in the browser'
@@ -48,18 +51,20 @@ export class Project extends gl.Unit {
     }
 
     this.handle = handle
-    this.globalObserver = this.createGlobalObserver()
-    this.start()
-    this.initialized = true
+    this.fs.startObserver()
   }
 
-  cleanup() {
-    if (!this.initialized) return
-    this.stop()
-    if (this.globalObserver) {
-      this.globalObserver.disconnect()
-      this.globalObserver = null
-    }
+  updateWithDelay() {
+    self.clearTimeout(this.updateTimer)
+    this.updateTimer = self.setTimeout(() => this.update(), 50)
+  }
+
+  async export(dev = false) {
+    console.log(`📦 [${this.name}] Export`, { dev })
+    const blob = await this.engine.bus.send('projects.export', this.name, dev)
+    const url = URL.createObjectURL(blob)
+    await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
+    URL.revokeObjectURL(url)
   }
 
   async remove() {
@@ -67,179 +72,67 @@ export class Project extends gl.Unit {
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
-  // ---------------------------------------------------------------------------
-  // WATCHER
-  // ---------------------------------------------------------------------------
-
-  private async start() {
-    this.state.error = null
-
-    // Read epos.json spec
-    const [spec, specError] = await this.$.utils.safe(() => this.readSpec())
-    if (specError) {
-      this.state.error = specError.message
-      return
-    }
-
-    // Name has been changed? -> Remove project from epos extension
-    if (this.name !== spec.name) {
-      await this.engine.bus.send('projects.remove', this.name)
-    }
-
-    // Update spec and name
-    this.spec = spec
-    this.name = spec.name ?? null
-
-    // Create file observers for all used paths
-    const paths = this.getUsedFilePathsFromSpec()
-    for (const path of paths) {
-      const [observer, error] = await this.$.utils.safe(() => this.createFileObserver(path))
-      if (observer) {
-        this.fileObservers.add(observer)
-      } else {
-        this.stop()
-        this.state.error = error.message
-      }
-    }
-
-    // Update project
-    this.update()
-  }
-
-  private stop() {
-    for (const fileObserver of this.fileObservers) fileObserver.disconnect()
-    this.fileObservers.clear()
-  }
-
-  private async restart() {
-    this.stop()
-    await this.start()
-  }
-
-  private createGlobalObserver() {
-    if (!this.handle) throw this.never()
-
-    const globalObserver = new FileSystemObserver(records => {
-      for (const record of records) {
-        if (record.type === 'modified') {
-          // this.log(record.type, record.relativePathComponents.join('/'))
-        }
-      }
-
-      const specChanged = records.some(record => record.relativePathComponents.join('/') === 'epos.json')
-      if (this.state.error || specChanged) {
-        async: this.restart()
-        return
-      }
-    })
-
-    globalObserver.observe(this.handle, { recursive: true })
-    return globalObserver
-  }
-
-  private async createFileObserver(path: string) {
-    const [fileHandle] = await this.$.utils.safe(() => this.getFileHandleByPath(path))
-    if (!fileHandle) throw new Error(`File not found: ${path}`)
-
-    // TODO: check if content was modified
-
-    const fileObserver = new FileSystemObserver(async records => {
-      for (const record of records) {
-        // File was removed? -> Stop and show error
-        if (record.type === 'disappeared') {
-          this.stop()
-          this.state.error = `File not found: ${path}`
-          break
-        }
-
-        // File was modified? -> Update project
-        // this.log('modified', path)
-        this.update()
-      }
-    })
-
-    fileObserver.observe(fileHandle)
-    return fileObserver
-  }
-
-  // ---------------------------------------------------------------------------
-  // UPDATE / EXPORT
-  // ---------------------------------------------------------------------------
-
   private async update() {
-    // TODO: track what actually changed
-    this.lastUpdatedAt = Date.now()
+    try {
+      this.state.error = null
+      const startedAt = Date.now()
+      const spec = await this.readSpec()
 
-    self.clearTimeout(this.timeout)
-    this.timeout = self.setTimeout(async () => {
-      if (!this.spec) return
+      // Name has been changed? -> Remove project from epos extension
+      if (spec.name && this.name !== spec.name) {
+        await this.engine.bus.send('projects.remove', this.name)
+      }
 
+      // Update spec and name
+      this.spec = spec
+      this.name = spec.name ?? null
+
+      // Read assets
       const assets: Record<string, Blob> = {}
       for (const path of this.spec.assets) {
-        assets[path] = await this.readFileAsBlob(path)
+        assets[path] = await this.fs.readFile(path)
       }
 
+      // Read sources
       const sources: Record<string, string> = {}
       for (const target of this.spec.targets) {
         for (const path of target.load) {
           if (sources[path]) continue
-          sources[path] = await this.readFileAsText(path)
+          sources[path] = await this.fs.readFileAsText(path)
         }
       }
 
-      const bundle /* Bundle */ = {
-        dev: true,
-        spec: this.spec,
-        sources: sources,
-        assets: assets,
-      }
-
+      // Prepare & install bundle
+      const bundle: Bundle = { dev: true, spec: this.spec, sources, assets }
       await this.engine.bus.send('projects.install', bundle)
-    }, 100)
-  }
 
-  async export() {
-    const blob = await this.engine.bus.send('projects.export', this.name)
-    const url = URL.createObjectURL(blob)
-    await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
-    URL.revokeObjectURL(url)
+      // Done
+      this.updatedAt = Date.now()
+      const time = this.updatedAt - startedAt
+      console.log(
+        `✅ [${this.name}] Updated in ${time}ms %c| ${this.getTimeString(this.updatedAt)}`,
+        'color: gray',
+      )
+    } catch (e) {
+      this.state.error = this.$.utils.is.error(e) ? e.message : String(e)
+      this.updatedAt = Date.now()
+      console.error(`⛔ [${this.name}] Failed to update`, e)
+    }
   }
 
   // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private async readFileAsBlob(path: string) {
-    const handle = await this.getFileHandleByPath(path)
-    const file = await handle.getFile()
-    return new Blob([file], { type: file.type })
-  }
-
-  private async readFileAsText(path: string) {
-    const blob = await this.readFileAsBlob(path)
-    return await blob.text()
-  }
-
-  private getUsedFilePathsFromSpec() {
-    if (!this.spec) throw this.never('epos.json is not loaded')
-    const paths = new Set<string>()
-    this.spec.assets.forEach(path => paths.add(path))
-    this.spec.targets.forEach(target => target.load.forEach(path => paths.add(path)))
-    return [...paths]
-  }
-
   private async readSpec() {
-    const rootDirHandle = this.handle
-    if (!rootDirHandle) throw this.never()
-
-    const [specHandle] = await this.$.utils.safe(() => rootDirHandle.getFileHandle('epos.json'))
+    const [specHandle] = await this.$.utils.safe(() => this.fs.getFileHandle('epos.json'))
     if (!specHandle) throw new Error('epos.json not found')
 
     const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
     if (fileError) throw new Error(`Failed to read epos.json: ${fileError.message}`)
 
     const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
-    if (jsonError) throw new Error(`Failed to read epos.json content: ${jsonError.message}`)
+    if (jsonError) throw new Error(`Failed to read epos.json: ${jsonError.message}`)
 
     const [spec, specError] = this.$.utils.safeSync(() => parseEposSpec(specJson))
     if (specError) throw new Error(`Failed to parse epos.json: ${specError.message}`)
@@ -247,25 +140,27 @@ export class Project extends gl.Unit {
     return spec
   }
 
-  private async getFileHandleByPath(path: string) {
-    if (!this.handle) throw this.never()
+  usesPath(path: string) {
+    if (path === 'epos.json') return true
+    if (!this.spec) return false
 
-    const pathParts = path.split('/')
-    const dirs = pathParts.slice(0, -1)
-    const fileName = pathParts.at(-1)
-    if (!fileName) throw new Error(`File not found: ${path}`)
-
-    let dirHandle: FileSystemDirectoryHandle = this.handle
-    for (const dir of dirs) {
-      const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
-      if (!nextDirHandle) throw new Error(`File not found: ${path}`)
-      dirHandle = nextDirHandle
+    for (const assetPath of this.spec.assets) {
+      if (path === assetPath) return true
     }
 
-    const [fileHandle] = await this.$.utils.safe(dirHandle.getFileHandle(fileName))
-    if (!fileHandle) throw new Error(`File not found: ${path}`)
+    for (const target of this.spec.targets) {
+      for (const loadPath of target.load) {
+        if (path === loadPath) return true
+      }
+    }
 
-    return fileHandle
+    return false
+  }
+
+  private getTimeString(time: number) {
+    const hhmmss = new Date(time).toString().split(' ')[4]
+    const ms = new Date(time).getMilliseconds().toString().padStart(3, '0')
+    return `${hhmmss}:${ms}`
   }
 
   // ---------------------------------------------------------------------------
@@ -283,30 +178,14 @@ export class Project extends gl.Unit {
 
           {/* Right controls */}
           <div className="flex items-baseline gap-3">
-            {/* Time of the last update */}
-            {this.lastUpdatedAt && (
+            {this.updatedAt && (
               <div className="mr-3 text-xs text-gray-400">
-                Updated at {new Date(this.lastUpdatedAt).toString().split(' ')[4]}
+                Updated at {this.getTimeString(this.updatedAt)}
               </div>
             )}
-
-            {/* Export button */}
-            {!this.state.error && (
-              <div onClick={this.export} className="group relative flex cursor-pointer">
-                {/* <div class="absolute inset-0 bg-current opacity-10 blur-[4px] transition not-group-hover:opacity-0 dark:opacity-20" /> */}
-                <div className="">[</div>
-                <div className="relative">EXPORT</div>
-                <div className="">]</div>
-              </div>
-            )}
-
-            {/* Remove button */}
-            <div onClick={this.remove} className="group relative cursor-pointer">
-              {/* <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-red-500 opacity-50 blur-xs not-group-hover:opacity-0 dark:opacity-80" /> */}
-              <span className="">[</span>
-              <span className="relative">REMOVE</span>
-              <span className="">]</span>
-            </div>
+            {!this.state.error && <this.$.ui.Button label="EXPORT" onClick={e => this.export(e.shiftKey)} />}
+            <this.$.ui.Button label="UPDATE" onClick={this.update} />
+            <this.$.ui.Button label="REMOVE" onClick={this.remove} />
           </div>
         </div>
 
@@ -327,10 +206,26 @@ export class Project extends gl.Unit {
   static versioner: any = {
     1() {
       delete this.time
-      this.lastUpdatedAt = null
+      this.updatedAt = null
     },
     2() {
-      this.watcher = new gl.ProjectWatcher(this)
+      this.watcher = {}
+    },
+    3() {
+      delete this.watcher
+    },
+    4() {
+      this.updating = false
+    },
+    5() {
+      delete this.updating
+    },
+    6() {
+      this.fs = new gl.ProjectFs(this)
+    },
+    7() {
+      this.updatedAt = this.lastUpdatedAt
+      delete this.lastUpdatedAt
     },
   }
 }

@@ -13,16 +13,5 @@
       "matches": ["https://epos.dev/@learn"],
       "load": ["./dist/ln.js", "./dist/tw.css"]
     }
-  ],
-  "assets": [
-    // "./public/icon.png"
-    // "./template/epos.json",
-    // "./template/package.json",
-    // "./template/tsconfig.json",
-    // "./template/vite.config.ts",
-    // "./template/src/app/app.gl.tsx",
-    // "./template/src/core/units.ts",
-    // "./template/src/gl.tsx",
-    // "./template/src/gl.css"
   ]
 }
