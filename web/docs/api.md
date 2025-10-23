@@ -59,16 +59,14 @@ Background iframes management. Useful for running background website automations
 - [epos.frame.exists](/docs/api-frame#epos-frame-exists)
 - [epos.frame.list](/docs/api-frame#epos-frame-list)
 
-## [Static](/docs/api-static)
+## [Assets](/docs/api-assets)
 
-Static assets management.
+Assets management.
 
-- [epos.static.url](/docs/api-static#epos-static-url)
-- [epos.static.load](/docs/api-static#epos-static-load)
-- [epos.static.loadAll](/docs/api-static#epos-static-loadAll)
-- [epos.static.unload](/docs/api-static#epos-static-unload)
-- [epos.static.unloadAll](/docs/api-static#epos-static-unloadAll)
-- [epos.static.list](/docs/api-static#epos-static-list)
+- [epos.assets.url](/docs/api-assets#epos-assets-url)
+- [epos.assets.load](/docs/api-assets#epos-assets-load)
+- [epos.assets.unload](/docs/api-assets#epos-assets-unload)
+- [epos.assets.list](/docs/api-assets#epos-assets-list)
 
 ## [Env](/docs/api-env)
 
