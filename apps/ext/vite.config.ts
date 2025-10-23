@@ -16,9 +16,11 @@ export default defineConfig(async ({ mode }) => {
 
   const bundle = (name: string, forceDev = false): RolldownOptions => ({
     input: {
-      define: {
-        'BUNDLE': json(name),
-        'process.env.NODE_ENV': forceDev ? json('development') : json(env),
+      transform: {
+        define: {
+          'BUNDLE': json(name),
+          'process.env.NODE_ENV': forceDev ? json('development') : json(env),
+        },
       },
     },
     output: {

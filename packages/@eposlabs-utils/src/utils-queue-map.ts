@@ -1,4 +1,4 @@
-import { Queue } from './utils-queue.ts'
+import { Queue } from './utils-queue.js'
 
 export class QueueMap {
   private queues: { [name: string]: Queue } = {}

@@ -7,11 +7,11 @@
     "build": "vite build --mode production"
   },
   "dependencies": {
-    "@eposlabs/utils": "^1.10.0",
+    "@eposlabs/utils": "*",
     "clsx": "^2.1.1",
-    "epos": "^1.23.0",
+    "epos": "^1.24.0",
     "epos-spec-parser": "*",
-    "epos-unit": "^1.8.0"
+    "epos-unit": "*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.16",

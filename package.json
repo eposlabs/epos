@@ -3,7 +3,9 @@
   "name": "epos-mono",
   "type": "module",
   "workspaces": [
-    "*"
+    "apps/*",
+    "packages/*",
+    "playground/*"
   ],
   "scripts": {
     "edge": "ncu --upgrade --deep",

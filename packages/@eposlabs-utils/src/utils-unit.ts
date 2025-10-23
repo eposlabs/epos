@@ -1,5 +1,5 @@
-import { createLog, type Log } from './utils-create-log.ts'
-import type { Cls } from './utils-types.ts'
+import { createLog, type Log } from './utils-create-log.js'
+import type { Cls } from './utils-types.js'
 
 export class Unit<TRoot = unknown> {
   declare $: TRoot
