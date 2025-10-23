@@ -2,8 +2,8 @@
   "$schema": "https://epos.dev/schema.json?v=1",
   "name": "devkit",
   "title": "[epos]",
-  "description": "Epos helps you to develop browser extensions.",
-  "version": "1.5",
+  "description": "Build browser extensions.",
+  "version": "1.6",
   "targets": [
     {
       "matches": ["<hub>"],
