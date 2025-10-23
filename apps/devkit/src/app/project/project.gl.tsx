@@ -18,6 +18,7 @@ export class Project extends gl.Unit {
   /** Root project dir handle. */
   declare handle: FileSystemDirectoryHandle | null
   declare private engine: any
+  declare private observer: FileSystemObserver | null
   declare private updateTimer: number | undefined
   declare state: { error: string | null }
 
@@ -29,9 +30,11 @@ export class Project extends gl.Unit {
   async init() {
     this.handle = null
     this.engine = (epos as any).engine
+    this.observer = null
     this.updateTimer = undefined
     this.state = epos.state.local({ error: null })
 
+    // Perform updates in a queue
     const q = new this.$.utils.Queue()
     this.update = q.wrap(this.update, this)
 
@@ -51,12 +54,14 @@ export class Project extends gl.Unit {
     }
 
     this.handle = handle
-    this.fs.startObserver()
+    this.startObserver()
+    await this.update()
   }
 
-  updateWithDelay() {
-    self.clearTimeout(this.updateTimer)
-    this.updateTimer = self.setTimeout(() => this.update(), 50)
+  cleanup() {
+    if (this.observer) {
+      this.observer.disconnect()
+    }
   }
 
   async export(dev = false) {
@@ -70,6 +75,15 @@ export class Project extends gl.Unit {
   async remove() {
     await this.engine.bus.send('projects.remove', this.name)
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
+  }
+
+  // ---------------------------------------------------------------------------
+  // UPDATE
+  // ---------------------------------------------------------------------------
+
+  private updateWithDelay() {
+    self.clearTimeout(this.updateTimer)
+    this.updateTimer = self.setTimeout(() => this.update(), 50)
   }
 
   private async update() {
@@ -118,6 +132,30 @@ export class Project extends gl.Unit {
       this.updatedAt = Date.now()
       console.error(`⛔ [${this.name}] Failed to update`, e)
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // OBSERVER
+  // ---------------------------------------------------------------------------
+
+  private startObserver() {
+    this.observer = new FileSystemObserver(records => {
+      if (this.state.error) {
+        this.updateWithDelay()
+        return
+      }
+
+      for (const record of records) {
+        const path = record.relativePathComponents.join('/')
+        if (this.usesPath(path)) {
+          this.updateWithDelay()
+          return
+        }
+      }
+    })
+
+    if (!this.handle) throw this.never()
+    this.observer.observe(this.handle, { recursive: true })
   }
 
   // ---------------------------------------------------------------------------
@@ -179,7 +217,7 @@ export class Project extends gl.Unit {
           {/* Right controls */}
           <div className="flex items-baseline gap-3">
             {this.updatedAt && (
-              <div className="mr-3 text-xs text-gray-400">
+              <div className="mr-2 text-xs text-gray-400">
                 Updated at {this.getTimeString(this.updatedAt)}
               </div>
             )}

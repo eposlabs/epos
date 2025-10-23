@@ -1,41 +1,8 @@
 export class ProjectFs extends gl.Unit {
   declare private $project: gl.Project
-  declare private observer: FileSystemObserver | null
 
   init() {
     this.$project = this.up(gl.Project)!
-    this.observer = null
-  }
-
-  cleanup() {
-    if (this.observer) {
-      this.observer.disconnect()
-    }
-  }
-
-  startObserver() {
-    this.observer = new FileSystemObserver(records => {
-      if (this.$project.state.error) {
-        this.$project.updateWithDelay()
-        return
-      }
-
-      for (const record of records) {
-        const path = record.relativePathComponents.join('/')
-        if (this.$project.usesPath(path)) {
-          this.$project.updateWithDelay()
-          return
-        }
-      }
-    })
-
-    this.observer.observe(this.handle, { recursive: true })
-  }
-
-  /** Root project dir handle. */
-  private get handle() {
-    if (!this.$project.handle) throw this.never('Accessing project handle before initialization')
-    return this.$project.handle
   }
 
   async readFile(path: string) {
@@ -55,7 +22,8 @@ export class ProjectFs extends gl.Unit {
     if (!name) throw this.never()
 
     // Get dir handle
-    let dirHandle: FileSystemDirectoryHandle = this.handle
+    if (!this.$project.handle) throw this.never()
+    let dirHandle = this.$project.handle
     for (const dir of dirs) {
       const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
       if (!nextDirHandle) throw new Error(`File not found: ${path}`)

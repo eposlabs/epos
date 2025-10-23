@@ -55,7 +55,7 @@ export class App extends gl.Unit {
     return (
       <div
         className={cx(
-          'flex min-h-[100vh] min-w-[100vw] justify-center bg-gray-100 px-4 pt-4 font-mono text-sm',
+          'flex min-h-screen min-w-screen justify-center bg-gray-100 px-4 pt-4 font-mono text-sm',
           'dark:bg-gray-800',
         )}
       >
@@ -68,7 +68,7 @@ export class App extends gl.Unit {
         />
 
         {/* Content */}
-        <div className="flex w-[580px] flex-col items-center gap-4">
+        <div className="flex w-[600px] flex-col items-center gap-4">
           {/* Project cards */}
           {this.projects.length > 0 && (
             <div className="flex w-full flex-col justify-center gap-4">
