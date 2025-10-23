@@ -32,12 +32,15 @@
     "dist"
   ],
   "dependencies": {
+    "@parcel/watcher": "^2.5.1",
     "@types/chrome": "^0.1.24",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
+    "portfinder": "^1.0.38",
     "react": "^19.2.0",
+    "ws": "^8.18.3",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
