@@ -10,11 +10,6 @@ declare global {
   var cx: typeof clsx
 }
 
-// Props
-declare global {
-  type Props<T extends Obj> = { className?: ClassValue } & T
-}
-
 // General-purpose types
 declare global {
   type Obj = types.Obj
@@ -22,4 +17,9 @@ declare global {
   type Cls<T = any> = types.Cls<T>
   type Fn<T = any> = types.Fn<T>
   type AsyncFn<T = any> = types.AsyncFn<T>
+}
+
+// Misc global types
+declare global {
+  type WithClassName = { className?: ClassValue }
 }
