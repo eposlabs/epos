@@ -1,7 +1,6 @@
 {
   "private": true,
   "name": "epos-mono",
-  "version": "1.0.0",
   "type": "module",
   "workspaces": [
     "*"
@@ -9,14 +8,7 @@
   "scripts": {
     "edge": "ncu --upgrade --deep",
     "prettier": "prettier --write ./",
-    "build": "npm run build:epos && npm run build:epos-unit && npm run build:utils && npm run build:rebundle && npm run build:paralayer",
     "release": "npm run release:epos && npm run release:epos-unit && npm run release:utils && npm run release:rebundle && npm run release:paralayer",
-    "$": "-------------------------------------------------",
-    "build:epos": "npm -w epos run build",
-    "build:epos-unit": "npm -w epos-unit run build",
-    "build:utils": "npm -w @eposlabs/utils run build",
-    "build:rebundle": "npm -w vite-plugin-rebundle run build",
-    "build:paralayer": "npm -w paralayer run build",
     "release:epos": "npm -w epos run release",
     "release:epos-unit": "npm -w epos-unit run release",
     "release:utils": "npm -w @eposlabs/utils run release",
