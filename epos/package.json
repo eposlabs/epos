@@ -24,7 +24,7 @@
       "types": "./dist/epos-vite.d.ts"
     },
     "./vite/ts": {
-      "import": "./dist/epos-vite.ts"
+      "import": "./src/epos-vite.ts"
     }
   },
   "files": [
