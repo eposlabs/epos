@@ -18,7 +18,7 @@ export type BundleOptions = {
   [bundleName: string]: RolldownOptions
 }
 
-export class Rebundle {
+export class RebundleVite {
   private commonOptions: RolldownOptions
   private bundleOptions: BundleOptions
   private config: ResolvedConfig | null = null
@@ -34,7 +34,7 @@ export class Rebundle {
     this.bundleOptions = bundleOptions ?? {}
   }
 
-  get vite(): Plugin {
+  get plugin(): Plugin {
     return {
       name: 'vite-plugin-rebundle',
       apply: 'build',
@@ -45,10 +45,6 @@ export class Rebundle {
       writeBundle: this.onWriteBundle,
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // VITE HOOKS
-  // ---------------------------------------------------------------------------
 
   private onConfig = async (config: UserConfig) => {
     if (config.build?.watch) {
@@ -190,7 +186,7 @@ export class Rebundle {
 }
 
 export function rebundle(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
-  return new Rebundle(commonOptions, bundleOptions).vite
+  return new RebundleVite(commonOptions, bundleOptions).plugin
 }
 
 export default rebundle
