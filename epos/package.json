@@ -19,9 +19,12 @@
       "types": "./dist/epos.d.ts"
     },
     "./vite": {
-      "source": "./src/vite.ts",
-      "import": "./dist/vite.js",
-      "types": "./dist/vite.d.ts"
+      "source": "./src/epos-vite.ts",
+      "import": "./dist/epos-vite.js",
+      "types": "./dist/epos-vite.d.ts"
+    },
+    "./vite/ts": {
+      "import": "./dist/epos-vite.ts"
     }
   },
   "files": [
@@ -41,6 +44,6 @@
     "vite": "^7.1.9"
   },
   "peerDependencies": {
-    "vite": "^7.1.4"
+    "vite": "^7.1.9"
   }
 }
