@@ -1,5 +1,3 @@
-import './chrome-types.d.ts'
-
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'
@@ -7,6 +5,7 @@ import type * as reactDom from 'react-dom'
 import type * as reactDomClient from 'react-dom/client'
 import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
+import './chrome-types.d.ts'
 
 export type Fn<T = any> = (...args: any[]) => T
 export type Obj = Record<string, unknown>
@@ -18,6 +17,38 @@ export type Initial<T extends Obj | Model> = T | (() => T)
 
 export type StateConfig = {
   allowMissingModels?: boolean | string[]
+}
+
+export type ReqInit = {
+  body: RequestInit['body']
+  cache: RequestInit['cache']
+  credentials: RequestInit['credentials']
+  headers: RequestInit['headers']
+  integrity: RequestInit['integrity']
+  keepalive: RequestInit['keepalive']
+  method: RequestInit['method']
+  mode: RequestInit['mode']
+  priority: RequestInit['priority']
+  redirect: RequestInit['redirect']
+  referrer: RequestInit['referrer']
+  referrerPolicy: RequestInit['referrerPolicy']
+}
+
+export type Res = {
+  ok: Response['ok']
+  url: Response['url']
+  type: Response['type']
+  status: Response['status']
+  statusText: Response['statusText']
+  redirected: Response['redirected']
+  text: Response['text']
+  json: Response['json']
+  blob: Response['blob']
+  headers: {
+    get: Response['headers']['get']
+    has: Response['headers']['has']
+    keys: () => string[]
+  }
 }
 
 export type Storage = {
@@ -35,7 +66,7 @@ export type Storage = {
 
 export interface Epos {
   // General
-  fetch: typeof window.fetch
+  fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
   browser: typeof chrome
   element: HTMLDivElement
   render(node: react.ReactNode, container?: reactDomClient.Container): void
@@ -161,7 +192,7 @@ export interface Epos {
 }
 
 declare global {
-  const epos: Epos
+  var epos: Epos
 
   namespace React {
     interface HTMLAttributes<T> {
@@ -172,4 +203,4 @@ declare global {
 
 const _epos = epos
 export { _epos as epos }
-export default epos
+export default _epos

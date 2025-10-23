@@ -29,14 +29,13 @@ export class KitFetcher extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-
-    this.$.bus.on('kit.fetch', this.fetch, this)
-    this.$.bus.on('kit.readAsText', this.readAsText, this)
-    this.$.bus.on('kit.readAsJson', this.readAsJson, this)
-    this.$.bus.on('kit.readAsBlob', this.readAsBlob, this)
+    this.$.bus.on('kit.fetch', this.wrapNoThrow(this.fetch))
+    this.$.bus.on('kit.readAsText', this.wrapNoThrow(this.readAsText))
+    this.$.bus.on('kit.readAsJson', this.wrapNoThrow(this.readAsJson))
+    this.$.bus.on('kit.readAsBlob', this.wrapNoThrow(this.readAsBlob))
   }
 
-  async fetch(url: string, init?: ReqInit): Promise<ResData> {
+  async fetch(url: string | URL, init?: ReqInit): Promise<ResData> {
     const res = await fetch(url, init)
     const id = `res-${this.$.utils.id()}`
 
@@ -48,7 +47,7 @@ export class KitFetcher extends sw.Unit {
     this.responses[id] = res
 
     // Set auto-delete timer
-    setTimeout(() => delete this.responses[id], this.$.utils.time('15m'))
+    self.setTimeout(() => delete this.responses[id], this.$.utils.time('15m'))
 
     return {
       id: id,
@@ -78,5 +77,17 @@ export class KitFetcher extends sw.Unit {
     const res = this.responses[resId]
     if (!res) throw new Error('Response timed out')
     return await res.blob()
+  }
+
+  /** If error happens, returns it instead of throwing. */
+  private wrapNoThrow<T extends AsyncFn>(fn: T) {
+    return async (...args: Parameters<T>) => {
+      try {
+        const result = await fn.call(this, ...args)
+        return result as Awaited<ReturnType<T>>
+      } catch (e) {
+        return this.$.is.error(e) ? e : new Error(String(e))
+      }
+    }
   }
 }
