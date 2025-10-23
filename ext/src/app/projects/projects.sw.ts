@@ -31,10 +31,10 @@ export class Projects extends sw.Unit {
     this.loader = await sw.ProjectsLoader.create(this)
   }
 
-  private async exportProject(projectName: string) {
+  private async exportProject(projectName: string, dev = false) {
     const project = this.map[projectName]
     if (!project) throw new Error(`No such project: ${projectName}`)
-    return await project.exporter.export()
+    return await project.exporter.export(dev)
   }
 
   async createOrUpdate(bundle: Bundle) {

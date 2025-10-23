@@ -32,11 +32,14 @@ export class App extends sw.Unit {
     this.defineGlobalMethods()
     this.dev = await gl.Dev.create(this)
 
-    if (
-      this.projects.list().length === 0 ||
-      this.projects.list().some(project => project.dev) ||
-      this.projects.list().some(project => project.name === 'devkit')
-    ) {
+    // Reload @devkit tabs
+    const tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
+    for (const tab of tabs) {
+      if (!tab.id) continue
+      this.browser.tabs.reload(tab.id)
+    }
+
+    if (this.projects.list().some(project => project.dev)) {
       console.log('ᛃ epos is running | https://epos.dev/docs/api')
       console.log(
         '%cTo inspect <background> process, open offscreen.html from the extension details page',
@@ -56,13 +59,13 @@ export class App extends sw.Unit {
       {
         id: 'cs',
         matches: ['<all_urls>'],
-        js: ['/cs.js'],
         // Exclude Chrome Web Store iframes
         excludeMatches: [
           'https://ogs.google.com/*',
           'https://*.google.com/static/proxy.html?*',
           'https://accounts.google.com/RotateCookiesPage?*',
         ],
+        js: ['/cs.js'],
         runAt: 'document_start',
         world: 'ISOLATED',
         allFrames: true,
@@ -83,11 +86,11 @@ export class App extends sw.Unit {
   private defineGlobalMethods() {
     self.add = (name: string, dev = false) => this.projects.installer.install(name, dev)
     self.remove = (name: string) => this.projects.installer.remove(name)
-    self.eject = (name: string) => this.projects.map[name].exporter.export()
+    self.eject = (name: string, dev = false) => this.projects.map[name].exporter.export(dev)
     self.install = self.add
   }
 
-  async export() {
+  async exportDevkit() {
     await install('http://localhost:3022/devkit')
     const blob = await eject('devkit')
     const url = await $.bus.send('utils.createObjectUrl', blob)

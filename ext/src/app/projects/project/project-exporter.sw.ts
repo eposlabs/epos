@@ -3,7 +3,7 @@ import type { BundleNoAssets } from './project.sw'
 export class ProjectExporter extends sw.Unit {
   private $project = this.up(sw.Project)!
 
-  async export() {
+  async export(dev = false) {
     const zip = new this.$.libs.Zip()
 
     const engineFiles = [
@@ -19,7 +19,7 @@ export class ProjectExporter extends sw.Unit {
       'offscreen.html',
     ]
 
-    if (this.$project.name === 'devkit') {
+    if (dev) {
       engineFiles.push('ex.dev.js', 'ex-mini.dev.js')
     }
 
@@ -29,7 +29,7 @@ export class ProjectExporter extends sw.Unit {
     }
 
     const bundle: BundleNoAssets = {
-      dev: false,
+      dev: dev,
       spec: this.$project.spec,
       sources: this.$project.sources,
     }
