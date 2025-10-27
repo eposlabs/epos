@@ -19,34 +19,28 @@ export type StateConfig = {
   allowMissingModels?: boolean | string[]
 }
 
-export type ReqInit = {
-  body: RequestInit['body']
-  cache: RequestInit['cache']
-  credentials: RequestInit['credentials']
-  headers: RequestInit['headers']
-  integrity: RequestInit['integrity']
-  keepalive: RequestInit['keepalive']
-  method: RequestInit['method']
-  mode: RequestInit['mode']
-  priority: RequestInit['priority']
-  redirect: RequestInit['redirect']
-  referrer: RequestInit['referrer']
-  referrerPolicy: RequestInit['referrerPolicy']
-}
+export type ReqInit = Pick<
+  RequestInit,
+  | 'body'
+  | 'cache'
+  | 'credentials'
+  | 'headers'
+  | 'integrity'
+  | 'keepalive'
+  | 'method'
+  | 'mode'
+  | 'priority'
+  | 'redirect'
+  | 'referrer'
+  | 'referrerPolicy'
+>
 
-export type Res = {
-  ok: Response['ok']
-  url: Response['url']
-  type: Response['type']
-  status: Response['status']
-  statusText: Response['statusText']
-  redirected: Response['redirected']
-  text: Response['text']
-  json: Response['json']
-  blob: Response['blob']
-  headers: {
-    get: Response['headers']['get']
-    has: Response['headers']['has']
+export type Res = Pick<
+  Response,
+  'ok' | 'url' | 'type' | 'status' | 'statusText' | 'redirected' | 'text' | 'json' | 'blob'
+> & {
+  headers: Pick<Response['headers'], 'get' | 'has'> & {
+    /** Get list of all header keys. */
     keys: () => string[]
   }
 }
