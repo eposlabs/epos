@@ -96,23 +96,6 @@ export class Project extends sw.Unit {
     const shadowCss = this.getCode(url, frame, 'css', ['shadow'])
     if (!js && !shadowCss) return null
 
-    // Layer variables are passed as arguments (undefineds) to isolate engine layers from project code
-    const layers = [
-      'cs',
-      'ex',
-      'gl',
-      'os',
-      'sm',
-      'sw',
-      'vw',
-      'exOs',
-      'exSw',
-      'osVw',
-      'swVw',
-      'exOsVw',
-      'exOsSwVw',
-    ]
-
     return {
       dev: this.dev,
       script: [
@@ -121,7 +104,7 @@ export class Project extends sw.Unit {
         `  icon: ${JSON.stringify(this.spec.icon)},`,
         `  title: ${JSON.stringify(this.spec.title)},`,
         `  shadowCss: ${JSON.stringify(shadowCss)},`,
-        `  async fn(epos, React = epos.libs.react, ${layers.join(', ')}) { ${js} },`,
+        `  async fn(epos, React = epos.libs.react) { ${js} },`,
         `}`,
       ].join('\n'),
     }
