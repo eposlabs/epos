@@ -81,6 +81,20 @@ export class ProjectExporter extends sw.Unit {
       ...(this.$project.spec.manifest ?? {}),
     }
 
+    const mandatoryPermissions = [
+      'alarms',
+      'declarativeNetRequest',
+      'offscreen',
+      'scripting',
+      'tabs',
+      'unlimitedStorage',
+      'webNavigation',
+    ]
+
+    const permissions = new Set<string>(manifest.permissions ?? [])
+    for (const perm of mandatoryPermissions) permissions.add(perm)
+    manifest.permissions = [...permissions].sort()
+
     zip.file('manifest.json', JSON.stringify(manifest, null, 2))
     return await zip.generateAsync({ type: 'blob' })
   }

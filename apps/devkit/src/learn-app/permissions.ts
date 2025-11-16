@@ -4,7 +4,7 @@ export const permissionList: chrome.runtime.ManifestPermissions[] = [
   // 'activeTab', // ☁️ allowed
   // 'background', // ☁️ allowed
   // 'bookmarks',
-  // 'browsingData',
+  'browsingData',
   // 'clipboardRead',
   // 'clipboardWrite',
   // 'contentSettings',

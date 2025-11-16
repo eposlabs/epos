@@ -5,6 +5,7 @@ export class LearnApp extends ln.Unit {
     new ln.Permission(this, 'downloads'),
     new ln.Permission(this, 'notifications'),
     new ln.Permission(this, 'storage'),
+    new ln.Permission(this, 'browsingData'),
   ]
 
   async init() {
@@ -60,6 +61,9 @@ export class LearnApp extends ln.Unit {
         new ln.Permission(this, 'notifications'),
         new ln.Permission(this, 'storage'),
       ]
+    },
+    3() {
+      this.permissions.push(new ln.Permission(this, 'browsingData'))
     },
   }
 }

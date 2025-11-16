@@ -1,6 +1,6 @@
 /// <reference types="epos" />
 
-console.log('X1512323')
+self.epos = epos
 
 // console.warn('!')
 // const state = await epos.state.connect(() => ({ title: 'abc' }))

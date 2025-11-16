@@ -1,4 +1,4 @@
-import config from '../prettier.config.js'
+import config from '../../prettier.config.js'
 
 export default {
   ...config,

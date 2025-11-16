@@ -31,6 +31,11 @@ export class Dev extends gl.Unit {
           })
         } else if (name === 'storage') {
           await this.$.browser.storage.local.set({ 'epos:checked': true })
+        } else if (name === 'browsingData') {
+          await this.$.browser.browsingData.remove(
+            { origins: ['https://epos.dev'] },
+            { serviceWorkers: true },
+          )
         }
       })
     }

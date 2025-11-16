@@ -168,9 +168,11 @@ export class BootInjector extends sw.Unit {
     if (!this.cspFixTabIds.has(tab.id)) {
       this.cspFixTabIds.add(tab.id)
       self.setTimeout(() => this.cspFixTabIds.delete(tab.id), 10_000)
-      const origin = new URL(tab.url).origin
-      await this.$.browser.browsingData.remove({ origins: [origin] }, { serviceWorkers: true })
-      await this.$.browser.tabs.reload(tab.id)
+      await this.execute(tab, 'MAIN', [], async () => {
+        const regs = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(regs.map(r => r.unregister()))
+        location.reload()
+      })
     }
 
     // Already tried and still fails? -> Mark origin as CSP-protected.
