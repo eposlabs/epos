@@ -15,15 +15,15 @@ export class App extends ex.Unit {
   states = new exSw.States(this)
   ui = new ex.Ui(this)
 
-  static async create() {
-    const app = new App()
-    await app.init()
-    return app
+  static async init() {
+    const i = new this()
+    await i.init()
+    return i
   }
 
   private async init() {
     if (this.env.is.dev) self.$epos = this
     await this.boot.injector.inject()
-    this.dev = await gl.Dev.create(this)
+    this.dev = await gl.Dev.init(this)
   }
 }

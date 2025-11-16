@@ -10,10 +10,10 @@ export class App extends cs.Unit {
   boot = new cs.Boot(this)
   dev!: gl.Dev
 
-  static async create() {
-    const app = new App()
-    await app.init()
-    return app
+  static async init() {
+    const i = new this()
+    await i.init()
+    return i
   }
 
   private async init() {
@@ -21,7 +21,7 @@ export class App extends cs.Unit {
     self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
     self.__eposCsReady$.resolve({ busToken: this.getBusToken() })
     await this.boot.injector.inject()
-    this.dev = await gl.Dev.create(this)
+    this.dev = await gl.Dev.init(this)
   }
 
   private getBusToken() {

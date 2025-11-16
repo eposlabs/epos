@@ -14,10 +14,10 @@ export class Project extends ex.Unit {
   shadowCss: string
   api!: ex.ProjectApi
 
-  static async create(parent: ex.Unit, props: Props) {
-    const project = new Project(parent, props)
-    await project.init()
-    return project
+  static async init(parent: ex.Unit, props: Props) {
+    const i = new this(parent, props)
+    await i.init()
+    return i
   }
 
   constructor(parent: ex.Unit, props: Props) {
@@ -30,7 +30,7 @@ export class Project extends ex.Unit {
   }
 
   private async init() {
-    this.api = await ex.ProjectApi.create(this)
+    this.api = await ex.ProjectApi.init(this)
     await this.initHub()
   }
 

@@ -99,13 +99,13 @@ export class State extends exSw.Unit {
     return this.root.data
   }
 
-  static async create(parent: exSw.Unit, location: Location, options: Options = {}) {
-    const state = new State(parent, location, options)
-    await state.$.peer.mutex(`state.setup[${state.id}]`, () => state.init())
-    return state
+  static async init(parent: exSw.Unit, location: Location, options: Options = {}) {
+    const i = new this(parent, location, options)
+    await i.init()
+    return i
   }
 
-  constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
+  private constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
@@ -148,6 +148,10 @@ export class State extends exSw.Unit {
   }
 
   private async init() {
+    await this.$.peer.mutex(`state.setup[${this.id}]`, () => this.setup())
+  }
+
+  private async setup() {
     // 1. Listen for updates from other peers
     const missedUpdates: Uint8Array[] = []
     this.bus.on('update', (update: Uint8Array) => {

@@ -12,10 +12,10 @@ export class Projects extends sw.Unit {
     return Object.values(this.map)
   }
 
-  static async create(parent: sw.Unit) {
-    const projects = new Projects(parent)
-    await projects.init()
-    return projects
+  static async init(parent: sw.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {
@@ -28,7 +28,7 @@ export class Projects extends sw.Unit {
     this.$.bus.on('projects.getExecutionData', this.getExecutionData, this)
     this.$.bus.on('projects.export', this.exportProject, this)
     await this.restoreFromIdb()
-    this.loader = await sw.ProjectsLoader.create(this)
+    this.loader = await sw.ProjectsLoader.init(this)
   }
 
   private async exportProject(projectName: string, dev = false) {
@@ -42,7 +42,7 @@ export class Projects extends sw.Unit {
       const project = this.map[bundle.spec.name]
       await project.update(bundle)
     } else {
-      const project = await sw.Project.create(this, bundle)
+      const project = await sw.Project.init(this, bundle)
       this.map[bundle.spec.name] = project
     }
   }

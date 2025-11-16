@@ -16,21 +16,21 @@ export class App extends sw.Unit {
   projects!: sw.Projects
   states = new exSw.States(this)
 
-  static async create() {
-    const app = new App()
-    await app.init()
-    return app
+  static async init() {
+    const i = new this()
+    await i.init()
+    return i
   }
 
   private async init() {
     self.$ = this
-    this.net = await sw.Net.create(this)
-    this.projects = await sw.Projects.create(this)
-    this.boot = await sw.Boot.create(this)
+    this.net = await sw.Net.init(this)
+    this.projects = await sw.Projects.init(this)
+    this.boot = await sw.Boot.init(this)
     await this.setupContentScript()
     await this.setupOffscreen()
     this.defineGlobalMethods()
-    this.dev = await gl.Dev.create(this)
+    this.dev = await gl.Dev.init(this)
 
     // Reload @devkit tabs
     const tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })

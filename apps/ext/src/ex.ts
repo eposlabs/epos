@@ -2,4 +2,4 @@ import './core/globals'
 import './core/units'
 import './layers/index.ex'
 
-await ex.App.create()
+await ex.App.init()

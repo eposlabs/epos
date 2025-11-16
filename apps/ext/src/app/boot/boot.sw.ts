@@ -3,10 +3,10 @@ export class Boot extends sw.Unit {
   injector = new sw.BootInjector(this)
   medium = new swVw.BootMedium(this)
 
-  static async create(parent: sw.Unit) {
-    const boot = new Boot(parent)
-    await boot.init()
-    return boot
+  static async init(parent: sw.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

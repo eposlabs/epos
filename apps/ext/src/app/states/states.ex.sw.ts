@@ -38,7 +38,7 @@ export class States extends exSw.Unit {
     if (this.$.env.is.ex) await this.$.bus.send('states.swConnect', location)
 
     // Create state
-    const state = await exSw.State.create(this, location, options)
+    const state = await exSw.State.init(this, location, options)
     this.map[id] = state
 
     // Mark [ex] as connected

@@ -3,10 +3,10 @@ export type Rule = Omit<chrome.declarativeNetRequest.Rule, 'id'>
 export class Net extends sw.Unit {
   private nextRuleId = 1
 
-  static async create(parent: sw.Unit) {
-    const net = new Net(parent)
-    await net.init()
-    return net
+  static async init(parent: sw.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {
@@ -47,6 +47,7 @@ export class Net extends sw.Unit {
           { header: 'Content-Security-Policy', operation: 'remove' },
           { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
 
+          // TODO
           { header: 'x-frame-options', operation: 'remove' },
         ],
       },

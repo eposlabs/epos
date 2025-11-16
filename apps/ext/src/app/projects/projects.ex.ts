@@ -5,7 +5,7 @@ export class Projects extends ex.Unit {
   watcher = new exOsVw.ProjectsWatcher(this)
 
   async create(props: Props) {
-    const project = await ex.Project.create(this, props)
+    const project = await ex.Project.init(this, props)
     this.map[props.name] = project
     return project
   }

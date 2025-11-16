@@ -2,4 +2,4 @@ import './core/globals'
 import './core/units'
 import './layers/index.sm'
 
-await sm.App.create()
+await sm.App.init()

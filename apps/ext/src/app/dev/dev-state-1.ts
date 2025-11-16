@@ -1,10 +1,10 @@
 // @ts-nocheck
 
 export class Dev extends gl.Unit {
-  static async create(parent: gl.Unit) {
-    const dev = new Dev(parent)
-    await dev.init()
-    return dev
+  static async init(parent: gl.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   async init() {

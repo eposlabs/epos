@@ -8,10 +8,10 @@ export class ProjectApiGeneral extends ex.Unit {
   element = this.createProjectElement()
   component = this.$.utils.link(this.$.ui, 'component')
 
-  static async create(parent: ex.Unit) {
-    const projectApiGeneral = new ProjectApiGeneral(parent)
-    await projectApiGeneral.init()
-    return projectApiGeneral
+  static async init(parent: ex.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

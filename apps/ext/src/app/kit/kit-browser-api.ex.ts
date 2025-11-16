@@ -7,15 +7,16 @@ export type Callback = Fn & { [_id_]?: string }
 
 export class KitBrowserApi extends ex.Unit {
   root!: Root
+
   // @ts-ignore
   private scope: string
   private listenerIds = new Set<string>()
   static _id_ = _id_
 
-  static async create(parent: ex.Unit, scope: string) {
-    const api = new KitBrowserApi(parent, scope)
-    await api.init()
-    return api
+  static async init(parent: ex.Unit, scope: string) {
+    const i = new this(parent, scope)
+    await i.init()
+    return i
   }
 
   constructor(parent: ex.Unit, scope: string) {

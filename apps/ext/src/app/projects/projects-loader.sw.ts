@@ -4,10 +4,10 @@ export type Manifest = chrome.runtime.Manifest
 export class ProjectsLoader extends sw.Unit {
   private $projects = this.up(sw.Projects)!
 
-  static async create(parent: sw.Unit) {
-    const loader = new ProjectsLoader(parent)
-    await loader.init()
-    return loader
+  static async init(parent: sw.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

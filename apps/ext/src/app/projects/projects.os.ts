@@ -4,10 +4,10 @@ export class Projects extends os.Unit {
   map: { [name: string]: os.Project } = {}
   watcher = new exOsVw.ProjectsWatcher(this)
 
-  static async create(parent: os.Unit) {
-    const projects = new Projects(parent)
-    await projects.init()
-    return projects
+  static async init(parent: os.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

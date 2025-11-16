@@ -4,10 +4,10 @@ export class ProjectApiAssets extends ex.Unit {
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 
-  static async create(parent: ex.Unit) {
-    const instance = new ProjectApiAssets(parent)
-    await instance.init()
-    return instance
+  static async init(parent: ex.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

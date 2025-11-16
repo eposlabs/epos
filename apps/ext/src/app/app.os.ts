@@ -11,16 +11,16 @@ export class App extends os.Unit {
   peer = new exOs.Peer(this)
   projects!: os.Projects
 
-  static async create() {
-    const app = new App()
-    await app.init()
-    return app
+  static async init() {
+    const i = new this()
+    await i.init()
+    return i
   }
 
   private async init() {
     self.$ = this
     this.utils.initOs()
-    this.projects = await os.Projects.create(this)
-    this.dev = await gl.Dev.create(this)
+    this.projects = await os.Projects.init(this)
+    this.dev = await gl.Dev.init(this)
   }
 }

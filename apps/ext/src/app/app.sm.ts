@@ -8,15 +8,15 @@ export class App extends sm.Unit {
   dev!: gl.Dev
   kit = new sm.Kit(this)
 
-  static async create() {
-    const app = new App()
-    await app.init()
-    return app
+  static async init() {
+    const i = new this()
+    await i.init()
+    return i
   }
 
   private async init() {
     self.$ = this
     this.$.bus.setSignal(`app.ready[system:${this.env.params.type}]`)
-    this.dev = await gl.Dev.create(this)
+    this.dev = await gl.Dev.init(this)
   }
 }

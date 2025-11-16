@@ -12,10 +12,10 @@ export class Projects extends vw.Unit {
     return Object.values(this.map)
   }
 
-  static async create(parent: vw.Unit) {
-    const projects = new Projects(parent)
-    await projects.init()
-    return projects
+  static async init(parent: vw.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   private async init() {

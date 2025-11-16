@@ -10,10 +10,10 @@ export class ProjectApi extends ex.Unit {
   libs = new ex.ProjectApiLibs(this)
   epos!: ReturnType<ex.ProjectApi['createEpos']>
 
-  static async create(parent: ex.Unit) {
-    const api = new ProjectApi(parent)
-    await api.init()
-    return api
+  static async init(parent: ex.Unit) {
+    const i = new this(parent)
+    await i.init()
+    return i
   }
 
   error(message: string, caller: Fn) {
@@ -23,8 +23,8 @@ export class ProjectApi extends ex.Unit {
   }
 
   private async init() {
-    this.general = await ex.ProjectApiGeneral.create(this)
-    this.assets = await ex.ProjectApiAssets.create(this)
+    this.general = await ex.ProjectApiGeneral.init(this)
+    this.assets = await ex.ProjectApiAssets.init(this)
     this.epos = this.createEpos()
   }
 

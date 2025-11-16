@@ -39,10 +39,14 @@ export class Project extends sw.Unit {
   declare targets: sw.ProjectTarget[]
   exporter = new sw.ProjectExporter(this)
 
-  static async create(parent: sw.Unit, bundle: Bundle) {
-    const project = new Project(parent)
-    await project.update(bundle)
-    return project
+  static async init(parent: sw.Unit, bundle: Bundle) {
+    const i = new this(parent)
+    await i.init(bundle)
+    return i
+  }
+
+  private async init(bundle: Bundle) {
+    await this.update(bundle)
   }
 
   static async restore(parent: sw.Unit, name: string) {
