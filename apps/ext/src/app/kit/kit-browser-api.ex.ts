@@ -13,18 +13,12 @@ export class KitBrowserApi extends ex.Unit {
   private listenerIds = new Set<string>()
   static _id_ = _id_
 
-  static async init(parent: ex.Unit, scope: string) {
-    const i = new this(parent, scope)
-    await i.init()
-    return i
-  }
-
   constructor(parent: ex.Unit, scope: string) {
     super(parent)
     this.scope = scope
   }
 
-  private async init() {
+  async init() {
     this.root = await this.createRoot()
   }
 

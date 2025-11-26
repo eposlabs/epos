@@ -2,4 +2,4 @@ import './core/globals'
 import './core/units'
 import './layers/index.cs'
 
-await cs.App.init()
+await new cs.App().init()

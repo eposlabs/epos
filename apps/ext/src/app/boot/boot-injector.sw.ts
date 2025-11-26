@@ -23,13 +23,10 @@ export class BootInjector extends sw.Unit {
     'https://chromewebstore.google.com/',
   ]
 
-  constructor(parent: sw.Unit) {
-    super(parent)
+  async init() {
     this.injectOnNavigation()
     this.$.bus.on('boot.getJsData', this.getJsData, this)
-  }
 
-  async init() {
     // Dev versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
     const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(r => r.text()))

@@ -6,19 +6,13 @@ export type ExecutionData = { [name: string]: ExecutionMeta }
 export class Projects extends sw.Unit {
   map: { [name: string]: sw.Project } = {}
   installer = new sw.ProjectsInstaller(this)
-  loader!: sw.ProjectsLoader
+  loader = new sw.ProjectsLoader(this)
 
   get list() {
     return Object.values(this.map)
   }
 
-  static async init(parent: sw.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     this.$.bus.on('projects.hasPopup', this.hasPopup, this)
     this.$.bus.on('projects.hasSidePanel', this.hasSidePanel, this)
     this.$.bus.on('projects.getCss', this.getCss, this)
@@ -28,7 +22,7 @@ export class Projects extends sw.Unit {
     this.$.bus.on('projects.getExecutionData', this.getExecutionData, this)
     this.$.bus.on('projects.export', this.exportProject, this)
     await this.restoreFromIdb()
-    this.loader = await sw.ProjectsLoader.init(this)
+    await this.loader.init()
   }
 
   private async exportProject(projectName: string, dev = false) {
@@ -42,7 +36,8 @@ export class Projects extends sw.Unit {
       const project = this.map[bundle.spec.name]
       await project.update(bundle)
     } else {
-      const project = await sw.Project.init(this, bundle)
+      const project = new sw.Project(this)
+      await project.init(bundle)
       this.map[bundle.spec.name] = project
     }
   }

@@ -4,13 +4,7 @@ export type Manifest = chrome.runtime.Manifest
 export class ProjectsLoader extends sw.Unit {
   private $projects = this.up(sw.Projects)!
 
-  static async init(parent: sw.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     const [bundle] = await this.$.utils.safe<BundleNoAssets>(fetch('/project.json').then(res => res.json()))
     if (!bundle) return
 

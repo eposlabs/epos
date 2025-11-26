@@ -8,13 +8,7 @@ export class ProjectApiGeneral extends ex.Unit {
   element = this.createProjectElement()
   component = this.$.utils.link(this.$.ui, 'component')
 
-  static async init(parent: ex.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     this.browser = await this.$.kit.browser.create(this.$project.name)
   }
 

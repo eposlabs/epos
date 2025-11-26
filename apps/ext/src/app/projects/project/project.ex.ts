@@ -14,12 +14,6 @@ export class Project extends ex.Unit {
   shadowCss: string
   api!: ex.ProjectApi
 
-  static async init(parent: ex.Unit, props: Props) {
-    const i = new this(parent, props)
-    await i.init()
-    return i
-  }
-
   constructor(parent: ex.Unit, props: Props) {
     super(parent)
     this.name = props.name
@@ -29,8 +23,9 @@ export class Project extends ex.Unit {
     this.shadowCss = props.shadowCss
   }
 
-  private async init() {
-    this.api = await ex.ProjectApi.init(this)
+  async init() {
+    this.api = new ex.ProjectApi(this)
+    await this.api.init()
     await this.initHub()
   }
 

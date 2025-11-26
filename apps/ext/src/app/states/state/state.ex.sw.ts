@@ -99,13 +99,7 @@ export class State extends exSw.Unit {
     return this.root.data
   }
 
-  static async init(parent: exSw.Unit, location: Location, options: Options = {}) {
-    const i = new this(parent, location, options)
-    await i.init()
-    return i
-  }
-
-  private constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
+  constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
     super(parent)
     this.id = location.join('/')
     this.bus = this.$.bus.create(`state[${this.id}]`)
@@ -115,6 +109,10 @@ export class State extends exSw.Unit {
     this.initial = options.initial ?? {}
     this.versioner = options.versioner ?? {}
     this.save = this.saveQueue.wrap(this.save, this)
+  }
+
+  async init() {
+    await this.$.peer.mutex(`state.setup[${this.id}]`, () => this.setup())
   }
 
   async disconnect() {
@@ -145,10 +143,6 @@ export class State extends exSw.Unit {
 
   registerModels(models: Record<string, ModelClass>) {
     Object.assign(this.models, models)
-  }
-
-  private async init() {
-    await this.$.peer.mutex(`state.setup[${this.id}]`, () => this.setup())
   }
 
   private async setup() {

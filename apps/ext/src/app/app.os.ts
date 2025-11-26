@@ -7,20 +7,14 @@ export class App extends os.Unit {
   bus = new gl.Bus(this)
 
   alive = new os.Alive(this)
-  dev!: gl.Dev
+  dev = new gl.Dev(this)
   peer = new exOs.Peer(this)
-  projects!: os.Projects
+  projects = new os.Projects(this)
 
-  static async init() {
-    const i = new this()
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     self.$ = this
     this.utils.initOs()
-    this.projects = await os.Projects.init(this)
-    this.dev = await gl.Dev.init(this)
+    await this.projects.init()
+    await this.dev.init()
   }
 }

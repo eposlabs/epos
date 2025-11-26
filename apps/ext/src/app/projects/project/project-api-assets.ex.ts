@@ -4,13 +4,7 @@ export class ProjectApiAssets extends ex.Unit {
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 
-  static async init(parent: ex.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     this.paths = await this.$.idb.keys(this.$project.name, ':assets')
   }
 

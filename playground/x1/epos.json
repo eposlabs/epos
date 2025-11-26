@@ -3,13 +3,17 @@
   "name": "x1",
   "title": "X1 Test Package",
   "version": "0.0.1",
-  "action": "<hub>",
+  // "action": "<hub>",
   "popup": { "width": 500, "height": 500 },
   "assets": ["x1.css"],
   "targets": [
     {
       "matches": "<hub>",
       "load": ["x1.js"]
+    },
+    {
+      "matches": ["*://*/*", "<popup>"],
+      "load": "x1.css"
     }
     // {
     //   "matches": ["<hub>", "https://x.com"],

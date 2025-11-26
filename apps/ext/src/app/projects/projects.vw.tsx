@@ -12,13 +12,7 @@ export class Projects extends vw.Unit {
     return Object.values(this.map)
   }
 
-  static async init(parent: vw.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     await this.initWatcher()
   }
 

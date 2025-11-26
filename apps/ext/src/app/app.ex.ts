@@ -7,7 +7,7 @@ export class App extends ex.Unit {
   bus = new gl.Bus(this)
 
   boot = new ex.Boot(this)
-  dev!: gl.Dev
+  dev = new gl.Dev(this)
   idb = new ex.Idb(this)
   kit = new ex.Kit(this)
   peer = new exOs.Peer(this)
@@ -15,15 +15,9 @@ export class App extends ex.Unit {
   states = new exSw.States(this)
   ui = new ex.Ui(this)
 
-  static async init() {
-    const i = new this()
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     if (this.env.is.dev) self.$epos = this
     await this.boot.injector.inject()
-    this.dev = await gl.Dev.init(this)
+    await this.dev.init()
   }
 }

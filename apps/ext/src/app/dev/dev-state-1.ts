@@ -1,12 +1,6 @@
 // @ts-nocheck
 
 export class Dev extends gl.Unit {
-  static async init(parent: gl.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
   async init() {
     if (this.$.env.is.sw) {
       this.$.bus.on('dev.testApi', async (name: string) => {

@@ -3,13 +3,7 @@ export type Rule = Omit<chrome.declarativeNetRequest.Rule, 'id'>
 export class Net extends sw.Unit {
   private nextRuleId = 1
 
-  static async init(parent: sw.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     this.$.bus.on('net.addSessionRule', this.addSessionRule, this)
     this.$.bus.on('net.removeSessionRule', this.removeSessionRule, this)
     await this.removeAllSessionRules()

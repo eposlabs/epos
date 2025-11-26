@@ -7,30 +7,24 @@ export class App extends sw.Unit {
   bus = new gl.Bus(this)
 
   alive = new sw.Alive(this)
-  boot!: sw.Boot
-  dev!: gl.Dev
+  boot = new sw.Boot(this)
+  dev = new gl.Dev(this)
   idb = new sw.Idb(this)
   kit = new sw.Kit(this)
-  net!: sw.Net
+  net = new sw.Net(this)
   peer = new sw.Peer(this)
-  projects!: sw.Projects
+  projects = new sw.Projects(this)
   states = new exSw.States(this)
 
-  static async init() {
-    const i = new this()
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     self.$ = this
-    this.net = await sw.Net.init(this)
-    this.projects = await sw.Projects.init(this)
-    this.boot = await sw.Boot.init(this)
+    await this.net.init()
+    await this.projects.init()
+    await this.boot.init()
     await this.setupContentScript()
     await this.setupOffscreen()
     this.defineGlobalMethods()
-    this.dev = await gl.Dev.init(this)
+    await this.dev.init()
 
     // Reload @devkit tabs
     const tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })

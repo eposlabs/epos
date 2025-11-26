@@ -4,28 +4,22 @@ export class ProjectApi extends ex.Unit {
   bus = this.$.bus.create(`project[${this.$project.name}]`)
   state = new ex.ProjectApiState(this)
   storage = new ex.ProjectApiStorage(this)
-  assets!: ex.ProjectApiAssets
+  assets = new ex.ProjectApiAssets(this)
   frame = new ex.ProjectApiFrame(this)
   env = new ex.ProjectApiEnv(this)
   libs = new ex.ProjectApiLibs(this)
   epos!: ReturnType<ex.ProjectApi['createEpos']>
 
-  static async init(parent: ex.Unit) {
-    const i = new this(parent)
-    await i.init()
-    return i
+  async init() {
+    await this.general.init()
+    await this.assets.init()
+    this.epos = this.createEpos()
   }
 
   error(message: string, caller: Fn) {
     const error = new Error(`[epos] ${message}`)
     Error.captureStackTrace(error, caller)
     return error
-  }
-
-  private async init() {
-    this.general = await ex.ProjectApiGeneral.init(this)
-    this.assets = await ex.ProjectApiAssets.init(this)
-    this.epos = this.createEpos()
   }
 
   private createEpos() {

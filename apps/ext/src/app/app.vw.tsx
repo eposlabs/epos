@@ -13,20 +13,14 @@ export class App extends vw.Unit {
   bus = new gl.Bus(this)
 
   boot = new vw.Boot(this)
-  dev!: gl.Dev
-  projects!: vw.Projects
+  dev = new gl.Dev(this)
+  projects = new vw.Projects(this)
 
-  static async init() {
-    const i = new this()
-    await i.init()
-    return i
-  }
-
-  private async init() {
+  async init() {
     self.$ = this
-    this.projects = await vw.Projects.init(this)
+    await this.projects.init()
     this.render()
-    this.dev = await gl.Dev.init(this)
+    await this.dev.init()
   }
 
   refresh() {
