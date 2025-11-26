@@ -48,8 +48,8 @@ export class App extends vw.Unit {
     return (
       <props.context.Provider value={renderId}>
         <div class="min-h-200 min-w-240">
-          <this.$.projects.dock.ui />
-          <this.$.projects.ui />
+          <this.$.projects.dock.View />
+          <this.$.projects.View />
         </div>
       </props.context.Provider>
     )

@@ -8,7 +8,7 @@ export class Projects extends vw.Unit {
   dock = new vw.ProjectsDock(this)
   watcher = new exOsVw.ProjectsWatcher(this)
 
-  list() {
+  get list() {
     return Object.values(this.map)
   }
 
@@ -61,7 +61,7 @@ export class Projects extends vw.Unit {
       this.actionData = data.action
 
       // Close view if nothing to show
-      const noProjects = this.list().length === 0
+      const noProjects = this.list.length === 0
       const noActions = Object.keys(this.actionData).length === 0
       if (noProjects && noActions) {
         self.close()
@@ -70,7 +70,7 @@ export class Projects extends vw.Unit {
 
       // Select first project if none selected
       if (!this.selectedProjectName || !this.map[this.selectedProjectName]) {
-        this.selectedProjectName = this.list()[0]?.name ?? null
+        this.selectedProjectName = this.list[0]?.name ?? null
       }
 
       // Refresh UI
@@ -78,12 +78,12 @@ export class Projects extends vw.Unit {
     })
   }
 
-  ui = () => {
-    if (this.list().length === 0) return null
+  View = () => {
+    if (this.list.length === 0) return null
     return (
       <div onMouseEnter={() => this.dock.hide()}>
-        {this.list().map(project => (
-          <project.ui key={project.name} />
+        {this.list.map(project => (
+          <project.View key={project.name} />
         ))}
       </div>
     )

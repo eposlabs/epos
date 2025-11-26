@@ -24,7 +24,7 @@ export class Project extends vw.Unit {
     this.popup = data.popup
   }
 
-  ui = () => {
+  View = () => {
     const selected = this.$.projects.selectedProjectName === this.name
     if (!this.invoked) this.invoked = selected
 

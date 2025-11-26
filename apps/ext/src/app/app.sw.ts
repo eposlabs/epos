@@ -39,7 +39,7 @@ export class App extends sw.Unit {
       this.browser.tabs.reload(tab.id)
     }
 
-    if (this.projects.list().some(project => project.dev)) {
+    if (this.projects.list.some(project => project.dev)) {
       console.log('ᛃ epos is running | https://epos.dev/docs/api')
       console.log(
         '%cTo inspect <background> process, open offscreen.html from the extension details page',

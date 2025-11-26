@@ -8,7 +8,7 @@ export class Projects extends sw.Unit {
   installer = new sw.ProjectsInstaller(this)
   loader!: sw.ProjectsLoader
 
-  list() {
+  get list() {
     return Object.values(this.map)
   }
 
@@ -48,15 +48,15 @@ export class Projects extends sw.Unit {
   }
 
   hasPopup() {
-    return this.list().some(project => project.targets.some(target => target.matches.includes('<popup>')))
+    return this.list.some(project => project.targets.some(target => target.matches.includes('<popup>')))
   }
 
   hasSidePanel() {
-    return this.list().some(project => project.targets.some(target => target.matches.includes('<sidePanel>')))
+    return this.list.some(project => project.targets.some(target => target.matches.includes('<sidePanel>')))
   }
 
   getCss(url: string, frame = false) {
-    return this.list()
+    return this.list
       .map(project => project.getCss(url, frame))
       .filter(this.$.is.present)
       .join('\n')
@@ -64,7 +64,7 @@ export class Projects extends sw.Unit {
   }
 
   getLiteJs(url: string, frame = false) {
-    return this.list()
+    return this.list
       .map(project => project.getLiteJs(url, frame))
       .filter(this.$.is.present)
       .join('\n')
@@ -72,14 +72,12 @@ export class Projects extends sw.Unit {
   }
 
   getPayloads(url: string, frame = false) {
-    return this.list()
-      .map(project => project.getPayload(url, frame))
-      .filter(this.$.is.present)
+    return this.list.map(project => project.getPayload(url, frame)).filter(this.$.is.present)
   }
 
   getActionData() {
     const data: ActionData = {}
-    for (const project of this.list()) {
+    for (const project of this.list) {
       const meta = project.getActionMeta()
       if (!meta) continue
       data[project.name] = meta
@@ -90,7 +88,7 @@ export class Projects extends sw.Unit {
 
   private async getExecutionData(url: string, frame = false) {
     const data: ExecutionData = {}
-    for (const project of this.list()) {
+    for (const project of this.list) {
       const meta = await project.getExecutionMeta(url, frame)
       if (!meta) continue
       data[project.name] = meta

@@ -29,7 +29,7 @@ export class ProjectsDock extends vw.Unit {
     this.timeout = self.setTimeout(() => this.hide(), 1000)
   }
 
-  ui = () => {
+  View = () => {
     // if (!this.$projects.selectedProjectName) return null
 
     const items = this.getItems()
@@ -148,7 +148,7 @@ export class ProjectsDock extends vw.Unit {
 
   private getItems() {
     return [
-      ...this.$projects.list().map(project => ({
+      ...this.$projects.list.map(project => ({
         name: project.name,
         value: project.name,
         label: project.title ?? project.name,

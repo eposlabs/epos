@@ -8,7 +8,7 @@ export class States extends exSw.Unit {
   private queue = new this.$.utils.Queue()
   private persistentIds = new Set<string>() // For [sw] only
 
-  list() {
+  get list() {
     return Object.values(this.map)
   }
 
@@ -76,7 +76,7 @@ export class States extends exSw.Unit {
   transaction(fn: () => void) {
     // Build transact function over all states
     let transact = () => fn()
-    for (const state of this.list()) {
+    for (const state of this.list) {
       const previous = transact
       transact = () => state.transaction(() => previous())
     }
@@ -94,7 +94,7 @@ export class States extends exSw.Unit {
   /** Automatically disconnect state if there are no [ex] connections to it. */
   private setupAutoDisconnect() {
     self.setInterval(async () => {
-      for (const state of this.list()) {
+      for (const state of this.list) {
         const connected = await this.$.bus.send(`states.exConnected[${state.id}]`)
         if (connected) continue
         // console.warn('DISCONNECT', state.id)
