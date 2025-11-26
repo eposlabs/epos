@@ -52,13 +52,13 @@ export class BusSerializer extends gl.Unit {
 
       // Sanitize supported non-json values as storage links
       if (
-        $.is.date(value) ||
-        $.is.blob(value) ||
-        $.is.error(value) ||
-        $.is.undefined(value) ||
-        $.is.uint8Array(value) ||
-        $.is.uint16Array(value) ||
-        $.is.uint32Array(value)
+        $.utils.is.date(value) ||
+        $.utils.is.blob(value) ||
+        $.utils.is.error(value) ||
+        $.utils.is.undefined(value) ||
+        $.utils.is.uint8Array(value) ||
+        $.utils.is.uint16Array(value) ||
+        $.utils.is.uint32Array(value)
       ) {
         const key = $.utils.id()
         storage.set(key, value)
@@ -83,12 +83,12 @@ export class BusSerializer extends gl.Unit {
       const value = this[key]
 
       // Serialize date
-      if ($.is.date(value)) {
+      if ($.utils.is.date(value)) {
         return { [REF]: 'date', iso: value.toISOString() } satisfies DateRef
       }
 
       // Serialize blob
-      if ($.is.blob(value)) {
+      if ($.utils.is.blob(value)) {
         if ($.env.is.sw) {
           const blobId = $.utils.id()
           blobs.set(blobId, value)
@@ -101,27 +101,27 @@ export class BusSerializer extends gl.Unit {
       }
 
       // Serialize error
-      if ($.is.error(value)) {
+      if ($.utils.is.error(value)) {
         return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
       }
 
       // Serialize undefined
-      if ($.is.undefined(value)) {
+      if ($.utils.is.undefined(value)) {
         return { [REF]: 'undefined' } satisfies UndefinedRef
       }
 
       // Serialize Uint8Array
-      if ($.is.uint8Array(value)) {
+      if ($.utils.is.uint8Array(value)) {
         return { [REF]: 'uint8', integers: Array.from(value) } satisfies Uint8Ref
       }
 
       // Serialize Uint16Array
-      if ($.is.uint16Array(value)) {
+      if ($.utils.is.uint16Array(value)) {
         return { [REF]: 'uint16', integers: Array.from(value) } satisfies Uint16Ref
       }
 
       // Serialize Uint32Array
-      if ($.is.uint32Array(value)) {
+      if ($.utils.is.uint32Array(value)) {
         return { [REF]: 'uint32', integers: Array.from(value) } satisfies Uint32Ref
       }
 

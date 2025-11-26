@@ -126,7 +126,7 @@ export class Dev extends gl.Unit {
             for (const key in m) {
               console.warn(key)
             }
-            console.log(m, $.is.object(m))
+            console.log(m, $.utils.is.object(m))
             this.top = new Message('a')
           },
         }
