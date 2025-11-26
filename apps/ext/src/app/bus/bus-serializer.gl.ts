@@ -151,7 +151,7 @@ export class BusSerializer extends gl.Unit {
         const key = this.$.utils.id()
         const promise = (async () => {
           const url = await this.$bus.extBridge.send('bus.blobIdToObjectUrl', value.id)
-          if (!this.$.is.string(url)) throw this.never
+          if (!this.$.utils.is.string(url)) throw this.never
           const blob = await fetch(url).then(r => r.blob())
           storage.set(key, blob)
         })()
@@ -237,11 +237,11 @@ export class BusSerializer extends gl.Unit {
   }
 
   private isRef(value: unknown): value is Ref {
-    return this.$.is.object(value) && REF in value
+    return this.$.utils.is.object(value) && REF in value
   }
 
   private isStorageLink(value: unknown): value is StorageLink {
-    return this.$.is.object(value) && STORAGE_KEY in value
+    return this.$.utils.is.object(value) && STORAGE_KEY in value
   }
 
   private populate(data: unknown, storage: Storage): unknown {
@@ -256,13 +256,13 @@ export class BusSerializer extends gl.Unit {
       return value
     }
 
-    if (this.$.is.object(data)) {
+    if (this.$.utils.is.object(data)) {
       const object: Record<string, unknown> = {}
       for (const key in data) object[key] = this.populate(data[key], storage)
       return object
     }
 
-    if (this.$.is.array(data)) {
+    if (this.$.utils.is.array(data)) {
       return data.map(item => this.populate(item, storage))
     }
 
@@ -274,10 +274,10 @@ export class BusSerializer extends gl.Unit {
     if (!channel) throw this.never
 
     channel.addEventListener('message', async e => {
-      if (!this.$.is.array(e.data)) throw this.never
+      if (!this.$.utils.is.array(e.data)) throw this.never
       const [reqId, blob] = e.data
-      if (!this.$.is.string(reqId)) throw this.never
-      if (!this.$.is.blob(blob)) throw this.never
+      if (!this.$.utils.is.string(reqId)) throw this.never
+      if (!this.$.utils.is.blob(blob)) throw this.never
       const url = this.$bus.utils.createTempObjectUrl(blob)
       channel.postMessage([reqId, url])
     })

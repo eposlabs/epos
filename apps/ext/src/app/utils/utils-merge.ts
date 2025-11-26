@@ -1,5 +1,5 @@
 export function merge(this: exOsSwVw.Unit, data1: unknown, data2: unknown) {
-  if (this.$.is.object(data1) && this.$.is.object(data2)) {
+  if (this.$.utils.is.object(data1) && this.$.utils.is.object(data2)) {
     const merged = { ...data1 }
     for (const key in data2) {
       if (key in merged) {
@@ -11,7 +11,7 @@ export function merge(this: exOsSwVw.Unit, data1: unknown, data2: unknown) {
     return merged
   }
 
-  if (this.$.is.array(data1) && this.$.is.array(data2)) {
+  if (this.$.utils.is.array(data1) && this.$.utils.is.array(data2)) {
     return [...data1, ...data2]
   }
 

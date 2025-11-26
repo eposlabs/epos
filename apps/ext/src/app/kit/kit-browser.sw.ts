@@ -17,7 +17,7 @@ export class KitBrowser extends sw.Unit {
   }
 
   private getApiTree(value: unknown) {
-    if (this.$.is.object(value)) {
+    if (this.$.utils.is.object(value)) {
       const tree: Obj = {}
       for (const key in value) {
         tree[key] = this.getApiTree(value[key])
@@ -25,7 +25,7 @@ export class KitBrowser extends sw.Unit {
       return tree
     }
 
-    if (this.$.is.function(value)) {
+    if (this.$.utils.is.function(value)) {
       if (value.name === 'addListener') return '<addListener>'
       if (value.name === 'hasListener') return '<hasListener>'
       if (value.name === 'hasListeners') return '<hasListeners>'
@@ -39,11 +39,11 @@ export class KitBrowser extends sw.Unit {
   private async callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
     // Get api object
     const api = this.$.utils.get(this.$.browser, apiPath)
-    if (!this.$.is.object(api)) throw this.never
+    if (!this.$.utils.is.object(api)) throw this.never
 
     // Get method from this api object
     const method = api[methodName]
-    if (!this.$.is.function(method)) throw this.never
+    if (!this.$.utils.is.function(method)) throw this.never
 
     // Call method
     return await method.call(api, ...args)
@@ -52,7 +52,7 @@ export class KitBrowser extends sw.Unit {
   private registerListener(peerId: string, listenerId: string, path: string[]) {
     // Get api object
     const api = this.$.utils.get(this.$.browser, path)
-    if (!this.$.is.object(api)) throw this.never
+    if (!this.$.utils.is.object(api)) throw this.never
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
@@ -60,13 +60,13 @@ export class KitBrowser extends sw.Unit {
     }
 
     // Add listener
-    if (!this.$.is.function(api.addListener)) throw this.never
+    if (!this.$.utils.is.function(api.addListener)) throw this.never
     api.addListener(callback)
 
     // Register disposer that removes the listener
     this.disposers[listenerId] = () => {
       clearInterval(pingInterval)
-      if (!this.$.is.function(api.removeListener)) throw this.never
+      if (!this.$.utils.is.function(api.removeListener)) throw this.never
       api.removeListener(callback)
       delete this.disposers[listenerId]
     }

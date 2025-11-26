@@ -60,7 +60,7 @@ export class BusPageBridge extends gl.Unit {
       // Register proxy action for [csFrame] and [ex]
       if (req.name === 'bus.registerProxyAction') {
         const [name] = req.args
-        if (!this.$.is.string(name)) throw this.never
+        if (!this.$.utils.is.string(name)) throw this.never
         const fn = (...args: unknown[]) => this.sendTo(source, name, ...args)
         this.$bus.on(name, fn, undefined, source)
         return
@@ -69,7 +69,7 @@ export class BusPageBridge extends gl.Unit {
       // Unregister proxy action for [csFrame] and [ex]
       if (req.name === 'bus.unregisterProxyAction') {
         const [name] = req.args
-        if (!this.$.is.string(name)) throw this.never
+        if (!this.$.utils.is.string(name)) throw this.never
         this.$bus.off(name, undefined, source)
         return
       }
@@ -229,12 +229,12 @@ export class BusPageBridge extends gl.Unit {
   }
 
   private isRequest(message: unknown): message is PageRequest {
-    if (!this.$.is.object(message)) return false
+    if (!this.$.utils.is.object(message)) return false
     return message.type === PAGE_REQUEST
   }
 
   private isResponse(message: unknown): message is PageResponse {
-    if (!this.$.is.object(message)) return false
+    if (!this.$.utils.is.object(message)) return false
     return message.type === PAGE_RESPONSE
   }
 }

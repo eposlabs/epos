@@ -56,7 +56,7 @@ export class ProjectApiAssets extends ex.Unit {
         loaded: path in this.files,
       }))
       .filter(file => {
-        if (this.$.is.undefined(filter.loaded)) return true
+        if (this.$.utils.is.undefined(filter.loaded)) return true
         return filter.loaded === file.loaded
       })
   }

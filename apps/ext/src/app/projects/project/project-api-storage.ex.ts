@@ -45,7 +45,7 @@ export class ProjectApiStorage extends ex.Unit {
   }
 
   private prepareName(name: string | null | undefined, caller: Fn) {
-    if (this.$.is.absent(name)) return ':storage'
+    if (this.$.utils.is.absent(name)) return ':storage'
     if (name === '') throw this.$api.error('Storage name cannot be empty string', caller)
     if (name.startsWith(':')) throw this.$api.error(`Storage name cannot start with ':'`, caller)
     return name

@@ -100,7 +100,7 @@ export class Idb extends sw.Unit {
     return await new Promise<DbKey[]>((resolve, reject) => {
       const tx = db.transaction([store], 'readonly')
       const req = tx.objectStore(store).getAllKeys()
-      req.onsuccess = () => resolve(req.result.filter(this.$.is.string))
+      req.onsuccess = () => resolve(req.result.filter(this.$.utils.is.string))
       req.onerror = () => reject(req.error)
     })
   }
@@ -135,7 +135,7 @@ export class Idb extends sw.Unit {
   /** Get a list of all database names. */
   async listDatabases() {
     const dbs = await indexedDB.databases()
-    return dbs.map(db => db.name).filter(this.$.is.present)
+    return dbs.map(db => db.name).filter(this.$.utils.is.present)
   }
 
   /** Delete the store from the database. */

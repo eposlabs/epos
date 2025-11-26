@@ -28,13 +28,13 @@ export class KitBrowserApi extends ex.Unit {
   }
 
   private build(value: any, path: string[] = []) {
-    if (this.$.is.object(value)) {
+    if (this.$.utils.is.object(value)) {
       const api: Obj = {}
       for (const key in value) api[key] = this.build(value[key], [...path, key])
       return api
     }
 
-    if (this.$.is.string(value) && value.startsWith('<')) {
+    if (this.$.utils.is.string(value) && value.startsWith('<')) {
       const apiPath = path.slice(0, -1)
 
       if (value === '<addListener>') return this.addListener.bind(this, apiPath)

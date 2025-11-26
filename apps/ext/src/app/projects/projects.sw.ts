@@ -53,7 +53,7 @@ export class Projects extends sw.Unit {
   getCss(url: string, frame = false) {
     return this.list
       .map(project => project.getCss(url, frame))
-      .filter(this.$.is.present)
+      .filter(this.$.utils.is.present)
       .join('\n')
       .trim()
   }
@@ -61,13 +61,13 @@ export class Projects extends sw.Unit {
   getLiteJs(url: string, frame = false) {
     return this.list
       .map(project => project.getLiteJs(url, frame))
-      .filter(this.$.is.present)
+      .filter(this.$.utils.is.present)
       .join('\n')
       .trim()
   }
 
   getPayloads(url: string, frame = false) {
-    return this.list.map(project => project.getPayload(url, frame)).filter(this.$.is.present)
+    return this.list.map(project => project.getPayload(url, frame)).filter(this.$.utils.is.present)
   }
 
   getActionData() {

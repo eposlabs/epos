@@ -191,7 +191,7 @@ export class State extends exSw.Unit {
         // Empty state?
         if (Object.keys(this.root.data).length === 0) {
           // Set initial state
-          const initial = this.$.is.function(this.initial) ? this.initial() : this.initial
+          const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
           this.root.data = initial
 
           // State itself is a model? -> Don't use state versioner (model versioner will be used)
@@ -209,7 +209,7 @@ export class State extends exSw.Unit {
 
           // Run state versioner
           for (const version of versions) {
-            if (this.$.is.number(this.root.data[':version']) && this.root.data[':version'] >= version)
+            if (this.$.utils.is.number(this.root.data[':version']) && this.root.data[':version'] >= version)
               continue
             this.versioner[version].call(this.root.data, this.root.data)
             this.root.data[':version'] = version
@@ -241,7 +241,7 @@ export class State extends exSw.Unit {
     if (source instanceof this.$.libs.yjs.Map) {
       const yMap = source
       const modelName: unknown = yMap.get('@')
-      const Model = this.$.is.string(modelName) ? this.getModelByName(modelName) : null
+      const Model = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
       this.checkForMissingModel(Model, modelName, () => yMap.toJSON())
       const useProxy = Model ? !Model[_modelStrict_] : true
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
@@ -260,10 +260,10 @@ export class State extends exSw.Unit {
       return mArray
     }
 
-    if (this.$.is.object(source)) {
+    if (this.$.utils.is.object(source)) {
       const object = source
       const modelName = object['@']
-      const ModelByName = this.$.is.string(modelName) ? this.getModelByName(modelName) : null
+      const ModelByName = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
       const ModelByInstance = this.getModelByInstance(object)
       const Model = ModelByName ?? ModelByInstance
       this.checkForMissingModel(Model, modelName, () => object)
@@ -278,7 +278,7 @@ export class State extends exSw.Unit {
       return mObject
     }
 
-    if (this.$.is.array(source)) {
+    if (this.$.utils.is.array(source)) {
       const array = source
       const mArray: MArray = this.$.libs.mobx.observable.array([], { deep: false })
       const yArray = new this.$.libs.yjs.Array()
@@ -289,11 +289,11 @@ export class State extends exSw.Unit {
     }
 
     if (
-      this.$.is.undefined(source) ||
-      this.$.is.null(source) ||
-      this.$.is.boolean(source) ||
-      this.$.is.number(source) ||
-      this.$.is.string(source)
+      this.$.utils.is.undefined(source) ||
+      this.$.utils.is.null(source) ||
+      this.$.utils.is.boolean(source) ||
+      this.$.utils.is.number(source) ||
+      this.$.utils.is.string(source)
     ) {
       return source
     }
@@ -305,7 +305,7 @@ export class State extends exSw.Unit {
     }, 10)
 
     let displayValue: string
-    if (this.$.is.function(source)) {
+    if (this.$.utils.is.function(source)) {
       displayValue = 'function'
     } else {
       displayValue = String(source).slice(0, 100)
@@ -320,14 +320,14 @@ export class State extends exSw.Unit {
     if (!meta) return
 
     // Detach object node and all its children
-    if (this.$.is.object(target)) {
+    if (this.$.utils.is.object(target)) {
       const keys = this.keys(target)
       for (const key of keys) this.detach(target[key])
       this.detachedNodes.add(target)
     }
 
     // Detach array node and all its children
-    else if (this.$.is.array(target)) {
+    else if (this.$.utils.is.array(target)) {
       for (const item of target) this.detach(item)
       this.detachedNodes.add(target)
     }
@@ -373,13 +373,13 @@ export class State extends exSw.Unit {
     // 6. Setup model
     if (Model) {
       // Apply model prototype
-      if (!this.$.is.object(mNode)) throw this.never
+      if (!this.$.utils.is.object(mNode)) throw this.never
       Reflect.setPrototypeOf(mNode, Model.prototype)
 
       // Set '@' and ':version' fields if this is a fresh model instance
       if (isFresh) {
         const name = this.getModelName(Model)
-        if (this.$.is.undefined(name)) throw this.never
+        if (this.$.utils.is.undefined(name)) throw this.never
         this.set(mNode, '@', name)
         const versions = this.getVersionsAsc(Model[_modelVersioner_] ?? {})
         if (versions.length > 0) this.set(mNode, ':version', versions.at(-1))
@@ -541,7 +541,7 @@ export class State extends exSw.Unit {
 
   private applyMObjectSet(c: MObjectSetChange) {
     // Skip symbols
-    if (this.$.is.symbol(c.name)) return
+    if (this.$.utils.is.symbol(c.name)) return
 
     // Skip if value hasn't changed.
     // Also applied for getters (undefined === undefined in this case).
@@ -564,7 +564,7 @@ export class State extends exSw.Unit {
 
   private applyMObjectRemove(c: MObjectRemoveChange) {
     // Skip symbols
-    if (this.$.is.symbol(c.name)) return
+    if (this.$.utils.is.symbol(c.name)) return
 
     // Detach removed value
     this.detach(c.object[c.name])
@@ -614,7 +614,7 @@ export class State extends exSw.Unit {
   }
 
   private isMObjectChange(change: MNodeChange): change is MObjectSetChange | MObjectRemoveChange {
-    return this.$.is.object(change.object)
+    return this.$.utils.is.object(change.object)
   }
 
   // ---------------------------------------------------------------------------
@@ -674,7 +674,7 @@ export class State extends exSw.Unit {
           for (let i = offset; i < offset + operation.delete; i++) this.detach(mArray[i])
           mArray.splice(offset, operation.delete)
         } else if (operation.insert) {
-          if (!this.$.is.array(operation.insert)) throw this.never
+          if (!this.$.utils.is.array(operation.insert)) throw this.never
           mArray.splice(offset, 0, ...operation.insert)
           offset += operation.insert.length
         }
@@ -691,11 +691,11 @@ export class State extends exSw.Unit {
   private checkForMissingModel(Model: ModelClass | null, modelName: unknown, getValue: () => unknown) {
     if (this.$.env.is.sw) return
     if (Model) return
-    if (!this.$.is.string(modelName)) return
+    if (!this.$.utils.is.string(modelName)) return
 
     const { allowMissingModels } = this.config
     if (allowMissingModels === true) return
-    if (this.$.is.array(allowMissingModels) && allowMissingModels.includes(modelName)) return
+    if (this.$.utils.is.array(allowMissingModels) && allowMissingModels.includes(modelName)) return
 
     self.setTimeout(() => {
       console.warn(
@@ -725,7 +725,7 @@ export class State extends exSw.Unit {
 
     // Run versioner
     for (const version of versions) {
-      if (this.$.is.number(model[':version']) && model[':version'] >= version) continue
+      if (this.$.utils.is.number(model[':version']) && model[':version'] >= version) continue
       Model[_modelVersioner_][version].call(model, model)
       model[':version'] = version
     }
@@ -753,7 +753,7 @@ export class State extends exSw.Unit {
   }
 
   private runModelMethod(model: MObject, method: PropertyKey) {
-    if (!this.$.is.function(model[method])) return
+    if (!this.$.utils.is.function(model[method])) return
     model[method]()
   }
 
@@ -826,7 +826,7 @@ export class State extends exSw.Unit {
   }
 
   private getModelByName(name: unknown) {
-    if (!this.$.is.string(name)) return null
+    if (!this.$.utils.is.string(name)) return null
     return this.models[name]
   }
 
@@ -844,14 +844,14 @@ export class State extends exSw.Unit {
   }
 
   private unwrap<T>(value: T): T {
-    if (this.$.is.object(value)) {
+    if (this.$.utils.is.object(value)) {
       const keys = this.keys(value)
       const object: Obj = {}
       for (const key of keys) object[key] = this.unwrap(value[key])
       return object as T
     }
 
-    if (this.$.is.array(value)) {
+    if (this.$.utils.is.array(value)) {
       return value.map(item => this.unwrap(item)) as T
     }
 

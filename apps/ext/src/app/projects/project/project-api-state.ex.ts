@@ -21,7 +21,7 @@ export class ProjectApiState extends ex.Unit {
     let name: string | null
     let initial: Initial
     let versioner: Versioner
-    if (this.$.is.string(args[0])) {
+    if (this.$.utils.is.string(args[0])) {
       name = args[0]
       initial = (args[1] ?? {}) as Initial
       versioner = (args[2] ?? {}) as Versioner
@@ -79,7 +79,7 @@ export class ProjectApiState extends ex.Unit {
         connected: this.$.states.isConnected([this.$project.name, ':state', name]),
       }))
       .filter(state => {
-        if (this.$.is.undefined(filter.connected)) return true
+        if (this.$.utils.is.undefined(filter.connected)) return true
         return filter.connected === state.connected
       })
   }
@@ -94,7 +94,7 @@ export class ProjectApiState extends ex.Unit {
   }
 
   private prepareName(name: string | null | undefined, caller: Fn) {
-    if (this.$.is.absent(name)) return ':default'
+    if (this.$.utils.is.absent(name)) return ':default'
     if (name === '') throw this.$api.error('State name cannot be an empty string', caller)
     if (name.startsWith(':')) throw this.$api.error(`State name cannot start with ':'`, caller)
 

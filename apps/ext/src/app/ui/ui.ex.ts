@@ -55,8 +55,8 @@ export class Ui extends ex.Unit {
   }
 
   private processNode(type: unknown, props: unknown) {
-    if (!this.$.is.string(type)) return
-    if (!this.$.is.object(props)) return
+    if (!this.$.utils.is.string(type)) return
+    if (!this.$.utils.is.object(props)) return
     this.supportClass(props)
   }
 
@@ -66,7 +66,7 @@ export class Ui extends ex.Unit {
     const classNames = this.$.utils
       .ensureArray(props.class)
       .flat(Infinity)
-      .filter(this.$.is.string)
+      .filter(this.$.utils.is.string)
       .join(' ')
       .trim()
       .split(/\s+/)
@@ -79,6 +79,6 @@ export class Ui extends ex.Unit {
   }
 
   private concatClassNames(...classNames: unknown[]) {
-    return classNames.filter(c => this.$.is.string(c) && c.length > 0).join(' ')
+    return classNames.filter(c => this.$.utils.is.string(c) && c.length > 0).join(' ')
   }
 }

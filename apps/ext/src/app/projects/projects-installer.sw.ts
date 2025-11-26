@@ -13,7 +13,7 @@ export class ProjectsInstaller extends sw.Unit {
   }
 
   async install(input: Bundle | string, dev = false) {
-    if (this.$.is.object(input)) {
+    if (this.$.utils.is.object(input)) {
       await this.installFromBundle(input)
     } else if (URL.canParse(input)) {
       await this.installFromUrl(input, dev)

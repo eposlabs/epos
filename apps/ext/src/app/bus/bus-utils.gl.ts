@@ -11,7 +11,7 @@ export class BusUtils extends gl.Unit {
   }
 
   isThrowObject(value: unknown): value is Throw {
-    return this.$.is.object(value) && THROW in value
+    return this.$.utils.is.object(value) && THROW in value
   }
 
   /** Resolves with the first present result, catches errors as Throw object. */
@@ -29,7 +29,7 @@ export class BusUtils extends gl.Unit {
         processed += 1
 
         // Result is not null/undefined? -> Resolve with it
-        if (this.$.is.present(result)) {
+        if (this.$.utils.is.present(result)) {
           result$.resolve(result)
         }
 

@@ -96,7 +96,7 @@ export class BootInjector extends ex.Unit {
   private getTabId() {
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
-      if (!this.$.is.number(tabId)) throw this.never
+      if (!this.$.utils.is.number(tabId)) throw this.never
       return tabId
     }
 

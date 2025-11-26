@@ -3,7 +3,6 @@ export type CsReadyData = { busToken: string | null }
 export class App extends cs.Unit {
   browser = chrome
   utils = new cs.Utils(this)
-  is = this.utils.is
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 

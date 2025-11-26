@@ -86,7 +86,7 @@ export class KitFetcher extends sw.Unit {
         const result = await fn.call(this, ...args)
         return result as Awaited<ReturnType<T>>
       } catch (e) {
-        return this.$.is.error(e) ? e : new Error(String(e))
+        return this.$.utils.is.error(e) ? e : new Error(String(e))
       }
     }
   }
