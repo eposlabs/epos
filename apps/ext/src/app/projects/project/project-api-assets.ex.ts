@@ -1,6 +1,6 @@
 export class ProjectApiAssets extends ex.Unit {
-  private $api = this.up(ex.ProjectApi)!
-  private $project = this.up(ex.Project)!
+  private $api = this.closest(ex.ProjectApi)!
+  private $project = this.closest(ex.Project)!
   private files: { [path: string]: { url: string; blob: Blob } } = {}
   private paths: string[] = []
 

@@ -1,7 +1,7 @@
 import type { Bundle } from './project/project.sw'
 
 export class ProjectsInstaller extends sw.Unit {
-  private $projects = this.up(sw.Projects)!
+  private $projects = this.closest(sw.Projects)!
   private queue = new this.$.utils.Queue()
 
   constructor(parent: sw.Unit) {

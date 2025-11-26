@@ -17,7 +17,7 @@ export class Unit<TRoot = unknown> {
     this.#parent = parent ?? null
   }
 
-  up<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null {
+  closest<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null {
     let cursor = this.#parent
     while (cursor) {
       if (cursor instanceof Ancestor) return cursor as T

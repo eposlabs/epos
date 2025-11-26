@@ -1,5 +1,5 @@
 export class BootAction extends sw.Unit {
-  private $boot = this.up(sw.Boot)!
+  private $boot = this.closest(sw.Boot)!
 
   constructor(parent: sw.Unit) {
     super(parent)

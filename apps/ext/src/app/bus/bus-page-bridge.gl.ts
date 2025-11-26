@@ -16,7 +16,7 @@ export type PageResponse = {
 }
 
 export class BusPageBridge extends gl.Unit {
-  private $bus = this.up(gl.Bus)!
+  private $bus = this.closest(gl.Bus)!
   static PAGE_REQUEST = PAGE_REQUEST
   static PAGE_RESPONSE = PAGE_RESPONSE
   private removedTargetListeners = new Set<(target: WindowProxy) => void>()

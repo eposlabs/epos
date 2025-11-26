@@ -2,7 +2,7 @@ export class ProjectFs extends gl.Unit {
   declare private $project: gl.Project
 
   init() {
-    this.$project = this.up(gl.Project)!
+    this.$project = this.closest(gl.Project)!
   }
 
   async readFile(path: string) {

@@ -34,7 +34,7 @@ class EnvUrl extends gl.Unit {
 }
 
 class EnvIs extends gl.Unit {
-  private $env = this.up(Env)!
+  private $env = this.closest(Env)!
 
   // Environment
   dev = import.meta.env.DEV

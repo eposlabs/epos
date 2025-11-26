@@ -1,5 +1,5 @@
 export class ProjectApiFrame extends ex.Unit {
-  private $project = this.up(ex.Project)!
+  private $project = this.closest(ex.Project)!
 
   async open(name: string, url: string, attrs?: Record<string, unknown>) {
     await this.$.bus.send('projects.createProjectFrame', this.$project.name, name, url, attrs)

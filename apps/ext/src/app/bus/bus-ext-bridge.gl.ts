@@ -8,7 +8,7 @@ export type ExtRequest = {
 }
 
 export class BusExtBridge extends gl.Unit {
-  private $bus = this.up(gl.Bus)!
+  private $bus = this.closest(gl.Bus)!
   static EXT_REQUEST = EXT_REQUEST
 
   constructor(parent: gl.Unit) {

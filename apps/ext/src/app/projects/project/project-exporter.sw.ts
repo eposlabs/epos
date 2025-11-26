@@ -1,7 +1,7 @@
 import type { BundleNoAssets } from './project.sw'
 
 export class ProjectExporter extends sw.Unit {
-  private $project = this.up(sw.Project)!
+  private $project = this.closest(sw.Project)!
 
   async export(dev = false) {
     const zip = new this.$.libs.Zip()

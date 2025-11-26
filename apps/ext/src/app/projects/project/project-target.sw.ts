@@ -1,7 +1,7 @@
 import type { Mode, Pattern, PositivePattern, Target } from 'epos-spec-parser'
 
 export class ProjectTarget extends sw.Unit {
-  private $project = this.up(sw.Project)!
+  private $project = this.closest(sw.Project)!
   matches: Pattern[]
   load: string[]
   mode: Mode

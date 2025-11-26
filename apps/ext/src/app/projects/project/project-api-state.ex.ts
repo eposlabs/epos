@@ -1,8 +1,8 @@
 import type { Location, ModelClass, Initial, Versioner, Config } from '../../states/state/state.ex.sw'
 
 export class ProjectApiState extends ex.Unit {
-  private $api = this.up(ex.ProjectApi)!
-  private $project = this.up(ex.Project)!
+  private $api = this.closest(ex.ProjectApi)!
+  private $project = this.closest(ex.Project)!
   private states: { [stateName: string]: exSw.State } = {}
   private models: { [modelName: string]: ModelClass } = {}
   private config: Config = {}

@@ -2,7 +2,7 @@ import type { BundleNoAssets, Assets } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
 export class ProjectsLoader extends sw.Unit {
-  private $projects = this.up(sw.Projects)!
+  private $projects = this.closest(sw.Projects)!
 
   async init() {
     const [bundle] = await this.$.utils.safe<BundleNoAssets>(fetch('/project.json').then(res => res.json()))

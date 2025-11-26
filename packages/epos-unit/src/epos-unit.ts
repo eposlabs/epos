@@ -107,7 +107,7 @@ export class Unit<TRoot = unknown> {
   // METHODS
   // ---------------------------------------------------------------------------
 
-  up<T extends Unit>(Ancestor: Cls<T>): T | null {
+  closest<T extends Unit>(Ancestor: Cls<T>): T | null {
     let cursor: unknown = getParent(this)
     while (cursor) {
       if (cursor instanceof Ancestor) return cursor

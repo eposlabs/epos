@@ -22,7 +22,7 @@ export type Storage = Map<string, unknown>
 export type StorageLink = { [STORAGE_KEY]: string }
 
 export class BusSerializer extends gl.Unit {
-  private $bus = this.up(gl.Bus)!
+  private $bus = this.closest(gl.Bus)!
   private blobs = new Map<string, Blob>() // [sw] only
   private channel: BroadcastChannel | null = null // [sw] and [os] only, for blob transfer
 

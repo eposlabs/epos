@@ -1,5 +1,5 @@
 export class ProjectApi extends ex.Unit {
-  private $project = this.up(ex.Project)!
+  private $project = this.closest(ex.Project)!
   general!: ex.ProjectApiGeneral
   bus = this.$.bus.create(`project[${this.$project.name}]`)
   state = new ex.ProjectApiState(this)

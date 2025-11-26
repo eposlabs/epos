@@ -1,6 +1,6 @@
 export class ProjectApiStorage extends ex.Unit {
-  private $api = this.up(ex.ProjectApi)!
-  private $project = this.up(ex.Project)!
+  private $api = this.closest(ex.ProjectApi)!
+  private $project = this.closest(ex.Project)!
 
   async get(key: string, name?: string) {
     name = this.prepareName(name, this.get)
