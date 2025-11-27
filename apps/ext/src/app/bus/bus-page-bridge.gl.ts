@@ -37,7 +37,7 @@ export class BusPageBridge extends gl.Unit {
   }
 
   async sendToTop(name: string, ...args: unknown[]) {
-    if (!self.top) throw this.never
+    if (!self.top) throw this.never()
     return await this.sendTo(self.top, name, ...args)
   }
 
@@ -60,7 +60,7 @@ export class BusPageBridge extends gl.Unit {
       // Register proxy action for [csFrame] and [ex]
       if (req.name === 'bus.registerProxyAction') {
         const [name] = req.args
-        if (!this.$.utils.is.string(name)) throw this.never
+        if (!this.$.utils.is.string(name)) throw this.never()
         const fn = (...args: unknown[]) => this.sendTo(source, name, ...args)
         this.$bus.on(name, fn, undefined, source)
         return
@@ -69,7 +69,7 @@ export class BusPageBridge extends gl.Unit {
       // Unregister proxy action for [csFrame] and [ex]
       if (req.name === 'bus.unregisterProxyAction') {
         const [name] = req.args
-        if (!this.$.utils.is.string(name)) throw this.never
+        if (!this.$.utils.is.string(name)) throw this.never()
         this.$bus.off(name, undefined, source)
         return
       }
@@ -118,7 +118,7 @@ export class BusPageBridge extends gl.Unit {
 
       const result = await this.$bus.utils.pick(actions.map(action => action.execute(...req.args)))
       const res = this.createResponse(req.id, result)
-      if (!self.top) throw this.never
+      if (!self.top) throw this.never()
       self.top.postMessage(res, '*')
     })
   }

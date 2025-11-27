@@ -1,19 +1,13 @@
-import { createLog, type Log } from './utils-create-log.js'
+import { createLog } from './utils-create-log.js'
 import type { Cls } from './utils-types.js'
 
 export class Unit<TRoot = unknown> {
-  declare $: TRoot
-  declare log: Log
-  declare never: Error
+  $: TRoot
+  log = createLog(this.constructor.name)
   #parent: Unit<TRoot> | null = null
 
   constructor(parent?: Unit<TRoot> | null) {
-    const $ = (parent?.$ ?? this) as TRoot
-    const log = createLog(this.constructor.name)
-    const createNever = createNeverFactory(this)
-    Reflect.defineProperty(this, '$', { get: () => $ })
-    Reflect.defineProperty(this, 'log', { get: () => log })
-    Reflect.defineProperty(this, 'never', { get: () => createNever() })
+    this.$ = (parent?.$ ?? this) as TRoot
     this.#parent = parent ?? null
   }
 
@@ -25,12 +19,11 @@ export class Unit<TRoot = unknown> {
     }
     return null
   }
-}
 
-function createNeverFactory<T>(unit: Unit<T>) {
-  return function createNever() {
-    const error = new Error(`[${unit.constructor.name}] Never`)
-    Error.captureStackTrace(error, createNever)
+  never(message?: string) {
+    const details = message ? `: ${message}` : ''
+    const error = new Error(`[${this.constructor.name}] This should never happen${details}`)
+    Error.captureStackTrace(error, this.never)
     return error
   }
 }

@@ -20,7 +20,7 @@ export class App extends cs.Unit {
   private getBusToken() {
     return null
     // const token = this.bus.page.token
-    // if (!token) throw this.never
+    // if (!token) throw this.never()
     // return token
   }
 }

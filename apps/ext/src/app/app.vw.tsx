@@ -29,7 +29,7 @@ export class App extends vw.Unit {
 
   private render() {
     const root = document.getElementById('root')
-    if (!root) throw this.never
+    if (!root) throw this.never()
     const context = this.$.libs.preact.createContext<string>(this.$.utils.id())
     this.$.libs.preact.render(<this.View context={context} />, root)
   }

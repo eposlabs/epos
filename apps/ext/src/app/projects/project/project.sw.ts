@@ -164,7 +164,7 @@ export class Project extends sw.Unit {
   private getSourceCode(path: string) {
     if (path.endsWith('.js')) return `(async () => {\n${this.sources[path]}\n})();`
     if (path.endsWith('.css')) return this.sources[path]
-    throw this.never
+    throw this.never()
   }
 
   private prepareAction(action: Action) {

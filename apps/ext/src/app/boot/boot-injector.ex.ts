@@ -96,7 +96,7 @@ export class BootInjector extends ex.Unit {
   private getTabId() {
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
-      if (!this.$.utils.is.number(tabId)) throw this.never
+      if (!this.$.utils.is.number(tabId)) throw this.never()
       return tabId
     }
 
@@ -108,7 +108,7 @@ export class BootInjector extends ex.Unit {
       // if (this.$.env.is.exFrameWeb) return null // throw new Error('Not implemented')
     }
 
-    throw this.never
+    throw this.never()
   }
 
   private deleteEposVars() {

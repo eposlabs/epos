@@ -28,7 +28,7 @@ export class BusExtBridge extends gl.Unit {
     if (error) throw error
 
     if (this.$.utils.is.undefined(result)) return null // No handlers
-    if (!this.$.utils.is.string(result)) throw this.never
+    if (!this.$.utils.is.string(result)) throw this.never()
     return await this.$bus.serializer.deserialize(result)
   }
 
@@ -39,7 +39,7 @@ export class BusExtBridge extends gl.Unit {
     if (error) throw error
 
     if (this.$.utils.is.undefined(result)) return null // No handlers
-    if (!this.$.utils.is.string(result)) throw this.never
+    if (!this.$.utils.is.string(result)) throw this.never()
     return await this.$bus.serializer.deserialize(result)
   }
 
@@ -60,11 +60,11 @@ export class BusExtBridge extends gl.Unit {
       // Register proxy action for [csTop]
       if (req.name === 'bus.registerProxyAction') {
         async: (async () => {
-          if (!this.$.utils.is.number(tabId)) throw this.never
+          if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
-          if (!this.$.utils.is.array(args)) throw this.never
+          if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
-          if (!this.$.utils.is.string(name)) throw this.never
+          if (!this.$.utils.is.string(name)) throw this.never()
           const fn = (...args: unknown[]) => this.sendToTab(tabId, name, ...args)
           this.$bus.on(name, fn, undefined, tabId)
         })()
@@ -74,11 +74,11 @@ export class BusExtBridge extends gl.Unit {
       // Unregister proxy action for [csTop]
       if (req.name === 'bus.unregisterProxyAction') {
         async: (async () => {
-          if (!this.$.utils.is.number(tabId)) throw this.never
+          if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
-          if (!this.$.utils.is.array(args)) throw this.never
+          if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
-          if (!this.$.utils.is.string(name)) throw this.never
+          if (!this.$.utils.is.string(name)) throw this.never()
           this.$bus.off(name, undefined, tabId)
         })()
         return
@@ -86,7 +86,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Clear proxy actions for specified tab
       if (req.name === 'bus.clearTabProxyActions') {
-        if (!this.$.utils.is.number(tabId)) throw this.never
+        if (!this.$.utils.is.number(tabId)) throw this.never()
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
@@ -95,9 +95,9 @@ export class BusExtBridge extends gl.Unit {
       if (req.name === 'bus.blobIdToObjectUrl') {
         async: (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
-          if (!this.$.utils.is.array(args)) throw this.never
+          if (!this.$.utils.is.array(args)) throw this.never()
           const [blobId] = args
-          if (!this.$.utils.is.string(blobId)) throw this.never
+          if (!this.$.utils.is.string(blobId)) throw this.never()
           const url = await this.$bus.serializer.blobIdToObjectUrl(blobId)
           const resultJson = this.$bus.serializer.serialize(url)
           respond(resultJson)
@@ -116,7 +116,7 @@ export class BusExtBridge extends gl.Unit {
       // Execute actions and respond with the result
       async: (async () => {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
-        if (!this.$.utils.is.array(args)) throw this.never
+        if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))
         const resultJson = this.$bus.serializer.serialize(result)
         respond(resultJson)
@@ -142,7 +142,7 @@ export class BusExtBridge extends gl.Unit {
 
       async: (async () => {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
-        if (!this.$.utils.is.array(args)) throw this.never
+        if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))
         const resultJson = this.$bus.serializer.serialize(result)
         respond(resultJson)

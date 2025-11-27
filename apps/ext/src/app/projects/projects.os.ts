@@ -21,14 +21,14 @@ export class Projects extends os.Unit {
       // Add projects
       for (const name of delta.added) {
         const meta = data.execution[name]
-        if (!meta) throw this.never
+        if (!meta) throw this.never()
         this.map[name] = new os.Project(this, meta)
       }
 
       // Remove projects
       for (const name of delta.removed) {
         const project = this.map[name]
-        if (!project) throw this.never
+        if (!project) throw this.never()
         project.removeFrame()
         delete this.map[name]
       }
@@ -49,7 +49,7 @@ export class Projects extends os.Unit {
     attrs: Record<string, unknown> = {},
   ) {
     const project = this.map[projectName]
-    if (!project) throw this.never
+    if (!project) throw this.never()
     const exist = !!document.querySelector(`iframe[data-project="${projectName}"][data-name="${frameName}"]`)
 
     if (exist) {

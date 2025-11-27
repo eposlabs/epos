@@ -22,7 +22,7 @@ export class ProjectApiGeneral extends ex.Unit {
 
   private createProjectElement() {
     const eposElement = document.querySelector('epos')
-    if (!eposElement) throw this.never
+    if (!eposElement) throw this.never()
 
     const projectElement = document.createElement('div')
     projectElement.epos = true
@@ -76,12 +76,12 @@ export class ProjectApiGeneral extends ex.Unit {
   private getContainer() {
     if (!this.$project.shadowCss) {
       const root = this.element.querySelector('[root]')
-      if (!root) throw this.never
+      if (!root) throw this.never()
       return root
     } else {
-      if (!this.element.shadowRoot) throw this.never
+      if (!this.element.shadowRoot) throw this.never()
       const root = this.element.shadowRoot.querySelector('[root]')
-      if (!root) throw this.never
+      if (!root) throw this.never()
       return root
     }
   }

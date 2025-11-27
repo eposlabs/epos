@@ -39,7 +39,7 @@ export class ProjectExporter extends sw.Unit {
     const paths = await this.$.idb.keys(this.$project.name, ':assets')
     for (const path of paths) {
       const blob = await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
-      if (!blob) throw this.never
+      if (!blob) throw this.never()
       assets[path] = blob
       zip.file(`assets/${path}`, blob)
     }

@@ -151,7 +151,7 @@ export class BusSerializer extends gl.Unit {
         const key = this.$.utils.id()
         const promise = (async () => {
           const url = await this.$bus.extBridge.send('bus.blobIdToObjectUrl', value.id)
-          if (!this.$.utils.is.string(url)) throw this.never
+          if (!this.$.utils.is.string(url)) throw this.never()
           const blob = await fetch(url).then(r => r.blob())
           storage.set(key, blob)
         })()
@@ -199,7 +199,7 @@ export class BusSerializer extends gl.Unit {
         return new Uint32Array(value.integers)
       }
 
-      throw this.never
+      throw this.never()
     })
 
     // Wait till all async processes are done
@@ -215,7 +215,7 @@ export class BusSerializer extends gl.Unit {
 
   async blobIdToObjectUrl(blobId: string) {
     const channel = this.channel
-    if (!channel) throw this.never
+    if (!channel) throw this.never()
 
     const blob = this.blobs.get(blobId)
     this.blobs.delete(blobId)
@@ -271,13 +271,13 @@ export class BusSerializer extends gl.Unit {
 
   private setupChannelListener() {
     const channel = this.channel
-    if (!channel) throw this.never
+    if (!channel) throw this.never()
 
     channel.addEventListener('message', async e => {
-      if (!this.$.utils.is.array(e.data)) throw this.never
+      if (!this.$.utils.is.array(e.data)) throw this.never()
       const [reqId, blob] = e.data
-      if (!this.$.utils.is.string(reqId)) throw this.never
-      if (!this.$.utils.is.blob(blob)) throw this.never
+      if (!this.$.utils.is.string(reqId)) throw this.never()
+      if (!this.$.utils.is.blob(blob)) throw this.never()
       const url = this.$bus.utils.createTempObjectUrl(blob)
       channel.postMessage([reqId, url])
     })

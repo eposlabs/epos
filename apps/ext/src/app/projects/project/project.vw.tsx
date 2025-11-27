@@ -37,7 +37,7 @@ export class Project extends vw.Unit {
       width = '100vw'
       height = '100vh'
     } else {
-      throw this.never
+      throw this.never()
     }
 
     if (!this.invoked) return null

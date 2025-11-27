@@ -166,7 +166,7 @@ export class ProjectsDock extends vw.Unit {
 
   private async processAction(projectName: string) {
     const meta = this.$projects.actionData[projectName]
-    if (!meta) throw this.never
+    if (!meta) throw this.never()
 
     if (this.$.utils.is.boolean(meta.action)) {
       const bus = this.$.bus.create(`project[${projectName}]`)
@@ -180,7 +180,7 @@ export class ProjectsDock extends vw.Unit {
 
   private openSidePanel() {
     const tabId = Number(this.$.env.params.tabId)
-    if (!tabId) throw this.never
+    if (!tabId) throw this.never()
     this.$.boot.medium.openSidePanel(tabId)
     self.close()
   }

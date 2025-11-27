@@ -34,21 +34,21 @@ export class Ui extends ex.Unit {
   }
 
   private createElement(...args: Parameters<typeof createElement>): ReturnType<typeof createElement> {
-    if (!this.$.libs.react) throw this.never
+    if (!this.$.libs.react) throw this.never()
     const [type, props, ...children] = args
     this.processNode(type, props)
     return this.$.libs.react.createElement(type, props, ...children)
   }
 
   private jsx(...args: Parameters<typeof jsx>) {
-    if (!this.$.libs.reactJsxRuntime) throw this.never
+    if (!this.$.libs.reactJsxRuntime) throw this.never()
     const [type, props, ...children] = args
     this.processNode(type, props)
     return this.$.libs.reactJsxRuntime.jsx(type, props, ...children)
   }
 
   private jsxs(...args: Parameters<typeof jsxs>) {
-    if (!this.$.libs.reactJsxRuntime) throw this.never
+    if (!this.$.libs.reactJsxRuntime) throw this.never()
     const [type, props, ...children] = args
     this.processNode(type, props)
     return this.$.libs.reactJsxRuntime.jsxs(type, props, ...children)

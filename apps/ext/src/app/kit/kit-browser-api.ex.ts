@@ -131,14 +131,14 @@ export class KitBrowserApi extends ex.Unit {
   // ---------------------------------------------------------------------------
 
   private 'runtime.getURL'(path: string) {
-    if (!this.root) throw this.never
+    if (!this.root) throw this.never()
     const base = `chrome-extension://${this.root.runtime.id}/`
     return new URL(path, base).href
   }
 
   private async 'permissions.request'(opts: chrome.permissions.Permissions) {
     const root = this.root
-    if (!root) throw this.never
+    if (!root) throw this.never()
 
     // Check if permissions are already granted
     const alreadyGranted = await root.permissions.contains(opts)

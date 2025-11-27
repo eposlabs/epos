@@ -39,11 +39,11 @@ export class KitBrowser extends sw.Unit {
   private async callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
     // Get api object
     const api = this.$.utils.get(this.$.browser, apiPath)
-    if (!this.$.utils.is.object(api)) throw this.never
+    if (!this.$.utils.is.object(api)) throw this.never()
 
     // Get method from this api object
     const method = api[methodName]
-    if (!this.$.utils.is.function(method)) throw this.never
+    if (!this.$.utils.is.function(method)) throw this.never()
 
     // Call method
     return await method.call(api, ...args)
@@ -52,7 +52,7 @@ export class KitBrowser extends sw.Unit {
   private registerListener(peerId: string, listenerId: string, path: string[]) {
     // Get api object
     const api = this.$.utils.get(this.$.browser, path)
-    if (!this.$.utils.is.object(api)) throw this.never
+    if (!this.$.utils.is.object(api)) throw this.never()
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
@@ -60,13 +60,13 @@ export class KitBrowser extends sw.Unit {
     }
 
     // Add listener
-    if (!this.$.utils.is.function(api.addListener)) throw this.never
+    if (!this.$.utils.is.function(api.addListener)) throw this.never()
     api.addListener(callback)
 
     // Register disposer that removes the listener
     this.disposers[listenerId] = () => {
       clearInterval(pingInterval)
-      if (!this.$.utils.is.function(api.removeListener)) throw this.never
+      if (!this.$.utils.is.function(api.removeListener)) throw this.never()
       api.removeListener(callback)
       delete this.disposers[listenerId]
     }

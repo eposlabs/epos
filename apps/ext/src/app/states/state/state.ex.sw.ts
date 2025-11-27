@@ -373,13 +373,13 @@ export class State extends exSw.Unit {
     // 6. Setup model
     if (Model) {
       // Apply model prototype
-      if (!this.$.utils.is.object(mNode)) throw this.never
+      if (!this.$.utils.is.object(mNode)) throw this.never()
       Reflect.setPrototypeOf(mNode, Model.prototype)
 
       // Set '@' and ':version' fields if this is a fresh model instance
       if (isFresh) {
         const name = this.getModelName(Model)
-        if (this.$.utils.is.undefined(name)) throw this.never
+        if (this.$.utils.is.undefined(name)) throw this.never()
         this.set(mNode, '@', name)
         const versions = this.getVersionsAsc(Model[_modelVersioner_] ?? {})
         if (versions.length > 0) this.set(mNode, ':version', versions.at(-1))
@@ -441,7 +441,7 @@ export class State extends exSw.Unit {
 
       for (const node of this.detachedNodes) {
         const meta = this.getMeta(node)
-        if (!meta) throw this.never
+        if (!meta) throw this.never()
         meta.unwire()
       }
 
@@ -557,7 +557,7 @@ export class State extends exSw.Unit {
     if (this.applyingYjsToMobx) return
     this.doc.transact(() => {
       const yMap = this.getYNode(c.object)
-      if (!yMap) throw this.never
+      if (!yMap) throw this.never()
       yMap.set(String(c.name), this.getYNode(c.newValue) ?? c.newValue)
     })
   }
@@ -573,7 +573,7 @@ export class State extends exSw.Unit {
     if (this.applyingYjsToMobx) return
     this.doc.transact(() => {
       const yMap = this.getYNode(c.object)!
-      if (!yMap) throw this.never
+      if (!yMap) throw this.never()
       yMap.delete(String(c.name))
     })
   }
@@ -589,7 +589,7 @@ export class State extends exSw.Unit {
     if (this.applyingYjsToMobx) return
     this.doc.transact(() => {
       const yArray = this.getYNode(c.object)
-      if (!yArray) throw this.never
+      if (!yArray) throw this.never()
       yArray.delete(c.index)
       yArray.insert(c.index, [this.getYNode(c.newValue) ?? c.newValue])
     })
@@ -606,7 +606,7 @@ export class State extends exSw.Unit {
     if (this.applyingYjsToMobx) return
     this.doc.transact(() => {
       const yArray = this.getYNode(c.object)
-      if (!yArray) throw this.never
+      if (!yArray) throw this.never()
       const yAdded = c.added.map((value, index) => this.getYNode(c.added[index]) ?? value)
       yArray.delete(c.index, c.removedCount)
       yArray.insert(c.index, yAdded)
@@ -637,7 +637,7 @@ export class State extends exSw.Unit {
     // Get corresponding MobX node
     const yMap = e.target
     const mObject = this.getMNode(yMap)
-    if (!mObject) throw this.never
+    if (!mObject) throw this.never()
 
     // Apply Yjs changes to MobX node
     this.$.libs.mobx.runInAction(() => {
@@ -660,7 +660,7 @@ export class State extends exSw.Unit {
     // Get corresponding MobX node
     const yArray = e.target
     const mArray = this.getMNode(yArray)
-    if (!mArray) throw this.never
+    if (!mArray) throw this.never()
 
     // Apply Yjs changes to MobX node
     this.$.libs.mobx.runInAction(() => {
@@ -674,7 +674,7 @@ export class State extends exSw.Unit {
           for (let i = offset; i < offset + operation.delete; i++) this.detach(mArray[i])
           mArray.splice(offset, operation.delete)
         } else if (operation.insert) {
-          if (!this.$.utils.is.array(operation.insert)) throw this.never
+          if (!this.$.utils.is.array(operation.insert)) throw this.never()
           mArray.splice(offset, 0, ...operation.insert)
           offset += operation.insert.length
         }
@@ -710,7 +710,7 @@ export class State extends exSw.Unit {
 
   private runModelVersioner(model: MObject) {
     const Model = this.getModelByInstance(model)
-    if (!Model) throw this.never
+    if (!Model) throw this.never()
 
     // No versions? -> Ignore
     if (!Model[_modelVersioner_]) return
@@ -782,7 +782,7 @@ export class State extends exSw.Unit {
   private set(mObject: MObject, key: string, value: unknown) {
     // Track observable keys for models
     const meta = this.getMeta(mObject)
-    if (!meta) throw this.never
+    if (!meta) throw this.never()
     if (meta.model) meta.model.keys.add(key)
 
     this.$.libs.mobx.set(mObject, key, value)
@@ -791,7 +791,7 @@ export class State extends exSw.Unit {
   private delete(mObject: MObject, key: string) {
     // Track observable keys for models
     const meta = this.getMeta(mObject)
-    if (!meta) throw this.never
+    if (!meta) throw this.never()
     if (meta.model) meta.model.keys.delete(key)
 
     this.$.libs.mobx.remove(mObject, key)
@@ -821,7 +821,7 @@ export class State extends exSw.Unit {
 
   private isModelNode(mNode: MNode): mNode is MObject & { __model: true } {
     const meta = this.getMeta(mNode)
-    if (!meta) throw this.never
+    if (!meta) throw this.never()
     return !!meta.model
   }
 

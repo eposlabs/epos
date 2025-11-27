@@ -261,7 +261,7 @@ export class Paralayer extends Unit {
     const LayerName = layer.split('.').map(this.capitalize).join('')
     if (style === 'camel') return this.decapitalize(LayerName)
     if (style === 'Pascal') return LayerName
-    throw this.never
+    throw this.never()
   }
 
   private capitalize(string: string) {

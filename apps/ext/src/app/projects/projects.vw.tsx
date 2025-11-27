@@ -22,7 +22,7 @@ export class Projects extends vw.Unit {
   }
 
   select(name: string) {
-    if (!this.map[name]) throw this.never
+    if (!this.map[name]) throw this.never()
     this.selectedProjectName = name
     this.$.refresh()
     localStorage.setItem('projects.selectedProjectName', name)
@@ -40,13 +40,13 @@ export class Projects extends vw.Unit {
       // Add projects
       for (const name of delta.added) {
         const meta = data.execution[name]
-        if (!meta) throw this.never
+        if (!meta) throw this.never()
         this.map[meta.name] = new vw.Project(this, meta)
       }
 
       // Remove projects
       for (const name of delta.removed) {
-        if (!this.map[name]) throw this.never
+        if (!this.map[name]) throw this.never()
         delete this.map[name]
       }
 

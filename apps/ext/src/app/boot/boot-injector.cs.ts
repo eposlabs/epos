@@ -102,7 +102,7 @@ export class BootInjector extends cs.Unit {
     // Trigger 'self.__eposElement' getter to create <epos/> element
     if (!eposElement) this.executeJs('self.__eposElement')
     eposElement = document.querySelector('epos')
-    if (!eposElement) throw this.never
+    if (!eposElement) throw this.never()
     return eposElement
   }
 }
