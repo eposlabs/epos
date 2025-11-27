@@ -20,26 +20,29 @@ export class App extends sw.Unit {
     await this.net.init()
     await this.projects.init()
     await this.boot.init()
-    await this.setupContentScript()
     await this.setupOffscreen()
+    await this.setupContentScript()
+    await this.reloadDevKitTabs()
+    this.logDevHelp()
     this.defineGlobalMethods()
     await this.dev.init()
+  }
 
-    // Reload @devkit tabs
-    const tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
-    for (const tab of tabs) {
-      if (!tab.id) continue
-      this.browser.tabs.reload(tab.id)
-    }
+  async exportDevKit() {
+    await install('http://localhost:3022/devkit')
+    const blob = await eject('devkit')
+    const url = await $.bus.send('utils.createObjectUrl', blob)
+    this.$.browser.tabs.create({ url, active: true })
+  }
 
-    if (this.projects.list.some(project => project.dev)) {
-      console.log('ᛃ epos is running | https://epos.dev/docs/api')
-      console.log(
-        '%cTo inspect <background> process, open offscreen.html from the extension details page',
-        'color: gray;',
-      )
-      console.log('')
-    }
+  private async setupOffscreen() {
+    const exists = await this.$.browser.offscreen.hasDocument()
+    if (exists) await this.$.browser.offscreen.closeDocument()
+    await this.$.browser.offscreen.createDocument({
+      url: this.$.env.url.offscreen,
+      reasons: ['BLOBS'],
+      justification: 'URL.createObjectURL',
+    })
   }
 
   private async setupContentScript() {
@@ -66,14 +69,23 @@ export class App extends sw.Unit {
     ])
   }
 
-  private async setupOffscreen() {
-    const exists = await this.$.browser.offscreen.hasDocument()
-    if (exists) await this.$.browser.offscreen.closeDocument()
-    await this.$.browser.offscreen.createDocument({
-      url: this.$.env.url.offscreen,
-      reasons: ['BLOBS'],
-      justification: 'URL.createObjectURL',
-    })
+  private async reloadDevKitTabs() {
+    const tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
+    for (const tab of tabs) {
+      if (!tab.id) continue
+      this.browser.tabs.reload(tab.id)
+    }
+  }
+
+  private logDevHelp() {
+    const hasDevProject = this.projects.list.some(project => project.dev)
+    if (!hasDevProject) return
+    console.log('ᛃ epos is running | https://epos.dev/docs/api')
+    console.log(
+      '%cTo inspect <background> process, open offscreen.html from the extension details page',
+      'color: gray;',
+    )
+    console.log('')
   }
 
   private defineGlobalMethods() {
@@ -81,12 +93,5 @@ export class App extends sw.Unit {
     self.remove = (name: string) => this.projects.installer.remove(name)
     self.eject = (name: string, dev = false) => this.projects.map[name].exporter.export(dev)
     self.install = self.add
-  }
-
-  async exportDevkit() {
-    await install('http://localhost:3022/devkit')
-    const blob = await eject('devkit')
-    const url = await $.bus.send('utils.createObjectUrl', blob)
-    this.$.browser.tabs.create({ url, active: true })
   }
 }

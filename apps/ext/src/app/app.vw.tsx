@@ -31,16 +31,16 @@ export class App extends vw.Unit {
     const root = document.getElementById('root')
     if (!root) throw this.never
     const context = this.$.libs.preact.createContext<string>(this.$.utils.id())
-    this.$.libs.preact.render(<this.ui context={context} />, root)
+    this.$.libs.preact.render(<this.View context={context} />, root)
   }
 
-  private ui = (props: { context: Context<string> }) => {
+  private View = (props: { context: Context<string> }) => {
     const [renderId, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.id())
     this.setRenderId = setRenderId
 
     return (
       <props.context.Provider value={renderId}>
-        <div class="min-h-200 min-w-240">
+        <div className="min-h-200 min-w-240">
           <this.$.projects.dock.View />
           <this.$.projects.View />
         </div>

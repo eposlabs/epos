@@ -33,7 +33,7 @@ export class BootMedium extends swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openPopup(tabId: number) {
-    const path = this.$.env.url.view({ type: 'popup', tabId: String(tabId) })
+    const path = this.$.env.url.view({ locus: 'popup', tabId: String(tabId) })
     await this.$.browser.action.setPopup({ popup: path })
     await this.$.utils.safe(() => this.$.browser.action.openPopup())
     await this.$.browser.action.setPopup({ popup: '' })
@@ -61,7 +61,7 @@ export class BootMedium extends swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openSidePanel(tabId: number) {
-    const path = this.$.env.url.view({ type: 'sidePanel', tabId: String(tabId) })
+    const path = this.$.env.url.view({ locus: 'sidePanel', tabId: String(tabId) })
     // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
     async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })

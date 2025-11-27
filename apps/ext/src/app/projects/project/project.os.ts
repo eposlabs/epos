@@ -66,7 +66,7 @@ export class Project extends os.Unit {
 
   private getFrameUrl() {
     return this.$.env.url.frame({
-      type: 'background',
+      locus: 'background',
       name: this.name,
       hash: this.hash,
       dev: String(this.dev),

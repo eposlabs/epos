@@ -12,18 +12,18 @@ export class Env extends gl.Unit {
 
 class EnvUrl extends gl.Unit {
   web = 'https://epos.dev'
-  offscreen = '/offscreen.html?type=background'
+  offscreen = '/offscreen.html?locus=background'
 
-  system(params: { type: 'permission' }) {
+  system(params: { locus: 'permission' }) {
     return `/system.html?${new URLSearchParams(params)}`
   }
 
-  view(params: { type: 'popup' | 'sidePanel'; tabId: string }) {
+  view(params: { locus: 'popup' | 'sidePanel'; tabId: string }) {
     return `/view.html?${new URLSearchParams(params)}`
   }
 
   frame(params: {
-    type: 'popup' | 'sidePanel' | 'background'
+    locus: 'popup' | 'sidePanel' | 'background'
     tabId?: string
     name: string
     hash: string
@@ -55,13 +55,13 @@ class EnvIs extends gl.Unit {
   // [ex] variations by top/frame
   exTop = this.ex && self === top
   exFrame = this.ex && self !== top
-  exFrameWeb = this.ex && !this.$env.params.type
-  exFrameExt = this.ex && !!this.$env.params.type
-  exFramePopup = this.ex && this.$env.params.type === 'popup'
-  exFrameSidePanel = this.ex && this.$env.params.type === 'sidePanel'
-  exFrameBackground = this.ex && this.$env.params.type === 'background'
+  exFrameWeb = this.ex && !this.$env.params.locus
+  exFrameExt = this.ex && !!this.$env.params.locus
+  exFramePopup = this.ex && this.$env.params.locus === 'popup'
+  exFrameSidePanel = this.ex && this.$env.params.locus === 'sidePanel'
+  exFrameBackground = this.ex && this.$env.params.locus === 'background'
 
   // [vw] variations
-  vwPopup = this.vw && this.$env.params.type === 'popup'
-  vwSidePanel = this.vw && this.$env.params.type === 'sidePanel'
+  vwPopup = this.vw && this.$env.params.locus === 'popup'
+  vwSidePanel = this.vw && this.$env.params.locus === 'sidePanel'
 }

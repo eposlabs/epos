@@ -43,7 +43,7 @@ export class Project extends vw.Unit {
     if (!this.invoked) return null
 
     const src = this.$.env.url.frame({
-      type: this.$.env.params.type as 'popup' | 'sidePanel',
+      locus: this.$.env.params.locus as 'popup' | 'sidePanel',
       tabId: this.$.env.params.tabId,
       name: this.name,
       hash: this.hash,
@@ -55,7 +55,7 @@ export class Project extends vw.Unit {
         name={this.name}
         src={src}
         style={{ width, height }}
-        class={this.$.utils.cx([!selected && 'hidden'])}
+        className={this.$.utils.cx(!selected && 'hidden')}
       />
     )
   }

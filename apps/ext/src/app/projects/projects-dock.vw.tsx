@@ -40,24 +40,24 @@ export class ProjectsDock extends vw.Unit {
       <div
         onMouseEnter={() => this.show()}
         onMouseLeave={() => this.hideWithBigDelay()}
-        class={this.$.utils.cx([
+        className={this.$.utils.cx(
           'fixed top-0 right-0 z-10 h-28 bg-brand font-mono font-semibold text-black',
           'transition delay-30 duration-200 select-none',
           !!(this.hidden && this.selectedProject) &&
             'transform-[translate(calc(100%-min(100%,32px)),calc(-100%+7px))] text-transparent',
-        ])}
+        )}
       >
-        <div data-hitbox class="absolute -inset-x-8 -inset-y-6 z-0" />
+        <div class="absolute -inset-x-8 -inset-y-6 z-0" />
         <div class="relative flex h-full">
-          <this.Select />
-          <this.ActionButton />
-          <this.SidePanelButton />
+          <this.SelectView />
+          <this.ActionButtonView />
+          <this.SidePanelButtonView />
         </div>
       </div>
     )
   }
 
-  Select = () => {
+  SelectView = () => {
     if (this.uniqueItemNames.length === 1) return null
 
     const onChange = async (e: TargetedEvent<HTMLSelectElement>) => {
@@ -74,16 +74,16 @@ export class ProjectsDock extends vw.Unit {
     }
 
     return (
-      <div class="relative flex h-full items-center gap-5 pr-8 pl-9">
+      <div className="relative flex h-full items-center gap-5 pr-8 pl-9">
         {this.selectedProject && (
           <>
-            <div class="text-[12px]">{this.selectedProject.title ?? this.selectedProject.name}</div>
-            <div class="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
+            <div className="text-[12px]">{this.selectedProject.title ?? this.selectedProject.name}</div>
+            <div className="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
             {/* Native select */}
             <select
               value={this.selectedProject.name}
               onChange={onChange}
-              class="absolute inset-0 opacity-0 outline-none"
+              className="absolute inset-0 opacity-0 outline-none"
             >
               {this.getItems().map(item => (
                 <option key={item.value} value={item.value}>
@@ -96,10 +96,10 @@ export class ProjectsDock extends vw.Unit {
 
         {!this.selectedProject && (
           <>
-            <div class="text-[12px]">Select</div>
-            <div class="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
+            <div className="text-[12px]">Select</div>
+            <div className="mr-2 -translate-y-0.5 scale-x-[1.3] pl-2 text-[7px]">▼</div>
             {/* Native select */}
-            <select value={'0'} onChange={onChange} class="absolute inset-0 opacity-0 outline-none">
+            <select value={'0'} onChange={onChange} className="absolute inset-0 opacity-0 outline-none">
               <option value="0" disabled>
                 Select project
               </option>
@@ -115,7 +115,7 @@ export class ProjectsDock extends vw.Unit {
     )
   }
 
-  private ActionButton = () => {
+  private ActionButtonView = () => {
     if (this.uniqueItemNames.length > 1) return null
     const selectedProject = this.selectedProject
     if (!selectedProject) return null
@@ -125,23 +125,26 @@ export class ProjectsDock extends vw.Unit {
     return (
       <button
         onClick={() => this.processAction(selectedProject.name)}
-        class="flex h-full w-28 items-center justify-center not-only:pl-3 only:box-content only:px-2"
+        className="flex h-full w-28 items-center justify-center not-only:pl-3 only:box-content only:px-2"
       >
-        <div class="text-[14px]">→</div>
+        <div className="text-[14px]">→</div>
       </button>
     )
   }
 
-  private SidePanelButton = () => {
+  private SidePanelButtonView = () => {
     if (!this.$.env.is.vwPopup) return null
     if (!this.$projects.hasSidePanel) return null
 
     return (
       <button
         onClick={() => this.openSidePanel()}
-        class="flex h-full w-28 items-center justify-center text-inherit only:box-content only:px-2 not-only:nth-of-type-2:pr-3"
+        className={this.$.utils.cx(
+          'flex h-full w-28 items-center justify-center text-inherit only:box-content only:px-2',
+          'not-only:nth-of-type-2:pr-3',
+        )}
       >
-        <div class="-translate-y-1 text-[16px]">◨</div>
+        <div className="-translate-y-1 text-[16px]">◨</div>
       </button>
     )
   }

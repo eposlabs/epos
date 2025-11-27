@@ -36,9 +36,9 @@ export class ProjectTarget extends sw.Unit {
     if (['<popup>', '<sidePanel>', '<background>'].includes(pattern)) {
       const { origin, searchParams } = new URL(url)
       if (origin !== extOrigin) return false
-      const type = `<${searchParams.get('type')}>`
       const projectName = searchParams.get('name')
-      return pattern === type && (!projectName || projectName === this.$project.name)
+      const locusPattern = `<${searchParams.get('locus')}>`
+      return pattern === locusPattern && (!projectName || projectName === this.$project.name)
     }
 
     // For `frame=true`, only `frame:*` patterns should match
