@@ -1,4 +1,4 @@
-export class BootAction extends sw.Unit {
+export class ProjectsAction extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
     this.handleActionClick()

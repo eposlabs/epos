@@ -5,6 +5,7 @@ export type ExecutionData = { [name: string]: ExecutionMeta }
 
 export class Projects extends sw.Unit {
   map: { [name: string]: sw.Project } = {}
+  action = new sw.ProjectsAction(this)
   installer = new sw.ProjectsInstaller(this)
   loader = new sw.ProjectsLoader(this)
 
