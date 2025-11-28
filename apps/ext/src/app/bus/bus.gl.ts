@@ -3,8 +3,10 @@ import type { Target } from './bus-action.gl'
 export class Bus extends gl.Unit {
   id = this.$.utils.id()
   actions: gl.BusAction[] = []
+
   utils = new gl.BusUtils(this)
   serializer = new gl.BusSerializer(this)
+
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
 

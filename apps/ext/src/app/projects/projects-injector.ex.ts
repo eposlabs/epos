@@ -1,6 +1,8 @@
 import type { Payload } from './project/project.sw'
 
 export class ProjectsInjector extends ex.Unit {
+  private $projects = this.closest(ex.Projects)!
+
   async init() {
     // For [exTop]:
     // - [cs] already injected globals + <epos/>
@@ -80,7 +82,7 @@ export class ProjectsInjector extends ex.Unit {
 
     for (const def of defs) {
       // Create project
-      const project = await this.$.projects.create({
+      const project = await this.$projects.create({
         name: def.name,
         icon: def.icon,
         title: def.title,

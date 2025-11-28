@@ -5,6 +5,7 @@ export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 export type JsData = { js: string; dev: boolean }
 
 export class ProjectsInjector extends sw.Unit {
+  private $projects = this.closest(sw.Projects)!
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -63,7 +64,7 @@ export class ProjectsInjector extends sw.Unit {
     if (injected) return
 
     // Inject lite js and injection flag
-    const liteJs = this.$.projects.getLiteJs(tab.url)
+    const liteJs = this.$projects.getLiteJs(tab.url)
     const injectionFlagJs = `self.__eposInjected = true;`
     async: this.injectJs(tab, `${injectionFlagJs}${liteJs}`, 'function')
 
@@ -71,7 +72,7 @@ export class ProjectsInjector extends sw.Unit {
     const csData = await this.waitCsReady(tab)
 
     // Inject css
-    const css = this.$.projects.getCss(tab.url)
+    const css = this.$projects.getCss(tab.url)
     if (css) async: this.injectCss(tab, css)
 
     // Inject ex.js + projects
@@ -138,7 +139,7 @@ export class ProjectsInjector extends sw.Unit {
   }
 
   private getJsData(tab: Tab, busToken: string, frame = false): JsData | null {
-    const payloads = this.$.projects.getPayloads(tab.url, frame)
+    const payloads = this.$projects.getPayloads(tab.url, frame)
     if (payloads.length === 0) return null
 
     const dev = payloads.some(payload => payload.dev)

@@ -1,6 +1,7 @@
 import type { TargetedEvent } from 'preact'
 
 export class ProjectsDock extends vw.Unit {
+  private $projects = this.closest(vw.Projects)!
   // private items: Array<{ name: string; value: string; label: string }> = []
   private uniqueItemNames: string[] = []
   private selectedProject: vw.Project | null = null
@@ -29,11 +30,11 @@ export class ProjectsDock extends vw.Unit {
   }
 
   View = () => {
-    // if (!this.$.projects.selectedProjectName) return null
+    // if (!this.$projects.selectedProjectName) return null
 
     const items = this.getItems()
     this.uniqueItemNames = this.$.utils.unique(items.map(item => item.name))
-    this.selectedProject = this.$.projects.getSelected()
+    this.selectedProject = this.$projects.getSelected()
 
     return (
       <div
@@ -67,7 +68,7 @@ export class ProjectsDock extends vw.Unit {
       if (isAction) {
         await this.processAction(projectName)
       } else {
-        this.$.projects.select(projectName)
+        this.$projects.select(projectName)
         this.hide()
       }
     }
@@ -118,7 +119,7 @@ export class ProjectsDock extends vw.Unit {
     if (this.uniqueItemNames.length > 1) return null
     const selectedProject = this.selectedProject
     if (!selectedProject) return null
-    const meta = this.$.projects.actionData[selectedProject.name]
+    const meta = this.$projects.actionData[selectedProject.name]
     if (!meta) return null
 
     return (
@@ -133,7 +134,7 @@ export class ProjectsDock extends vw.Unit {
 
   private SidePanelButtonView = () => {
     if (!this.$.env.is.vwPopup) return null
-    if (!this.$.projects.hasSidePanel) return null
+    if (!this.$projects.hasSidePanel) return null
 
     return (
       <button
@@ -150,12 +151,12 @@ export class ProjectsDock extends vw.Unit {
 
   private getItems() {
     return [
-      ...this.$.projects.list.map(project => ({
+      ...this.$projects.list.map(project => ({
         name: project.name,
         value: project.name,
         label: project.title ?? project.name,
       })),
-      ...Object.values(this.$.projects.actionData).map(meta => ({
+      ...Object.values(this.$projects.actionData).map(meta => ({
         name: meta.name,
         value: `action:${meta.name}`,
         label: `${meta.title ?? meta.name} →`,
@@ -164,7 +165,7 @@ export class ProjectsDock extends vw.Unit {
   }
 
   private async processAction(projectName: string) {
-    const meta = this.$.projects.actionData[projectName]
+    const meta = this.$projects.actionData[projectName]
     if (!meta) throw this.never()
 
     if (this.$.utils.is.boolean(meta.action)) {

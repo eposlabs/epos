@@ -1,25 +1,26 @@
 export const REF = ':EPOS_BUS_REF'
-export type DateRef = { [REF]: 'date'; iso: string }
-export type ErrorRef = { [REF]: 'error'; message: string; stack: string | undefined }
+export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
+
 export type BlobIdRef = { [REF]: 'blobId'; id: string }
 export type BlobUrlRef = { [REF]: 'blobUrl'; url: string }
-export type UndefinedRef = { [REF]: 'undefined' }
-export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
+export type DateRef = { [REF]: 'date'; iso: string }
+export type ErrorRef = { [REF]: 'error'; message: string; stack: string | undefined }
 export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
 export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
+export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
+export type UndefinedRef = { [REF]: 'undefined' }
 export type Ref =
-  | DateRef
-  | ErrorRef
   | BlobIdRef
   | BlobUrlRef
-  | UndefinedRef
-  | Uint8Ref
+  | DateRef
+  | ErrorRef
   | Uint16Ref
   | Uint32Ref
+  | Uint8Ref
+  | UndefinedRef
 
-export const STORAGE_KEY = ':EPOS_BUS_STORAGE_KEY'
 export type Storage = Map<string, unknown>
-export type StorageLink = { [STORAGE_KEY]: string }
+export type StorageCell = { [STORAGE_KEY]: string }
 
 export class BusSerializer extends gl.Unit {
   private $bus = this.closest(gl.Bus)!
@@ -52,17 +53,17 @@ export class BusSerializer extends gl.Unit {
 
       // Sanitize supported non-json values as storage links
       if (
-        $.utils.is.date(value) ||
         $.utils.is.blob(value) ||
+        $.utils.is.date(value) ||
         $.utils.is.error(value) ||
-        $.utils.is.undefined(value) ||
-        $.utils.is.uint8Array(value) ||
         $.utils.is.uint16Array(value) ||
-        $.utils.is.uint32Array(value)
+        $.utils.is.uint32Array(value) ||
+        $.utils.is.uint8Array(value) ||
+        $.utils.is.undefined(value)
       ) {
         const key = $.utils.id()
         storage.set(key, value)
-        return { [STORAGE_KEY]: key } as StorageLink
+        return { [STORAGE_KEY]: key } as StorageCell
       }
 
       return value
@@ -82,12 +83,7 @@ export class BusSerializer extends gl.Unit {
     return JSON.stringify(data, function (key: string) {
       const value = this[key]
 
-      // Serialize date
-      if ($.utils.is.date(value)) {
-        return { [REF]: 'date', iso: value.toISOString() } satisfies DateRef
-      }
-
-      // Serialize blob
+      // Blob
       if ($.utils.is.blob(value)) {
         if ($.env.is.sw) {
           const blobId = $.utils.id()
@@ -100,29 +96,34 @@ export class BusSerializer extends gl.Unit {
         }
       }
 
-      // Serialize error
+      // Date
+      if ($.utils.is.date(value)) {
+        return { [REF]: 'date', iso: value.toISOString() } satisfies DateRef
+      }
+
+      // Error
       if ($.utils.is.error(value)) {
         return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
       }
 
-      // Serialize undefined
-      if ($.utils.is.undefined(value)) {
-        return { [REF]: 'undefined' } satisfies UndefinedRef
-      }
-
-      // Serialize Uint8Array
+      // Uint8Array
       if ($.utils.is.uint8Array(value)) {
         return { [REF]: 'uint8', integers: Array.from(value) } satisfies Uint8Ref
       }
 
-      // Serialize Uint16Array
+      // Uint16Array
       if ($.utils.is.uint16Array(value)) {
         return { [REF]: 'uint16', integers: Array.from(value) } satisfies Uint16Ref
       }
 
-      // Serialize Uint32Array
+      // Uint32Array
       if ($.utils.is.uint32Array(value)) {
         return { [REF]: 'uint32', integers: Array.from(value) } satisfies Uint32Ref
+      }
+
+      // Undefined
+      if ($.utils.is.undefined(value)) {
+        return { [REF]: 'undefined' } satisfies UndefinedRef
       }
 
       return value
@@ -240,7 +241,7 @@ export class BusSerializer extends gl.Unit {
     return this.$.utils.is.object(value) && REF in value
   }
 
-  private isStorageLink(value: unknown): value is StorageLink {
+  private isStorageCell(value: unknown): value is StorageCell {
     return this.$.utils.is.object(value) && STORAGE_KEY in value
   }
 
@@ -249,7 +250,7 @@ export class BusSerializer extends gl.Unit {
       return data
     }
 
-    if (this.isStorageLink(data)) {
+    if (this.isStorageCell(data)) {
       const key = data[STORAGE_KEY]
       const value = storage.get(key)
       storage.delete(key)

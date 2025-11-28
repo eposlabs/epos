@@ -1,7 +1,5 @@
 import type { Fn, Obj, Arr } from './utils-types.js'
 
-const toString = Object.prototype.toString
-
 export const is = {
   null: (v: unknown) => v === null,
   undefined: (v: unknown) => v === undefined,
@@ -10,7 +8,7 @@ export const is = {
   string: (v: unknown) => typeof v === 'string',
   symbol: (v: unknown) => typeof v === 'symbol',
   function: (v: unknown): v is Fn => typeof v === 'function',
-  object: (v: unknown): v is Obj => toString.call(v) === '[object Object]',
+  object: (v: unknown): v is Obj => Object.prototype.toString.call(v) === '[object Object]',
   array: (v: unknown): v is Arr => Array.isArray(v),
   set: (v: unknown) => v instanceof Set,
   map: (v: unknown) => v instanceof Map,

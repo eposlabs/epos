@@ -1,6 +1,8 @@
 import type { ExecutionMeta } from './project.sw'
 
 export class Project extends vw.Unit {
+  private $projects = this.closest(vw.Projects)!
+
   dev: ExecutionMeta['dev']
   name: ExecutionMeta['name']
   hash: ExecutionMeta['hash']
@@ -25,7 +27,7 @@ export class Project extends vw.Unit {
   }
 
   View = () => {
-    const selected = this.$.projects.selectedProjectName === this.name
+    const selected = this.$projects.selectedProjectName === this.name
     if (!this.invoked) this.invoked = selected
 
     let width: number | string

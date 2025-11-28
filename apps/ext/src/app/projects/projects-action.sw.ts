@@ -1,4 +1,6 @@
 export class ProjectsAction extends sw.Unit {
+  private $projects = this.closest(sw.Projects)!
+
   constructor(parent: sw.Unit) {
     super(parent)
     this.handleActionClick()
@@ -9,19 +11,19 @@ export class ProjectsAction extends sw.Unit {
       if (!tab.id) return
 
       // Has popup? -> Open popup
-      if (this.$.projects.hasPopup()) {
+      if (this.$projects.hasPopup()) {
         await this.$.tools.medium.openPopup(tab.id)
         return
       }
 
       // Has side panel? -> Toggle side panel
-      if (this.$.projects.hasSidePanel()) {
+      if (this.$projects.hasSidePanel()) {
         await this.$.tools.medium.toggleSidePanel(tab.id)
         return
       }
 
       // Several actions? -> Open popup
-      const actionData = this.$.projects.getActionData()
+      const actionData = this.$projects.getActionData()
       const actionCount = Object.keys(actionData).length
       if (actionCount > 1) {
         await this.$.tools.medium.openPopup(tab.id)

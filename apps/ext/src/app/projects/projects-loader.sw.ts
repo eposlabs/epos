@@ -2,12 +2,14 @@ import type { BundleNoAssets, Assets } from './project/project.sw'
 export type Manifest = chrome.runtime.Manifest
 
 export class ProjectsLoader extends sw.Unit {
+  private $projects = this.closest(sw.Projects)!
+
   async init() {
     const [bundle] = await this.$.utils.safe<BundleNoAssets>(fetch('/project.json').then(res => res.json()))
     if (!bundle) return
 
     const name = bundle.spec.name
-    const project = this.$.projects.map[name]
+    const project = this.$projects.map[name]
 
     // Already latest version? -> Skip
     if (project && this.compareSemver(project.spec.version, bundle.spec.version) >= 0) return
@@ -20,7 +22,7 @@ export class ProjectsLoader extends sw.Unit {
       assets[path] = blob
     }
 
-    await this.$.projects.createOrUpdate({ ...bundle, assets })
+    await this.$projects.createOrUpdate({ ...bundle, assets })
   }
 
   private compareSemver(semver1: string, semver2: string) {

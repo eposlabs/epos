@@ -1,6 +1,7 @@
 import type { Bundle } from './project/project.sw'
 
 export class ProjectsInstaller extends sw.Unit {
+  private $projects = this.closest(sw.Projects)!
   private queue = new this.$.utils.Queue()
 
   constructor(parent: sw.Unit) {
@@ -34,7 +35,7 @@ export class ProjectsInstaller extends sw.Unit {
 
     await this.$.bus.send('projects.removeAllProjectFrames', name)
     await this.$.idb.deleteDatabase(name)
-    delete this.$.projects.map[name]
+    delete this.$projects.map[name]
     this.broadcast('projects.changed')
   }
 
@@ -94,7 +95,7 @@ export class ProjectsInstaller extends sw.Unit {
   }
 
   private async installFromBundle(bundle: Bundle) {
-    await this.$.projects.createOrUpdate(bundle)
+    await this.$projects.createOrUpdate(bundle)
   }
 
   private broadcast(event: string) {
