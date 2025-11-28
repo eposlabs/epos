@@ -52,7 +52,7 @@ class EnvIs extends gl.Unit {
   csTop = this.cs && self === top
   csFrame = this.cs && self !== top
 
-  // [ex] variations by top/frame
+  // [ex] variations
   exTop = this.ex && self === top
   exFrame = this.ex && self !== top
   exFrameWeb = this.ex && !this.$env.params.locus

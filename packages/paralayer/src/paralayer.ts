@@ -50,7 +50,7 @@ export class Paralayer extends Unit {
     this.watcher.on('ready', this.onReady)
 
     await this.ready$.promise
-    await this.queue.run(() => this.build())
+    await this.queue.add(() => this.build())
     if (!this.options.watch) await this.watcher.close()
 
     // Return content of setup.js
@@ -82,13 +82,13 @@ export class Paralayer extends Unit {
     // File removed? -> Remove and rebuild
     if (event === 'unlink') {
       delete this.files[path]
-      await this.queue.run(() => this.build())
+      await this.queue.add(() => this.build())
     }
 
     // File added/changed? -> Reset its content and rebuild
     if (event === 'add' || event === 'change') {
       this.files[path] = null
-      await this.queue.run(() => this.build())
+      await this.queue.add(() => this.build())
     }
   }
 

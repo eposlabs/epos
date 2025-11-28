@@ -1,7 +1,6 @@
-// TODO: what if mutex fn fails? test
 export class Peer extends sw.Unit {
   id = 'sw'
-  private queues = new this.$.utils.QueueMap()
+  private queues: Record<string, InstanceType<typeof this.$.utils.Queue>> = {}
 
   constructor(parent: sw.Unit) {
     super(parent)
@@ -46,9 +45,9 @@ export class Peer extends sw.Unit {
   }
 
   private async waitThenRun(name: string, fn: () => Promise<void>) {
-    const queue = this.queues.ensure(name)
-    const promise = queue.checkpoint()
-    async: queue.run(fn)
+    const queue = (this.queues[name] ??= new this.$.utils.Queue(name))
+    const promise = queue.wait()
+    queue.add(fn)
     await promise
   }
 }

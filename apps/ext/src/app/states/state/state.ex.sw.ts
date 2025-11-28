@@ -4,7 +4,7 @@
 
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
-import type { DbKey, DbName, DbStore } from '../../idb/idb.sw'
+import type { DbName, DbStoreKey, DbStoreName } from '../../idb/idb.sw'
 
 export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')
@@ -14,7 +14,7 @@ export const _modelStrict_ = Symbol('modelStrict')
 export const _modelVersioner_ = Symbol('modelVersioner')
 
 export type Origin = null | 'remote'
-export type Location = [DbName, DbStore, DbKey]
+export type Location = [DbName, DbStoreName, DbStoreKey]
 export type Initial = Obj | Model | (() => Obj | Model)
 export type Versioner = Record<number, (state: MObject) => void>
 export type Root = { data: MObject & { ':version'?: number } }

@@ -1,3 +1,5 @@
+import type { Queue } from '@eposlabs/utils'
+
 export const _cleanup_ = Symbol('cleanup')
 
 export type DbName = string
@@ -8,11 +10,11 @@ export type Database = IDBDatabase & { [_cleanup_]?: () => void }
 export class Idb extends gl.Unit {
   static _cleanup_ = _cleanup_
   declare private dbs: { [name: DbName]: Database }
-  declare private queues: InstanceType<typeof this.$.utils.QueueMap>
+  declare private queues: Map<string, Queue>
 
   init() {
     this.dbs = {}
-    this.queues = new this.$.utils.QueueMap()
+    this.queues = new Map<string, Queue>()
     this.get = this.enqueue(this.get)
     this.has = this.enqueue(this.has)
     this.set = this.enqueue(this.set)
