@@ -6,14 +6,14 @@ export class App extends cs.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  boot = new cs.Boot(this)
   dev = new gl.Dev(this)
+  projects = new cs.Projects(this)
 
   async init() {
     self.$ = this
     self.__eposCsReady$ ??= Promise.withResolvers<CsReadyData>()
     self.__eposCsReady$.resolve({ busToken: this.getBusToken() })
-    await this.boot.injector.inject()
+    await this.projects.init()
     await this.dev.init()
   }
 

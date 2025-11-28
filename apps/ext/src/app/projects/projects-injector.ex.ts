@@ -1,7 +1,7 @@
-import type { Payload } from '../projects/project/project.sw'
+import type { Payload } from './project/project.sw'
 
-export class BootInjector extends ex.Unit {
-  async inject() {
+export class ProjectsInjector extends ex.Unit {
+  async init() {
     // For [exTop]:
     // - [cs] already injected globals + <epos/>
     // - [sw] already injected ex.js + projects

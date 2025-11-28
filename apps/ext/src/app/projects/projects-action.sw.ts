@@ -33,8 +33,8 @@ export class ProjectsAction extends sw.Unit {
         const name = Object.keys(actionData)[0]
         const action = actionData[name].action
         if (action === true) {
-          const bus = this.$.bus.create(`project[${name}]`)
-          await bus.send(':action', tab.id)
+          const projectBus = this.$.bus.create(`project[${name}]`)
+          await projectBus.send(':action', tab.id)
         } else {
           await this.$.tools.medium.openTab(action)
         }

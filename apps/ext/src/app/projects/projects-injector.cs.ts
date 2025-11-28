@@ -1,11 +1,11 @@
-import setupElementJs from './boot-injector-setup-element.cs?raw'
-import setupGlobalsJs from './boot-injector-setup-globals.cs?raw'
-import type { JsData } from './boot-injector.sw'
+import setupElementJs from './projects-injector-setup-element.cs?raw'
+import setupGlobalsJs from './projects-injector-setup-globals.cs?raw'
+import type { JsData } from './projects-injector.sw'
 
 /**
  * For tabs, there are three 'actors' that execute code:
- * 1. ContentScript: executes code by BootInjector [cs] (globals + <epos/>)
- * 2. Injection: injected by BootInjector [sw] (ex.js + projects)
+ * 1. ContentScript: executes code by ProjectsInjector [cs] (globals + <epos/>)
+ * 2. Injection: injected by ProjectsInjector [sw] (ex.js + projects)
  * 3. Page: site's own code
  *
  * Execution order is not guaranteed, but possible variations are:
@@ -16,16 +16,14 @@ import type { JsData } from './boot-injector.sw'
  * ContentScript always runs _before_ Page, that's why globals interception and <epos/> element
  * creation are implemented in ContentScript (not Injection).
  */
-export class BootInjector extends cs.Unit {
-  constructor(parent: cs.Unit) {
-    super(parent)
+export class ProjectsInjector extends cs.Unit {
+  async init() {
     this.executeJs(setupElementJs)
     this.executeJs(setupGlobalsJs)
+    if (this.$.env.is.csFrame) await this.initCsFrame()
   }
 
-  async inject() {
-    if (!this.$.env.is.csFrame) return
-
+  private async initCsFrame() {
     // Inject lite js
     const liteJs = await this.$.bus.send<string>('projects.getLiteJs', location.href, true)
     if (liteJs) this.injectJs(liteJs)
@@ -36,7 +34,7 @@ export class BootInjector extends cs.Unit {
 
     // Inject ex.js + projects
     const jsData = await this.$.bus.send<JsData | null>(
-      'boot.getJsData',
+      'projects.getJsData',
       { url: location.href, id: null },
       null,
       true,

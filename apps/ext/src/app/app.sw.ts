@@ -6,7 +6,6 @@ export class App extends sw.Unit {
   bus = new gl.Bus(this)
 
   alive = new sw.Alive(this)
-  boot = new sw.Boot(this)
   dev = new gl.Dev(this)
   idb = new sw.Idb(this)
   net = new sw.Net(this)
@@ -18,7 +17,6 @@ export class App extends sw.Unit {
   async init() {
     self.$ = this
     await this.net.init()
-    await this.boot.init()
     await this.projects.init()
     await this.initOffscreen()
     await this.initContentScript()
@@ -87,7 +85,10 @@ export class App extends sw.Unit {
   private logDevHelp() {
     const hasDevProject = this.projects.list.some(project => project.dev)
     if (!hasDevProject) return
-    console.log('ᛃ epos is running | https://epos.dev/docs/api')
+
+    const version = chrome.runtime.getManifest().version
+
+    console.log(`ᛃ epos is running, v${version} | https://epos.dev/docs/api`)
     console.log(
       '%cTo inspect <background> process, open offscreen.html from the extension details page',
       'color: gray;',

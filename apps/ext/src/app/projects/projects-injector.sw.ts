@@ -1,10 +1,10 @@
-import patchGlobalsJs from './boot-injector-patch-globals.sw?raw'
+import patchGlobalsJs from './projects-injector-patch-globals.sw?raw'
 
 export type Tab = { id: number; url: string }
 export type JsInjectMode = 'function' | 'script' | 'script-auto-revoke'
 export type JsData = { js: string; dev: boolean }
 
-export class BootInjector extends sw.Unit {
+export class ProjectsInjector extends sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -25,7 +25,7 @@ export class BootInjector extends sw.Unit {
 
   async init() {
     this.injectOnNavigation()
-    this.$.bus.on('boot.getJsData', this.getJsData, this)
+    this.$.bus.on('projects.getJsData', this.getJsData, this)
 
     // Dev versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))

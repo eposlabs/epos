@@ -7,7 +7,7 @@ self.__eposOriginalGlobals = globals
 // Prevent globals being non-configurable.
 // If some website has code like this:
 // > Object.defineProperty(self, 'addEventListener', { value: self.addEventListener, configurable: false })
-// then global proxy won't work (boot-injector-patch-globals.sw.ts).
+// then global proxy won't work (projects-injector-patch-globals.sw.ts).
 // Example: https://www.pausecollection.co.uk/.
 const objectDefineProperty = Object.defineProperty.bind(Object)
 Object.defineProperty = (target, key, attrs) => {

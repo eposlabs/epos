@@ -8,6 +8,7 @@ export class Projects extends sw.Unit {
   action = new sw.ProjectsAction(this)
   installer = new sw.ProjectsInstaller(this)
   loader = new sw.ProjectsLoader(this)
+  injector = new sw.ProjectsInjector(this)
 
   get list() {
     return Object.values(this.map)
@@ -24,6 +25,7 @@ export class Projects extends sw.Unit {
     this.$.bus.on('projects.export', this.exportProject, this)
     await this.restoreFromIdb()
     await this.loader.init()
+    await this.injector.init()
   }
 
   private async exportProject(projectName: string, dev = false) {
