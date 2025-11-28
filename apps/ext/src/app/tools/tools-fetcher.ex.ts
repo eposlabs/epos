@@ -1,4 +1,4 @@
-import type { ReqInit, ResData } from './kit-fetcher.sw'
+import type { ReqInit, ResData } from './tools-fetcher.sw'
 
 export type Res = {
   ok: Response['ok']
@@ -17,10 +17,10 @@ export type Res = {
   }
 }
 
-export class KitFetcher extends ex.Unit {
+export class ToolsFetcher extends ex.Unit {
   async fetch(url: string | URL, init?: ReqInit) {
     url = String(url)
-    const resDataOrError = await this.$.bus.send<ResData | Error>('kit.fetch', url, init)
+    const resDataOrError = await this.$.bus.send<ResData | Error>('tools.fetch', url, init)
 
     // Error? -> Throw
     if (this.$.utils.is.error(resDataOrError)) throw resDataOrError
@@ -35,17 +35,17 @@ export class KitFetcher extends ex.Unit {
       statusText: resData.statusText,
       redirected: resData.redirected,
       text: async () => {
-        const result = await this.$.bus.send<string>('kit.readAsText', resData.id)
+        const result = await this.$.bus.send<string>('tools.readAsText', resData.id)
         if (this.$.utils.is.error(result)) throw result
         return result
       },
       json: async () => {
-        const result = await this.$.bus.send<unknown>('kit.readAsJson', resData.id)
+        const result = await this.$.bus.send<unknown>('tools.readAsJson', resData.id)
         if (this.$.utils.is.error(result)) throw result
         return result
       },
       blob: async () => {
-        const result = await this.$.bus.send<Blob>('kit.readAsBlob', resData.id)
+        const result = await this.$.bus.send<Blob>('tools.readAsBlob', resData.id)
         if (this.$.utils.is.error(result)) throw result
         return result
       },

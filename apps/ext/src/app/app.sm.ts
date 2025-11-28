@@ -5,7 +5,7 @@ export class App extends sm.Unit {
   bus = new gl.Bus(this)
 
   dev = new gl.Dev(this)
-  kit = new sm.Kit(this)
+  tools = new sm.Tools(this)
 
   async init() {
     self.$ = this

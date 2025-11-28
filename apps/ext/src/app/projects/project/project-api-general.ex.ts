@@ -3,13 +3,13 @@ import type { Container } from 'react-dom/client'
 
 export class ProjectApiGeneral extends ex.Unit {
   private $project = this.closest(ex.Project)!
-  fetch = this.$.utils.link(this.$.kit.fetcher, 'fetch')
+  fetch = this.$.utils.link(this.$.tools.fetcher, 'fetch')
   browser!: typeof chrome
   element = this.createProjectElement()
   component = this.$.utils.link(this.$.ui, 'component')
 
   async init() {
-    this.browser = await this.$.kit.browser.create(this.$project.name)
+    this.browser = await this.$.tools.browser.create(this.$project.name)
   }
 
   render(children: ReactNode, container?: Container) {

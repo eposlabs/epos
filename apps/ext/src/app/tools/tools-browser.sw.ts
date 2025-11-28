@@ -3,17 +3,17 @@ export type UpdateRuleOptions = {
   removeRuleIds?: chrome.declarativeNetRequest.UpdateRuleOptions['removeRuleIds']
 }
 
-export class KitBrowser extends sw.Unit {
+export class ToolsBrowser extends sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('kit.browser.getApiTree', () => this.getApiTree(this.$.browser))
-    this.$.bus.on('kit.browser.callMethod', this.callMethod, this)
-    this.$.bus.on('kit.browser.registerListener', this.registerListener, this)
-    this.$.bus.on('kit.browser.unregisterListener', this.unregisterListener, this)
-    this.$.bus.on('kit.browser.updateSessionRules', this.updateSessionRules, this)
-    this.$.bus.on('kit.browser.updateDynamicRules', this.updateDynamicRules, this)
+    this.$.bus.on('tools.browser.getApiTree', () => this.getApiTree(this.$.browser))
+    this.$.bus.on('tools.browser.callMethod', this.callMethod, this)
+    this.$.bus.on('tools.browser.registerListener', this.registerListener, this)
+    this.$.bus.on('tools.browser.unregisterListener', this.unregisterListener, this)
+    this.$.bus.on('tools.browser.updateSessionRules', this.updateSessionRules, this)
+    this.$.bus.on('tools.browser.updateDynamicRules', this.updateDynamicRules, this)
   }
 
   private getApiTree(value: unknown) {
@@ -56,7 +56,7 @@ export class KitBrowser extends sw.Unit {
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
-      return await this.$.bus.send(`kit.browser.listener[${listenerId}]`, ...args)
+      return await this.$.bus.send(`tools.browser.listener[${listenerId}]`, ...args)
     }
 
     // Add listener

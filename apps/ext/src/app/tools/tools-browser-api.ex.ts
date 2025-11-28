@@ -1,11 +1,11 @@
-import type { PermissionResult } from './kit-browser.sm'
+import type { PermissionResult } from './tools-browser.sm'
 
 export const _id_ = Symbol('id')
 
 export type Root = typeof chrome
 export type Callback = Fn & { [_id_]?: string }
 
-export class KitBrowserApi extends ex.Unit {
+export class ToolsBrowserApi extends ex.Unit {
   root!: Root
 
   // @ts-ignore
@@ -23,7 +23,7 @@ export class KitBrowserApi extends ex.Unit {
   }
 
   private async createRoot() {
-    const tree = await this.$.bus.send<Obj>('kit.browser.getApiTree')
+    const tree = await this.$.bus.send<Obj>('tools.browser.getApiTree')
     return this.build(tree) as Root
   }
 
@@ -63,8 +63,8 @@ export class KitBrowserApi extends ex.Unit {
     if (this.listenerIds.has(listenerId)) return
 
     this.listenerIds.add(listenerId)
-    this.$.bus.on(`kit.browser.listener[${listenerId}]`, cb)
-    async: this.$.bus.send('kit.browser.registerListener', this.$.peer.id, listenerId, apiPath)
+    this.$.bus.on(`tools.browser.listener[${listenerId}]`, cb)
+    async: this.$.bus.send('tools.browser.registerListener', this.$.peer.id, listenerId, apiPath)
   }
 
   private hasListener(apiPath: string[], cb: Callback) {
@@ -84,9 +84,9 @@ export class KitBrowserApi extends ex.Unit {
     const listenerId = this.buildListenerId(apiPath, cb)
     if (!this.listenerIds.has(listenerId)) return
 
-    this.$.bus.off(`kit.browser.listener[${listenerId}]`)
+    this.$.bus.off(`tools.browser.listener[${listenerId}]`)
     this.listenerIds.delete(listenerId)
-    async: this.$.bus.send('kit.browser.unregisterListener', listenerId)
+    async: this.$.bus.send('tools.browser.unregisterListener', listenerId)
   }
 
   private buildListenerId(apiPath: string[], cb: Callback) {
@@ -116,14 +116,14 @@ export class KitBrowserApi extends ex.Unit {
     }
     // else if (getter === 'declarativeNetRequest.updateSessionRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('kit.browser.updateSessionRules', options)
+    //   return this.$.bus.send('tools.browser.updateSessionRules', options)
     // } else if (getter === 'declarativeNetRequest.updateDynamicRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('kit.browser.updateDynamicRules', options)
+    //   return this.$.bus.send('tools.browser.updateDynamicRules', options)
     // }
 
     // Call method via [sw]
-    return this.$.bus.send('kit.browser.callMethod', apiPath, methodName, ...args)
+    return this.$.bus.send('tools.browser.callMethod', apiPath, methodName, ...args)
   }
 
   // ---------------------------------------------------------------------------
@@ -156,11 +156,11 @@ export class KitBrowserApi extends ex.Unit {
     await this.$.bus.waitSignal('app.ready[system:permission]')
 
     // Request permissions
-    const request = this.$.bus.send<PermissionResult>('kit.browser.requestPermissions', opts)
+    const request = this.$.bus.send<PermissionResult>('tools.browser.requestPermissions', opts)
     const [result, error] = await this.$.utils.safe(request)
 
     // Close permission tab
-    await this.$.bus.send('kit.browser.closePermissionTab')
+    await this.$.bus.send('tools.browser.closePermissionTab')
 
     // Error? -> Throw
     if (error) throw error

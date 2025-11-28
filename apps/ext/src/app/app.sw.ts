@@ -9,11 +9,11 @@ export class App extends sw.Unit {
   boot = new sw.Boot(this)
   dev = new gl.Dev(this)
   idb = new sw.Idb(this)
-  kit = new sw.Kit(this)
   net = new sw.Net(this)
   peer = new sw.Peer(this)
   projects = new sw.Projects(this)
   states = new exSw.States(this)
+  tools = new sw.Tools(this)
 
   async init() {
     self.$ = this

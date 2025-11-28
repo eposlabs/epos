@@ -8,10 +8,10 @@ export class App extends ex.Unit {
   boot = new ex.Boot(this)
   dev = new gl.Dev(this)
   idb = new ex.Idb(this)
-  kit = new ex.Kit(this)
   peer = new exOs.Peer(this)
   projects = new ex.Projects(this)
   states = new exSw.States(this)
+  tools = new ex.Tools(this)
   ui = new ex.Ui(this)
 
   async init() {
