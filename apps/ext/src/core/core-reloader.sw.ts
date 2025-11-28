@@ -9,7 +9,7 @@ if (import.meta.env.DEV) {
     // Close all side panels. Chrome crashes if extension is reloaded while at least one side panel is open.
     try {
       const tabs = await $.browser.tabs.query({})
-      for (const tab of tabs) await $.boot.medium.closeSidePanel(tab.id)
+      for (const tab of tabs) await $.tools.medium.closeSidePanel(tab.id)
     } catch {}
 
     // Reload extension

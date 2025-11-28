@@ -1,6 +1,4 @@
 export class BootAction extends sw.Unit {
-  private $boot = this.closest(sw.Boot)!
-
   constructor(parent: sw.Unit) {
     super(parent)
     this.handleActionClick()
@@ -12,13 +10,13 @@ export class BootAction extends sw.Unit {
 
       // Has popup? -> Open popup
       if (this.$.projects.hasPopup()) {
-        await this.$boot.medium.openPopup(tab.id)
+        await this.$.tools.medium.openPopup(tab.id)
         return
       }
 
       // Has side panel? -> Toggle side panel
       if (this.$.projects.hasSidePanel()) {
-        await this.$boot.medium.toggleSidePanel(tab.id)
+        await this.$.tools.medium.toggleSidePanel(tab.id)
         return
       }
 
@@ -26,7 +24,7 @@ export class BootAction extends sw.Unit {
       const actionData = this.$.projects.getActionData()
       const actionCount = Object.keys(actionData).length
       if (actionCount > 1) {
-        await this.$boot.medium.openPopup(tab.id)
+        await this.$.tools.medium.openPopup(tab.id)
         return
       }
 
@@ -38,7 +36,7 @@ export class BootAction extends sw.Unit {
           const bus = this.$.bus.create(`project[${name}]`)
           await bus.send(':action', tab.id)
         } else {
-          await this.$boot.medium.openTab(action)
+          await this.$.tools.medium.openTab(action)
         }
       }
     })

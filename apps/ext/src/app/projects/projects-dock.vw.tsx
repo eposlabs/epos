@@ -172,7 +172,7 @@ export class ProjectsDock extends vw.Unit {
       const bus = this.$.bus.create(`project[${projectName}]`)
       await bus.send('action')
     } else if (this.$.utils.is.string(meta.action)) {
-      await this.$.boot.medium.openTab(meta.action)
+      await this.$.tools.medium.openTab(meta.action)
     }
 
     self.close()
@@ -181,7 +181,7 @@ export class ProjectsDock extends vw.Unit {
   private openSidePanel() {
     const tabId = Number(this.$.env.params.tabId)
     if (!tabId) throw this.never()
-    this.$.boot.medium.openSidePanel(tabId)
+    this.$.tools.medium.openSidePanel(tabId)
     self.close()
   }
 }
