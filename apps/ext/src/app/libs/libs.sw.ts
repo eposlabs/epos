@@ -1,4 +1,3 @@
-import { createLog } from '@eposlabs/utils'
 import { parseEposSpec } from 'epos-spec-parser'
 import Zip from 'jszip'
 import * as mobx from 'mobx'
@@ -8,7 +7,6 @@ import * as yjs from 'yjs'
 mobx.configure({ enforceActions: 'never' })
 
 export class Libs extends sw.Unit {
-  createLog = createLog
   mobx = mobx
   parseEposSpec = parseEposSpec
   stripJsonComments = stripJsonComments

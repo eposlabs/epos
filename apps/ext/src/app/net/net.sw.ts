@@ -42,7 +42,7 @@ export class Net extends sw.Unit {
           { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
 
           // TODO
-          { header: 'x-frame-options', operation: 'remove' },
+          // { header: 'x-frame-options', operation: 'remove' },
         ],
       },
     })

@@ -18,13 +18,13 @@ export class App extends sw.Unit {
   async init() {
     self.$ = this
     await this.net.init()
-    await this.projects.init()
     await this.boot.init()
-    await this.setupOffscreen()
-    await this.setupContentScript()
+    await this.projects.init()
+    await this.initOffscreen()
+    await this.initContentScript()
     await this.reloadDevKitTabs()
+    this.initGlobalMethods()
     this.logDevHelp()
-    this.defineGlobalMethods()
     await this.dev.init()
   }
 
@@ -35,7 +35,7 @@ export class App extends sw.Unit {
     this.$.browser.tabs.create({ url, active: true })
   }
 
-  private async setupOffscreen() {
+  private async initOffscreen() {
     const exists = await this.$.browser.offscreen.hasDocument()
     if (exists) await this.$.browser.offscreen.closeDocument()
     await this.$.browser.offscreen.createDocument({
@@ -45,7 +45,7 @@ export class App extends sw.Unit {
     })
   }
 
-  private async setupContentScript() {
+  private async initContentScript() {
     // Unregister previous content script
     const contentScripts = await this.$.browser.scripting.getRegisteredContentScripts()
     await this.$.browser.scripting.unregisterContentScripts({ ids: contentScripts.map(cs => cs.id) })
@@ -77,6 +77,13 @@ export class App extends sw.Unit {
     }
   }
 
+  private initGlobalMethods() {
+    self.add = (name: string, dev = false) => this.projects.installer.install(name, dev)
+    self.remove = (name: string) => this.projects.installer.remove(name)
+    self.eject = (name: string, dev = false) => this.projects.map[name].exporter.export(dev)
+    self.install = self.add
+  }
+
   private logDevHelp() {
     const hasDevProject = this.projects.list.some(project => project.dev)
     if (!hasDevProject) return
@@ -86,12 +93,5 @@ export class App extends sw.Unit {
       'color: gray;',
     )
     console.log('')
-  }
-
-  private defineGlobalMethods() {
-    self.add = (name: string, dev = false) => this.projects.installer.install(name, dev)
-    self.remove = (name: string) => this.projects.installer.remove(name)
-    self.eject = (name: string, dev = false) => this.projects.map[name].exporter.export(dev)
-    self.install = self.add
   }
 }

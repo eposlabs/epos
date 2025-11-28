@@ -1,6 +1,6 @@
 import type { PermissionResult } from './kit-browser.sm'
 
-const _id_ = Symbol('id')
+export const _id_ = Symbol('id')
 
 export type Root = typeof chrome
 export type Callback = Fn & { [_id_]?: string }

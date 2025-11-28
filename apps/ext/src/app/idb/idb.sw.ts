@@ -1,4 +1,4 @@
-const _cleanup_ = Symbol('cleanup')
+export const _cleanup_ = Symbol('cleanup')
 
 export type DbName = string
 export type DbStore = string
