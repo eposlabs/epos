@@ -29,7 +29,7 @@ export class App extends sw.Unit {
   async exportDevKit() {
     await install('http://localhost:3022/devkit')
     const blob = await eject('devkit')
-    const url = await $.bus.send('utils.createObjectUrl', blob)
+    const url = await this.$.bus.send<string>('Utils.createObjectUrl', blob)
     this.$.browser.tabs.create({ url, active: true })
   }
 

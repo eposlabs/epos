@@ -66,14 +66,14 @@ export class Project extends gl.Unit {
 
   async export(dev = false) {
     console.log(`📦 [${this.name}] Export`, { dev })
-    const blob = await this.engine.bus.send('projects.export', this.name, dev)
+    const blob = await this.engine.bus.send('Projects.export', this.name, dev)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
   }
 
   async remove() {
-    await this.engine.bus.send('projects.remove', this.name)
+    await this.engine.bus.send('ProjectsInstaller.remove', this.name)
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
@@ -94,7 +94,7 @@ export class Project extends gl.Unit {
 
       // Name has been changed? -> Remove project from epos extension
       if (spec.name && this.name !== spec.name) {
-        await this.engine.bus.send('projects.remove', this.name)
+        await this.engine.bus.send('ProjectsInstaller.remove', this.name)
       }
 
       // Update spec and name
@@ -118,7 +118,7 @@ export class Project extends gl.Unit {
 
       // Prepare & install bundle
       const bundle: Bundle = { dev: true, spec: this.spec, sources, assets }
-      await this.engine.bus.send('projects.install', bundle)
+      await this.engine.bus.send('ProjectsInstaller.install', bundle)
 
       // Done
       this.updatedAt = Date.now()

@@ -14,9 +14,9 @@ import { toPascalCase } from './utils-to-pascal-case'
 
 export class Utils extends exOsSwVw.Unit {
   initOs() {
-    this.$.bus.on('utils.convertImage', this.convertImage, this)
-    this.$.bus.on('utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))
-    this.$.bus.on('utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
+    this.$.bus.on('Utils.convertImage', this.convertImage, this)
+    this.$.bus.on('Utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))
+    this.$.bus.on('Utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }
 
   convertImage = convertImage

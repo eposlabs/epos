@@ -3,12 +3,12 @@
 export class Dev extends gl.Unit {
   async init() {
     if (this.$.env.is.sw) {
-      this.$.bus.on('dev.testApi', async (name: string) => {
+      this.$.bus.on('Dev.testApi', async (name: string) => {
         if (name === 'downloads') {
           const blob = new Blob(['test-file'], { type: 'text/plain' })
-          const url = await this.$.bus.send<string>('utils.createObjectUrl', blob)
+          const url = await this.$.bus.send<string>('Utils.createObjectUrl', blob)
           await chrome.downloads.download({ url: url, filename: 'test-file.txt' })
-          await this.$.bus.send('utils.revokeObjectUrl', url)
+          await this.$.bus.send('Utils.revokeObjectUrl', url)
         } else if (name === 'notifications') {
           await chrome.notifications.create(this.$.utils.id(), {
             type: 'basic',

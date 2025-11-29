@@ -19,12 +19,12 @@ export class States extends exSw.Unit {
     this.disconnect = this.queue.wrap(this.disconnect, this)
 
     if (this.$.env.is.ex) {
-      this.$.bus.on('states.exDisconnect', this.disconnect, this)
+      this.$.bus.on('States.exDisconnect', this.disconnect, this)
     } else if (this.$.env.is.sw) {
-      this.$.bus.on('states.swConnect', async (location: Location, options: Options = {}) => {
+      this.$.bus.on('States.swConnect', async (location: Location, options: Options = {}) => {
         await this.connect(location, options, true)
       })
-      this.$.bus.on('states.swRemove', this.remove, this)
+      this.$.bus.on('States.swRemove', this.remove, this)
       this.setupAutoDisconnect()
     }
   }
@@ -35,7 +35,7 @@ export class States extends exSw.Unit {
     if (this.map[id]) return this.map[id]
 
     // Ensure [sw] is connected first
-    if (this.$.env.is.ex) await this.$.bus.send('states.swConnect', location)
+    if (this.$.env.is.ex) await this.$.bus.send('States.swConnect', location)
 
     // Create state
     const state = new exSw.State(this, location, options)
@@ -43,7 +43,7 @@ export class States extends exSw.Unit {
     this.map[id] = state
 
     // Mark [ex] as connected
-    if (this.$.env.is.ex) this.$.bus.on(`states.exConnected[${id}]`, () => true)
+    if (this.$.env.is.ex) this.$.bus.on(`States.exConnected[${id}]`, () => true)
 
     return state
   }
@@ -59,17 +59,17 @@ export class States extends exSw.Unit {
     delete this.map[id]
 
     // Unmark [ex] as connected
-    if (this.$.env.is.ex) this.$.bus.off(`states.exConnected[${id}]`)
+    if (this.$.env.is.ex) this.$.bus.off(`States.exConnected[${id}]`)
   }
 
   async remove(location: Location) {
     // TODO: rework, use state.destroy()
     if (this.$.env.is.ex) {
       await this.disconnect(location)
-      await this.$.bus.send('states.swRemove', location)
+      await this.$.bus.send('States.swRemove', location)
     } else if (this.$.env.is.sw) {
       await this.disconnect(location)
-      await this.$.bus.send('states.exDisconnect', location)
+      await this.$.bus.send('States.exDisconnect', location)
       await this.$.idb.delete(...location)
     }
   }
@@ -96,7 +96,7 @@ export class States extends exSw.Unit {
   private setupAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {
-        const connected = await this.$.bus.send(`states.exConnected[${state.id}]`)
+        const connected = await this.$.bus.send(`States.exConnected[${state.id}]`)
         if (connected) continue
         // console.warn('DISCONNECT', state.id)
         // await this.disconnect(state.location)

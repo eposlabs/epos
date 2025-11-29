@@ -25,16 +25,16 @@ export class ProjectsInjector extends cs.Unit {
 
   private async initCsFrame() {
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('projects.getLiteJs', location.href, true)
+    const liteJs = await this.$.bus.send<string>('Projects.getLiteJs', location.href, true)
     if (liteJs) this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('projects.getCss', location.href, true)
+    const css = await this.$.bus.send<string>('Projects.getCss', location.href, true)
     if (css) this.injectCss(css)
 
     // Inject ex.js + projects
     const jsData = await this.$.bus.send<JsData | null>(
-      'projects.getJsData',
+      'ProjectsInjector.getJsData',
       { url: location.href, id: null },
       null,
       true,

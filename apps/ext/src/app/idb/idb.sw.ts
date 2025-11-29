@@ -21,16 +21,16 @@ export class Idb extends sw.Unit {
     this.deleteStore = this.enqueueByDbName(this.deleteStore)
     this.deleteDatabase = this.enqueueByDbName(this.deleteDatabase)
 
-    this.$.bus.on('idb.get', this.get, this)
-    this.$.bus.on('idb.has', this.has, this)
-    this.$.bus.on('idb.set', this.set, this)
-    this.$.bus.on('idb.keys', this.keys, this)
-    this.$.bus.on('idb.delete', this.delete, this)
+    this.$.bus.on('Idb.get', this.get, this)
+    this.$.bus.on('Idb.has', this.has, this)
+    this.$.bus.on('Idb.set', this.set, this)
+    this.$.bus.on('Idb.keys', this.keys, this)
+    this.$.bus.on('Idb.delete', this.delete, this)
 
-    this.$.bus.on('idb.listStores', this.listStores, this)
-    this.$.bus.on('idb.listDatabases', this.listDatabases, this)
-    this.$.bus.on('idb.deleteStore', this.deleteStore, this)
-    this.$.bus.on('idb.deleteDatabase', this.deleteDatabase, this)
+    this.$.bus.on('Idb.listStores', this.listStores, this)
+    this.$.bus.on('Idb.listDatabases', this.listDatabases, this)
+    this.$.bus.on('Idb.deleteStore', this.deleteStore, this)
+    this.$.bus.on('Idb.deleteDatabase', this.deleteDatabase, this)
   }
 
   /** Get a value from the store. */

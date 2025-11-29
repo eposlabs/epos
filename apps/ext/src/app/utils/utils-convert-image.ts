@@ -15,7 +15,7 @@ export async function convertImage(this: exOsSwVw.Unit, blob: Blob, opts: Opts) 
   if (blob.type.startsWith('image/svg')) {
     // Service worker does not have DOM, hand over SVGs to offscreen
     if (this.$.env.is.sw) {
-      return await this.$.bus.send<Blob>('utils.convertImage', blob, opts)
+      return await this.$.bus.send<Blob>('Utils.convertImage', blob, opts)
     }
 
     const ready$ = Promise.withResolvers()

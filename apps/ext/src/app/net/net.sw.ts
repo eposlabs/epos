@@ -4,8 +4,8 @@ export class Net extends sw.Unit {
   private nextRuleId = 1
 
   async init() {
-    this.$.bus.on('net.addSessionRule', this.addSessionRule, this)
-    this.$.bus.on('net.removeSessionRule', this.removeSessionRule, this)
+    this.$.bus.on('Net.addSessionRule', this.addSessionRule, this)
+    this.$.bus.on('Net.removeSessionRule', this.removeSessionRule, this)
     await this.removeAllSessionRules()
     await this.disableCsp()
   }

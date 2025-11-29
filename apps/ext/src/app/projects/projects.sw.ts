@@ -15,14 +15,14 @@ export class Projects extends sw.Unit {
   }
 
   async init() {
-    this.$.bus.on('projects.hasPopup', this.hasPopup, this)
-    this.$.bus.on('projects.hasSidePanel', this.hasSidePanel, this)
-    this.$.bus.on('projects.getCss', this.getCss, this)
-    this.$.bus.on('projects.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('projects.getPayloads', this.getPayloads, this)
-    this.$.bus.on('projects.getActionData', this.getActionData, this)
-    this.$.bus.on('projects.getExecutionData', this.getExecutionData, this)
-    this.$.bus.on('projects.export', this.exportProject, this)
+    this.$.bus.on('Projects.hasPopup', this.hasPopup, this)
+    this.$.bus.on('Projects.hasSidePanel', this.hasSidePanel, this)
+    this.$.bus.on('Projects.getCss', this.getCss, this)
+    this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
+    this.$.bus.on('Projects.getPayloads', this.getPayloads, this)
+    this.$.bus.on('Projects.getActionData', this.getActionData, this)
+    this.$.bus.on('Projects.getExecutionData', this.getExecutionData, this)
+    this.$.bus.on('Projects.export', this.exportProject, this)
     await this.restoreFromIdb()
     await this.loader.init()
     await this.injector.init()

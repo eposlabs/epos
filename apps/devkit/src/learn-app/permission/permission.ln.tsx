@@ -12,7 +12,7 @@ export class Permission extends ln.Unit {
   }
 
   async play() {
-    await this.engine.bus.send('dev.testApi', this.name)
+    await this.engine.bus.send('Dev.testApi', this.name)
   }
 
   // ---------------------------------------------------------------------------

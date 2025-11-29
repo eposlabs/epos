@@ -8,12 +8,12 @@ export class ToolsBrowser extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('tools.browser.getApiTree', () => this.getApiTree(this.$.browser))
-    this.$.bus.on('tools.browser.callMethod', this.callMethod, this)
-    this.$.bus.on('tools.browser.registerListener', this.registerListener, this)
-    this.$.bus.on('tools.browser.unregisterListener', this.unregisterListener, this)
-    this.$.bus.on('tools.browser.updateSessionRules', this.updateSessionRules, this)
-    this.$.bus.on('tools.browser.updateDynamicRules', this.updateDynamicRules, this)
+    this.$.bus.on('ToolsBrowser.getApiTree', () => this.getApiTree(this.$.browser))
+    this.$.bus.on('ToolsBrowser.callMethod', this.callMethod, this)
+    this.$.bus.on('ToolsBrowser.registerListener', this.registerListener, this)
+    this.$.bus.on('ToolsBrowser.unregisterListener', this.unregisterListener, this)
+    this.$.bus.on('ToolsBrowser.updateSessionRules', this.updateSessionRules, this)
+    this.$.bus.on('ToolsBrowser.updateDynamicRules', this.updateDynamicRules, this)
   }
 
   private getApiTree(value: unknown) {
@@ -56,7 +56,7 @@ export class ToolsBrowser extends sw.Unit {
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
-      return await this.$.bus.send(`tools.browser.listener[${listenerId}]`, ...args)
+      return await this.$.bus.send(`ToolsBrowser.listener[${listenerId}]`, ...args)
     }
 
     // Add listener

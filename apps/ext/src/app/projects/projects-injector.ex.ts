@@ -38,15 +38,15 @@ export class ProjectsInjector extends ex.Unit {
 
   private async injectCode() {
     // Inject lite js
-    const liteJs = await this.$.bus.send<string>('projects.getLiteJs', location.href)
+    const liteJs = await this.$.bus.send<string>('Projects.getLiteJs', location.href)
     if (liteJs) await this.injectJs(liteJs)
 
     // Inject css
-    const css = await this.$.bus.send<string>('projects.getCss', location.href)
+    const css = await this.$.bus.send<string>('Projects.getCss', location.href)
     if (css) this.injectCss(css)
 
     // Inject projects defs
-    const payloads = await this.$.bus.send<Payload[]>('projects.getPayloads', location.href)
+    const payloads = await this.$.bus.send<Payload[]>('Projects.getPayloads', location.href)
     if (payloads.length === 0) return
     const js = `this.__eposProjectDefs = [${payloads.map(payload => payload.script).join(',')}];`
     await this.injectJs(js)

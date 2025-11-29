@@ -5,8 +5,8 @@ export class ToolsBrowser extends sm.Unit {
 
   constructor(parent: sm.Unit) {
     super(parent)
-    this.$.bus.on('tools.browser.requestPermissions', this.requestPermissions, this)
-    this.$.bus.on('tools.browser.closePermissionTab', () => self.close())
+    this.$.bus.on('ToolsBrowser.requestPermissions', this.requestPermissions, this)
+    this.$.bus.on('ToolsBrowser.closePermissionTab', () => self.close())
   }
 
   async requestPermissions(opts: chrome.permissions.Permissions) {

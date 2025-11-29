@@ -36,10 +36,10 @@ export class Projects extends os.Unit {
   }
 
   private initProjectFrames() {
-    this.$.bus.on('projects.createProjectFrame', this.createProjectFrame, this)
-    this.$.bus.on('projects.removeProjectFrame', this.removeProjectFrame, this)
-    this.$.bus.on('projects.removeAllProjectFrames', this.removeAllProjectFrames, this)
-    this.$.bus.on('projects.getProjectFrames', this.getProjectFrames, this)
+    this.$.bus.on('Projects.createProjectFrame', this.createProjectFrame, this)
+    this.$.bus.on('Projects.removeProjectFrame', this.removeProjectFrame, this)
+    this.$.bus.on('Projects.removeAllProjectFrames', this.removeAllProjectFrames, this)
+    this.$.bus.on('Projects.getProjectFrames', this.getProjectFrames, this)
   }
 
   private async createProjectFrame(
@@ -74,7 +74,7 @@ export class Projects extends os.Unit {
 
     await this.removeProjectFrame(projectName, frameName, false)
 
-    const ruleId = await this.$.bus.send('net.addSessionRule', {
+    const ruleId = await this.$.bus.send('Net.addSessionRule', {
       condition: {
         requestDomains: [new URL(url).host],
         resourceTypes: ['sub_frame'],
@@ -119,7 +119,7 @@ export class Projects extends os.Unit {
       }
     }
     const ruleId = Number(frame.getAttribute('data-rule-id'))
-    await this.$.bus.send('net.removeSessionRule', ruleId)
+    await this.$.bus.send('Net.removeSessionRule', ruleId)
     frame.remove()
   }
 

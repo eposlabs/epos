@@ -4,19 +4,19 @@ export class Peer extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('peer.start', this.start, this)
+    this.$.bus.on('Peer.start', this.start, this)
   }
 
   async mutex(name: string, fn: () => Promise<void>) {
     await this.start(name, this.id)
     const [, error] = await this.$.utils.safe(fn)
-    await this.$.bus.emit(`peer.end[${name}][${this.id}]`)
+    await this.$.bus.emit(`Peer.end[${name}][${this.id}]`)
     if (error) throw error
   }
 
   async ping(peerId: string) {
     if (peerId === this.id) return true
-    return !!(await this.$.bus.send(`peer.ping[${peerId}]`))
+    return !!(await this.$.bus.send(`Peer.ping[${peerId}]`))
   }
 
   private async start(name: string, peerId: string) {
@@ -24,7 +24,7 @@ export class Peer extends sw.Unit {
       const done$ = Promise.withResolvers<void>()
 
       // Peer has finished its task? -> Resolve
-      this.$.bus.on(`peer.end[${name}][${peerId}]`, () => {
+      this.$.bus.on(`Peer.end[${name}][${peerId}]`, () => {
         done$.resolve()
       })
 
@@ -39,7 +39,7 @@ export class Peer extends sw.Unit {
       await done$.promise
 
       // Cleanup
-      this.$.bus.off(`peer.end[${name}][${peerId}]`)
+      this.$.bus.off(`Peer.end[${name}][${peerId}]`)
       self.clearInterval(pingInterval)
     })
   }

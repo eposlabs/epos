@@ -23,7 +23,7 @@ export class ToolsBrowserApi extends ex.Unit {
   }
 
   private async createRoot() {
-    const tree = await this.$.bus.send<Obj>('tools.browser.getApiTree')
+    const tree = await this.$.bus.send<Obj>('ToolsBrowser.getApiTree')
     return this.build(tree) as Root
   }
 
@@ -63,8 +63,8 @@ export class ToolsBrowserApi extends ex.Unit {
     if (this.listenerIds.has(listenerId)) return
 
     this.listenerIds.add(listenerId)
-    this.$.bus.on(`tools.browser.listener[${listenerId}]`, cb)
-    async: this.$.bus.send('tools.browser.registerListener', this.$.peer.id, listenerId, apiPath)
+    this.$.bus.on(`ToolsBrowser.listener[${listenerId}]`, cb)
+    async: this.$.bus.send('ToolsBrowser.registerListener', this.$.peer.id, listenerId, apiPath)
   }
 
   private hasListener(apiPath: string[], cb: Callback) {
@@ -84,9 +84,9 @@ export class ToolsBrowserApi extends ex.Unit {
     const listenerId = this.buildListenerId(apiPath, cb)
     if (!this.listenerIds.has(listenerId)) return
 
-    this.$.bus.off(`tools.browser.listener[${listenerId}]`)
+    this.$.bus.off(`ToolsBrowser.listener[${listenerId}]`)
     this.listenerIds.delete(listenerId)
-    async: this.$.bus.send('tools.browser.unregisterListener', listenerId)
+    async: this.$.bus.send('ToolsBrowser.unregisterListener', listenerId)
   }
 
   private buildListenerId(apiPath: string[], cb: Callback) {
@@ -116,14 +116,14 @@ export class ToolsBrowserApi extends ex.Unit {
     }
     // else if (getter === 'declarativeNetRequest.updateSessionRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('tools.browser.updateSessionRules', options)
+    //   return this.$.bus.send('ToolsBrowser.updateSessionRules', options)
     // } else if (getter === 'declarativeNetRequest.updateDynamicRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('tools.browser.updateDynamicRules', options)
+    //   return this.$.bus.send('ToolsBrowser.updateDynamicRules', options)
     // }
 
     // Call method via [sw]
-    return this.$.bus.send('tools.browser.callMethod', apiPath, methodName, ...args)
+    return this.$.bus.send('ToolsBrowser.callMethod', apiPath, methodName, ...args)
   }
 
   // ---------------------------------------------------------------------------
@@ -156,11 +156,11 @@ export class ToolsBrowserApi extends ex.Unit {
     await this.$.bus.waitSignal('app.ready[system:permission]')
 
     // Request permissions
-    const request = this.$.bus.send<PermissionResult>('tools.browser.requestPermissions', opts)
+    const request = this.$.bus.send<PermissionResult>('ToolsBrowser.requestPermissions', opts)
     const [result, error] = await this.$.utils.safe(request)
 
     // Close permission tab
-    await this.$.bus.send('tools.browser.closePermissionTab')
+    await this.$.bus.send('ToolsBrowser.closePermissionTab')
 
     // Error? -> Throw
     if (error) throw error

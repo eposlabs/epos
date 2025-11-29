@@ -5,6 +5,6 @@ export class Alive extends os.Unit {
   }
 
   private keepBgAlive() {
-    self.setInterval(() => this.$.bus.send('alive.ping'), this.$.utils.time('20s'))
+    self.setInterval(() => this.$.bus.send('Alive.ping'), this.$.utils.time('20s'))
   }
 }

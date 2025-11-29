@@ -19,11 +19,11 @@ export class Alive extends sw.Unit {
   }
 
   private initBus() {
-    this.$.bus.on('alive.ping', () => true)
+    this.$.bus.on('Alive.ping', () => true)
   }
 
   private async initAlarm() {
-    await this.$.browser.alarms.clear('alive.alarm')
-    await this.$.browser.alarms.create('alive.alarm', { periodInMinutes: 0.5 })
+    await this.$.browser.alarms.clear('Alive.alarm')
+    await this.$.browser.alarms.create('Alive.alarm', { periodInMinutes: 0.5 })
   }
 }

@@ -102,7 +102,7 @@ export class State extends exSw.Unit {
   constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
     super(parent)
     this.id = location.join('/')
-    this.bus = this.$.bus.create(`state[${this.id}]`)
+    this.bus = this.$.bus.create(`State[${this.id}]`)
     this.location = location
     this.config = options.config ?? {}
     this.models = options.models ?? {}
@@ -112,7 +112,7 @@ export class State extends exSw.Unit {
   }
 
   async init() {
-    await this.$.peer.mutex(`state.setup[${this.id}]`, () => this.setup())
+    await this.$.peer.mutex(`State.setup[${this.id}]`, () => this.setup())
   }
 
   async disconnect() {
@@ -182,7 +182,7 @@ export class State extends exSw.Unit {
       await this.bus.send('update', update)
     })
 
-    // 5. Set initial state. Run state versioner. Commit attached & detached nodes.
+    // 5. Set initial State. Run state versioner. Commit attached & detached nodes.
     this.transaction(() => {
       // Initialize initial state or run state versioner
       $: (() => {
@@ -699,9 +699,9 @@ export class State extends exSw.Unit {
 
     self.setTimeout(() => {
       console.warn(
-        '[epos] Make sure the model is included in your bundle and registered before epos.state.connect(...)',
+        '[epos] Make sure the model is included in your bundle and registered before epos.State.connect(...)',
       )
-      console.warn('[epos] To allow missing models, use epos.state.configure({ allowMissingModels: true })')
+      console.warn('[epos] To allow missing models, use epos.State.configure({ allowMissingModels: true })')
       console.warn('[epos] Object with the missing model:', getValue())
     }, 10)
 

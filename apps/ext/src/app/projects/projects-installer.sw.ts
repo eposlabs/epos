@@ -6,8 +6,8 @@ export class ProjectsInstaller extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('projects.install', this.install, this)
-    this.$.bus.on('projects.remove', this.remove, this)
+    this.$.bus.on('ProjectsInstaller.install', this.install, this)
+    this.$.bus.on('ProjectsInstaller.remove', this.remove, this)
     this.install = this.queue.wrap(this.install, this)
     this.remove = this.queue.wrap(this.remove, this)
   }
@@ -21,7 +21,7 @@ export class ProjectsInstaller extends sw.Unit {
       await this.installByName(input, dev)
     }
 
-    this.broadcast('projects.changed')
+    this.broadcast('ProjectsWatcher.update')
   }
 
   async remove(name: string) {
@@ -33,10 +33,10 @@ export class ProjectsInstaller extends sw.Unit {
       }
     }
 
-    await this.$.bus.send('projects.removeAllProjectFrames', name)
+    await this.$.bus.send('Projects.removeAllProjectFrames', name)
     await this.$.idb.deleteDatabase(name)
     delete this.$projects.map[name]
-    this.broadcast('projects.changed')
+    this.broadcast('ProjectsWatcher.update')
   }
 
   private async installByName(name: string, dev = false) {

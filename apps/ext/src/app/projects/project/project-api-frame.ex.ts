@@ -2,11 +2,11 @@ export class ProjectApiFrame extends ex.Unit {
   private $project = this.closest(ex.Project)!
 
   async open(name: string, url: string, attrs?: Record<string, unknown>) {
-    await this.$.bus.send('projects.createProjectFrame', this.$project.name, name, url, attrs)
+    await this.$.bus.send('Projects.createProjectFrame', this.$project.name, name, url, attrs)
   }
 
   async close(name: string) {
-    await this.$.bus.send('projects.removeProjectFrame', this.$project.name, name)
+    await this.$.bus.send('Projects.removeProjectFrame', this.$project.name, name)
   }
 
   async exists(name: string) {
@@ -16,7 +16,7 @@ export class ProjectApiFrame extends ex.Unit {
 
   async list() {
     const frames = await this.$.bus.send<{ name: string; url: string }[]>(
-      'projects.getProjectFrames',
+      'Projects.getProjectFrames',
       this.$project.name,
     )
 

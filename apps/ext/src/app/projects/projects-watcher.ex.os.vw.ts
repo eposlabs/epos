@@ -21,13 +21,13 @@ export class ProjectsWatcher extends exOsVw.Unit {
 
   async start(onUpdate: OnUpdate) {
     await this.update(onUpdate)
-    this.$.bus.on('projects.changed', () => this.update(onUpdate))
+    this.$.bus.on('ProjectsWatcher.update', () => this.update(onUpdate))
   }
 
   private async update(onUpdate: OnUpdate) {
-    const actionData = await this.$.bus.send<ActionData>('projects.getActionData')
-    const executionData = await this.$.bus.send<ExecutionData>('projects.getExecutionData', location.href)
-    const hasSidePanel = await this.$.bus.send<boolean>('projects.hasSidePanel')
+    const actionData = await this.$.bus.send<ActionData>('Projects.getActionData')
+    const executionData = await this.$.bus.send<ExecutionData>('Projects.getExecutionData', location.href)
+    const hasSidePanel = await this.$.bus.send<boolean>('Projects.hasSidePanel')
 
     const executionData1 = this.executionData
     const executionData2 = executionData

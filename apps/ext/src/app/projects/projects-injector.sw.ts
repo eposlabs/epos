@@ -26,7 +26,7 @@ export class ProjectsInjector extends sw.Unit {
 
   async init() {
     this.injectOnNavigation()
-    this.$.bus.on('projects.getJsData', this.getJsData, this)
+    this.$.bus.on('ProjectsInjector.getJsData', this.getJsData, this)
 
     // Dev versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(r => r.text()))
