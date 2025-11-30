@@ -3,6 +3,7 @@ import type { Target } from './bus-action.gl'
 export class Bus extends gl.Unit {
   id = this.$.utils.id()
   actions: gl.BusAction[] = []
+  token = this.$.env.is.sw ? this.$.utils.id() : null
 
   utils = new gl.BusUtils(this)
   serializer = new gl.BusSerializer(this)

@@ -25,16 +25,9 @@ export class ProjectsInstaller extends sw.Unit {
   }
 
   async remove(name: string) {
-    for (const key of Object.keys(this.$.states.map)) {
-      if (key.startsWith(`${name}/`)) {
-        const parts = key.split('/')
-        const location = parts as [string, string, string]
-        await this.$.states.disconnect(location)
-      }
-    }
-
-    await this.$.bus.send('Projects.removeAllProjectFrames', name)
-    await this.$.idb.deleteDatabase(name)
+    const project = this.$projects.map[name]
+    if (!project) throw new Error(`No such project: ${name}`)
+    await project.cleanup()
     delete this.$projects.map[name]
     this.broadcast('ProjectsWatcher.update')
   }

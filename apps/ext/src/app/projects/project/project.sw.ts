@@ -43,6 +43,20 @@ export class Project extends sw.Unit {
     await this.update(bundle)
   }
 
+  async cleanup() {
+    // TODO: how to better handle states (?)
+    for (const key of Object.keys(this.$.states.map)) {
+      if (key.startsWith(`${this.name}/`)) {
+        const parts = key.split('/')
+        const location = parts as [string, string, string]
+        await this.$.states.disconnect(location)
+      }
+    }
+
+    await this.$.bus.send('Projects.removeAllProjectFrames', this.name)
+    await this.$.idb.deleteDatabase(this.name)
+  }
+
   static async restore(parent: sw.Unit, name: string) {
     const project = new Project(parent)
     const bundle = await project.$.idb.get<BundleNoAssets>(name, ':project', ':default')
@@ -60,9 +74,16 @@ export class Project extends sw.Unit {
     this.targets = bundle.spec.targets.map(target => new sw.ProjectTarget(this, target))
 
     if (bundle.assets) {
-      await this.$.idb.deleteStore(this.name, ':assets')
-      for (const [path, blob] of Object.entries(bundle.assets)) {
-        await this.$.idb.set(this.name, ':assets', path, blob)
+      const paths1 = await this.$.idb.keys(this.name, ':assets')
+      const paths2 = Object.keys(bundle.assets)
+
+      for (const path of paths2) {
+        await this.$.idb.set(this.name, ':assets', path, bundle.assets[path])
+      }
+
+      for (const path of paths1) {
+        if (paths2.includes(path)) continue
+        await this.$.idb.delete(this.name, ':assets', path)
       }
     }
 

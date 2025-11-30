@@ -152,9 +152,10 @@ export class ProjectsInjector extends sw.Unit {
       `this.__eposBusToken = ${JSON.stringify(busToken)};`,
       `this.__eposProjectDefs = [${payloads.map(payload => payload.script).join(',')}];`,
       patchGlobalsJs,
+      `;`,
       `(async () => {`,
       exJs,
-      `})();`,
+      `})()`,
       `})()`,
     ].join('\n')
 

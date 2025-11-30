@@ -3,6 +3,22 @@ import type { Location, Options } from './state/state.ex.sw'
 export const _local_ = Symbol('local')
 export const _exclude_ = Symbol('exclude')
 
+// location: [dbName, dbStoreName, dbStoreKey]
+// if (dbName.includes('/')) throw new Error('Database name cannot include "/" character')
+// if (dbStoreName.includes('/')) throw new Error('Database store name cannot include "/" character')
+// if (dbStoreKey.includes('/')) throw new Error('Database store key cannot include "/" character')
+// id = [dbName, dbStoreName, dbStoreKey].join('/')
+
+// states.getAllByDbName(locationParts: Partial<Location>) {
+// type A = Partial<Location>
+
+// const states = this.$.states.getAllByDbName(projectName)
+// for (const state of states) {
+//   await this.$.states.disconnect(state.location)
+//   state.disconnect()
+// }
+
+// TODO: disconnect by state instance (?) or by state id (?)
 export class States extends exSw.Unit {
   map: Record<string, exSw.State> = {}
   private queue = new this.$.utils.Queue()

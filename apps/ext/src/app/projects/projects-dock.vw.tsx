@@ -169,8 +169,9 @@ export class ProjectsDock extends vw.Unit {
     if (!meta) throw this.never()
 
     if (this.$.utils.is.boolean(meta.action)) {
-      const bus = this.$.bus.create(`project[${projectName}]`)
-      await bus.send(':action')
+      const tabId = Number(this.$.env.params.tabId)
+      const projectBus = this.$.bus.create(`Project[${projectName}]`)
+      await projectBus.send(':action', tabId)
     } else if (this.$.utils.is.string(meta.action)) {
       await this.$.tools.medium.openTab(meta.action)
     }
