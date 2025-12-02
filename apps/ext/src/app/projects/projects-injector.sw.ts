@@ -68,7 +68,7 @@ export class ProjectsInjector extends sw.Unit {
     const injectionFlagJs = `self.__eposInjected = true;`
     async: this.injectJs(tab, `${injectionFlagJs}${liteJs}`, 'function')
 
-    // Wait till [cs] is ready
+    // Wait till `cs` is ready
     const csData = await this.waitCsReady(tab)
 
     // Inject css

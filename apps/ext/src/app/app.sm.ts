@@ -9,7 +9,7 @@ export class App extends sm.Unit {
 
   async init() {
     self.$ = this
-    this.$.bus.setSignal(`app.ready[system:${this.env.params.locus}]`)
+    this.$.bus.setSignal(`App.ready[system:${this.env.params.locus}]`)
     await this.dev.init()
   }
 }

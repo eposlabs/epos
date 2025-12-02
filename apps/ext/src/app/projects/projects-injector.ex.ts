@@ -4,9 +4,9 @@ export class ProjectsInjector extends ex.Unit {
   private $projects = this.closest(ex.Projects)!
 
   async init() {
-    // For [exTop]:
-    // - [cs] already injected globals + <epos/>
-    // - [sw] already injected ex.js + projects
+    // For `exTop`:
+    // - `cs` already injected globals + <epos/>
+    // - `sw` already injected ex.js + projects
     if (this.$.env.is.exTop) {
       await this.executeProjects()
       return
@@ -14,8 +14,8 @@ export class ProjectsInjector extends ex.Unit {
 
     // For [exFrameExt]:
     // - No need for globals patching
-    // - Need to create <epos/> ([cs] is absent)
-    // - Need to inject projects code ([sw] can't inject to frame.html)
+    // - Need to create <epos/> (`cs` is absent)
+    // - Need to inject projects code (`sw` can't inject to frame.html)
     if (this.$.env.is.exFrameExt) {
       this.createEposElement()
       await this.injectCode()

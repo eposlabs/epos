@@ -22,7 +22,7 @@ export const _exclude_ = Symbol('exclude')
 export class States extends exSw.Unit {
   map: Record<string, exSw.State> = {}
   private queue = new this.$.utils.Queue()
-  private persistentIds = new Set<string>() // For [sw] only
+  private persistentIds = new Set<string>() // For `sw` only
 
   get list() {
     return Object.values(this.map)
@@ -50,7 +50,7 @@ export class States extends exSw.Unit {
     if (this.$.env.is.sw && !temp) this.persistentIds.add(id)
     if (this.map[id]) return this.map[id]
 
-    // Ensure [sw] is connected first
+    // Ensure `sw` is connected first
     if (this.$.env.is.ex) await this.$.bus.send('States.swConnect', location)
 
     // Create state
@@ -58,7 +58,7 @@ export class States extends exSw.Unit {
     await state.init()
     this.map[id] = state
 
-    // Mark [ex] as connected
+    // Mark `ex` as connected
     if (this.$.env.is.ex) this.$.bus.on(`States.exConnected[${id}]`, () => true)
 
     return state
@@ -74,7 +74,7 @@ export class States extends exSw.Unit {
     await state.disconnect()
     delete this.map[id]
 
-    // Unmark [ex] as connected
+    // Unmark `ex` as connected
     if (this.$.env.is.ex) this.$.bus.off(`States.exConnected[${id}]`)
   }
 
@@ -108,7 +108,7 @@ export class States extends exSw.Unit {
     return id in this.map
   }
 
-  /** Automatically disconnect state if there are no [ex] connections to it. */
+  /** Automatically disconnect state if there are no `ex` connections to it. */
   private setupAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {

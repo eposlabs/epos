@@ -25,7 +25,7 @@ declare global {
 
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
 
-  // Global variables injected to [ex]
+  // Global variables injected to `ex`
   var __eposIsTop: boolean
   var __eposOriginalGlobals: Record<string, unknown>
   var __eposElement: HTMLElement
@@ -34,16 +34,16 @@ declare global {
   var __eposProjectDefs: ProjectDef[]
   var __eposInjected: boolean
 
-  // Ready flag for [cs]
+  // Ready flag for `cs`
   var __eposCsReady$: PromiseWithResolvers<CsReadyData>
 
-  // App instance for [cs], [os], [sw] and [vw]
+  // App instance for `cs`, `os`, `sw` and `vw`
   var $: any
 
-  // App instance for [ex], dev-only
+  // App instance for `ex`, dev-only
   var $epos: any
 
-  // Global methods for [sw]
+  // Global methods for `sw`
   var add: any
   var remove: any
   var eject: any

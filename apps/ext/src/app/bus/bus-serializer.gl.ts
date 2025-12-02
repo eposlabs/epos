@@ -9,6 +9,7 @@ export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
 export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
 export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
 export type UndefinedRef = { [REF]: 'undefined' }
+
 export type Ref =
   | BlobIdRef
   | BlobUrlRef
@@ -19,13 +20,16 @@ export type Ref =
   | Uint8Ref
   | UndefinedRef
 
-export type Storage = Map<string, unknown>
-export type StorageCell = { [STORAGE_KEY]: string }
+export type Storage = Map<StorageKey, unknown>
+export type StorageKey = string
+export type StorageLink = { [STORAGE_KEY]: StorageKey }
 
 export class BusSerializer extends gl.Unit {
   private $bus = this.closest(gl.Bus)!
-  private blobs = new Map<string, Blob>() // [sw] only
-  private channel: BroadcastChannel | null = null // [sw] and [os] only, for blob transfer
+  private blobs = new Map<string, Blob>() // `sw` only
+  private channel: BroadcastChannel | null = null // `sw` and `os` only, for blob transfer
+  static REF = REF
+  static STORAGE_KEY = STORAGE_KEY
 
   constructor(parent: gl.Unit) {
     super(parent)
@@ -63,7 +67,7 @@ export class BusSerializer extends gl.Unit {
       ) {
         const key = $.utils.id()
         storage.set(key, value)
-        return { [STORAGE_KEY]: key } as StorageCell
+        return { [STORAGE_KEY]: key } as StorageLink
       }
 
       return value
@@ -241,7 +245,7 @@ export class BusSerializer extends gl.Unit {
     return this.$.utils.is.object(value) && REF in value
   }
 
-  private isStorageCell(value: unknown): value is StorageCell {
+  private isStorageLink(value: unknown): value is StorageLink {
     return this.$.utils.is.object(value) && STORAGE_KEY in value
   }
 
@@ -250,7 +254,7 @@ export class BusSerializer extends gl.Unit {
       return data
     }
 
-    if (this.isStorageCell(data)) {
+    if (this.isStorageLink(data)) {
       const key = data[STORAGE_KEY]
       const value = storage.get(key)
       storage.delete(key)

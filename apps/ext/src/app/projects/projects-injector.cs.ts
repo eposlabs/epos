@@ -4,8 +4,8 @@ import type { JsData } from './projects-injector.sw'
 
 /**
  * For tabs, there are three 'actors' that execute code:
- * 1. ContentScript: executes code by ProjectsInjector [cs] (globals + <epos/>)
- * 2. Injection: injected by ProjectsInjector [sw] (ex.js + projects)
+ * 1. ContentScript: executes code by ProjectsInjector `cs` (globals + <epos/>)
+ * 2. Injection: injected by ProjectsInjector `sw` (ex.js + projects)
  * 3. Page: site's own code
  *
  * Execution order is not guaranteed, but possible variations are:

@@ -122,7 +122,7 @@ export class ToolsBrowserApi extends ex.Unit {
     //   return this.$.bus.send('ToolsBrowser.updateDynamicRules', options)
     // }
 
-    // Call method via [sw]
+    // Call method via `sw`
     return this.$.bus.send('ToolsBrowser.callMethod', apiPath, methodName, ...args)
   }
 
@@ -153,7 +153,7 @@ export class ToolsBrowserApi extends ex.Unit {
 
     // Create new permission tab and wait till it is ready for requesting
     await root.tabs.create({ url, active: false, pinned: true })
-    await this.$.bus.waitSignal('app.ready[system:permission]')
+    await this.$.bus.waitSignal('App.ready[system:permission]')
 
     // Request permissions
     const request = this.$.bus.send<PermissionResult>('ToolsBrowser.requestPermissions', opts)

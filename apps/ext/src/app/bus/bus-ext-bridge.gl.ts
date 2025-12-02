@@ -4,7 +4,6 @@ export type ExtRequest = {
   type: typeof EXT_REQUEST
   name: string
   argsJson: string
-  busId: string
 }
 
 export class BusExtBridge extends gl.Unit {
@@ -49,16 +48,16 @@ export class BusExtBridge extends gl.Unit {
       this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
     })
 
-    // Listen for runtime messages from [csTop], [os] and [vw]
+    // Listen for runtime messages from `csTop` / `os` / `vw`
     this.$.browser.runtime.onMessage.addListener((req, sender, respond) => {
       if (!this.isRequest(req)) return
 
-      // For messages from [csTop], `tabId` is a number.
-      // For messages from [os] / [vw], `tabId` is undefined.
-      const tabId = sender.tab?.id
+      // `tabId` is a number for messages from `csTop`.
+      // `tabId` is null for messages from `os` / `vw`.
+      const tabId = sender.tab?.id ?? null
 
-      // Register proxy action for [csTop]
-      if (req.name === 'bus.registerProxyAction') {
+      // Register proxy action for the specified tab (`csTop`)
+      if (req.name === 'bus.registerTabProxyAction') {
         async: (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -66,32 +65,32 @@ export class BusExtBridge extends gl.Unit {
           const [name] = args
           if (!this.$.utils.is.string(name)) throw this.never()
           const fn = (...args: unknown[]) => this.sendToTab(tabId, name, ...args)
-          this.$bus.on(name, fn, undefined, tabId)
+          this.$bus.on(name, fn, null, tabId)
         })()
         return
       }
 
-      // Unregister proxy action for [csTop]
-      if (req.name === 'bus.unregisterProxyAction') {
+      // Remove proxy action for the specified tab (`csTop`)
+      if (req.name === 'bus.removeTabProxyAction') {
         async: (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
           if (!this.$.utils.is.string(name)) throw this.never()
-          this.$bus.off(name, undefined, tabId)
+          this.$bus.off(name, null, tabId)
         })()
         return
       }
 
-      // Clear proxy actions for specified tab
-      if (req.name === 'bus.clearTabProxyActions') {
+      // Remove all proxy actions for the specified tab (`csTop`)
+      if (req.name === 'bus.removeAllTabProxyActions') {
         if (!this.$.utils.is.number(tabId)) throw this.never()
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
 
-      // Special method for blobs support, see bus-serializer for details
+      // Special method for blobs support, see BusSerializer for details
       if (req.name === 'bus.blobIdToObjectUrl') {
         async: (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -105,7 +104,7 @@ export class BusExtBridge extends gl.Unit {
         return true
       }
 
-      // `tabId` is present only for messages from [csTop], exclude proxy action for this tab
+      // `tabId` is present only for messages from `csTop`, so exclude proxy action for this tab if any
       const actions = this.$bus.actions.filter(
         action => action.name === req.name && (!tabId || action.target !== tabId),
       )
@@ -127,10 +126,10 @@ export class BusExtBridge extends gl.Unit {
   }
 
   private setupCsTopVwOs() {
-    // Remove all proxy actions left from the previous [csTop].
+    // Remove all proxy actions left from the previous `csTop`.
     // This happens on tab refresh or page navigation.
     if (this.$.env.is.csTop) {
-      async: this.send('bus.clearTabProxyActions')
+      async: this.send('bus.removeAllTabProxyActions')
     }
 
     // Listen for runtime messages from other peers
@@ -157,7 +156,6 @@ export class BusExtBridge extends gl.Unit {
       type: EXT_REQUEST,
       name: name,
       argsJson: this.$bus.serializer.serialize(args),
-      busId: this.$bus.id,
     }
   }
 

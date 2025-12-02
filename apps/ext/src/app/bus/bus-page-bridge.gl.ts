@@ -6,7 +6,8 @@ export type PageRequest = {
   id: string
   name: string
   args: unknown[]
-  busId: string
+  appId: string
+  peerId: string
 }
 
 export type PageResponse = {
@@ -17,7 +18,7 @@ export type PageResponse = {
 
 export class BusPageBridge extends gl.Unit {
   private $bus = this.closest(gl.Bus)!
-  private removedTargetListeners = new Set<(target: WindowProxy) => void>()
+  private removedContextListeners = new Set<(source: WindowProxy) => void>()
   static PAGE_REQUEST = PAGE_REQUEST
   static PAGE_RESPONSE = PAGE_RESPONSE
 
@@ -30,7 +31,7 @@ export class BusPageBridge extends gl.Unit {
       this.setupCsFrameEx()
     }
 
-    // [csTop], [csFrame], [vw] and [os] should watch for removed iframes to unregister related actions
+    // `csTop`, `csFrame`, `vw` and `os` should watch for removed iframes to remove related actions
     if (this.$.env.is.csTop || this.$.env.is.csFrame || this.$.env.is.vw || this.$.env.is.os) {
       this.watchForRemovedIframes()
     }
@@ -38,80 +39,84 @@ export class BusPageBridge extends gl.Unit {
 
   async sendToTop(name: string, ...args: unknown[]) {
     if (!self.top) throw this.never()
-    return await this.sendTo(self.top, name, ...args)
+    return await this.sendToContext(self.top, name, ...args)
   }
 
-  private async sendTo(target: WindowProxy, name: string, ...args: unknown[]) {
+  private async sendToContext(context: WindowProxy, name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
-    target.postMessage(req, '*')
-    return await this.waitForResponse(req.id, target)
+    context.postMessage(req, '*')
+    return await this.waitForResponse(req.id, context)
   }
 
   private setupCsTopOsVw() {
-    // Listen for messages from [csFrame] and [ex].
-    // We listen on self === top, so only top messages are handled.
+    // Listen for page messages from `csFrame` / `ex`.
+    // This listener triggers on any message (event its own), but we filter out non-matching ones.
     self.addEventListener('message', async e => {
       const req = e.data
       if (!this.isRequest(req)) return
-      if (this.$bus.id == req.busId) return
+      if (req.peerId === this.$bus.peerId) return
+
+      // TODO: in which cases source === null?
       const source = e.source as WindowProxy | null
       if (!source) return
 
-      // Register proxy action for [csFrame] and [ex]
-      if (req.name === 'bus.registerProxyAction') {
+      // Register proxy action for the specified context (`csFrame` / `ex`).
+      if (req.name === 'bus.registerContextProxyAction') {
         const [name] = req.args
         if (!this.$.utils.is.string(name)) throw this.never()
-        const fn = (...args: unknown[]) => this.sendTo(source, name, ...args)
-        this.$bus.on(name, fn, undefined, source)
+        const fn = (...args: unknown[]) => this.sendToContext(source, name, ...args)
+        this.$bus.on(name, fn, null, source)
         return
       }
 
-      // Unregister proxy action for [csFrame] and [ex]
-      if (req.name === 'bus.unregisterProxyAction') {
+      // Remove proxy action for the specified context (`csFrame` / `ex`).
+      if (req.name === 'bus.removeContextProxyAction') {
         const [name] = req.args
         if (!this.$.utils.is.string(name)) throw this.never()
-        this.$bus.off(name, undefined, source)
+        this.$bus.off(name, null, source)
         return
       }
 
-      // Clear proxy actions for source frame
-      if (req.name === 'bus.clearFrameProxyActions') {
-        this.removedTargetListeners.forEach(fn => fn(source))
+      // Remove all proxy actions for the specified context (`csFrame` / `ex`).
+      if (req.name === 'bus.removeAllContextProxyActions') {
+        this.removedContextListeners.forEach(fn => fn(source))
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== source)
         return
       }
 
       // Remove all proxy actions whose targets no longer exist
-      if (req.name === 'bus.cleanupProxyActions') {
-        this.cleanupProxyActions()
+      if (req.name === 'bus.invalidateProxyActions') {
+        this.invalidateProxyActions()
         return
       }
 
+      // Take matching actions, filter out proxy actions targeting the `source`
       const actions = this.$bus.actions.filter(action => action.name === req.name && action.target !== source)
 
+      // Execute actions
       const result = await this.$bus.utils.pick([
         ...actions.map(action => action.execute(...req.args)),
         this.$bus.extBridge.send(req.name, ...req.args),
       ])
 
+      // Respond with the result
       const res = this.createResponse(req.id, result)
       source.postMessage(res, '*')
     })
   }
 
   private setupCsFrameEx() {
-    // Remove all proxy actions left from the previous [csFrame] and [exFrame].
-    // This happens on iframe refresh or page navigation inside iframe.
-    // [csFrame] and [exFrame] run in the same WindowProxy, but we call for both, because for <background>
-    // frames we have [exFrame] only and for web frames, [exFrame] can be absent.
-    async: this.sendToTop('bus.clearFrameProxyActions')
+    // Remove all proxy actions left from the previous `csFrame` / `exFrame`.
+    // This happens on iframe refresh or page navigation inside an iframe.
+    // `csFrame` and `exFrame` run in the same context (WindowProxy), but call for both, because
+    // for `<background>` frames, only `exFrame` is present, and for web frames, `exFrame` may be absent.
+    async: this.sendToTop('bus.removeAllContextProxyActions')
 
-    // Listen for messages from [csTop], [vw] and [os].
-    // We listen on self, so only targeted messages are handled.
+    // Listen for messages from `csTop` / `vw` / `os`.
+    // The listener is attached to `self`, so only targeted messages are handled.
     self.addEventListener('message', async e => {
       const req = e.data
       if (!this.isRequest(req)) return
-      if (this.$bus.id == req.busId) return
 
       const actions = this.$bus.actions.filter(action => action.name === req.name)
       if (actions.length === 0) return
@@ -123,10 +128,10 @@ export class BusPageBridge extends gl.Unit {
     })
   }
 
-  private async waitForResponse(reqId: string, target: WindowProxy) {
+  private async waitForResponse(reqId: string, context: WindowProxy) {
     const result$ = Promise.withResolvers()
 
-    // Wait for response message
+    // Wait for the response message
     const onMessage = (e: MessageEvent) => {
       const res = e.data
       if (!this.isResponse(res)) return
@@ -135,25 +140,23 @@ export class BusPageBridge extends gl.Unit {
     }
     self.addEventListener('message', onMessage)
 
-    // Target removed? -> Resolve with null
-    const onRemovedTarget = (removedTarget: WindowProxy) => {
-      if (removedTarget !== target) return
+    // Context removed? -> Resolve with null
+    const onRemovedContext = (removedContext: WindowProxy) => {
+      if (removedContext !== context) return
       result$.resolve(null)
     }
-    this.removedTargetListeners.add(onRemovedTarget)
+    this.removedContextListeners.add(onRemovedContext)
 
     // Wait limit reached? -> Resolve with null
-    const timeout = self.setTimeout(() => {
-      result$.resolve(null)
-    }, 10_000)
+    const timeout = self.setTimeout(() => result$.resolve(null), 10_000)
 
-    // Wait for result
+    // Wait for the result
     const result = await result$.promise
 
     // Cleanup
     self.clearTimeout(timeout)
     self.removeEventListener('message', onMessage)
-    this.removedTargetListeners.delete(onRemovedTarget)
+    this.removedContextListeners.delete(onRemovedContext)
 
     return result
   }
@@ -165,12 +168,14 @@ export class BusPageBridge extends gl.Unit {
       for (const mutation of mutations) {
         for (const node of mutation.removedNodes) {
           if (!isElementNode(node)) continue
+
           const containsIframe = node instanceof HTMLIFrameElement || !!node.querySelector('iframe')
           if (!containsIframe) continue
+
           if (this.$.env.is.csFrame) {
-            this.sendToTop('bus.cleanupProxyActions')
+            async: this.sendToTop('bus.invalidateProxyActions')
           } else {
-            this.cleanupProxyActions()
+            this.invalidateProxyActions()
           }
         }
       }
@@ -183,30 +188,33 @@ export class BusPageBridge extends gl.Unit {
   }
 
   /** Remove all proxy actions whose targets no longer exist. */
-  private cleanupProxyActions() {
-    const existingTargets = new Set<WindowProxy>([self, ...this.getPageFrames()])
+  private invalidateProxyActions() {
+    const availableContexts = new Set<WindowProxy>([self, ...this.getAllFrames()])
 
     this.$bus.actions = this.$bus.actions.filter(action => {
       // No target? -> Keep action
       if (!action.target) return true
 
-      // Target exists? -> Keep action
+      // Target is available? -> Keep action
       const target = action.target as WindowProxy
-      if (existingTargets.has(target)) return true
+      if (availableContexts.has(target)) return true
 
-      // Target does not exist? -> Remove action and notify listeners
-      this.removedTargetListeners.forEach(fn => fn(target))
+      // Target removed? -> Remove action and notify listeners
+      this.removedContextListeners.forEach(fn => fn(target))
       return false
     })
   }
 
-  private getPageFrames(root: WindowProxy = self): WindowProxy[] {
+  /** Recursively get all frames within the specified root (default: `self`). */
+  private getAllFrames(root: WindowProxy = self): WindowProxy[] {
     const frames: WindowProxy[] = []
+
     for (let i = 0; i < root.frames.length; i++) {
       const frame = root.frames[i]
-      const subframes = this.getPageFrames(frame)
+      const subframes = this.getAllFrames(frame)
       frames.push(frame, ...subframes)
     }
+
     return frames
   }
 
@@ -216,7 +224,8 @@ export class BusPageBridge extends gl.Unit {
       id: this.$.utils.id(),
       name: name,
       args: this.$bus.serializer.sanitize(args) as unknown[],
-      busId: this.$bus.id,
+      appId: this.$bus.appId,
+      peerId: this.$bus.peerId,
     }
   }
 

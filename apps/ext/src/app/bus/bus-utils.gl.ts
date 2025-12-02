@@ -1,5 +1,9 @@
 export const THROW = ':EPOS_BUS_THROW'
-export type Throw = { [THROW]: true; message: string }
+
+export type Throw = {
+  [THROW]: true
+  message: string
+}
 
 export class BusUtils extends gl.Unit {
   static THROW = THROW

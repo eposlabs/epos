@@ -48,11 +48,11 @@ class EnvIs extends gl.Unit {
   sw = BUNDLE === 'sw'
   vw = BUNDLE === 'vw'
 
-  // [cs] variations
+  // `cs` variations
   csTop = this.cs && self === top
   csFrame = this.cs && self !== top
 
-  // [ex] variations
+  // `ex` variations
   exTop = this.ex && self === top
   exFrame = this.ex && self !== top
   exFrameWeb = this.ex && !this.$env.params.locus
@@ -61,7 +61,7 @@ class EnvIs extends gl.Unit {
   exFrameSidePanel = this.ex && this.$env.params.locus === 'sidePanel'
   exFrameBackground = this.ex && this.$env.params.locus === 'background'
 
-  // [vw] variations
+  // `vw` variations
   vwPopup = this.vw && this.$env.params.locus === 'popup'
   vwSidePanel = this.vw && this.$env.params.locus === 'sidePanel'
 }

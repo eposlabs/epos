@@ -1,9 +1,12 @@
 import type { Target } from './bus-action.gl'
 
 export class Bus extends gl.Unit {
-  id = this.$.utils.id()
+  /** Different epos-based apps have different appId. */
+  appId = '' // this.$.env.is.sw ? this.$.utils.id() : '' // TODO: null
+  /** Different peers of the same app have different peerId. */
+  peerId = this.$.utils.id()
+  /** Registered actions. */
   actions: gl.BusAction[] = []
-  token = this.$.env.is.sw ? this.$.utils.id() : null
 
   utils = new gl.BusUtils(this)
   serializer = new gl.BusSerializer(this)
@@ -11,8 +14,8 @@ export class Bus extends gl.Unit {
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
 
-  create(scope: string) {
-    const scoped = (name: string) => `{${scope}}:${name}`
+  create(namespace: string) {
+    const scoped = (name: string) => `{${namespace}}/${name}`
     return {
       on: (name: string, fn: Fn, thisValue?: unknown) => this.on(scoped(name), fn, thisValue),
       off: (name: string, fn?: Fn) => this.off(scoped(name), fn),
@@ -28,15 +31,15 @@ export class Bus extends gl.Unit {
     if (!fn) return
 
     // Register proxy action:
-    // - [csTop] -> [sw]
-    // - [csFrame] and [ex] -> [csTop] for tabs, [os] for offscreen and [vw] for popup and side panel
+    // - `csTop` -> `sw`
+    // - `csFrame` and `ex` -> `csTop` for tabs, `os` for offscreen and `vw` for popup and side panel
     if (this.$.env.is.cs || this.$.env.is.ex) {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('bus.registerProxyAction', name)
+          async: this.extBridge.send('bus.registerTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('bus.registerProxyAction', name)
+          async: this.pageBridge.sendToTop('bus.registerContextProxyAction', name)
         }
       }
     }
@@ -46,7 +49,7 @@ export class Bus extends gl.Unit {
     this.actions.push(action)
   }
 
-  off(name: string, fn?: Fn, target?: Target) {
+  off(name: string, fn?: Fn | null, target?: Target) {
     // Remove matching actions
     this.actions = this.actions.filter(action => {
       const nameMatches = action.name === name
@@ -56,14 +59,14 @@ export class Bus extends gl.Unit {
       return true
     })
 
-    // Unregister proxy action
+    // Remove proxy action
     if (this.$.env.is.cs || this.$.env.is.ex) {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('bus.unregisterProxyAction', name)
+          async: this.extBridge.send('bus.removeTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('bus.unregisterProxyAction', name)
+          async: this.pageBridge.sendToTop('bus.removeContextProxyAction', name)
         }
       }
     }
@@ -71,6 +74,7 @@ export class Bus extends gl.Unit {
 
   async send<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
     let result: unknown
+
     if (this.$.env.is.sw || this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {
       result = await this.utils.pick([
         this.extBridge.send(name, ...args),
@@ -120,7 +124,7 @@ export class Bus extends gl.Unit {
     const listener = (value: unknown) => listener$.resolve(value)
     this.on(name, listener)
 
-    // Setup timer
+    // Setup timer if timeout is specified
     const timer$ = Promise.withResolvers<false>()
     let timer: number | null = null
     if (timeout) timer = self.setTimeout(() => timer$.resolve(false), timeout)
