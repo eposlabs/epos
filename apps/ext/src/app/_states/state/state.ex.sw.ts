@@ -131,11 +131,6 @@ export class State extends exSw.Unit {
     await this.save()
   }
 
-  async destroy() {
-    await this.disconnect()
-    await this.$.idb.delete(...this.location)
-  }
-
   transaction(fn: () => void) {
     this.$.libs.mobx.runInAction(() => {
       this.doc.transact(() => {

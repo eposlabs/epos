@@ -75,7 +75,6 @@ export class States extends exSw.Unit {
   }
 
   async remove(name: string) {
-    // TODO: rework, use state.destroy()
     if (this.$.env.is.ex) {
       await this.disconnect(name)
       await this.bus.send('swRemove', name)
