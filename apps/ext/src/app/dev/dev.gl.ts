@@ -40,6 +40,7 @@ export class Dev extends gl.Unit {
     let $ = this.$
 
     if (this.$.env.is.sw) {
+      this.states = new exSw.States(this)
       const { _init_, _cleanup_, _versioner_ } = exSw.State
       class Node {
         name: string
@@ -138,7 +139,7 @@ export class Dev extends gl.Unit {
         },
       })
 
-      const s = await this.$.states.connect(['a', 'b', 'c'], {
+      const s = await this.states.connect('main', {
         initial: () => ({ chat: new Chat() }),
         models: { Node, Chat, Message },
         versioner: {},
@@ -156,6 +157,7 @@ export class Dev extends gl.Unit {
     }
 
     if (this.$.env.is.ex) {
+      this.states = new exSw.States(this, 'dev', 'states')
       // class Robot {
       //   show() {
       //     console.log('me robot')
@@ -166,7 +168,7 @@ export class Dev extends gl.Unit {
       //     console.log('me arm')
       //   }
       // }
-      const s = await this.$.states.connect(['a', 'b', 'c'], {
+      const s = await this.states.connect('main', {
         // getInitialState: () => new Robot(),
         // models: { Robot, Arm },
         // versioner: { 5: s => (s.root = 5) },
