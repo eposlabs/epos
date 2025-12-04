@@ -30,14 +30,14 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.10.0",
+    "@eposlabs/utils": "^1.11.0",
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
-    "rolldown": "^1.0.0-beta.44",
-    "rollup": "^4.52.5",
-    "vite": "^7.1.12",
+    "rolldown": "^1.0.0-beta.53",
+    "rollup": "^4.53.3",
+    "vite": "^7.2.6",
     "ws": "^8.18.3"
   }
 }

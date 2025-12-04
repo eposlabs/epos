@@ -24,7 +24,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.10.0",
-    "epos": "^1.23.0"
+    "@eposlabs/utils": "^1.11.0",
+    "epos": "^1.26.0"
   }
 }
