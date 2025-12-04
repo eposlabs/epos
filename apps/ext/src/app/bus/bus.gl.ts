@@ -15,7 +15,7 @@ export class Bus extends gl.Unit {
   pageBridge = new gl.BusPageBridge(this)
 
   create(namespace: string) {
-    const scoped = (name: string) => `{${namespace}}/${name}`
+    const scoped = (name: string) => `@${namespace} - ${name}`
     return {
       on: (name: string, fn: Fn, thisValue?: unknown) => this.on(scoped(name), fn, thisValue),
       off: (name: string, fn?: Fn) => this.off(scoped(name), fn),
