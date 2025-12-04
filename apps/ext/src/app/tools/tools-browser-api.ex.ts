@@ -145,7 +145,7 @@ export class ToolsBrowserApi extends ex.Unit {
     if (alreadyGranted) return true
 
     // Prepare permission url
-    const url = root.runtime.getURL(this.$.env.url.system({ locus: 'permission' }))
+    const url = root.runtime.getURL(this.$.env.url.system({ reason: 'permission' }))
 
     // Close all permission tabs
     const tabs = await root.tabs.query({ url })

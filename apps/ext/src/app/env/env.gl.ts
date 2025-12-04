@@ -14,7 +14,7 @@ class EnvUrl extends gl.Unit {
   web = 'https://epos.dev'
   offscreen = '/offscreen.html?locus=background'
 
-  system(params: { locus: 'permission' }) {
+  system(params: { reason: 'permission' }) {
     return `/system.html?${new URLSearchParams(params)}`
   }
 
