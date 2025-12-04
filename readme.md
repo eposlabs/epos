@@ -49,6 +49,7 @@
   - epos.assets.unload
   - epos.assets.list
 - **Env**
+  - epos.env.name
   - epos.env.tabId
   - epos.env.isWeb
   - epos.env.isPopup

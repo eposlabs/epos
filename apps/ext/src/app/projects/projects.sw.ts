@@ -39,7 +39,7 @@ export class Projects extends sw.Unit {
       const project = this.map[bundle.spec.name]
       await project.update(bundle)
     } else {
-      const project = new sw.Project(this)
+      const project = new sw.Project(this, bundle.spec.name)
       await project.init(bundle)
       this.map[bundle.spec.name] = project
     }

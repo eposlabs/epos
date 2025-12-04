@@ -1,9 +1,8 @@
-import type { Location, ModelClass, Initial, Versioner, Config } from '../../states/state/state.ex.sw'
+import type { ModelClass, Initial, Versioner, Config } from '../../_states/state/state.ex.sw'
 
 export class ProjectApiState extends ex.Unit {
   private $api = this.closest(ex.ProjectApi)!
   private $project = this.closest(ex.Project)!
-  private states: { [stateName: string]: exSw.State } = {}
   private models: { [modelName: string]: ModelClass } = {}
   private config: Config = {}
 
@@ -32,30 +31,25 @@ export class ProjectApiState extends ex.Unit {
     }
 
     name = this.prepareName(name, this.connect)
-    const location = this.getLocation(name)
 
-    this.states[name] = await this.$.states.connect(location, {
+    const state = await this.$project.states.connect(name, {
       initial,
       versioner,
       config: this.config,
       models: this.models,
     })
 
-    return this.states[name].data
+    return state.data
   }
 
   async disconnect(name?: string) {
     name = this.prepareName(name, this.disconnect)
-    const location = this.getLocation(name)
-    await this.$.states.disconnect(location)
-    delete this.states[name]
+    await this.$project.states.disconnect(name)
   }
 
   async destroy(name?: string) {
     name = this.prepareName(name, this.destroy)
-    const location = this.getLocation(name)
-    await this.$.states.remove(location)
-    delete this.states[name]
+    await this.$project.states.remove(name)
   }
 
   local(data: Obj = {}): Obj {
@@ -63,12 +57,12 @@ export class ProjectApiState extends ex.Unit {
   }
 
   transaction(fn: () => void) {
-    this.$.states.transaction(fn)
+    this.$project.states.transaction(fn)
   }
 
   configure(config: Config) {
     this.config = config
-    Object.values(this.states).forEach(state => state.setConfig(config))
+    Object.values(this.$project.states.map).forEach(state => state.setConfig(config))
   }
 
   async list(filter: { connected?: boolean } = {}) {
@@ -76,7 +70,7 @@ export class ProjectApiState extends ex.Unit {
     return names
       .map(name => ({
         name: name === ':default' ? null : name,
-        connected: this.$.states.isConnected([this.$project.name, ':state', name]),
+        connected: this.$project.states.isConnected(name),
       }))
       .filter(state => {
         if (this.$.utils.is.undefined(filter.connected)) return true
@@ -86,11 +80,7 @@ export class ProjectApiState extends ex.Unit {
 
   registerModels(models: Record<string, ModelClass>) {
     Object.assign(this.models, models)
-    Object.values(this.states).forEach(state => state.registerModels(models))
-  }
-
-  private getLocation(name: string): Location {
-    return [this.$project.name, ':state', name]
+    Object.values(this.$project.states.map).forEach(state => state.registerModels(models))
   }
 
   private prepareName(name: string | null | undefined, caller: Fn) {

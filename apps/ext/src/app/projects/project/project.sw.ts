@@ -31,34 +31,33 @@ export type ExecutionMeta = {
 }
 
 export class Project extends sw.Unit {
-  declare name: string
+  name: string
+  states: exSw.States
+  exporter = new sw.ProjectExporter(this)
   declare dev: boolean
-  declare sources: Sources
   declare spec: Spec
   declare action: null | true | string
+  declare sources: Sources
   declare targets: sw.ProjectTarget[]
-  exporter = new sw.ProjectExporter(this)
+
+  constructor(parent: sw.Unit, name: string) {
+    super(parent)
+    this.name = name
+    this.states = new exSw.States(this, name, ':state')
+  }
 
   async init(bundle: Bundle) {
     await this.update(bundle)
   }
 
   async cleanup() {
-    // TODO: how to better handle states (?)
-    for (const key of Object.keys(this.$.states.map)) {
-      if (key.startsWith(`${this.name}/`)) {
-        const parts = key.split('/')
-        const location = parts as [string, string, string]
-        await this.$.states.disconnect(location)
-      }
-    }
-
+    await this.states.cleanup()
     await this.$.bus.send('Projects.removeAllProjectFrames', this.name)
     await this.$.idb.deleteDatabase(this.name)
   }
 
   static async restore(parent: sw.Unit, name: string) {
-    const project = new Project(parent)
+    const project = new Project(parent, name)
     const bundle = await project.$.idb.get<BundleNoAssets>(name, ':project', ':default')
     if (!bundle) return null
     await project.update(bundle)

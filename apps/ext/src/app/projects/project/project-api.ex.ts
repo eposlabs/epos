@@ -87,6 +87,7 @@ export class ProjectApi extends ex.Unit {
 
       // Env
       env: {
+        name: this.env.name,
         tabId: this.env.tabId,
         isWeb: this.env.isWeb,
         isPopup: this.env.isPopup,

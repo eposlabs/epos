@@ -11,7 +11,6 @@ export class App extends sw.Unit {
   net = new sw.Net(this)
   peer = new sw.Peer(this)
   projects = new sw.Projects(this)
-  states = new exSw.States(this)
   tools = new sw.Tools(this)
 
   async init() {

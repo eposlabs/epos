@@ -1,6 +1,7 @@
 /// <reference types="epos" />
 
 self.epos = epos
+self.s = await epos.state.connect()
 
 // console.warn('!')
 // const state = await epos.state.connect(() => ({ title: 'abc' }))

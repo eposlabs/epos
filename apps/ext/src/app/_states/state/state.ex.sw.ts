@@ -67,8 +67,8 @@ export type Options = {
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
 export class State extends exSw.Unit {
-  id: string
-  location: Location
+  private $states = this.closest(exSw.States)!
+  name: string
 
   static _meta_ = _meta_
   static _parent_ = _parent_
@@ -93,17 +93,24 @@ export class State extends exSw.Unit {
 
   private saveQueue = new this.$.utils.Queue()
   private saveTimeout: number | undefined = undefined
-  private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // 2000
+  private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // TODO: pass delay via args (?)
 
   get data(): Obj {
     return this.root.data
   }
 
-  constructor(parent: exSw.Unit, location: Location, options: Options = {}) {
+  get location(): Location {
+    return [this.$states.dbName, this.$states.dbStoreName, this.name]
+  }
+
+  get id() {
+    return this.location.join('/')
+  }
+
+  constructor(parent: exSw.Unit, name: string, options: Options = {}) {
     super(parent)
-    this.id = location.join('/')
+    this.name = name
     this.bus = this.$.bus.create(`State[${this.id}]`)
-    this.location = location
     this.config = options.config ?? {}
     this.models = options.models ?? {}
     this.initial = options.initial ?? {}
