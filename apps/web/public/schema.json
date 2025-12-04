@@ -113,7 +113,7 @@
     },
 
     "Manifest": {
-      "$ref": "./manifest.schema.json"
+      "$ref": "manifest.schema.json"
     }
   }
 }

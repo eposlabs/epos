@@ -166,6 +166,7 @@ export interface Epos {
 
   // Env
   env: {
+    name: string
     tabId: number
     isWeb: boolean
     isPopup: boolean

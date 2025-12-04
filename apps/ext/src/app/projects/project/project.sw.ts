@@ -189,8 +189,6 @@ export class Project extends sw.Unit {
 
   private prepareAction(action: Action) {
     if (!action) return null
-    if (action === true) return true
-    if (action.startsWith('<hub>')) return action.replace('<hub>', `${this.$.env.url.web}/@${this.name}`)
     return action
   }
 }

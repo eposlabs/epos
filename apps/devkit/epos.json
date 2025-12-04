@@ -6,7 +6,7 @@
   "version": "1.7",
   "targets": [
     {
-      "matches": ["<hub>"],
+      "matches": ["https://epos.dev/@devkit"],
       "load": ["./dist/gl.js", "./dist/tw.css"]
     },
     {

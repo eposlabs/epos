@@ -61,7 +61,6 @@ export class ProjectExporter extends sw.Unit {
         if (pattern === '<popup>') continue
         if (pattern === '<sidePanel>') continue
         if (pattern === '<background>') continue
-        if (pattern === '<hub>') pattern = `${this.$.env.url.web}/@${this.$project.name}/*`
         urlFilters.add(pattern)
       }
     }

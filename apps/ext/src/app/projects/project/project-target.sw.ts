@@ -47,11 +47,6 @@ export class ProjectTarget extends sw.Unit {
       pattern = pattern.replace('frame:', '')
     }
 
-    if (pattern.startsWith('<hub>')) {
-      pattern = pattern.replace('<hub>', `${this.$.env.url.web}/@${this.$project.name}`)
-      return new URLPattern(pattern).test(url)
-    }
-
     if (new URLPattern(pattern).test(url)) {
       const { origin } = new URL(url)
       if (origin === extOrigin) return false

@@ -3,12 +3,12 @@
   "name": "x1",
   "title": "X1 Test Package",
   "version": "0.0.1",
-  // "action": "<hub>",
+  // "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
   "assets": ["x1.css"],
   "targets": [
     {
-      "matches": "<hub>",
+      "matches": "https://epos.dev/@x1",
       "load": ["x1.js"]
     },
     {
@@ -16,7 +16,7 @@
       "load": "x1.css"
     }
     // {
-    //   "matches": ["<hub>", "https://x.com"],
+    //   "matches": ["https://epos.dev/@x1", "https://x.com"],
     //   "load": ["./x1-hub.js"]
     // },
     // {

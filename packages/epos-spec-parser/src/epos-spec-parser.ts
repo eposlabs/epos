@@ -5,8 +5,9 @@ export type Action = null | true | string
 export type Popup = { width?: number; height?: number } | null
 export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
 export type Pattern = PositivePattern | NegativePattern
-export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | `<hub>${string}` | string
-export type NegativePattern = `!<hub>${string}` | `!${string}`
+export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | UrlPattern | `frame:${UrlPattern}`
+export type NegativePattern = `!${UrlPattern}` | `!frame:${UrlPattern}`
+export type UrlPattern = string
 export type Mode = 'normal' | 'shadow' | 'lite'
 
 export type Spec = {
@@ -26,10 +27,10 @@ const config = {
   keys: [
     '$schema',
     'name',
+    'version',
     'icon',
     'title',
     'description',
-    'version',
     'action',
     'popup',
     'assets',
@@ -62,10 +63,10 @@ export function parseEposSpec(json: string): Spec {
 
   return {
     name: parseName(spec),
+    version: parseVersion(spec),
     icon: parseIcon(spec),
     title: parseTitle(spec),
     description: parseDescription(spec),
-    version: parseVersion(spec),
     action: parseAction(spec),
     popup: parsePopup(spec),
     assets: parseAssets(spec),
@@ -85,6 +86,16 @@ function parseName(spec: Obj) {
   if (!regex.test(name)) throw new Error(`'name' must match ${regex}`)
 
   return name
+}
+
+function parseVersion(spec: Obj): string {
+  if (!('version' in spec)) return '0.0.0'
+
+  const version = spec.version
+  if (!is.string(version)) throw new Error(`'version' must be a string`)
+  if (!config.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
+
+  return version
 }
 
 function parseIcon(spec: Obj) {
@@ -116,16 +127,6 @@ function parseDescription(spec: Obj): string | null {
   if (description.length > max) throw new Error(`'description' must be at most ${max} characters`)
 
   return description
-}
-
-function parseVersion(spec: Obj): string {
-  if (!('version' in spec)) return '0.0.0'
-
-  const version = spec.version
-  if (!is.string(version)) throw new Error(`'version' must be a string`)
-  if (!config.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
-
-  return version
 }
 
 function parseAction(spec: Obj): Action {
@@ -196,13 +197,13 @@ function parseTarget(target: unknown): Target {
   if (badKey) throw new Error(`Unknown target key: ${badKey}`)
 
   return {
-    matches: parseMatches(target),
-    load: parseLoad(target),
-    mode: parseMode(target),
+    matches: parseTargetMatches(target),
+    load: parseTargetLoad(target),
+    mode: parseTargetMode(target),
   }
 }
 
-function parseMatches(target: Obj): Pattern[] {
+function parseTargetMatches(target: Obj): Pattern[] {
   const matches = ensureArray(target.matches ?? [])
   return matches.map(pattern => parsePattern(pattern))
 }
@@ -220,7 +221,7 @@ function parsePattern(pattern: unknown): Pattern {
   return pattern
 }
 
-function parseLoad(target: Obj) {
+function parseTargetLoad(target: Obj) {
   const load = ensureArray(target.load ?? [])
   if (!isArrayOfStrings(load)) throw new Error(`'load' must be an array of strings`)
 
@@ -234,7 +235,7 @@ function parseLoad(target: Obj) {
   return loadPaths
 }
 
-function parseMode(target: Obj) {
+function parseTargetMode(target: Obj) {
   const mode = target.mode ?? 'normal'
   if (!is.string(mode)) throw new Error(`'mode' must be a string`)
   if (!isValidMode(mode)) throw new Error(`Invalid 'mode' value: ${JSON.stringify(mode)}`)
@@ -267,25 +268,18 @@ function isArrayOfStrings(value: unknown) {
 
 function isValidUrl(value: unknown) {
   if (!is.string(value)) return false
-  const url = replaceHubPrefix(value)
-  return URL.canParse(url)
+  return URL.canParse(value)
 }
 
 function isValidUrlPattern(value: unknown) {
   if (!is.string(value)) return false
-  const pattern = replaceHubPrefix(value)
-  const [result] = safeSync(() => new URLPattern(pattern))
+  const [result] = safeSync(() => new URLPattern(value))
   return !!result
 }
 
 function isValidMode(value: string): value is Mode {
   const { variants } = config.target.mode
   return (variants as string[]).includes(value)
-}
-
-function replaceHubPrefix(str: string) {
-  if (!str.startsWith('<hub>')) return str
-  return str.replace('<hub>', 'x://x/x')
 }
 
 /**
