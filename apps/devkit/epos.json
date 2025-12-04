@@ -7,11 +7,11 @@
   "targets": [
     {
       "matches": ["https://epos.dev/@devkit"],
-      "load": ["./dist/gl.js", "./dist/tw.css"]
+      "load": ["dist/gl.js", "dist/tw.css"]
     },
     {
       "matches": ["https://epos.dev/@learn"],
-      "load": ["./dist/ln.js", "./dist/tw.css"]
+      "load": ["dist/ln.js", "dist/tw.css"]
     }
   ]
 }

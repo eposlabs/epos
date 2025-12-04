@@ -9,7 +9,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@eposlabs/utils": "^1.10.0",
+    "@eposlabs/utils": "*",
     "epos-spec-parser": "*",
     "jszip": "^3.10.1",
     "mobx": "^6.15.0",

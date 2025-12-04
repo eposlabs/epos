@@ -9,7 +9,7 @@
   "dependencies": {
     "@eposlabs/utils": "*",
     "clsx": "^2.1.1",
-    "epos": "^1.24.0",
+    "epos": "*",
     "epos-spec-parser": "*",
     "epos-unit": "*"
   },

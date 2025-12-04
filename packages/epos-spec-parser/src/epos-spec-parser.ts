@@ -1,15 +1,6 @@
 import { ensureArray, is, safeSync, unique, type Obj } from '@eposlabs/utils'
 import stripJsonComments from 'strip-json-comments'
 
-export type Action = null | true | string
-export type Popup = { width?: number; height?: number } | null
-export type Target = { matches: Pattern[]; load: string[]; mode: Mode }
-export type Pattern = PositivePattern | NegativePattern
-export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | UrlPattern | `frame:${UrlPattern}`
-export type NegativePattern = `!${UrlPattern}` | `!frame:${UrlPattern}`
-export type UrlPattern = string
-export type Mode = 'normal' | 'shadow' | 'lite'
-
 export type Spec = {
   name: string
   icon: string | null
@@ -18,10 +9,21 @@ export type Spec = {
   version: string
   action: Action
   popup: Popup
-  assets: string[]
+  assets: Path[]
   targets: Target[]
   manifest: Obj | null
 }
+
+export type Path = string
+export type Action = true | string | null
+export type Popup = { width?: number; height?: number } | null
+export type Target = { patterns: Pattern[]; resources: Resource[] }
+export type Pattern = PositivePattern | NegativePattern
+export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | UrlPattern | `frame:${UrlPattern}`
+export type NegativePattern = `!${UrlPattern}` | `!frame:${UrlPattern}`
+export type UrlPattern = string
+export type Resource = { path: Path; type: ResourceType }
+export type ResourceType = 'js' | 'css' | 'lite-js' | 'shadow-css'
 
 const config = {
   keys: [
@@ -38,6 +40,7 @@ const config = {
     'manifest',
   ],
   name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
+  title: { min: 2, max: 45 },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
   popup: {
@@ -46,8 +49,7 @@ const config = {
     height: { min: 150, max: 600, default: 600 },
   },
   target: {
-    keys: ['matches', 'load', 'mode'],
-    mode: { variants: ['normal', 'shadow', 'lite'] satisfies Mode[] },
+    keys: ['matches', 'load'],
   },
 }
 
@@ -104,8 +106,7 @@ function parseIcon(spec: Obj) {
   const icon = spec.icon
   if (!is.string(icon)) throw new Error(`'icon' must be a string`)
 
-  const iconPath = parsePaths([icon])[0]
-  return iconPath
+  return parsePath(icon)
 }
 
 function parseTitle(spec: Obj): string | null {
@@ -113,6 +114,10 @@ function parseTitle(spec: Obj): string | null {
 
   const title = spec.title
   if (!is.string(title)) throw new Error(`'title' must be a string`)
+
+  const { min, max } = config.title
+  if (title.length < min) throw new Error(`'title' must be at least ${min} characters`)
+  if (title.length > max) throw new Error(`'title' must be at most ${max} characters`)
 
   return title
 }
@@ -140,7 +145,7 @@ function parseAction(spec: Obj): Action {
   return action
 }
 
-function parsePopup(spec: Obj) {
+function parsePopup(spec: Obj): Popup {
   const popup = structuredClone(spec.popup ?? null)
   if (popup === null) return null
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
@@ -170,7 +175,7 @@ function parseAssets(spec: Obj) {
   const icon = parseIcon(spec)
   if (icon) assets.push(icon)
 
-  return parsePaths(assets)
+  return unique(assets.map(path => parsePath(path)))
 }
 
 function parseTargets(spec: Obj) {
@@ -182,7 +187,6 @@ function parseTargets(spec: Obj) {
     targets.unshift({
       matches: structuredClone(spec.matches ?? []),
       load: structuredClone(spec.load ?? []),
-      mode: structuredClone(spec.mode ?? 'normal'),
     })
   }
 
@@ -197,59 +201,50 @@ function parseTarget(target: unknown): Target {
   if (badKey) throw new Error(`Unknown target key: ${badKey}`)
 
   return {
-    matches: parseTargetMatches(target),
-    load: parseTargetLoad(target),
-    mode: parseTargetMode(target),
+    patterns: parseTargetPatterns(target),
+    resources: parseTargetResources(target),
   }
 }
 
-function parseTargetMatches(target: Obj): Pattern[] {
+function parseTargetPatterns(target: Obj): Pattern[] {
   const matches = ensureArray(target.matches ?? [])
   return matches.map(pattern => parsePattern(pattern))
 }
 
 function parsePattern(pattern: unknown): Pattern {
-  if (!is.string(pattern)) throw new Error(`Invalid 'matches' pattern: ${JSON.stringify(pattern)}`)
+  if (!is.string(pattern)) throw new Error(`Invalid 'matches' pattern: '${JSON.stringify(pattern)}'`)
 
   if (pattern === '<popup>') return pattern
   if (pattern === '<sidePanel>') return pattern
   if (pattern === '<background>') return pattern
 
   const urlPattern = pattern.startsWith('!') ? pattern.slice(1) : pattern
-  if (!isValidUrlPattern(urlPattern)) throw new Error(`Invalid 'matches' pattern: ${JSON.stringify(pattern)}`)
+  if (!isValidUrlPattern(urlPattern))
+    throw new Error(`Invalid 'matches' pattern: '${JSON.stringify(pattern)}'`)
 
   return pattern
 }
 
-function parseTargetLoad(target: Obj) {
+function parseTargetResources(target: Obj) {
   const load = ensureArray(target.load ?? [])
   if (!isArrayOfStrings(load)) throw new Error(`'load' must be an array of strings`)
+  return load.map(loadEntry => parseResource(loadEntry))
+}
 
-  const loadPaths = parsePaths(load)
-  for (const path of loadPaths) {
-    if (path.toLowerCase().endsWith('.js')) continue
-    if (path.toLowerCase().endsWith('.css')) continue
-    throw new Error(`Invalid 'load' file, must be js or css: ${path}`)
+function parseResource(loadEntry: string): Resource {
+  const isJs = loadEntry.toLowerCase().endsWith('.js')
+  const isCss = loadEntry.toLowerCase().endsWith('.css')
+  if (!isJs && !isCss) throw new Error(`Invalid 'load' file, must be JS or CSS: '${loadEntry}'`)
+
+  if (loadEntry.startsWith('lite:')) {
+    if (!isJs) throw new Error(`'lite:' resources must be JS files: '${loadEntry}'`)
+    return { path: loadEntry.replace('lite:', ''), type: 'lite-js' }
+  } else if (loadEntry.startsWith('shadow:')) {
+    if (!isCss) throw new Error(`'shadow:' resources must be CSS files: '${loadEntry}'`)
+    return { path: loadEntry.replace('shadow:', ''), type: 'shadow-css' }
+  } else {
+    return { path: loadEntry, type: isJs ? 'js' : 'css' }
   }
-
-  return loadPaths
-}
-
-function parseTargetMode(target: Obj) {
-  const mode = target.mode ?? 'normal'
-  if (!is.string(mode)) throw new Error(`'mode' must be a string`)
-  if (!isValidMode(mode)) throw new Error(`Invalid 'mode' value: ${JSON.stringify(mode)}`)
-  return mode
-}
-
-function parsePaths(paths: string[]) {
-  paths = paths.map(path => normalizePath(path))
-  paths = unique(paths)
-
-  const externalPath = paths.find(path => path.startsWith('..'))
-  if (externalPath) throw new Error(`External paths are not allowed: ${externalPath}`)
-
-  return paths
 }
 
 function parseManifest(spec: Obj) {
@@ -277,26 +272,25 @@ function isValidUrlPattern(value: unknown) {
   return !!result
 }
 
-function isValidMode(value: string): value is Mode {
-  const { variants } = config.target.mode
-  return (variants as string[]).includes(value)
-}
-
 /**
- * normalizePath('path/to') -> 'path/to'
- * normalizePath('path/to/') -> 'path/to'
- * normalizePath('/path/to') -> 'path/to'
- * normalizePath('path//to') -> 'path/to'
- * normalizePath('path/./to') -> 'path/to'
- * normalizePath('./path/to') -> 'path/to'
- * normalizePath('../path/to') -> '../path/to'
- * normalizePath('path/../to') -> 'path/../to'
+ * - 'path/to' -> 'path/to'
+ * - 'path/to/' -> 'path/to'
+ * - '/path/to' -> 'path/to'
+ * - 'path//to' -> 'path/to'
+ * - 'path/./to' -> 'path/to'
+ * - './path/to' -> 'path/to'
+ * - 'path/../to' -> 'path/../to'
+ * - '../path/to' -> throw
  */
-function normalizePath(path: string) {
-  return path
+function parsePath(path: string) {
+  const normalizedPath = path
     .split('/')
     .filter(path => path && path !== '.')
     .join('/')
+
+  if (normalizedPath.startsWith('..')) throw new Error(`External paths are not allowed: '${path}'`)
+
+  return normalizedPath
 }
 
 export default parseEposSpec

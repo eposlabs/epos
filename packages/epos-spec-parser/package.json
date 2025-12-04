@@ -12,7 +12,7 @@
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.10.0",
+    "@eposlabs/utils": "*",
     "strip-json-comments": "^5.0.3"
   }
 }
