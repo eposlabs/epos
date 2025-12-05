@@ -21,6 +21,7 @@ export class ToolsFetcher extends ex.Unit {
   async fetch(url: string | URL, init?: ReqInit) {
     url = String(url)
     const resDataOrError = await this.$.bus.send<ResData | Error>('ToolsFetcher.fetch', url, init)
+    if (!resDataOrError) throw this.never()
 
     // Error? -> Throw
     if (this.$.utils.is.error(resDataOrError)) throw resDataOrError
@@ -36,16 +37,19 @@ export class ToolsFetcher extends ex.Unit {
       redirected: resData.redirected,
       text: async () => {
         const result = await this.$.bus.send<string>('ToolsFetcher.readAsText', resData.id)
+        if (this.$.utils.is.absent(result)) throw this.never()
         if (this.$.utils.is.error(result)) throw result
         return result
       },
       json: async () => {
         const result = await this.$.bus.send<unknown>('ToolsFetcher.readAsJson', resData.id)
+        if (this.$.utils.is.absent(result)) throw this.never()
         if (this.$.utils.is.error(result)) throw result
         return result
       },
       blob: async () => {
         const result = await this.$.bus.send<Blob>('ToolsFetcher.readAsBlob', resData.id)
+        if (this.$.utils.is.absent(result)) throw this.never()
         if (this.$.utils.is.error(result)) throw result
         return result
       },

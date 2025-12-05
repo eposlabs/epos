@@ -1,9 +1,12 @@
 {
-  "$schema": "https://epos.dev/schema.json?v=1",
+  "$schema": "https://epos.dev/schema.json",
+
   "name": "devkit",
+  "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
-  "version": "1.7",
+  "config": { "allowMissingStateModels": true },
+
   "targets": [
     {
       "matches": ["https://epos.dev/@devkit"],
@@ -13,5 +16,30 @@
       "matches": ["https://epos.dev/@learn"],
       "load": ["dist/ln.js", "dist/tw.css"]
     }
-  ]
+  ],
+
+  // Override manifest to include `<all_urls>` and `sidePanel` permissions
+  "manifest": {
+    "host_permissions": ["<all_urls>"],
+    "permissions": [
+      // Mandatory
+      "alarms",
+      "declarativeNetRequest",
+      "offscreen",
+      "scripting",
+      "tabs",
+      "unlimitedStorage",
+      "webNavigation",
+
+      // Optional
+      "background",
+      "browsingData",
+      "contextMenus",
+      "cookies",
+      "downloads",
+      "notifications",
+      "sidePanel",
+      "storage"
+    ]
+  }
 }

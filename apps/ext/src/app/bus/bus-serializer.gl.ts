@@ -155,7 +155,7 @@ export class BusSerializer extends gl.Unit {
       if (value[REF] === 'blobId') {
         const key = this.$.utils.id()
         const promise = (async () => {
-          const url = await this.$bus.extBridge.send('bus.blobIdToObjectUrl', value.id)
+          const url = await this.$bus.extBridge.send('Bus.blobIdToObjectUrl', value.id)
           if (!this.$.utils.is.string(url)) throw this.never()
           const blob = await fetch(url).then(r => r.blob())
           storage.set(key, blob)

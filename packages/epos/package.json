@@ -1,14 +1,14 @@
 {
   "name": "epos",
-  "version": "1.26.0",
+  "version": "1.30.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "tsup --config ../tsup.config.ts --watch",
-    "build": "tsup --config ../tsup.config.ts",
+    "dev": "tsup --config ../../tsup.config.ts --watch --dts-resolve",
+    "build": "tsup --config ../../tsup.config.ts --dts-resolve",
     "lint": "tsc --noEmit",
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
@@ -39,14 +39,14 @@
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "portfinder": "^1.0.38",
-    "react": "^19.2.1",
+    "react": "^19.2.3",
     "ws": "^8.18.3",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "vite": "^7.2.6"
+    "vite": "^7.3.0"
   },
   "peerDependencies": {
-    "vite": "^7.1.9"
+    "vite": "^7.3.0"
   }
 }

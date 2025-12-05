@@ -20,7 +20,7 @@ export class BusExtBridge extends gl.Unit {
     }
   }
 
-  async send(name: string, ...args: unknown[]) {
+  async send<T = unknown>(name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
     const [result, error] = await this.$.utils.safe(() => this.$.browser.runtime.sendMessage(req))
     if (error && this.isIgnoredError(error)) return null
@@ -28,7 +28,7 @@ export class BusExtBridge extends gl.Unit {
 
     if (this.$.utils.is.undefined(result)) return null // No handlers
     if (!this.$.utils.is.string(result)) throw this.never()
-    return await this.$bus.serializer.deserialize(result)
+    return (await this.$bus.serializer.deserialize(result)) as T
   }
 
   private async sendToTab(tabId: number, name: string, ...args: unknown[]) {
@@ -48,16 +48,23 @@ export class BusExtBridge extends gl.Unit {
       this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
     })
 
-    // Listen for runtime messages from `csTop` / `os` / `vw`
+    // Listen for runtime messages from `csTop`, `os`, and `vw`
     this.$.browser.runtime.onMessage.addListener((req, sender, respond) => {
       if (!this.isRequest(req)) return
 
-      // `tabId` is a number for messages from `csTop`.
-      // `tabId` is null for messages from `os` / `vw`.
+      // `tabId` is a number for messages from `csTop` and `csFrame` inside tab.
+      // `tabId` is null for messages from `os`, `vw`, and `csFrame` inside offscreen.
       const tabId = sender.tab?.id ?? null
 
+      // Get tab id for the specified tab (`csTop`)
+      if (req.name === 'Bus.getTabId') {
+        const resultJson = this.$bus.serializer.serialize(tabId)
+        respond(resultJson)
+        return true
+      }
+
       // Register proxy action for the specified tab (`csTop`)
-      if (req.name === 'bus.registerTabProxyAction') {
+      if (req.name === 'Bus.registerTabProxyAction') {
         async: (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -71,7 +78,7 @@ export class BusExtBridge extends gl.Unit {
       }
 
       // Remove proxy action for the specified tab (`csTop`)
-      if (req.name === 'bus.removeTabProxyAction') {
+      if (req.name === 'Bus.removeTabProxyAction') {
         async: (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
@@ -84,14 +91,14 @@ export class BusExtBridge extends gl.Unit {
       }
 
       // Remove all proxy actions for the specified tab (`csTop`)
-      if (req.name === 'bus.removeAllTabProxyActions') {
+      if (req.name === 'Bus.removeAllTabProxyActions') {
         if (!this.$.utils.is.number(tabId)) throw this.never()
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
 
       // Special method for blobs support, see BusSerializer for details
-      if (req.name === 'bus.blobIdToObjectUrl') {
+      if (req.name === 'Bus.blobIdToObjectUrl') {
         async: (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
@@ -129,7 +136,7 @@ export class BusExtBridge extends gl.Unit {
     // Remove all proxy actions left from the previous `csTop`.
     // This happens on tab refresh or page navigation.
     if (this.$.env.is.csTop) {
-      async: this.send('bus.removeAllTabProxyActions')
+      async: this.send('Bus.removeAllTabProxyActions')
     }
 
     // Listen for runtime messages from other peers

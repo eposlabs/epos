@@ -25,7 +25,10 @@ export class App extends gl.Unit {
 
   /** Ensure only one tab is open and it is pinned. */
   private async ensureSingleTab() {
-    const tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
+    // Get devkit tabs
+    let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
+    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@devkit' : false))
+
     if (tabs.length > 1) {
       await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
@@ -68,7 +71,7 @@ export class App extends gl.Unit {
         />
 
         {/* Content */}
-        <div className="flex w-[600px] flex-col items-center gap-4">
+        <div className="flex w-150 flex-col items-center gap-4">
           {/* Project cards */}
           {this.projects.length > 0 && (
             <div className="flex w-full flex-col justify-center gap-4">

@@ -2,8 +2,10 @@ import { Button } from './ui-button'
 
 export class Ui extends gl.Unit {
   declare Button: typeof Button
-}
 
-Object.assign(Ui.prototype, {
-  Button,
-})
+  init() {
+    Object.assign(this, {
+      Button: epos.component(Button.bind(this)),
+    })
+  }
+}

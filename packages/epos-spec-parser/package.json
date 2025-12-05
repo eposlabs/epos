@@ -12,7 +12,8 @@
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "*",
+    "browser-extension-url-match": "^1.2.0",
+    "eposlabs": "*",
     "strip-json-comments": "^5.0.3"
   }
 }

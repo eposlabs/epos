@@ -5,10 +5,10 @@ export type Props = {
   onClick: MouseEventHandler<HTMLButtonElement>
 } & WithClassName
 
-export const Button = epos.component<Props>(props => {
+export function Button(props: Props) {
   return (
     <button onClick={props.onClick} className={cx(props.className, 'relative cursor-pointer rounded-sm')}>
       [{props.label}]
     </button>
   )
-})
+}

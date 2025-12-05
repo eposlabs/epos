@@ -1,31 +1,80 @@
-import { ensureArray, is, safeSync, unique, type Obj } from '@eposlabs/utils'
+import { matchPattern } from 'browser-extension-url-match'
+import type { Obj } from 'eposlabs/types'
+import { ensureArray, is, safeSync, unique } from 'eposlabs/utils'
 import stripJsonComments from 'strip-json-comments'
+
+export type Action = true | string
+export type Path = string
+export type Match = LocusMatch | TopMatch | FrameMatch
+export type MatchPattern = UrlMatchPattern | '<all_urls>'
+export type UrlMatchPattern = string // e.g., '*://*.example.com/*'
+export type Manifest = Obj
 
 export type Spec = {
   name: string
   icon: string | null
   title: string | null
-  description: string | null
   version: string
-  action: Action
-  popup: Popup
+  description: string | null
+  popup: Popup | null
+  action: Action | null
+  config: Config
   assets: Path[]
   targets: Target[]
-  manifest: Obj | null
+  permissions: Permissions
+  manifest: Manifest | null
 }
 
-export type Path = string
-export type Action = true | string | null
-export type Popup = { width?: number; height?: number } | null
-export type Target = { patterns: Pattern[]; resources: Resource[] }
-export type Pattern = PositivePattern | NegativePattern
-export type PositivePattern = '<popup>' | '<sidePanel>' | '<background>' | UrlPattern | `frame:${UrlPattern}`
-export type NegativePattern = `!${UrlPattern}` | `!frame:${UrlPattern}`
-export type UrlPattern = string
-export type Resource = { path: Path; type: ResourceType }
-export type ResourceType = 'js' | 'css' | 'lite-js' | 'shadow-css'
+export type Popup = {
+  width?: number
+  height?: number
+}
 
-const config = {
+export type Config = {
+  preloadAssets: boolean
+  allowMissingStateModels: boolean
+}
+
+export type Target = {
+  matches: Match[]
+  resources: Resource[]
+}
+
+export type LocusMatch = {
+  context: 'locus'
+  value: 'popup' | 'sidePanel' | 'background'
+}
+
+export type TopMatch = {
+  context: 'top'
+  value: MatchPattern
+}
+
+export type FrameMatch = {
+  context: 'frame'
+  value: MatchPattern
+}
+
+export type Resource = {
+  type: 'js' | 'css' | 'lite-js' | 'shadow-css'
+  path: Path
+}
+
+export type Permissions = {
+  mandatory: Permission[]
+  optional: Permission[]
+}
+
+export type Permission =
+  | 'background'
+  | 'browsingData'
+  | 'contextMenus'
+  | 'cookies'
+  | 'downloads'
+  | 'notifications'
+  | 'storage'
+
+const schema = {
   keys: [
     '$schema',
     'name',
@@ -35,8 +84,10 @@ const config = {
     'description',
     'action',
     'popup',
+    'config',
     'assets',
     'targets',
+    'permissions',
     'manifest',
   ],
   name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
@@ -48,8 +99,22 @@ const config = {
     width: { min: 150, max: 800, default: 400 },
     height: { min: 150, max: 600, default: 600 },
   },
+  config: {
+    keys: ['preloadAssets', 'allowMissingStateModels'],
+  },
   target: {
     keys: ['matches', 'load'],
+  },
+  permissions: {
+    variants: [
+      'background',
+      'browsingData',
+      'contextMenus',
+      'cookies',
+      'downloads',
+      'notifications',
+      'storage',
+    ] satisfies Permission[],
   },
 }
 
@@ -59,20 +124,22 @@ export function parseEposSpec(json: string): Spec {
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
   if (!is.object(spec)) throw new Error(`Epos spec must be an object`)
 
-  const keys = [...config.keys, ...config.target.keys]
+  const keys = [...schema.keys, ...schema.target.keys]
   const badKey = Object.keys(spec).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown spec key: ${JSON.stringify(badKey)}`)
+  if (badKey) throw new Error(`Unknown spec key: '${JSON.stringify(badKey)}'`)
 
   return {
     name: parseName(spec),
-    version: parseVersion(spec),
     icon: parseIcon(spec),
     title: parseTitle(spec),
+    version: parseVersion(spec),
     description: parseDescription(spec),
-    action: parseAction(spec),
     popup: parsePopup(spec),
+    action: parseAction(spec),
+    config: parseConfig(spec),
     assets: parseAssets(spec),
     targets: parseTargets(spec),
+    permissions: parsePermissions(spec),
     manifest: parseManifest(spec),
   }
 }
@@ -81,23 +148,13 @@ function parseName(spec: Obj) {
   if (!('name' in spec)) throw new Error(`'name' field is required`)
 
   const name = spec.name
-  const { min, max, regex } = config.name
+  const { min, max, regex } = schema.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
   if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
   if (!regex.test(name)) throw new Error(`'name' must match ${regex}`)
 
   return name
-}
-
-function parseVersion(spec: Obj): string {
-  if (!('version' in spec)) return '0.0.0'
-
-  const version = spec.version
-  if (!is.string(version)) throw new Error(`'version' must be a string`)
-  if (!config.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
-
-  return version
 }
 
 function parseIcon(spec: Obj) {
@@ -115,11 +172,21 @@ function parseTitle(spec: Obj): string | null {
   const title = spec.title
   if (!is.string(title)) throw new Error(`'title' must be a string`)
 
-  const { min, max } = config.title
+  const { min, max } = schema.title
   if (title.length < min) throw new Error(`'title' must be at least ${min} characters`)
   if (title.length > max) throw new Error(`'title' must be at most ${max} characters`)
 
   return title
+}
+
+function parseVersion(spec: Obj): string {
+  if (!('version' in spec)) return '0.0.0'
+
+  const version = spec.version
+  if (!is.string(version)) throw new Error(`'version' must be a string`)
+  if (!schema.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
+
+  return version
 }
 
 function parseDescription(spec: Obj): string | null {
@@ -128,31 +195,20 @@ function parseDescription(spec: Obj): string | null {
   const description = spec.description
   if (!is.string(description)) throw new Error(`'description' must be a string`)
 
-  const { max } = config.description
+  const { max } = schema.description
   if (description.length > max) throw new Error(`'description' must be at most ${max} characters`)
 
   return description
 }
 
-function parseAction(spec: Obj): Action {
-  const action = spec.action ?? null
-  if (action === null) return null
-  if (action === true) return true
-
-  if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
-  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: ${JSON.stringify(action)}`)
-
-  return action
-}
-
-function parsePopup(spec: Obj): Popup {
+function parsePopup(spec: Obj): Popup | null {
   const popup = structuredClone(spec.popup ?? null)
   if (popup === null) return null
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
 
-  const { keys, width, height } = config.popup
+  const { keys, width, height } = schema.popup
   const badKey = Object.keys(popup).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown 'popup' key: ${badKey}`)
+  if (badKey) throw new Error(`Unknown 'popup' key: '${badKey}'`)
 
   popup.width ??= width.default
   if (!is.integer(popup.width)) throw new Error(`'popup.width' must be an integer`)
@@ -165,6 +221,40 @@ function parsePopup(spec: Obj): Popup {
   if (popup.height > height.max) throw new Error(`'popup.height' must be ≤ ${height.max}`)
 
   return popup
+}
+
+function parseAction(spec: Obj): Action | null {
+  const action = spec.action ?? null
+  if (action === null) return null
+  if (action === true) return true
+
+  if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
+  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: '${JSON.stringify(action)}'`)
+
+  return action
+}
+
+function parseConfig(spec: Obj): Config {
+  const config = spec.config ?? {}
+  if (!is.object(config)) throw new Error(`'config' must be an object`)
+
+  const badKey = Object.keys(config).find(key => !schema.config.keys.includes(key))
+  if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
+
+  const preloadAssets = 'preloadAssets' in config ? config.preloadAssets : true
+  if (!is.boolean(preloadAssets)) {
+    throw new Error(`'config.preloadAssets' must be a boolean`)
+  }
+
+  const allowMissingStateModels = 'allowMissingStateModels' in config ? config.allowMissingStateModels : false
+  if (!is.boolean(allowMissingStateModels)) {
+    throw new Error(`'config.allowMissingStateModels' must be a boolean`)
+  }
+
+  return {
+    preloadAssets,
+    allowMissingStateModels,
+  }
 }
 
 function parseAssets(spec: Obj) {
@@ -196,36 +286,39 @@ function parseTargets(spec: Obj) {
 function parseTarget(target: unknown): Target {
   if (!is.object(target)) throw new Error(`Each target must be an object`)
 
-  const { keys } = config.target
+  const { keys } = schema.target
   const badKey = Object.keys(target).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown target key: ${badKey}`)
+  if (badKey) throw new Error(`Unknown target key: '${badKey}'`)
 
   return {
-    patterns: parseTargetPatterns(target),
-    resources: parseTargetResources(target),
+    matches: parseMatches(target),
+    resources: parseResources(target),
   }
 }
 
-function parseTargetPatterns(target: Obj): Pattern[] {
+function parseMatches(target: Obj): Match[] {
   const matches = ensureArray(target.matches ?? [])
-  return matches.map(pattern => parsePattern(pattern))
+  return matches.map(match => parseMatch(match))
 }
 
-function parsePattern(pattern: unknown): Pattern {
-  if (!is.string(pattern)) throw new Error(`Invalid 'matches' pattern: '${JSON.stringify(pattern)}'`)
+function parseMatch(match: unknown): Match {
+  if (!is.string(match)) throw new Error(`Invalid match pattern: '${JSON.stringify(match)}'`)
+  if (match === '<popup>') return { context: 'locus', value: 'popup' }
+  if (match === '<sidePanel>') return { context: 'locus', value: 'sidePanel' }
+  if (match === '<background>') return { context: 'locus', value: 'background' }
+  if (!match.startsWith('frame:')) return { context: 'top', value: parseMatchPattern(match) }
+  return { context: 'frame', value: parseMatchPattern(match.replace('frame:', '')) }
+}
 
-  if (pattern === '<popup>') return pattern
-  if (pattern === '<sidePanel>') return pattern
-  if (pattern === '<background>') return pattern
-
-  const urlPattern = pattern.startsWith('!') ? pattern.slice(1) : pattern
-  if (!isValidUrlPattern(urlPattern))
-    throw new Error(`Invalid 'matches' pattern: '${JSON.stringify(pattern)}'`)
-
+function parseMatchPattern(pattern: string): MatchPattern {
+  if (pattern === '<allUrls>') return '<all_urls>'
+  if (pattern === '<all_urls>') throw new Error(`Use '<allUrls>' instead of '<all_urls>'`)
+  const matcher = matchPattern(pattern)
+  if (!matcher.valid) throw new Error(`Invalid match pattern: '${pattern}'`)
   return pattern
 }
 
-function parseTargetResources(target: Obj) {
+function parseResources(target: Obj) {
   const load = ensureArray(target.load ?? [])
   if (!isArrayOfStrings(load)) throw new Error(`'load' must be an array of strings`)
   return load.map(loadEntry => parseResource(loadEntry))
@@ -247,7 +340,32 @@ function parseResource(loadEntry: string): Resource {
   }
 }
 
-function parseManifest(spec: Obj) {
+function parsePermissions(spec: Obj): Permissions {
+  const permissions = spec.permissions ?? []
+  if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
+
+  const parsed = permissions.map(parsePermission)
+  const mandatory = parsed.filter(perm => !perm.optional).map(perm => perm.value)
+  const optional = parsed.filter(perm => perm.optional).map(perm => perm.value)
+
+  const all = [...mandatory, ...optional]
+  const duplicate = all.find((perm, index) => all.indexOf(perm) !== index)
+  if (duplicate) throw new Error(`Duplicate permission: '${duplicate}'`)
+
+  return { mandatory, optional }
+}
+
+function parsePermission(value: string) {
+  const optional = value.startsWith('optional:')
+  if (optional) value = value.replace('optional:', '')
+
+  const variants = schema.permissions.variants
+  if (!variants.includes(value as Permission)) throw new Error(`Unknown permission: '${value}'`)
+
+  return { value: value as Permission, optional }
+}
+
+function parseManifest(spec: Obj): Manifest | null {
   if (!('manifest' in spec)) return null
   if (!is.object(spec.manifest)) throw new Error(`'manifest' must be an object`)
   return spec.manifest
@@ -264,12 +382,6 @@ function isArrayOfStrings(value: unknown) {
 function isValidUrl(value: unknown) {
   if (!is.string(value)) return false
   return URL.canParse(value)
-}
-
-function isValidUrlPattern(value: unknown) {
-  if (!is.string(value)) return false
-  const [result] = safeSync(() => new URLPattern(value))
-  return !!result
 }
 
 /**

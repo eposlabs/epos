@@ -1,4 +1,4 @@
-import { is } from '@eposlabs/utils'
+import { is } from 'eposlabs/utils'
 
 export function equal(v1: unknown, v2: unknown) {
   if (v1 === v2) return true

@@ -1,4 +1,6 @@
-export function link<T, M extends keyof T>(this: gl.Unit, target: T, method: M): T[M] {
-  if (!this.$.utils.is.function(target[method])) throw this.never()
+import { is } from 'eposlabs/utils'
+
+export function link<T, M extends keyof T>(target: T, method: M): T[M] {
+  if (!is.function(target[method])) throw new Error(`Property '${String(method)}' is not a function`)
   return target[method].bind(target) as T[M]
 }

@@ -9,27 +9,30 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@eposlabs/utils": "*",
     "epos-spec-parser": "*",
+    "epos": "*",
+    "eposlabs": "*",
     "jszip": "^3.10.1",
+    "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "preact": "^10.28.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "strip-json-comments": "^5.0.3",
+    "terser": "^5.44.1",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.32",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "^5.1.2",
     "paralayer": "^1.10.0",
-    "rolldown-vite": "^7.2.10",
-    "tailwindcss": "^4.1.17",
+    "rolldown-vite": "7.1.7",
+    "tailwindcss": "^4.1.18",
     "vite-plugin-rebundle": "^1.21.0"
   }
 }

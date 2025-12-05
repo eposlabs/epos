@@ -1,5 +1,8 @@
 import type { Target } from './bus-action.gl'
 
+export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
+export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
+
 export class Bus extends gl.Unit {
   /** Different epos-based apps have different appId. */
   appId = '' // this.$.env.is.sw ? this.$.utils.id() : '' // TODO: null
@@ -15,19 +18,27 @@ export class Bus extends gl.Unit {
   pageBridge = new gl.BusPageBridge(this)
 
   create(namespace: string) {
-    const scoped = (name: string) => `@${namespace} - ${name}`
+    const prefix = `@${namespace} - `
+    const scoped = (name: string) => `${prefix}${name}`
     return {
-      on: (name: string, fn: Fn, thisValue?: unknown) => this.on(scoped(name), fn, thisValue),
-      off: (name: string, fn?: Fn) => this.off(scoped(name), fn),
-      send: <T>(name: string, ...args: unknown[]) => this.send<T>(scoped(name), ...args),
-      emit: <T>(name: string, ...args: unknown[]) => this.emit<T>(scoped(name), ...args),
-      once: (name: string, fn: Fn, thisValue?: unknown) => this.once(scoped(name), fn, thisValue),
+      on: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.on<T>(scoped(name), fn, thisArg),
+      off: <T extends Fn>(name: string, fn?: T) => this.off<T>(scoped(name), fn),
+      send: <T>(name: string, ...args: FnArgsOrArr<T>) => this.send<T>(scoped(name), ...args),
+      emit: <T>(name: string, ...args: FnArgsOrArr<T>) => this.emit<T>(scoped(name), ...args),
+      once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.once<T>(scoped(name), fn, thisArg),
       setSignal: (name: string, ...args: unknown[]) => this.setSignal(scoped(name), ...args),
-      waitSignal: (name: string, timeout?: number) => this.waitSignal(scoped(name), timeout),
+      waitSignal: <T>(name: string, timeout?: number) => this.waitSignal<T>(scoped(name), timeout),
+      /** Removes all listeners within this bus namespace. */
+      dispose: () => {
+        for (const action of this.actions) {
+          if (!action.name.startsWith(prefix)) continue
+          this.off(action.name, action.fn, action.target)
+        }
+      },
     }
   }
 
-  on(name: string, fn: Fn, thisValue?: unknown, target?: Target) {
+  on<T extends Fn = Fn>(name: string, fn: T, thisArg?: unknown, target?: Target) {
     if (!fn) return
 
     // Register proxy action:
@@ -37,19 +48,19 @@ export class Bus extends gl.Unit {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('bus.registerTabProxyAction', name)
+          async: this.extBridge.send('Bus.registerTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('bus.registerContextProxyAction', name)
+          async: this.pageBridge.sendToTop('Bus.registerContextProxyAction', name)
         }
       }
     }
 
     // Add action
-    const action = new gl.BusAction(this, name, fn, thisValue, target)
+    const action = new gl.BusAction(this, name, fn, thisArg, target)
     this.actions.push(action)
   }
 
-  off(name: string, fn?: Fn | null, target?: Target) {
+  off<T extends Fn>(name: string, fn?: T | null, target?: Target) {
     // Remove matching actions
     this.actions = this.actions.filter(action => {
       const nameMatches = action.name === name
@@ -64,15 +75,15 @@ export class Bus extends gl.Unit {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('bus.removeTabProxyAction', name)
+          async: this.extBridge.send('Bus.removeTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('bus.removeContextProxyAction', name)
+          async: this.pageBridge.sendToTop('Bus.removeContextProxyAction', name)
         }
       }
     }
   }
 
-  async send<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
+  async send<T>(name: string, ...args: FnArgsOrArr<T>) {
     let result: unknown
 
     if (this.$.env.is.sw || this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {
@@ -90,16 +101,16 @@ export class Bus extends gl.Unit {
       throw error
     }
 
-    return result as T
+    return result as FnResultOrValue<T> | null
   }
 
-  async emit<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
+  async emit<T>(name: string, ...args: FnArgsOrArr<T>) {
     const actions = this.actions.filter(action => action.name === name && !action.target)
     const result = await this.utils.pick(actions.map(action => action.execute(...args)))
-    return result as T
+    return result as FnResultOrValue<T> | null
   }
 
-  once(name: string, fn: Fn, thisValue?: unknown) {
+  once<T extends Fn>(name: string, fn: T, thisArg?: unknown) {
     // Create one-time handler
     const handler = async (...args: unknown[]) => {
       this.off(name, handler)
@@ -107,7 +118,7 @@ export class Bus extends gl.Unit {
     }
 
     // Register one-time handler
-    this.on(name, handler, thisValue)
+    this.on(name, handler, thisArg)
   }
 
   setSignal(name: string, value: unknown = true) {
@@ -116,7 +127,7 @@ export class Bus extends gl.Unit {
     async: this.send(name, value)
   }
 
-  async waitSignal(name: string, timeout?: number) {
+  async waitSignal<T = unknown>(name: string, timeout?: number) {
     name = `signal[${name}]`
 
     // Setup listener
@@ -125,9 +136,9 @@ export class Bus extends gl.Unit {
     this.on(name, listener)
 
     // Setup timer if timeout is specified
-    const timer$ = Promise.withResolvers<false>()
+    const timer$ = Promise.withResolvers<null>()
     let timer: number | null = null
-    if (timeout) timer = self.setTimeout(() => timer$.resolve(false), timeout)
+    if (timeout) timer = self.setTimeout(() => timer$.resolve(null), timeout)
 
     // Wait for the signal or timer
     const result = await this.utils.pick([this.send(name), listener$.promise, timer$.promise])
@@ -136,7 +147,13 @@ export class Bus extends gl.Unit {
     this.off(name, listener)
     if (timer) self.clearTimeout(timer)
 
-    return result
+    return result as T | null
+  }
+
+  async getTabData() {
+    if (!this.$.env.is.cs) throw this.never()
+    const tabId = await this.extBridge.send<number | null>('Bus.getTabId')
+    return { tabId, tabBusToken: 'xxx' }
   }
 
   private async executeProxyActions(name: string, ...args: unknown[]) {

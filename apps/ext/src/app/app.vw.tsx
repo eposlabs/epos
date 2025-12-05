@@ -19,10 +19,10 @@ export class App extends vw.Unit {
     self.$ = this
     await this.projects.init()
     await this.dev.init()
-    this.render()
+    this.onDomReady(() => this.render())
   }
 
-  refresh() {
+  rerender() {
     if (!this.setRenderId) return
     this.setRenderId(this.$.utils.id())
   }
@@ -34,14 +34,21 @@ export class App extends vw.Unit {
     this.$.libs.preact.render(<this.View context={context} />, root)
   }
 
+  private onDomReady(callback: () => void) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => callback())
+    } else {
+      callback()
+    }
+  }
+
   private View = (props: { context: Context<string> }) => {
     const [renderId, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.id())
     this.setRenderId = setRenderId
 
     return (
       <props.context.Provider value={renderId}>
-        <div className="min-h-200 min-w-240">
-          <this.$.projects.dock.View />
+        <div className="min-h-25 min-w-30">
           <this.$.projects.View />
         </div>
       </props.context.Provider>

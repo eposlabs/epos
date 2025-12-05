@@ -1,13 +1,18 @@
 import type { DbName, DbStoreName } from '../idb/idb.sw'
-import type { Options } from './state/state.ex.sw'
+import type { Initial, ModelClass, Versioner } from './state/state.ex.sw'
 
 export const _local_ = Symbol('local')
 export const _exclude_ = Symbol('exclude')
+
+export type Models = Record<string, ModelClass>
+export type Config = { allowMissingModels?: boolean }
 
 export class States extends exSw.Unit {
   map: Record<string, exSw.State> = {}
   dbName: DbName
   dbStoreName: DbStoreName
+  config: Config
+  models: Models = {}
   private bus: ReturnType<gl.Bus['create']>
   private queue = new this.$.utils.Queue()
 
@@ -15,11 +20,12 @@ export class States extends exSw.Unit {
     return Object.values(this.map)
   }
 
-  constructor(parent: exSw.Unit, dbName: DbName, dbStoreName: DbStoreName) {
+  constructor(parent: exSw.Unit, dbName: DbName, dbStoreName: DbStoreName, config?: Config) {
     super(parent)
 
     this.dbName = dbName
     this.dbStoreName = dbStoreName
+    this.config = config ?? { allowMissingModels: false }
     this.bus = this.$.bus.create(`States[${dbName}/${dbStoreName}]`)
     this.connect = this.queue.wrap(this.connect, this)
     this.disconnect = this.queue.wrap(this.disconnect, this)
@@ -37,7 +43,7 @@ export class States extends exSw.Unit {
     }
   }
 
-  async connect(name: string, options: Options = {}) {
+  async connect(name: string, initial?: Initial, versioner?: Versioner) {
     // Already connected? -> Return existing
     if (this.map[name]) return this.map[name]
 
@@ -45,12 +51,9 @@ export class States extends exSw.Unit {
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
 
     // Create and initialize state
-    const state = new exSw.State(this, name, options)
+    const state = new exSw.State(this, name, initial, versioner)
     await state.init()
     this.map[name] = state
-
-    // Mark `ex` as connected
-    if (this.$.env.is.ex) this.bus.on(`exConnected[${name}]`, () => true)
 
     return state
   }
@@ -63,15 +66,11 @@ export class States extends exSw.Unit {
     // Disconnect and remove
     await state.disconnect()
     delete this.map[name]
-
-    // Unmark `ex` as connected
-    if (this.$.env.is.ex) this.bus.off(`exConnected[${name}]`)
   }
 
-  async cleanup() {
-    for (const name in this.map) {
-      await this.disconnect(name)
-    }
+  async dispose() {
+    for (const name in this.map) await this.disconnect(name)
+    this.bus.dispose()
   }
 
   async remove(name: string) {
@@ -102,13 +101,16 @@ export class States extends exSw.Unit {
     return name in this.map
   }
 
+  register(models: Models) {
+    Object.assign(this.models, models)
+  }
+
   /** Automatically disconnect state if there are no `ex` connections to it. */
   private setupAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {
-        const connected = await this.bus.send(`exConnected[${state.id}]`)
-        if (connected) continue
-        await this.disconnect(state.name)
+        const connected = await state.hasExPeer()
+        if (!connected) await this.disconnect(state.name)
       }
     }, this.$.utils.time('15s'))
   }

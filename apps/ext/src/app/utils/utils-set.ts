@@ -1,20 +1,22 @@
-export function set(this: exOsSwVw.Unit, target: unknown, path: PropertyKey[], value: unknown) {
+import { is } from 'eposlabs/utils'
+
+export function set(target: unknown, path: PropertyKey[], value: unknown) {
   const [key, ...rest] = path
 
-  if (this.$.utils.is.object(target)) {
+  if (is.object(target)) {
     if (rest.length === 0) {
       target[key] = value
     } else {
-      this.$.utils.set(target[key], rest, value)
+      set(target[key], rest, value)
     }
   }
 
-  if (this.$.utils.is.array(target)) {
+  if (is.array(target)) {
     const index = Number(key)
     if (rest.length === 0) {
       target[index] = value
     } else {
-      this.$.utils.set(target[index], rest, value)
+      set(target[index], rest, value)
     }
   }
 }

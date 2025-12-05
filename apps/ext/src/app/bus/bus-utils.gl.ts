@@ -32,12 +32,12 @@ export class BusUtils extends gl.Unit {
         const [result, error] = await this.$.utils.safe(promise)
         processed += 1
 
-        // Result is not null/undefined? -> Resolve with it
+        // Result is not null / undefined? -> Resolve with it
         if (this.$.utils.is.present(result)) {
           result$.resolve(result)
         }
 
-        // Error was thrown? -> Resolve with Throw object
+        // Error was thrown? -> Resolve with a special `Throw` object
         else if (error) {
           const message = error?.message ?? 'Unexpected error'
           const throwObject: Throw = { [THROW]: true, message }

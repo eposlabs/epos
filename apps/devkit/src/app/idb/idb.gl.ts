@@ -1,4 +1,4 @@
-import type { Queue } from '@eposlabs/utils'
+import type { Queue } from 'eposlabs/utils'
 
 export const _cleanup_ = Symbol('cleanup')
 

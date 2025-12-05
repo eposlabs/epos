@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "$id": "https://epos.dev/schema.json",
   "title": "epos.json",
 
@@ -7,17 +7,18 @@
   "properties": {
     "$schema": { "type": "string" },
     "name": { "$ref": "#/definitions/Name" },
+    "version": { "$ref": "#/definitions/Version" },
     "icon": { "$ref": "#/definitions/Icon" },
     "title": { "$ref": "#/definitions/Title" },
     "description": { "$ref": "#/definitions/Description" },
-    "version": { "$ref": "#/definitions/Version" },
     "action": { "$ref": "#/definitions/Action" },
     "popup": { "$ref": "#/definitions/Popup" },
+    "config": { "$ref": "#/definitions/Config" },
     "assets": { "$ref": "#/definitions/Assets" },
     "targets": { "$ref": "#/definitions/Targets" },
     "matches": { "$ref": "#/definitions/Matches" },
-    "load": { "$ref": "#/definitions/Load" },
-    "mode": { "$ref": "#/definitions/Mode" },
+    "load": { "$ref": "#/definitions/Resources" },
+    "permissions": { "$ref": "#/definitions/Permissions" },
     "manifest": { "$ref": "#/definitions/Manifest" }
   },
   "required": ["name"],
@@ -29,6 +30,11 @@
       "minLength": 2,
       "maxLength": 45,
       "pattern": "^[a-z0-9\\-]+$"
+    },
+
+    "Version": {
+      "type": "string",
+      "pattern": "^(?:\\d{1,5}\\.){0,3}\\d{1,5}$"
     },
 
     "Icon": {
@@ -46,11 +52,6 @@
       "maxLength": 132
     },
 
-    "Version": {
-      "type": "string",
-      "pattern": "^(?:\\d{1,5}\\.){0,3}\\d{1,5}$"
-    },
-
     "Action": {
       "oneOf": [{ "type": "null" }, { "type": "string" }, { "type": "boolean" }]
     },
@@ -60,6 +61,15 @@
       "properties": {
         "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 400 },
         "height": { "type": "number", "minimum": 150, "maximum": 600, "default": 600 }
+      },
+      "additionalProperties": false
+    },
+
+    "Config": {
+      "type": "object",
+      "properties": {
+        "preloadAssets": { "type": "boolean", "default": true },
+        "allowMissingStateModels": { "type": "boolean", "default": false }
       },
       "additionalProperties": false
     },
@@ -78,42 +88,61 @@
       "type": "object",
       "properties": {
         "matches": { "$ref": "#/definitions/Matches" },
-        "load": { "$ref": "#/definitions/Load" },
-        "mode": { "$ref": "#/definitions/Mode" }
+        "load": { "$ref": "#/definitions/Resources" }
       },
       "additionalProperties": false
     },
 
     "Matches": {
       "oneOf": [
-        { "$ref": "#/definitions/Pattern" },
-        { "type": "array", "items": { "$ref": "#/definitions/Pattern" } }
+        { "$ref": "#/definitions/Match" },
+        { "type": "array", "items": { "$ref": "#/definitions/Match" } }
       ]
     },
 
-    "Pattern": {
+    "Match": {
       "type": "string"
     },
 
-    "Load": {
+    "Resources": {
       "oneOf": [
-        { "$ref": "#/definitions/LoadItem" },
-        { "type": "array", "items": { "$ref": "#/definitions/LoadItem" } }
+        { "$ref": "#/definitions/Resource" },
+        { "type": "array", "items": { "$ref": "#/definitions/Resource" } }
       ]
     },
 
-    "LoadItem": {
+    "Resource": {
       "type": "string",
       "pattern": "^.*\\.(css|js|[^.]+)$"
     },
 
-    "Mode": {
+    "Permissions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Permission" }
+    },
+
+    "Permission": {
       "type": "string",
-      "enum": ["normal", "shadow", "lite"]
+      "enum": [
+        "background",
+        "browsingData",
+        "contextMenus",
+        "cookies",
+        "downloads",
+        "notifications",
+        "storage",
+        "optional:background",
+        "optional:browsingData",
+        "optional:contextMenus",
+        "optional:cookies",
+        "optional:downloads",
+        "optional:notifications",
+        "optional:storage"
+      ]
     },
 
     "Manifest": {
-      "$ref": "manifest.schema.json"
+      "type": "object"
     }
   }
 }

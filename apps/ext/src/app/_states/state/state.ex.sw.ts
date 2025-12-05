@@ -9,7 +9,7 @@ import type { DbName, DbStoreKey, DbStoreName } from '../../idb/idb.sw'
 export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')
 export const _modelInit_ = Symbol('modelInit')
-export const _modelCleanup_ = Symbol('modelCleanup')
+export const _modelDispose_ = Symbol('modelDispose')
 export const _modelStrict_ = Symbol('modelStrict')
 export const _modelVersioner_ = Symbol('modelVersioner')
 
@@ -23,10 +23,6 @@ export type Model = InstanceType<ModelClass>
 export type ModelClass = (new (...args: unknown[]) => unknown) & {
   [_modelStrict_]?: boolean
   [_modelVersioner_]?: Versioner
-}
-
-export type Config = {
-  allowMissingModels?: boolean | string[]
 }
 
 // MobX node
@@ -57,8 +53,6 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
 
 export type Options = {
   initial?: Initial
-  config?: Config
-  models?: Record<string, ModelClass>
   versioner?: Versioner
 }
 
@@ -73,15 +67,13 @@ export class State extends exSw.Unit {
   static _meta_ = _meta_
   static _parent_ = _parent_
   static _modelInit_ = _modelInit_
-  static _modelCleanup_ = _modelCleanup_
+  static _modelDispose_ = _modelDispose_
   static _modelStrict_ = _modelStrict_
   static _modelVersioner_ = _modelVersioner_
 
   private root!: Root
-  private config: Config = {}
   private doc = new this.$.libs.yjs.Doc()
   private bus: ReturnType<gl.Bus['create']>
-  private models: Record<string, ModelClass>
   private versioner: Versioner
   private initial: Initial
   private connected = false
@@ -95,6 +87,10 @@ export class State extends exSw.Unit {
   private saveTimeout: number | undefined = undefined
   private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // TODO: pass delay via args (?)
 
+  get id() {
+    return this.location.join('/')
+  }
+
   get data(): Obj {
     return this.root.data
   }
@@ -103,31 +99,25 @@ export class State extends exSw.Unit {
     return [this.$states.dbName, this.$states.dbStoreName, this.name]
   }
 
-  get id() {
-    return this.location.join('/')
-  }
-
-  constructor(parent: exSw.Unit, name: string, options: Options = {}) {
+  constructor(parent: exSw.Unit, name: string, initial: Initial = {}, versioner: Versioner = {}) {
     super(parent)
     this.name = name
+    this.initial = initial
+    this.versioner = versioner
     this.bus = this.$.bus.create(`State[${this.id}]`)
-    this.config = options.config ?? {}
-    this.models = options.models ?? {}
-    this.initial = options.initial ?? {}
-    this.versioner = options.versioner ?? {}
     this.save = this.saveQueue.wrap(this.save, this)
   }
 
   async init() {
     await this.$.peer.mutex(`State.setup[${this.id}]`, () => this.setup())
+    if (this.$.env.is.ex) this.bus.on('exConnected', () => true)
   }
 
   async disconnect() {
     if (!this.connected) return
     this.connected = false
     this.doc.destroy()
-    this.bus.off('update')
-    if (this.$.env.is.sw) this.bus.off('swGetDocAsUpdate')
+    this.bus.dispose()
     await this.save()
   }
 
@@ -139,12 +129,8 @@ export class State extends exSw.Unit {
     })
   }
 
-  setConfig(config: Config) {
-    this.config = config
-  }
-
-  registerModels(models: Record<string, ModelClass>) {
-    Object.assign(this.models, models)
+  async hasExPeer() {
+    return !!(await this.bus.send<boolean>('exConnected'))
   }
 
   private async setup() {
@@ -165,6 +151,7 @@ export class State extends exSw.Unit {
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
+      if (!docAsUpdate) throw this.never()
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
       this.applyingYjsToMobx = true
@@ -244,7 +231,7 @@ export class State extends exSw.Unit {
       const yMap = source
       const modelName: unknown = yMap.get('@')
       const Model = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
-      this.checkForMissingModel(Model, modelName, () => yMap.toJSON())
+      this.checkForMissingModel(Model, modelName)
       const useProxy = Model ? !Model[_modelStrict_] : true
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       this.wire(mObject, yMap, parent, Model)
@@ -268,7 +255,7 @@ export class State extends exSw.Unit {
       const ModelByName = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
       const ModelByInstance = this.getModelByInstance(object)
       const Model = ModelByName ?? ModelByInstance
-      this.checkForMissingModel(Model, modelName, () => object)
+      this.checkForMissingModel(Model, modelName)
       const useProxy = Model ? !Model[_modelStrict_] : true
       const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false, proxy: useProxy })
       const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
@@ -436,8 +423,8 @@ export class State extends exSw.Unit {
           const meta = this.getMeta(node)
           // @ts-ignore
           if (!meta.initialized) continue
-          // console.log('[cleanup]', node._)
-          this.runModelMethod(node, _modelCleanup_)
+          // console.log('[dispose]', node._)
+          this.runModelMethod(node, _modelDispose_)
         }
       }
 
@@ -690,24 +677,19 @@ export class State extends exSw.Unit {
   // MODEL MANAGEMENT
   // ---------------------------------------------------------------------------
 
-  private checkForMissingModel(Model: ModelClass | null, modelName: unknown, getValue: () => unknown) {
+  private checkForMissingModel(Model: ModelClass | null, modelName: unknown) {
     if (this.$.env.is.sw) return
     if (Model) return
     if (!this.$.utils.is.string(modelName)) return
 
-    const { allowMissingModels } = this.config
-    if (allowMissingModels === true) return
-    if (this.$.utils.is.array(allowMissingModels) && allowMissingModels.includes(modelName)) return
+    const { allowMissingModels } = this.$states.config
+    if (allowMissingModels) return
 
-    self.setTimeout(() => {
-      console.warn(
-        '[epos] Make sure the model is included in your bundle and registered before epos.State.connect(...)',
-      )
-      console.warn('[epos] To allow missing models, use epos.State.configure({ allowMissingModels: true })')
-      console.warn('[epos] Object with the missing model:', getValue())
-    }, 10)
-
-    throw new Error(`[epos] Missing model: ${modelName}`)
+    throw new Error(
+      `[epos] Missing model: '${modelName}'` +
+        `; make sure the model is registered via epos.state.register() before calling epos.state.connect` +
+        `; to allow missing models, set config.allowMissingModels = true in epos.json`,
+    )
   }
 
   private runModelVersioner(model: MObject) {
@@ -829,20 +811,20 @@ export class State extends exSw.Unit {
 
   private getModelByName(name: unknown) {
     if (!this.$.utils.is.string(name)) return null
-    return this.models[name]
+    return this.$states.models[name]
   }
 
   private getModelByInstance(instance: Obj) {
     if (instance.constructor === Object) return null
     return (
-      Object.values(this.models).find(Model => instance.constructor === Model) ||
-      Object.values(this.models).find(Model => Model.prototype instanceof instance.constructor) ||
+      Object.values(this.$states.models).find(Model => instance.constructor === Model) ||
+      Object.values(this.$states.models).find(Model => Model.prototype instanceof instance.constructor) ||
       null
     )
   }
 
   private getModelName(Model: ModelClass) {
-    return Object.keys(this.models).find(name => this.models[name] === Model) ?? null
+    return Object.keys(this.$states.models).find(name => this.$states.models[name] === Model) ?? null
   }
 
   private unwrap<T>(value: T): T {

@@ -1,106 +1,394 @@
-import type { ActionMeta, Bundle, ExecutionMeta } from './project/project.sw'
+import type { Address } from './project/project-target.sw'
+import type { Assets, Bundle, Env, Info, Snapshot, Sources } from './project/project.sw'
+import patchGlobalsJs from './projects-patch-globals.sw.js?raw'
 
-export type ActionData = { [name: string]: ActionMeta }
-export type ExecutionData = { [name: string]: ExecutionMeta }
+export type InfoMap = { [projectName: string]: Info }
+export type HashMap = { [projectName: string]: string | null }
 
 export class Projects extends sw.Unit {
   map: { [name: string]: sw.Project } = {}
-  action = new sw.ProjectsAction(this)
-  injector = new sw.ProjectsInjector(this)
-  installer = new sw.ProjectsInstaller(this)
-  loader = new sw.ProjectsLoader(this)
+  private cspFixTabIds = new Set<number>()
+  private cspProtectedOrigins = new Set<string>()
+
+  /** Source code of `ex.js`, `ex-mini.js`, `ex.dev.js`, and `ex-mini.dev.js`. */
+  private ex = {
+    full: { dev: '', prod: '' },
+    mini: { dev: '', prod: '' },
+  }
 
   get list() {
     return Object.values(this.map)
   }
 
   async init() {
-    this.$.bus.on('Projects.hasPopup', this.hasPopup, this)
-    this.$.bus.on('Projects.hasSidePanel', this.hasSidePanel, this)
+    const queue = new this.$.utils.Queue()
+    this.install = queue.wrap(this.install, this)
+    this.remove = queue.wrap(this.remove, this)
+
+    this.$.bus.on('Projects.install', this.install, this)
+    this.$.bus.on('Projects.remove', this.remove, this)
+    this.$.bus.on('Projects.export', this.export, this)
+
+    this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('Projects.getPayloads', this.getPayloads, this)
-    this.$.bus.on('Projects.getActionData', this.getActionData, this)
-    this.$.bus.on('Projects.getExecutionData', this.getExecutionData, this)
-    this.$.bus.on('Projects.export', this.exportProject, this)
-    await this.restoreFromIdb()
-    await this.loader.init()
-    await this.injector.init()
+    this.$.bus.on('Projects.getInfoMap', this.getInfoMap, this)
+
+    await this.loadEx()
+    await this.loadProjects()
+    await this.disableCsp()
+    await this.watchAndFixCsp()
+    this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  private async exportProject(projectName: string, dev = false) {
+  async install(input: Bundle | Url, asDev = false) {
+    // Install from a bundle
+    if (this.$.utils.is.object(input)) {
+      await this.upsert(input)
+    }
+
+    // Install from a URL
+    else if (URL.canParse(input)) {
+      const env = asDev ? 'development' : 'production'
+      const bundle = await this.fetchBundle(input, env)
+      await this.upsert(bundle)
+    }
+
+    // Invalid URL? -> Throw an error
+    else {
+      throw new Error(`Invalid URL: ${input}`)
+    }
+
+    // Broadcast change
+    await this.$.bus.send('Projects.changed')
+  }
+
+  async remove(name: string) {
+    // No project? -> Do nothing
+    const project = this.map[name]
+    if (!project) return
+
+    // Remove project
+    await project.dispose()
+    delete this.map[name]
+
+    // Broadcast change
+    await this.$.bus.send('Projects.changed')
+  }
+
+  async export(projectName: string, dev = false) {
     const project = this.map[projectName]
     if (!project) throw new Error(`No such project: ${projectName}`)
-    return await project.exporter.export(dev)
-  }
-
-  async createOrUpdate(bundle: Bundle) {
-    if (this.map[bundle.spec.name]) {
-      const project = this.map[bundle.spec.name]
-      await project.update(bundle)
-    } else {
-      const project = new sw.Project(this, bundle.spec.name)
-      await project.init(bundle)
-      this.map[bundle.spec.name] = project
-    }
+    return await project.zip(dev)
   }
 
   hasPopup() {
-    return this.list.some(project => project.targets.some(target => target.matches.includes('<popup>')))
+    return this.list.some(project => project.hasPopup())
   }
 
   hasSidePanel() {
-    return this.list.some(project => project.targets.some(target => target.matches.includes('<sidePanel>')))
+    return this.list.some(project => project.hasSidePanel())
   }
 
-  getCss(url: string, frame = false) {
-    return this.list
-      .map(project => project.getCss(url, frame))
-      .filter(this.$.utils.is.present)
-      .join('\n')
-      .trim()
-  }
+  getJs(address?: Address, params: { tabId?: number | null; tabBusToken?: string | null } = {}) {
+    const projects = this.list.filter(project => project.test(address))
+    const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
+    if (defJsList.length === 0) return null
 
-  getLiteJs(url: string, frame = false) {
-    return this.list
-      .map(project => project.getLiteJs(url, frame))
-      .filter(this.$.utils.is.present)
-      .join('\n')
-      .trim()
-  }
-
-  getPayloads(url: string, frame = false) {
-    return this.list.map(project => project.getPayload(url, frame)).filter(this.$.utils.is.present)
-  }
-
-  getActionData() {
-    const data: ActionData = {}
-    for (const project of this.list) {
-      const meta = project.getActionMeta()
-      if (!meta) continue
-      data[project.name] = meta
+    // The engine code should be injected only to non-extension pages
+    let engineJs = ''
+    const origin = address ? this.getAddressOrigin(address) : null
+    if (origin !== location.origin) {
+      const hasReact = defJsList.some(js => this.hasReactCode(js))
+      const hasDevProject = projects.some(project => project.env === 'development')
+      const ex = hasReact ? this.ex.full : this.ex.mini
+      const exJs = hasDevProject ? ex.dev : ex.prod
+      engineJs = `${patchGlobalsJs}; (async () => { ${exJs} })();`
     }
 
-    return data
+    return [
+      `(() => {`,
+      `  this.__eposTabId = ${JSON.stringify(params.tabId ?? null)};`,
+      `  this.__eposTabBusToken = ${JSON.stringify(params.tabBusToken ?? null)};`,
+      `  this.__eposProjectDefs = [${defJsList.join(',')}];`,
+      `  ${engineJs};`,
+      `})()`,
+    ].join('\n')
   }
 
-  private async getExecutionData(url: string, frame = false) {
-    const data: ExecutionData = {}
+  getCss(address?: Address) {
+    const cssList = this.list.map(project => project.getCss(address)).filter(this.$.utils.is.present)
+    if (cssList.length === 0) return null
+    return cssList.join('\n').trim()
+  }
+
+  getLiteJs(address?: Address) {
+    const liteJsList = this.list.map(project => project.getLiteJs(address)).filter(this.$.utils.is.present)
+    if (liteJsList.length === 0) return null
+    return liteJsList.join(';\n').trim()
+  }
+
+  async getInfoMap(address?: Address) {
+    const infoMap: InfoMap = {}
+
     for (const project of this.list) {
-      const meta = await project.getExecutionMeta(url, frame)
-      if (!meta) continue
-      data[project.name] = meta
+      const info = await project.getInfo(address)
+      infoMap[info.name] = info
     }
 
-    return data
+    return infoMap
   }
 
-  private async restoreFromIdb() {
+  private async upsert(bundle: Bundle) {
+    if (!this.map[bundle.spec.name]) {
+      const project = await sw.Project.new(this, bundle)
+      this.map[bundle.spec.name] = project
+    } else {
+      const project = this.map[bundle.spec.name]
+      project.update(bundle)
+    }
+  }
+
+  private async handleActionClick(tab: chrome.tabs.Tab) {
+    if (!tab.id) return
+
+    // Has popup? -> Open popup
+    if (this.hasPopup()) {
+      await this.$.tools.medium.openPopup(tab.id)
+      return
+    }
+
+    // Has side panel? -> Toggle side panel
+    if (this.hasSidePanel()) {
+      await this.$.tools.medium.toggleSidePanel(tab.id)
+      return
+    }
+
+    // Several actions? -> Open popup
+    const projectsWithAction = this.list.filter(project => project.spec.action)
+    if (projectsWithAction.length > 1) {
+      await this.$.tools.medium.openPopup(tab.id)
+      return
+    }
+
+    // Single action? -> Process that action
+    if (projectsWithAction.length === 1) {
+      const project = projectsWithAction[0]
+      if (project.spec.action === true) {
+        const projectEposBus = this.$.bus.create(`ProjectEpos[${project.spec.name}]`)
+        await projectEposBus.send(':action', tab)
+      } else if (this.$.utils.is.string(project.spec.action)) {
+        await this.$.tools.medium.openTab(project.spec.action)
+      }
+    }
+
+    // Has devkit package? -> Open devkit page
+    if (this.map.devkit) {
+      const tabs = await this.$.browser.tabs.query({ url: 'https://epos.dev/@devkit' })
+      if (tabs.length > 0) {
+        await this.$.browser.tabs.update(tabs[0].id, { active: true })
+      } else {
+        await this.$.browser.tabs.create({ url: 'https://epos.dev/@devkit', active: true })
+      }
+    }
+  }
+
+  private async loadEx() {
+    // Dev versions are absent for standalone projects
+    const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(res => res.text()))
+    const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(res => res.text()))
+    this.ex.full.dev = exFullDev ?? ''
+    this.ex.mini.dev = exMiniDev ?? ''
+
+    // Prod versions are always present
+    this.ex.full.prod = await fetch('/ex.js').then(res => res.text())
+    this.ex.mini.prod = await fetch('/ex-mini.js').then(res => res.text())
+  }
+
+  private async loadProjects() {
+    // From idb
     const names = await this.$.idb.listDatabases()
     for (const name of names) {
       const project = await sw.Project.restore(this, name)
       if (!project) continue
       this.map[name] = project
     }
+
+    // ---- from files
+    const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
+    if (!snapshot) return
+
+    const name = snapshot.spec.name
+    const project = this.map[name]
+
+    // Already latest version? -> Skip
+    if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
+
+    // Load assets
+    const assets: Assets = {}
+    for (const path of snapshot.spec.assets) {
+      const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
+      if (!blob) continue
+      assets[path] = blob
+    }
+
+    await this.upsert({ ...snapshot, assets })
+  }
+
+  private async disableCsp() {
+    await this.$.net.addRule({
+      priority: 1,
+      condition: {
+        urlFilter: '*://*/*',
+        resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
+      },
+      action: {
+        type: 'modifyHeaders',
+        responseHeaders: [
+          { header: 'Content-Security-Policy', operation: 'remove' },
+          { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
+        ],
+      },
+    })
+  }
+
+  private async watchAndFixCsp() {
+    const IGNORED_URL_PREFIXES = [
+      'blob:',
+      'chrome:',
+      'devtools:',
+      'about:blank',
+      'chrome-extension:',
+      'https://chrome.google.com/webstore/',
+      'https://chromewebstore.google.com/',
+    ]
+
+    const checkCspError = () => {
+      try {
+        new Function('')()
+        return false
+      } catch (e) {
+        return true
+      }
+    }
+
+    const unregisterAllServiceWorkers = async () => {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(regs.map(r => r.unregister()))
+      location.reload()
+    }
+
+    this.$.browser.webNavigation.onCommitted.addListener(async details => {
+      const { tabId, frameId, url } = details
+      if (frameId !== 0) return // Do not check frames
+      if (IGNORED_URL_PREFIXES.some(prefix => url.startsWith(prefix))) return
+
+      // Already marked as CSP-protected? -> Do nothing
+      const { origin } = new URL(url)
+      if (this.cspProtectedOrigins.has(origin)) return
+
+      // Check if origin is CSP-protected
+      const [{ result: hasCspError }] = await this.$.browser.scripting.executeScript({
+        target: { tabId },
+        world: 'MAIN',
+        injectImmediately: true,
+        func: checkCspError,
+      })
+
+      // No CSP errors? -> Do nothing
+      if (!hasCspError) return
+
+      // First attempt to fix CSP? -> Unregister all service workers to drop cached headers (x.com)
+      if (!this.cspFixTabIds.has(tabId)) {
+        this.cspFixTabIds.add(tabId)
+        self.setTimeout(() => this.cspFixTabIds.delete(tabId), 10_000)
+        await this.$.browser.scripting.executeScript({
+          target: { tabId },
+          world: 'MAIN',
+          injectImmediately: true,
+          func: unregisterAllServiceWorkers,
+        })
+      }
+
+      // Already tried and still fails? -> Mark origin as CSP-protected.
+      // This can happen if CSP is set via meta tag (web.telegram.org).
+      else {
+        this.cspFixTabIds.delete(tabId)
+        this.cspProtectedOrigins.add(origin)
+      }
+    })
+  }
+
+  private async fetchBundle(specUrl: string, env: Env = 'production'): Promise<Bundle> {
+    // Check if URL is valid
+    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: ${specUrl}`)
+
+    // Fetch spec file
+    const [res] = await this.$.utils.safe(fetch(specUrl))
+    if (!res) throw new Error(`Failed to fetch ${specUrl}`)
+
+    // Read spec file
+    const [json] = await this.$.utils.safe(res.text())
+    if (!json) throw new Error(`Failed to read ${specUrl}`)
+
+    // Parse spec file
+    const spec = this.$.libs.parseEposSpec(json)
+
+    // Fetch sources
+    const sources: Sources = {}
+    for (const target of spec.targets) {
+      for (const resource of target.resources) {
+        const url = new URL(resource.path, specUrl).href
+        if (resource.type === 'lite-js') resource.path = `min:${resource.path}`
+        if (resource.path in sources) continue
+        const [res] = await this.$.utils.safe(fetch(url))
+        if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
+        const [text] = await this.$.utils.safe(res.text())
+        if (!text) throw new Error(`Failed to fetch: ${url}`)
+        sources[resource.path] = resource.type === 'lite-js' ? await this.minifyJs(text) : text.trim()
+      }
+    }
+
+    // Fetch assets
+    const assets: Assets = {}
+    for (const path of spec.assets) {
+      const assetUrl = new URL(path, specUrl).href
+      const [res] = await this.$.utils.safe(fetch(assetUrl))
+      if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
+      const [blob] = await this.$.utils.safe(res.blob())
+      if (!blob) throw new Error(`Failed to fetch: ${assetUrl}`)
+      assets[path] = blob
+    }
+
+    return { env, spec, sources, assets }
+  }
+
+  private compareSemver(semver1: string, semver2: string) {
+    const parts1 = semver1.split('.').map(Number)
+    const parts2 = semver2.split('.').map(Number)
+
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] || 0
+      const part2 = parts2[i] || 0
+      if (part1 > part2) return 1
+      if (part1 < part2) return -1
+    }
+
+    return 0
+  }
+
+  private hasReactCode(js: string) {
+    return js.includes('epos.libs.reactJsxRuntime') || js.includes('React.createElement')
+  }
+
+  private getAddressOrigin(address: Address) {
+    if (address.startsWith('frame:')) address = address.replace('frame:', '')
+    return new URL(address).origin
+  }
+
+  private async minifyJs(js: string) {
+    const { code } = await this.$.libs.terser.minify(js)
+    if (!this.$.utils.is.string(code)) throw this.never()
+    return code
   }
 }

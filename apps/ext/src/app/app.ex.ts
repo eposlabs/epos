@@ -10,10 +10,9 @@ export class App extends ex.Unit {
   peer = new exOs.Peer(this)
   projects = new ex.Projects(this)
   tools = new ex.Tools(this)
-  ui = new ex.Ui(this)
 
   async init() {
-    if (this.env.is.dev) self.$epos = this
+    if (this.$.env.is.dev) self.$epos = this
     await this.projects.init()
     await this.dev.init()
   }

@@ -1,7 +1,9 @@
 /// <reference types="epos" />
 
+console.warn('x1.js')
 self.epos = epos
-self.s = await epos.state.connect()
+self.state = await epos.state.connect()
+state.theme = { value: 'dark' }
 
 // console.warn('!')
 // const state = await epos.state.connect(() => ({ title: 'abc' }))

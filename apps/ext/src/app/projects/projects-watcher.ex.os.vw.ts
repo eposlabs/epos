@@ -1,49 +1,46 @@
-import type { ActionData, ExecutionData } from './projects.sw'
+import type { InfoMap } from './projects.sw'
 
-export type ProjectName = string
-export type OnUpdate = (delta: Delta, data: Data) => void
+export type OnData = (data: WatcherData) => void
 
-export type Delta = {
-  added: ProjectName[]
-  removed: ProjectName[]
-  // TODO: implement properly (required for auto-refresh)
-  updated: ProjectName[]
-}
-
-export type Data = {
-  action: ActionData
-  execution: ExecutionData
-  hasSidePanel: boolean
+export type WatcherData = {
+  infoMap: InfoMap
+  addedProjectNames: string[]
+  removedProjectNames: string[]
+  updatedProjectNames: string[]
 }
 
 export class ProjectsWatcher extends exOsVw.Unit {
-  private executionData: ExecutionData = {}
+  private onData: OnData
+  private infoMap: InfoMap = {}
 
-  async start(onUpdate: OnUpdate) {
-    await this.update(onUpdate)
-    this.$.bus.on('ProjectsWatcher.update', () => this.update(onUpdate))
+  constructor(parent: exOsVw.Unit, onData: OnData) {
+    super(parent)
+    this.onData = onData
   }
 
-  private async update(onUpdate: OnUpdate) {
-    const actionData = await this.$.bus.send<ActionData>('Projects.getActionData')
-    const executionData = await this.$.bus.send<ExecutionData>('Projects.getExecutionData', location.href)
-    const hasSidePanel = await this.$.bus.send<boolean>('Projects.hasSidePanel')
+  async init() {
+    this.$.bus.on('Projects.changed', () => this.refetch())
+    await this.refetch()
+  }
 
-    const executionData1 = this.executionData
-    const executionData2 = executionData
-    const names1 = Object.keys(executionData1)
-    const names2 = Object.keys(executionData2)
-    const added = names2.filter(name => !executionData1[name])
-    const removed = names1.filter(name => !executionData2[name])
+  private async refetch() {
+    const infoMap = await this.$.bus.send<InfoMap>('Projects.getInfoMap', location.href)
 
-    const updated = names1.filter(
-      name => executionData2[name] && executionData1[name].hash !== executionData2[name].hash,
-    )
+    const im1 = this.infoMap
+    const im2 = infoMap
+    this.infoMap = infoMap
 
-    const data: Data = { action: actionData, execution: executionData, hasSidePanel }
-    const delta: Delta = { added, removed, updated }
-    this.executionData = executionData
+    const names1 = Object.keys(im1)
+    const names2 = Object.keys(im2)
+    const addedProjectNames = names2.filter(name => !im1[name])
+    const removedProjectNames = names1.filter(name => !im2[name])
+    const updatedProjectNames = names1.filter(name => im2[name] && im1[name].hash !== im2[name].hash)
 
-    onUpdate(delta, data)
+    this.onData({
+      infoMap,
+      addedProjectNames,
+      removedProjectNames,
+      updatedProjectNames,
+    })
   }
 }

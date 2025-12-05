@@ -18,8 +18,8 @@ export default defineConfig(async ({ mode }) => {
     input: {
       transform: {
         define: {
-          'BUNDLE': json(name),
-          'process.env.NODE_ENV': forceDev ? json('development') : json(env),
+          'BUNDLE': JSON.stringify(name),
+          'process.env.NODE_ENV': forceDev ? JSON.stringify('development') : JSON.stringify(env),
         },
       },
     },
@@ -32,8 +32,8 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     define: {
-      'import.meta.env.DEV': json(mode === 'development'),
-      'import.meta.env.PROD': json(mode !== 'development'),
+      'import.meta.env.DEV': JSON.stringify(mode === 'development'),
+      'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
       'process.env.NODE_ENV': 'process.env.NODE_ENV',
     },
 
@@ -81,7 +81,3 @@ export default defineConfig(async ({ mode }) => {
     },
   }
 })
-
-function json(value: unknown) {
-  return JSON.stringify(value)
-}

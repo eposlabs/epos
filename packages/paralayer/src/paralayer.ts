@@ -1,4 +1,4 @@
-import { Queue, Unit, safe } from '@eposlabs/utils'
+import { Queue, Unit, safe } from 'eposlabs/utils'
 import type { FSWatcher } from 'chokidar'
 import { watch } from 'chokidar'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'

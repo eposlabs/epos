@@ -1,194 +1,367 @@
-import type { Action, Mode, Spec } from 'epos-spec-parser'
+import type { Permission, Spec } from 'epos-spec-parser'
+import type { Address } from './project-target.sw'
 
+export type Env = 'development' | 'production'
 export type Sources = Record<string, string>
 export type Assets = Record<string, Blob>
-export type BundleNoAssets = Omit<Bundle, 'assets'>
 
+/** Data saved to IndexedDB. */
+export type Snapshot = {
+  spec: Spec
+  sources: Sources
+  /** List of permissions granted by the end-user. */
+  access: Permission[]
+  env: Env
+}
+
+/** Data required to create Project instance. */
 export type Bundle = {
-  dev: boolean
   spec: Spec
   sources: Sources
   assets: Assets
+  env: Env
 }
 
-export type Payload = {
-  dev: boolean
-  script: string
-}
-
-export type ActionMeta = {
-  name: string
-  title: Spec['title']
-  action: Exclude<Action, null>
-}
-
-export type ExecutionMeta = {
-  dev: boolean
-  name: string
+/** Data for peer contexts. */
+export type Info = {
+  name: Spec['name']
+  icon: Spec['icon']
   title: Spec['title']
   popup: Spec['popup']
-  hash: string
+  action: Spec['action']
+  env: Env
+  hash: string | null
+  hasSidePanel: boolean
 }
 
+// TODO: throw error if spec.name is changed on update. Or maybe rename idb store (?).
+// TODO: better hash calculation, for now it only tracks resourceTexts, but what if <background>
+// is removed and hash is the same, because used texts are the same? Or `lite:` was added.
 export class Project extends sw.Unit {
-  name: string
+  spec: Spec
+  sources: Sources
+  access: Permission[] = []
+  env: Env
+
   states: exSw.States
-  exporter = new sw.ProjectExporter(this)
-  declare dev: boolean
-  declare spec: Spec
-  declare action: null | true | string
-  declare sources: Sources
-  declare targets: sw.ProjectTarget[]
+  targets: sw.ProjectTarget[] = []
+  private netRuleIds = new Set<number>()
 
-  constructor(parent: sw.Unit, name: string) {
-    super(parent)
-    this.name = name
-    this.states = new exSw.States(this, name, ':state')
-  }
-
-  async init(bundle: Bundle) {
-    await this.update(bundle)
-  }
-
-  async cleanup() {
-    await this.states.cleanup()
-    await this.$.bus.send('Projects.removeAllProjectFrames', this.name)
-    await this.$.idb.deleteDatabase(this.name)
-  }
-
-  static async restore(parent: sw.Unit, name: string) {
-    const project = new Project(parent, name)
-    const bundle = await project.$.idb.get<BundleNoAssets>(name, ':project', ':default')
-    if (!bundle) return null
-    await project.update(bundle)
+  static async new(parent: sw.Unit, data: Bundle) {
+    const project = new Project(parent, data)
+    await project.saveSnapshot()
+    await project.saveAssets(data.assets)
+    await project.updateNetRules()
     return project
   }
 
-  async update(bundle: BundleNoAssets & { assets?: Assets }) {
-    this.dev = bundle.dev
-    this.name = bundle.spec.name
-    this.spec = bundle.spec
-    this.sources = bundle.sources
-    this.action = this.prepareAction(bundle.spec.action)
-    this.targets = bundle.spec.targets.map(target => new sw.ProjectTarget(this, target))
-
-    if (bundle.assets) {
-      const paths1 = await this.$.idb.keys(this.name, ':assets')
-      const paths2 = Object.keys(bundle.assets)
-
-      for (const path of paths2) {
-        await this.$.idb.set(this.name, ':assets', path, bundle.assets[path])
-      }
-
-      for (const path of paths1) {
-        if (paths2.includes(path)) continue
-        await this.$.idb.delete(this.name, ':assets', path)
-      }
-    }
-
-    await this.$.idb.set<BundleNoAssets>(this.name, ':project', ':default', {
-      dev: this.dev,
-      spec: this.spec,
-      sources: this.sources,
-    })
+  static async restore(parent: sw.Unit, name: string) {
+    const snapshot = await parent.$.idb.get<Snapshot>(name, ':project', ':default')
+    if (!snapshot) return null
+    const project = new Project(parent, snapshot)
+    await project.updateNetRules()
+    return project
   }
 
-  test(url: string, frame = false) {
-    return this.targets.some(target => target.test(url, frame))
+  constructor(parent: sw.Unit, data: Omit<Bundle, 'assets'>) {
+    super(parent)
+    this.spec = data.spec
+    this.sources = data.sources
+    this.env = data.env
+    this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
+    this.states = new exSw.States(this, this.spec.name, ':state', { allowMissingModels: true })
   }
 
-  getCss(url: string, frame = false) {
-    return this.getCode(url, frame, 'css', ['normal', 'lite'])
+  async dispose() {
+    await this.states.dispose()
+    await this.removeNetRules()
+    await this.$.idb.deleteDatabase(this.spec.name)
   }
 
-  getLiteJs(url: string, frame = false) {
-    return this.getCode(url, frame, 'js', ['lite'])
+  async update(updates: Omit<Bundle, 'assets'> & { assets?: Assets }) {
+    this.spec = updates.spec
+    this.sources = updates.sources
+    this.env = updates.env
+    this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
+    if (updates.assets) await this.saveAssets(updates.assets)
+    await this.saveSnapshot()
+    await this.updateNetRules()
   }
 
-  getPayload(url: string, frame = false): Payload | null {
-    const js = this.getCode(url, frame, 'js', ['normal', 'shadow'])
-    const shadowCss = this.getCode(url, frame, 'css', ['shadow'])
-    if (!js && !shadowCss) return null
+  test(address?: Address) {
+    return this.targets.some(target => target.test(address))
+  }
 
+  hasPopup() {
+    return this.targets.some(target => target.hasPopup())
+  }
+
+  hasSidePanel() {
+    return this.targets.some(target => target.hasSidePanel())
+  }
+
+  getCss(address?: Address) {
+    // Get all matching resources
+    const matchingTargets = this.targets.filter(target => target.test(address))
+    const matchingResources = matchingTargets.flatMap(target => target.resources)
+    if (matchingResources.length === 0) return null
+
+    // Extract and prepare CSS
+    const cssResources = matchingResources.filter(resource => resource.type === 'css')
+    const cssPaths = this.$.utils.unique(cssResources.map(resource => resource.path))
+    return cssPaths.map(path => this.sources[path]).join('\n')
+  }
+
+  getLiteJs(address?: Address) {
+    // Get all matching resources
+    const matchingTargets = this.targets.filter(target => target.test(address))
+    const matchingResources = matchingTargets.flatMap(target => target.resources)
+    if (matchingResources.length === 0) return null
+
+    // Extract and prepare lite JS
+    const liteJsResources = matchingResources.filter(resource => resource.type === 'lite-js')
+    const liteJsPaths = this.$.utils.unique(liteJsResources.map(resource => resource.path))
+    return liteJsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
+  }
+
+  getDefJs(address?: Address) {
+    // Get all matching resources
+    const matchingTargets = this.targets.filter(target => target.test(address))
+    const matchingResources = matchingTargets.flatMap(target => target.resources)
+    if (matchingResources.length === 0) return null
+
+    // Extract and prepare shadow CSS
+    const shadowCssResources = matchingResources.filter(resource => resource.type === 'shadow-css')
+    const shadowCssPaths = this.$.utils.unique(shadowCssResources.map(resource => resource.path))
+    const shadowCss = shadowCssPaths.map(path => this.sources[path]).join('\n')
+
+    // Extract and prepare JS
+    const jsResources = matchingResources.filter(resource => resource.type === 'js')
+    const jsPaths = this.$.utils.unique(jsResources.map(resource => resource.path))
+    const js = jsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
+
+    return [
+      `{`,
+      `  name: ${JSON.stringify(this.spec.name)},`,
+      `  shadowCss: ${JSON.stringify(shadowCss)},`,
+      `  config: ${JSON.stringify(this.spec.config)},`,
+      `  async fn(epos, React = epos.libs.react) { ${js} },`,
+      `}`,
+    ].join('\n')
+  }
+
+  async getInfo(address?: Address): Promise<Info> {
     return {
-      dev: this.dev,
-      script: [
-        `{`,
-        `  name: ${JSON.stringify(this.name)},`,
-        `  icon: ${JSON.stringify(this.spec.icon)},`,
-        `  title: ${JSON.stringify(this.spec.title)},`,
-        `  shadowCss: ${JSON.stringify(shadowCss)},`,
-        `  async fn(epos, React = epos.libs.react) { ${js} },`,
-        `}`,
-      ].join('\n'),
-    }
-  }
-
-  getActionMeta(): ActionMeta | null {
-    if (!this.action) return null
-    return {
-      name: this.name,
-      title: this.spec.title,
-      action: this.action,
-    }
-  }
-
-  async getExecutionMeta(url: string, frame = false): Promise<ExecutionMeta | null> {
-    if (!this.test(url, frame)) return null
-    return {
-      dev: this.dev,
-      name: this.name,
+      name: this.spec.name,
+      icon: this.spec.icon,
       title: this.spec.title,
       popup: this.spec.popup,
-      hash: await this.getExecutionHash(url, frame),
+      action: this.spec.action,
+      env: this.env,
+      hash: await this.getHash(address),
+      hasSidePanel: this.hasSidePanel(),
     }
   }
 
-  private getCode(url: string, frame = false, lang: 'js' | 'css', modes: Mode[]) {
-    const requiredSourcePaths = this.getRequiredSourcePaths(url, frame, { modes, lang })
-    if (requiredSourcePaths.length === 0) return null
-    return requiredSourcePaths.map(path => this.getSourceCode(path)).join('\n')
+  private async getHash(address?: Address) {
+    const matchingTargets = this.targets.filter(target => target.test(address))
+    if (matchingTargets.length === 0) return null
+
+    const matchingResources = matchingTargets.flatMap(target => target.resources)
+    const matchingResourcePaths = this.$.utils.unique(matchingResources.map(resource => resource.path))
+    const matchingResourceTexts = matchingResourcePaths.map(path => this.sources[path])
+    const hash = await this.$.utils.hash([this.env, this.spec.assets, matchingResourceTexts])
+
+    return hash
   }
 
-  /** Used to determine if project must be reloaded. */
-  async getExecutionHash(url: string, frame = false) {
-    const requiredSourcePaths = this.getRequiredSourcePaths(url, frame).sort()
-    return await this.$.utils.hash({
-      dev: this.dev,
-      assets: this.spec.assets,
-      targets: this.targets.map(target => ({ mode: target.mode })),
-      snippets: requiredSourcePaths.map(path => this.getSourceCode(path)),
+  /** Create standalone extension ZIP file out of the project. */
+  async zip(asDev = false) {
+    const zip = new this.$.libs.Zip()
+
+    const engineFiles = [
+      'cs.js',
+      'ex-mini.js',
+      'ex.js',
+      'os.js',
+      'sw.js',
+      'vw.css',
+      'vw.js',
+      'view.html',
+      'system.html',
+      'project.html',
+      'offscreen.html',
+    ]
+
+    if (asDev) {
+      engineFiles.push('ex.dev.js', 'ex-mini.dev.js')
+    }
+
+    for (const path of engineFiles) {
+      const blob = await fetch(`/${path}`).then(r => r.blob())
+      zip.file(path, blob)
+    }
+
+    const bundle = {
+      env: asDev ? 'development' : 'production',
+      spec: this.spec,
+      sources: this.sources,
+    }
+    zip.file('project.json', JSON.stringify(bundle, null, 2))
+
+    const assets: Record<string, Blob> = {}
+    const paths = await this.$.idb.keys(this.spec.name, ':assets')
+    for (const path of paths) {
+      const blob = await this.$.idb.get<Blob>(this.spec.name, ':assets', path)
+      if (!blob) throw this.never()
+      assets[path] = blob
+      zip.file(`assets/${path}`, blob)
+    }
+
+    const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
+    const icon128 = await this.$.utils.convertImage(icon, {
+      type: 'image/png',
+      quality: 1,
+      cover: true,
+      size: 128,
+    })
+    zip.file('icon.png', icon128)
+
+    const urlFilters = new Set<string>()
+    for (const target of this.targets) {
+      for (let match of target.matches) {
+        if (match.context === 'locus') continue
+        urlFilters.add(match.value)
+      }
+    }
+    if (urlFilters.has('*://*/*')) {
+      urlFilters.clear()
+      urlFilters.add('*://*/*')
+    }
+
+    const engineManifest = await fetch('/manifest.json').then(r => r.json())
+
+    const manifest = {
+      ...engineManifest,
+      name: this.spec.title ?? this.spec.name,
+      version: this.spec.version,
+      description: this.spec.description ?? '',
+      action: { default_title: this.spec.title ?? this.spec.name },
+      // ...(this.spec.manifest ?? {}),
+    }
+
+    const mandatoryPermissions = [
+      'alarms',
+      'declarativeNetRequest',
+      'offscreen',
+      'scripting',
+      'tabs',
+      'unlimitedStorage',
+      'webNavigation',
+    ]
+
+    const permissions = new Set<string>(manifest.permissions ?? [])
+    for (const perm of mandatoryPermissions) permissions.add(perm)
+    manifest.permissions = [...permissions].sort()
+
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+    return await zip.generateAsync({ type: 'blob' })
+  }
+
+  private async saveSnapshot() {
+    await this.$.idb.set<Snapshot>(this.spec.name, ':project', ':default', {
+      spec: this.spec,
+      sources: this.sources,
+      access: this.access,
+      env: this.env,
     })
   }
 
-  private getRequiredSourcePaths(
-    url: string,
-    frame = false,
-    filter: { lang?: 'js' | 'css'; modes?: Mode[] } = {},
-  ) {
-    return (
-      this.targets
-        // Filter targets by URI
-        .filter(target => target.test(url, frame))
-        // Filter targets by mode
-        .filter(target => !filter.modes || filter.modes.includes(target.mode))
-        // Extract source paths
-        .flatMap(target => target.load)
-        // Remove duplicates
-        .filter(this.$.utils.unique.filter)
-        // Filter source paths by language
-        .filter(path => !filter.lang || path.endsWith(`.${filter.lang}`))
-    )
+  private async saveAssets(assets: Assets) {
+    const paths1 = await this.$.idb.keys(this.spec.name, ':assets')
+    const paths2 = Object.keys(assets)
+
+    // Save new and updated assets
+    for (const path of paths2) {
+      await this.$.idb.set(this.spec.name, ':assets', path, assets[path])
+    }
+
+    // Delete removed assets
+    for (const path of paths1) {
+      if (paths2.includes(path)) continue
+      await this.$.idb.delete(this.spec.name, ':assets', path)
+    }
   }
 
-  private getSourceCode(path: string) {
-    if (path.endsWith('.js')) return `(async () => {\n${this.sources[path]}\n})();`
-    if (path.endsWith('.css')) return this.sources[path]
-    throw this.never()
+  private async updateNetRules() {
+    // Remove old rules
+    await this.removeNetRules()
+
+    // Add new rules
+    for (let targetIndex = 0; targetIndex < this.targets.length; targetIndex++) {
+      // Prepare cookie namespace for the target
+      const namespace = `${this.spec.name}[${targetIndex}]`
+
+      // Get target's lite JS code
+      const target = this.targets[targetIndex]
+      const resources = target.resources.filter(resource => resource.type === 'lite-js')
+      const liteJs = resources.map(resource => this.sources[resource.path]).join('\n')
+      if (!liteJs) continue
+
+      // Compress and split lite JS into chunks (fit browser's cookie size limits)
+      const liteJsCompressed = this.$.libs.lzString.compressToBase64(liteJs)
+      const chunks = this.splitToChunks(liteJsCompressed, 3900)
+
+      // Pass the chunks via `Set-Cookie` headers
+      for (const match of target.matches) {
+        if (match.context === 'locus') continue
+        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+          const ruleId = await this.$.net.addRule({
+            condition: {
+              regexFilter: this.matchPatternToRegexFilter(match.value),
+              resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame'],
+            },
+            action: {
+              type: 'modifyHeaders',
+              responseHeaders: [
+                {
+                  header: 'Set-Cookie',
+                  operation: 'append',
+                  // Use `SameSite=None; Secure;` to allow cookie access inside iframes
+                  value: `__epos_${namespace}_${chunkIndex}=${chunks[chunkIndex]}; SameSite=None; Secure;`,
+                },
+              ],
+            },
+          })
+          this.netRuleIds.add(ruleId)
+        }
+      }
+    }
   }
 
-  private prepareAction(action: Action) {
-    if (!action) return null
-    return action
+  private async removeNetRules() {
+    for (const ruleId of this.netRuleIds) await this.$.net.removeRule(ruleId)
+    this.netRuleIds.clear()
+  }
+
+  private matchPatternToRegexFilter(pattern: string) {
+    if (pattern === '<all_urls>') pattern = '*://*/*'
+
+    let regex = pattern
+      // Escape special regex characters except `*`
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+      // Replace `*` with `.*`
+      .replaceAll('*', '.*')
+
+    // Make subdomain optional for patterns like `...//*.example.com/...`
+    if (regex.includes('//.*\\.')) regex = regex.replace('//.*\\.', '//(.*\\.)?')
+
+    return `^${regex}$`
+  }
+
+  private splitToChunks(text: string, chunkSize: number) {
+    const chunks = []
+    for (let i = 0; i < text.length; i += chunkSize) chunks.push(text.slice(i, i + chunkSize))
+    return chunks
   }
 }

@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
 @theme {
-  --spacing: 1px;
   --color-brand: #e9ff01;
 }

@@ -5,9 +5,9 @@
 - **General**
   - epos.fetch
   - epos.browser
-  - epos.element
-  - epos.render
   - epos.component
+  - epos.render
+  - epos.element
 - **Bus**
   - epos.bus.on
   - epos.bus.off
@@ -21,15 +21,9 @@
   - epos.state.disconnect
   - epos.state.transaction
   - epos.state.local
-  - epos.state.configure
   - epos.state.destroy
   - epos.state.list
-  - epos.state.registerModels
-  - epos.state.symbols.parent
-  - epos.state.symbols.modelInit
-  - epos.state.symbols.modelCleanup
-  - epos.state.symbols.modelStrict
-  - epos.state.symbols.modelVersioner
+  - epos.state.register
 - **Storage**
   - epos.storage.get
   - epos.storage.set
@@ -43,15 +37,15 @@
   - epos.frame.close
   - epos.frame.exists
   - epos.frame.list
-- **Assets**
-  - epos.assets.url
-  - epos.assets.load
-  - epos.assets.unload
-  - epos.assets.list
+- **Asset**
+  - epos.asset.load
+  - epos.asset.unload
+  - epos.asset.url
+  - epos.asset.get
+  - epos.asset.list
 - **Env**
-  - epos.env.name
   - epos.env.tabId
-  - epos.env.isWeb
+  - epos.env.project
   - epos.env.isPopup
   - epos.env.isSidePanel
   - epos.env.isBackground
@@ -63,3 +57,9 @@
   - epos.libs.reactDomClient
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
+- **Symbols**
+  - epos.symbols.stateParent
+  - epos.symbols.stateModelInit
+  - epos.symbols.stateModelDispose
+  - epos.symbols.stateModelStrict
+  - epos.symbols.stateModelVersioner

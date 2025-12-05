@@ -173,8 +173,7 @@ await epos.state.destroy('prefs')
 
 ## Advanced
 
-- `epos.state.registerModels(...)` — _placeholder (advanced feature, docs TBD)._
-- `epos.state.symbols` — _placeholder (advanced feature, docs TBD)._
+- `epos.state.register(...)` — _placeholder (advanced feature, docs TBD)._
 
 ---
 

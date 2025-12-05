@@ -1,19 +1,32 @@
 {
-  "$schema": "https://epos.dev/schema.json?v=1",
+  "$schema": "https://epos.dev/schema.json",
   "name": "x1",
-  "title": "X1 Test Package",
   "version": "0.0.1",
+  "title": "X1 Test Package",
   // "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
   "assets": ["x1.css"],
+  "permissions": ["browsingData", "notifications", "optional:downloads"],
   "targets": [
     {
-      "matches": "https://epos.dev/@x1",
-      "load": ["x1.js"]
+      "matches": "<allUrls>",
+      "load": "x1.js"
     },
+    // {
+    //   "matches": ["<allUrls>", "*://epos.dev/@x1"],
+    //   "load": ["lite:x1-lite.js", "x1.js", "shadow:x1.css"]
+    // },
     {
-      "matches": ["*://*/*", "<popup>"],
-      "load": "x1.css"
+      "matches": ["frame:*://*.epos.dev/*"],
+      "load": ["lite:x1-lite-2.js"]
+    },
+    // {
+    //   "matches": ["<popup>", "<sidePanel>"],
+    //   "load": ["x1-popup.css", "x1-popup.js"]
+    // },
+    {
+      "matches": ["<background>"],
+      "load": ["x1-bg.js"]
     }
     // {
     //   "matches": ["https://epos.dev/@x1", "https://x.com"],

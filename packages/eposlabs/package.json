@@ -1,0 +1,35 @@
+{
+  "name": "eposlabs",
+  "version": "1.15.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "",
+  "scripts": {
+    "dev": "tsup --config ../../tsup.config.ts --watch",
+    "build": "tsup --config ../../tsup.config.ts",
+    "lint": "tsc --noEmit",
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+  },
+  "exports": {
+    "./utils": {
+      "source": "./src/utils/utils.ts",
+      "import": "./dist/utils/utils.js",
+      "types": "./dist/utils/utils.d.ts"
+    },
+    "./types": {
+      "source": "./src/types/types.ts",
+      "import": "./dist/types/types.js",
+      "types": "./dist/types/types.d.ts"
+    },
+    "./match-pattern": {
+      "source": "./src/match-pattern/math-pattern.ts",
+      "import": "./dist/match-pattern/math-pattern.js",
+      "types": "./dist/match-pattern/math-pattern.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ]
+}

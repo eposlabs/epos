@@ -1,9 +1,11 @@
-export function merge(this: exOsSwVw.Unit, data1: unknown, data2: unknown) {
-  if (this.$.utils.is.object(data1) && this.$.utils.is.object(data2)) {
+import { is } from 'eposlabs/utils'
+
+export function merge(data1: unknown, data2: unknown) {
+  if (is.object(data1) && is.object(data2)) {
     const merged = { ...data1 }
     for (const key in data2) {
       if (key in merged) {
-        merged[key] = this.$.utils.merge(merged[key], data2[key])
+        merged[key] = merge(merged[key], data2[key])
       } else {
         merged[key] = data2[key]
       }
@@ -11,7 +13,7 @@ export function merge(this: exOsSwVw.Unit, data1: unknown, data2: unknown) {
     return merged
   }
 
-  if (this.$.utils.is.array(data1) && this.$.utils.is.array(data2)) {
+  if (is.array(data1) && is.array(data2)) {
     return [...data1, ...data2]
   }
 

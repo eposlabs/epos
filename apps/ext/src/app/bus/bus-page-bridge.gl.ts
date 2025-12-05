@@ -49,7 +49,7 @@ export class BusPageBridge extends gl.Unit {
   }
 
   private setupCsTopOsVw() {
-    // Listen for page messages from `csFrame` / `ex`.
+    // Listen for page messages from `csFrame` and `ex`.
     // This listener triggers on any message (event its own), but we filter out non-matching ones.
     self.addEventListener('message', async e => {
       const req = e.data
@@ -61,7 +61,7 @@ export class BusPageBridge extends gl.Unit {
       if (!source) return
 
       // Register proxy action for the specified context (`csFrame` / `ex`).
-      if (req.name === 'bus.registerContextProxyAction') {
+      if (req.name === 'Bus.registerContextProxyAction') {
         const [name] = req.args
         if (!this.$.utils.is.string(name)) throw this.never()
         const fn = (...args: unknown[]) => this.sendToContext(source, name, ...args)
@@ -70,7 +70,7 @@ export class BusPageBridge extends gl.Unit {
       }
 
       // Remove proxy action for the specified context (`csFrame` / `ex`).
-      if (req.name === 'bus.removeContextProxyAction') {
+      if (req.name === 'Bus.removeContextProxyAction') {
         const [name] = req.args
         if (!this.$.utils.is.string(name)) throw this.never()
         this.$bus.off(name, null, source)
@@ -78,14 +78,14 @@ export class BusPageBridge extends gl.Unit {
       }
 
       // Remove all proxy actions for the specified context (`csFrame` / `ex`).
-      if (req.name === 'bus.removeAllContextProxyActions') {
+      if (req.name === 'Bus.removeAllContextProxyActions') {
         this.removedContextListeners.forEach(fn => fn(source))
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== source)
         return
       }
 
       // Remove all proxy actions whose targets no longer exist
-      if (req.name === 'bus.invalidateProxyActions') {
+      if (req.name === 'Bus.invalidateProxyActions') {
         this.invalidateProxyActions()
         return
       }
@@ -110,7 +110,7 @@ export class BusPageBridge extends gl.Unit {
     // This happens on iframe refresh or page navigation inside an iframe.
     // `csFrame` and `exFrame` run in the same context (WindowProxy), but call for both, because
     // for `<background>` frames, only `exFrame` is present, and for web frames, `exFrame` may be absent.
-    async: this.sendToTop('bus.removeAllContextProxyActions')
+    async: this.sendToTop('Bus.removeAllContextProxyActions')
 
     // Listen for messages from `csTop` / `vw` / `os`.
     // The listener is attached to `self`, so only targeted messages are handled.
@@ -173,7 +173,7 @@ export class BusPageBridge extends gl.Unit {
           if (!containsIframe) continue
 
           if (this.$.env.is.csFrame) {
-            async: this.sendToTop('bus.invalidateProxyActions')
+            async: this.sendToTop('Bus.invalidateProxyActions')
           } else {
             this.invalidateProxyActions()
           }

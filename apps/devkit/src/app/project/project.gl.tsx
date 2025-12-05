@@ -1,7 +1,7 @@
 import { parseEposSpec, type Spec } from 'epos-spec-parser'
 
 export type Bundle = {
-  dev: boolean
+  env: 'development' | 'production'
   spec: Spec
   sources: Record<string, string>
   assets: Record<string, Blob>
@@ -58,7 +58,7 @@ export class Project extends gl.Unit {
     await this.update()
   }
 
-  cleanup() {
+  dispose() {
     if (this.observer) {
       this.observer.disconnect()
     }
@@ -66,6 +66,11 @@ export class Project extends gl.Unit {
 
   async export(dev = false) {
     console.log(`📦 [${this.name}] Export`, { dev })
+
+    // TODO:
+    // const sources = readSources()
+    // if sources.includes unminified files and !dev -> warn user
+
     const blob = await this.engine.bus.send('Projects.export', this.name, dev)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
@@ -73,7 +78,7 @@ export class Project extends gl.Unit {
   }
 
   async remove() {
-    await this.engine.bus.send('ProjectsInstaller.remove', this.name)
+    await this.engine.bus.send('Projects.remove', this.name)
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
@@ -110,15 +115,15 @@ export class Project extends gl.Unit {
       // Read sources
       const sources: Record<string, string> = {}
       for (const target of this.spec.targets) {
-        for (const path of target.load) {
-          if (sources[path]) continue
-          sources[path] = await this.fs.readFileAsText(path)
+        for (const resource of target.resources) {
+          if (sources[resource.path]) continue
+          sources[resource.path] = await this.fs.readFileAsText(resource.path)
         }
       }
 
       // Prepare & install bundle
-      const bundle: Bundle = { dev: true, spec: this.spec, sources, assets }
-      await this.engine.bus.send('ProjectsInstaller.install', bundle)
+      const bundle: Bundle = { env: 'development', spec: this.spec, sources, assets }
+      await this.engine.bus.send('Projects.install', bundle)
 
       // Done
       this.updatedAt = Date.now()
@@ -187,8 +192,8 @@ export class Project extends gl.Unit {
     }
 
     for (const target of this.spec.targets) {
-      for (const loadPath of target.load) {
-        if (path === loadPath) return true
+      for (const resource of target.resources) {
+        if (path === resource.path) return true
       }
     }
 

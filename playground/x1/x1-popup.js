@@ -1,9 +1,9 @@
 /// <reference types="epos" />
 
+console.warn('popup')
+
 // // class X1App extends epos.Unit {}
-
 // const state = await epos.connect(() => ({ title: 'abc' }))
-
 // console.warn('x1-hub', state.title)
 // self.epos = epos
 // self.state = state
@@ -14,9 +14,10 @@ document.body.innerHTML = `
   </div>
 `
 
-// window.onChange = e => {
-//   state.title = e.target.value
-// }
+window.onChange = e => {
+  // console.warn(e)
+  // state.title = e.target.value
+}
 
 // epos.autorun(() => {
 //   const input = document.querySelector('input')

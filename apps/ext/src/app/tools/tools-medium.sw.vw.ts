@@ -4,9 +4,10 @@ export class ToolsMedium extends swVw.Unit {
 
     if (this.$.env.is.vwPopup) {
       this.$.bus.on('ToolsMedium.isPopupOpen', () => true)
-      this.$.bus.on('ToolsMedium.closePopup', () => window.close())
+      this.$.bus.on('ToolsMedium.closePopup', () => self.close())
     } else if (this.$.env.is.vwSidePanel) {
-      const tabId = this.$.env.params.tabId
+      const tabId = Number(this.$.env.params.tabId)
+      if (!tabId) throw this.never()
       this.$.bus.on(`ToolsMedium.isSidePanelOpen[${tabId}]`, () => true)
     }
   }
@@ -33,7 +34,7 @@ export class ToolsMedium extends swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openPopup(tabId: number) {
-    const path = this.$.env.url.view({ locus: 'popup', tabId: String(tabId) })
+    const path = this.$.env.url.view({ locus: 'popup', tabId })
     await this.$.browser.action.setPopup({ popup: path })
     await this.$.utils.safe(() => this.$.browser.action.openPopup())
     await this.$.browser.action.setPopup({ popup: '' })
@@ -41,18 +42,9 @@ export class ToolsMedium extends swVw.Unit {
 
   async closePopup() {
     if (this.$.env.is.vwPopup) {
-      window.close()
+      self.close()
     } else {
       await this.$.bus.send('ToolsMedium.closePopup')
-    }
-  }
-
-  async togglePopup(tabId: number) {
-    const open = await this.$.bus.send('ToolsMedium.isPopupOpen')
-    if (open) {
-      await this.closePopup()
-    } else {
-      await this.openPopup(tabId)
     }
   }
 
@@ -61,7 +53,7 @@ export class ToolsMedium extends swVw.Unit {
   // ---------------------------------------------------------------------------
 
   async openSidePanel(tabId: number) {
-    const path = this.$.env.url.view({ locus: 'sidePanel', tabId: String(tabId) })
+    const path = this.$.env.url.view({ locus: 'sidePanel', tabId })
     // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
     async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })

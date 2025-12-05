@@ -1,7 +1,7 @@
 import './types/file-system-observer'
 import './types/wicg-file-system-access'
 import { clsx, type ClassValue } from 'clsx'
-import type * as types from '@eposlabs/utils/types'
+import type * as types from 'eposlabs/types'
 import 'epos'
 
 // cx

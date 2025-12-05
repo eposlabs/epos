@@ -1,58 +1,101 @@
-import type { Mode, Pattern, PositivePattern, Target } from 'epos-spec-parser'
+import type {
+  FrameMatch,
+  LocusMatch,
+  Match,
+  MatchPattern,
+  Resource,
+  Target,
+  TopMatch,
+} from 'epos-spec-parser'
+
+export type Address = Url | `frame:${Url}`
 
 export class ProjectTarget extends sw.Unit {
   private $project = this.closest(sw.Project)!
-  matches: Pattern[]
-  load: string[]
-  mode: Mode
+  matches: Match[]
+  resources: Resource[]
 
   constructor(parent: sw.Unit, target: Target) {
     super(parent)
     this.matches = target.matches
-    this.load = target.load
-    this.mode = target.mode
+    this.resources = target.resources
   }
 
-  test(url: string, frame = false) {
-    let ok = false
-    for (const pattern of this.matches) {
-      if (pattern.startsWith('!')) {
-        if (!ok) continue
-        ok = !this.checkPattern(pattern.slice(1), url, frame)
-      } else {
-        if (ok) continue
-        ok = this.checkPattern(pattern, url, frame)
-      }
-    }
-
-    return ok
+  test(address?: Address) {
+    if (!address) return false
+    return this.matches.some(match => this.testMatch(match, address))
   }
 
-  private checkPattern(pattern: PositivePattern, url: string, frame: boolean) {
-    const extOrigin = location.origin
+  hasPopup() {
+    return this.matches.some(match => match.context === 'locus' && match.value === 'popup')
+  }
 
-    // For special pages, we check against extension URL params.
-    // `frame` argument is ignored, it does not make sense for special pages.
-    if (['<popup>', '<sidePanel>', '<background>'].includes(pattern)) {
-      const { origin, searchParams } = new URL(url)
-      if (origin !== extOrigin) return false
-      const projectName = searchParams.get('name')
-      const locusPattern = `<${searchParams.get('locus')}>`
-      return pattern === locusPattern && (!projectName || projectName === this.$project.name)
+  hasSidePanel() {
+    return this.matches.some(match => match.context === 'locus' && match.value === 'sidePanel')
+  }
+
+  hasBackground() {
+    return this.matches.some(match => match.context === 'locus' && match.value === 'background')
+  }
+
+  private testMatch(match: Match, address: Address) {
+    if (match.context === 'top') return this.testTopMatch(match, address)
+    if (match.context === 'frame') return this.testFrameMatch(match, address)
+    if (match.context === 'locus') return this.testLocusMatch(match, address)
+    return false
+  }
+
+  private testTopMatch(match: TopMatch, address: Address) {
+    if (address.startsWith('frame:')) return false
+    return this.testPattern(match.value, address)
+  }
+
+  private testFrameMatch(match: FrameMatch, address: Address) {
+    if (!address.startsWith('frame:')) return false
+    const url = address.replace('frame:', '')
+    return this.testPattern(match.value, url)
+  }
+
+  private testLocusMatch(match: LocusMatch, address: Address) {
+    if (address.startsWith('frame:')) return false
+    const { origin, pathname, searchParams } = new URL(address)
+
+    // Only extension pages can match special patterns
+    const isExtensionPage = origin === location.origin
+    if (!isExtensionPage) return false
+
+    // For `view.html` page, match by locus in the URL params
+    if (pathname === '/view.html') {
+      const urlLocus = searchParams.get('locus')
+      return match.value === urlLocus
     }
 
-    // For `frame=true`, only `frame:*` patterns should match
-    if (frame) {
-      if (!pattern.startsWith('frame:')) return false
-      pattern = pattern.replace('frame:', '')
+    // For `project.html` page, match by locus and, optionally, by project name in the URL params
+    if (pathname === '/project.html') {
+      const urlLocus = searchParams.get('locus')
+      const urlProjectName = searchParams.get('name')
+      return match.value === urlLocus && (!urlProjectName || urlProjectName === this.$project.spec.name)
     }
 
-    if (new URLPattern(pattern).test(url)) {
-      const { origin } = new URL(url)
-      if (origin === extOrigin) return false
-      return true
+    // For `offscreen.html` page, match only `<background>` pattern
+    if (pathname === '/offscreen.html') {
+      return match.value === 'background'
     }
 
     return false
+  }
+
+  private testPattern(pattern: MatchPattern, url: Url) {
+    const { origin } = new URL(url)
+
+    // Do not match extension pages
+    const isExtensionPage = origin === location.origin
+    if (isExtensionPage) return false
+
+    // Do not match hub pages (`epos.dev/@`) unless explicitly specified
+    if (url.startsWith('https://epos.dev/@') && !pattern.includes('epos.dev/@')) return false
+
+    const matcher = this.$.libs.matchPattern(pattern)
+    return matcher.assertValid().match(url)
   }
 }
