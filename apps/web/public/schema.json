@@ -68,8 +68,8 @@
     "Config": {
       "type": "object",
       "properties": {
-        "preloadAssets": { "type": "boolean", "default": true },
-        "allowMissingStateModels": { "type": "boolean", "default": false }
+        "noPreloadAssets": { "type": "boolean", "default": false },
+        "allowMissingModels": { "type": "boolean", "default": false }
       },
       "additionalProperties": false
     },

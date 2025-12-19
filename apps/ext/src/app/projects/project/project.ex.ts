@@ -13,16 +13,15 @@ export class Project extends ex.Unit {
     this.shadowCss = def.shadowCss
     this.config = def.config
     this.fn = def.fn
-    const stateConfig = { allowMissingModels: this.config.allowMissingStateModels }
-    this.states = new exSw.States(this, this.name, ':state', stateConfig)
     this.bus = this.$.bus.create(`Project[${this.name}]`)
+    this.states = new exSw.States(this, this.name, ':state', this.config)
     this.epos = new ex.ProjectEpos(this)
   }
 
   async init() {
     await this.epos.init()
+    if (!this.config.noPreloadAssets) await this.epos.api.asset.load()
     if (!this.fn) throw this.never()
-    if (this.config.preloadAssets) await this.epos.api.asset.load()
     this.fn.call(null, this.epos.api)
     this.fn = null // Free up memory
   }

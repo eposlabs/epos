@@ -5,7 +5,7 @@
   "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
-  "config": { "allowMissingStateModels": true },
+  "config": { "allowMissingModels": true },
 
   "targets": [
     {
