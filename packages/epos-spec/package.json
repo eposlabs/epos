@@ -1,19 +1,19 @@
 {
-  "name": "epos-spec-parser",
-  "type": "module",
   "private": true,
+  "name": "epos-spec",
+  "type": "module",
   "scripts": {
     "lint": "tsc --noEmit"
   },
   "exports": {
-    ".": "./src/epos-spec-parser.ts"
+    ".": "./src/epos-spec.ts"
   },
   "files": [
     "src"
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",
-    "eposlabs": "*",
+    "dropcap": "*",
     "strip-json-comments": "^5.0.3"
   }
 }

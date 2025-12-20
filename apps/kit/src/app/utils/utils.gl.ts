@@ -1,4 +1,4 @@
-import { is, Queue, safe, safeSync, wait } from 'eposlabs/utils'
+import { is, Queue, safe, safeSync, wait } from 'dropcap/utils'
 
 export class Utils extends gl.Unit {
   declare is: typeof is

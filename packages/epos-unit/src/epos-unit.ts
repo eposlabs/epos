@@ -1,6 +1,6 @@
 import 'epos'
-import type { Cls } from 'eposlabs/types'
-import { createLog, Log } from 'eposlabs/utils'
+import type { Cls } from 'dropcap/types'
+import { createLog, Log } from 'dropcap/utils'
 import type { FC } from 'react'
 
 export const _root_ = Symbol('root')

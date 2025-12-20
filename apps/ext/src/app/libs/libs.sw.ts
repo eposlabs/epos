@@ -1,5 +1,5 @@
 import { matchPattern } from 'browser-extension-url-match'
-import { parseEposSpec } from 'epos-spec-parser'
+import { parseEposSpec } from 'epos-spec'
 import Zip from 'jszip'
 import { compressToBase64 } from 'lz-string'
 import * as mobx from 'mobx'

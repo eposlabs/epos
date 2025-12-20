@@ -10,11 +10,11 @@
   "scripts": {
     "edge": "ncu --upgrade --deep",
     "prettier": "prettier --write ./",
-    "reinstall": "rm package-lock.json && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && npm install",
-    "release": "npm run release:epos && npm run release:epos-unit && npm run release:eposlabs && npm run release:paralayer && npm run release:rebundle",
+    "reinstall": "rm -f package-lock.json && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && npm install",
+    "release": "npm run release:epos && npm run release:epos-unit && npm run release:dropcap && npm run release:paralayer && npm run release:rebundle",
     "release:epos": "npm -w epos run release",
     "release:epos-unit": "npm -w epos-unit run release",
-    "release:eposlabs": "npm -w eposlabs run release",
+    "release:dropcap": "npm -w dropcap run release",
     "release:paralayer": "npm -w paralayer run release",
     "release:rebundle": "npm -w vite-plugin-rebundle run release"
   },
@@ -22,7 +22,7 @@
     "lightningcss": "^1.30.2",
     "npm-check-updates": "^19.2.0",
     "prettier": "^3.7.4",
-    "prettier-plugin-embed": "^0.5.0",
+    "prettier-plugin-embed": "^0.5.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"

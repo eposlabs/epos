@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { is } from 'eposlabs/utils'
+import { is } from 'dropcap/utils'
 import { filesize } from 'filesize'
 import { rm, stat } from 'node:fs/promises'
 import { extname, join } from 'node:path'

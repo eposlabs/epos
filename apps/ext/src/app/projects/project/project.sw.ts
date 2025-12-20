@@ -1,4 +1,4 @@
-import type { Permission, Spec } from 'epos-spec-parser'
+import type { Permission, Spec } from 'epos-spec'
 import type { Address } from './project-target.sw'
 
 export type Env = 'development' | 'production'

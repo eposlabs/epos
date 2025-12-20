@@ -1,7 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
 
-  "name": "devkit",
+  "name": "kit",
   "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
@@ -9,7 +9,7 @@
 
   "targets": [
     {
-      "matches": ["https://epos.dev/@devkit"],
+      "matches": ["https://epos.dev/@kit"],
       "load": ["dist/gl.js", "dist/tw.css"]
     },
     {

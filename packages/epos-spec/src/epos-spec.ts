@@ -1,6 +1,6 @@
 import { matchPattern } from 'browser-extension-url-match'
-import type { Obj } from 'eposlabs/types'
-import { ensureArray, is, safeSync, unique } from 'eposlabs/utils'
+import type { Obj } from 'dropcap/types'
+import { ensureArray, is, safeSync, unique } from 'dropcap/utils'
 import stripJsonComments from 'strip-json-comments'
 
 export type Action = true | string
@@ -97,7 +97,7 @@ const schema = {
   popup: {
     keys: ['width', 'height'],
     width: { min: 150, max: 800, default: 400 },
-    height: { min: 150, max: 600, default: 600 },
+    height: { min: 150, max: 568, default: 568 },
   },
   config: {
     keys: ['noPreloadAssets', 'allowMissingModels'],

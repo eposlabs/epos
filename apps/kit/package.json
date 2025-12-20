@@ -1,23 +1,23 @@
 {
-  "name": "devkit",
-  "type": "module",
   "private": true,
+  "name": "kit",
+  "type": "module",
   "scripts": {
     "dev": "vite build --mode development",
     "build": "vite build --mode production"
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "dropcap": "*",
     "epos": "*",
-    "epos-spec-parser": "*",
-    "epos-unit": "*",
-    "eposlabs": "*"
+    "epos-spec": "*",
+    "epos-unit": "*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.32",
     "paralayer": "^1.10.0",
-    "rolldown-vite": "7.1.7",
+    "rolldown-vite": "^7.3.0",
     "tailwindcss": "^4.1.18",
     "vite-plugin-rebundle": "^1.21.0"
   }

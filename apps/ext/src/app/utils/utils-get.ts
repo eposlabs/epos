@@ -1,4 +1,4 @@
-import { is } from 'eposlabs/utils'
+import { is } from 'dropcap/utils'
 
 export function get(target: unknown, path: PropertyKey[]): unknown {
   const [key, ...rest] = path

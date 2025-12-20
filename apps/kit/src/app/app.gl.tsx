@@ -16,7 +16,7 @@ export class App extends gl.Unit {
 
     // Save the handle to IDB
     const handleId = this.$.utils.id()
-    await this.$.idb.set('devkit', 'handles', handleId, handle)
+    await this.$.idb.set('kit', 'handles', handleId, handle)
 
     // Create new project
     const project = new gl.Project(this, handleId)
@@ -25,9 +25,9 @@ export class App extends gl.Unit {
 
   /** Ensure only one tab is open and it is pinned. */
   private async ensureSingleTab() {
-    // Get devkit tabs
-    let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
-    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@devkit' : false))
+    // Get kit tabs
+    let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
+    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@kit' : false))
 
     if (tabs.length > 1) {
       await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
@@ -42,11 +42,11 @@ export class App extends gl.Unit {
 
   /** Delete handles from IDB that do not have corresponding projects. */
   private async deleteOrphanedHandles() {
-    const idbHandleIds = await this.$.idb.keys('devkit', 'handles')
+    const idbHandleIds = await this.$.idb.keys('kit', 'handles')
     const projectHandleIds = new Set(this.$.projects.map(project => project.handleId))
     for (const idbHandleId of idbHandleIds) {
       if (projectHandleIds.has(idbHandleId)) continue
-      await this.$.idb.delete('devkit', 'handles', idbHandleId)
+      await this.$.idb.delete('kit', 'handles', idbHandleId)
     }
   }
 

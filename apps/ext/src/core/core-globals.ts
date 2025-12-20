@@ -1,7 +1,7 @@
 /// <reference types="rolldown-vite/client" />
 import type { Epos } from 'epos'
-import type { Config } from 'epos-spec-parser'
-import type * as types from 'eposlabs/types'
+import type { Config } from 'epos-spec'
+import type * as types from 'dropcap/types'
 
 declare global {
   type Obj = types.Obj

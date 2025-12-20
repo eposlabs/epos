@@ -182,13 +182,13 @@ export class Projects extends sw.Unit {
       }
     }
 
-    // Has devkit package? -> Open devkit page
-    if (this.map.devkit) {
-      const tabs = await this.$.browser.tabs.query({ url: 'https://epos.dev/@devkit' })
+    // Has kit package? -> Open @kit page
+    if (this.map.kit) {
+      const tabs = await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' })
       if (tabs.length > 0) {
         await this.$.browser.tabs.update(tabs[0].id, { active: true })
       } else {
-        await this.$.browser.tabs.create({ url: 'https://epos.dev/@devkit', active: true })
+        await this.$.browser.tabs.create({ url: 'https://epos.dev/@kit', active: true })
       }
     }
   }

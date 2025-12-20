@@ -58,7 +58,7 @@ export class Projects extends vw.Unit {
 
     // Select the first project if none selected
     if (!this.selectedProjectName || !this.map[this.selectedProjectName]) {
-      this.selectedProjectName = this.list[0]?.name ?? null
+      this.selectedProjectName = this.list.find(project => project.hash)?.name ?? null
     }
 
     // Rerender app
@@ -68,28 +68,30 @@ export class Projects extends vw.Unit {
   View = () => {
     if (this.list.length === 0) return null
     return (
-      <div className="flex bg-gray-100">
+      <div>
+        <this.HeaderView />
         <this.ContentView />
-        <this.SidebarView />
+      </div>
+    )
+  }
+
+  private HeaderView = () => {
+    return (
+      <div class="h-8">
+        <select value={this.selectedProjectName ?? ''} onChange={e => this.select(e.currentTarget.value)}>
+          {this.list.map(project => (
+            <project.OptionView key={project.name} />
+          ))}
+        </select>
       </div>
     )
   }
 
   private ContentView = () => {
     return (
-      <div className="m-2 grow overflow-hidden rounded-lg">
+      <div>
         {this.list.map(project => (
-          <project.View key={project.name} selected={true} />
-        ))}
-      </div>
-    )
-  }
-
-  private SidebarView = () => {
-    return (
-      <div className="flex shrink-0 flex-col gap-2">
-        {this.list.map(project => (
-          <project.ButtonView />
+          <project.View key={project.name} />
         ))}
       </div>
     )

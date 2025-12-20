@@ -1,4 +1,4 @@
-import { parseEposSpec, type Spec } from 'epos-spec-parser'
+import { parseEposSpec, type Spec } from 'epos-spec'
 
 export type Bundle = {
   env: 'development' | 'production'
@@ -39,7 +39,7 @@ export class Project extends gl.Unit {
     this.update = q.wrap(this.update, this)
 
     // Project's handle was removed from IDB? -> Remove project itself
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('devkit', 'handles', this.handleId)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     if (!handle) {
       this.remove()
       return

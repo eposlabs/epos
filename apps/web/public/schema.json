@@ -60,7 +60,7 @@
       "type": "object",
       "properties": {
         "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 400 },
-        "height": { "type": "number", "minimum": 150, "maximum": 600, "default": 600 }
+        "height": { "type": "number", "minimum": 150, "maximum": 568, "default": 568 }
       },
       "additionalProperties": false
     },

@@ -1,11 +1,12 @@
 import type { Info } from './project.sw'
 
 export const DEFAULT_POPUP_WIDTH = 380
-export const DEFAULT_POPUP_HEIGHT = 600
+export const DEFAULT_POPUP_HEIGHT = 568
 
 export class Project extends vw.Unit {
   static DEFAULT_POPUP_WIDTH = DEFAULT_POPUP_WIDTH
   static DEFAULT_POPUP_HEIGHT = DEFAULT_POPUP_HEIGHT
+  private $projects = this.closest(vw.Projects)!
   name: Info['name']
   icon: Info['icon']
   title: Info['title']
@@ -14,7 +15,6 @@ export class Project extends vw.Unit {
   env: Info['env']
   hash: Info['hash']
   hasSidePanel: Info['hasSidePanel']
-  bus: ReturnType<gl.Bus['create']>
 
   constructor(parent: vw.Unit, data: Info) {
     super(parent)
@@ -26,7 +26,6 @@ export class Project extends vw.Unit {
     this.env = data.env
     this.hash = data.hash
     this.hasSidePanel = data.hasSidePanel
-    this.bus = this.$.bus.create(`Project[${this.name}]`)
   }
 
   update(updates: Omit<Info, 'name'>) {
@@ -39,16 +38,26 @@ export class Project extends vw.Unit {
     this.hasSidePanel = updates.hasSidePanel
   }
 
-  View = (props: { selected: boolean }) => {
+  View = () => {
     if (!this.hash) return null
+    const selected = this.$projects.selectedProjectName === this.name
     return (
       <iframe
         key={this.hash}
         name={this.name}
         src={this.getSrc()}
         style={this.getStyle()}
-        className={this.$.utils.cx(!props.selected && 'hidden')}
+        className={this.$.utils.cx(!selected && 'hidden')}
       />
+    )
+  }
+
+  OptionView = () => {
+    if (!this.hash && !this.action) return null
+    return (
+      <option key={this.name} value={this.name}>
+        {this.title ?? this.name} {!this.hash && ' (action)'}
+      </option>
     )
   }
 
@@ -70,7 +79,8 @@ export class Project extends vw.Unit {
         } else {
           const tabId = this.getTabId()
           const tab = await this.$.browser.tabs.get(tabId)
-          await this.bus.send(':action', tab)
+          const projectEposBus = this.$.bus.create(`ProjectEpos[${this.name}]`)
+          await projectEposBus.send(':action', tab)
           self.close()
         }
       }
@@ -116,6 +126,8 @@ export class Project extends vw.Unit {
     } else {
       throw this.never()
     }
+
+    console.warn(width, height)
 
     return { width, height }
   }

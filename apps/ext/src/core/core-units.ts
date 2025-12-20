@@ -1,4 +1,4 @@
-import { Unit } from 'eposlabs/utils'
+import { Unit } from 'dropcap/utils'
 
 class UnitCs extends Unit<cs.App> {}
 class UnitEx extends Unit<ex.App> {}

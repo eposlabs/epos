@@ -1,4 +1,4 @@
-import { colorHash, ensureArray, is, Queue, safe, safeSync, unique, wait } from 'eposlabs/utils'
+import { colorHash, ensureArray, is, Queue, safe, safeSync, unique, wait } from 'dropcap/utils'
 import { convertImage } from './utils-convert-image'
 import { cx } from './utils-cx'
 import { equal } from './utils-equal'

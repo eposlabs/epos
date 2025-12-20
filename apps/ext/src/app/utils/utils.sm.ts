@@ -1,4 +1,4 @@
-import { is, safe } from 'eposlabs/utils'
+import { is, safe } from 'dropcap/utils'
 import { id } from './utils-id'
 import { link } from './utils-link'
 import { time } from './utils-time'

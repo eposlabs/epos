@@ -1,4 +1,4 @@
-import { createLog } from 'eposlabs/utils'
+import { createLog } from 'dropcap/utils'
 import * as mobx from 'mobx'
 import * as yjs from 'yjs'
 

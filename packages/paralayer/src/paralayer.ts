@@ -1,6 +1,5 @@
-import { Queue, Unit, safe } from 'eposlabs/utils'
-import type { FSWatcher } from 'chokidar'
-import { watch } from 'chokidar'
+import { watch, type FSWatcher } from 'chokidar'
+import { Queue, Unit, safe } from 'dropcap/utils'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
 

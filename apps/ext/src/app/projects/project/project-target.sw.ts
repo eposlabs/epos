@@ -1,12 +1,4 @@
-import type {
-  FrameMatch,
-  LocusMatch,
-  Match,
-  MatchPattern,
-  Resource,
-  Target,
-  TopMatch,
-} from 'epos-spec-parser'
+import type { FrameMatch, LocusMatch, Match, MatchPattern, Resource, Target, TopMatch } from 'epos-spec'
 
 export type Address = Url | `frame:${Url}`
 

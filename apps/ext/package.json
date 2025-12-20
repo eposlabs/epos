@@ -1,7 +1,7 @@
 {
+  "private": true,
   "name": "ext",
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "vite build --mode development",
     "build": "vite build --mode production",
@@ -9,9 +9,9 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "epos-spec-parser": "*",
+    "dropcap": "*",
+    "epos-spec": "*",
     "epos": "*",
-    "eposlabs": "*",
     "jszip": "^3.10.1",
     "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
@@ -21,7 +21,7 @@
     "react-dom": "^19.2.3",
     "strip-json-comments": "^5.0.3",
     "terser": "^5.44.1",
-    "yjs": "^13.6.27"
+    "yjs": "^13.6.28"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
@@ -31,7 +31,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "paralayer": "^1.10.0",
-    "rolldown-vite": "7.1.7",
+    "rolldown-vite": "^7.3.0",
     "tailwindcss": "^4.1.18",
     "vite-plugin-rebundle": "^1.21.0"
   }

@@ -20,10 +20,10 @@
       "matches": ["frame:*://*.epos.dev/*"],
       "load": ["lite:x1-lite-2.js"]
     },
-    // {
-    //   "matches": ["<popup>", "<sidePanel>"],
-    //   "load": ["x1-popup.css", "x1-popup.js"]
-    // },
+    {
+      "matches": ["<popup>", "<sidePanel>"],
+      "load": ["x1-popup.css", "x1-popup.js"]
+    },
     {
       "matches": ["<background>"],
       "load": ["x1-bg.js"]

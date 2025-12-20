@@ -1,4 +1,4 @@
-import { is } from 'eposlabs/utils'
+import { is } from 'dropcap/utils'
 
 export function merge(data1: unknown, data2: unknown) {
   if (is.object(data1) && is.object(data2)) {

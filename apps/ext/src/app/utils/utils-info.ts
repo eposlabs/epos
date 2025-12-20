@@ -1,4 +1,4 @@
-import { colorHash } from 'eposlabs/utils'
+import { colorHash } from 'dropcap/utils'
 
 export function info(message: string, params: { label?: string; timestamp?: boolean; details?: string }) {
   // CSS marker, use \u200B (zero-width space) to allow subsequent CSS markers

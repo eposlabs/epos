@@ -17,22 +17,23 @@ export class App extends sw.Unit {
     self.$ = this
     await this.net.init()
     await this.projects.init()
-    this.logDevHelp()
+    this.printInfo()
     this.initGlobalMethods()
     await this.setupContentScript()
     await this.createOffscreen()
-    await this.reloadDevKitTabs()
+    await this.reloadKitTabs()
     await this.dev.init()
   }
 
-  async exportDevKit() {
-    await this.projects.install('http://localhost:3022/apps/devkit/epos.json')
-    const blob = await this.projects.export('devkit')
+  async exportKit() {
+    await this.projects.install('http://localhost:3022/apps/kit/epos.json')
+    const blob = await this.projects.export('kit')
     const url = await this.bus.send<string>('Utils.createObjectUrl', blob)
+    if (!url) throw this.never()
     await this.browser.tabs.create({ url, active: true })
   }
 
-  private logDevHelp() {
+  private printInfo() {
     const hasDevProject = this.projects.list.some(project => project.env === 'development')
     if (!hasDevProject) return
     const version = this.browser.runtime.getManifest().version
@@ -83,10 +84,10 @@ export class App extends sw.Unit {
     })
   }
 
-  private async reloadDevKitTabs() {
-    // Get devkit tabs
-    let tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@devkit*' })
-    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@devkit' : false))
+  private async reloadKitTabs() {
+    // Get kit tabs
+    let tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
+    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@kit' : false))
 
     for (const tab of tabs) {
       if (!tab.id) continue
