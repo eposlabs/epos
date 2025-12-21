@@ -1,5 +1,5 @@
-import type { Address } from './project/project-target.sw'
-import type { Assets, Bundle, Env, Info, Snapshot, Sources } from './project/project.sw'
+import type { Address } from '../project/project-target.sw'
+import type { Assets, Bundle, Env, Info, Snapshot, Sources } from '../project/project.sw'
 import patchGlobalsJs from './projects-patch-globals.sw.js?raw'
 
 export type InfoMap = { [projectName: string]: Info }

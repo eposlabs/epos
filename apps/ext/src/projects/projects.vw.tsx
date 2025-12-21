@@ -120,7 +120,7 @@ export class Projects extends vw.Unit {
     if (!this.$.env.is.vwPopup) return null
     if (!this.list.some(project => project.hasSidePanel)) return null
 
-    return <button onClick={() => this.openSidePanel()}>[SIDE PANEL]</button>
+    return <button onClick={() => this.openSidePanel()}>[SIDE PANEL ]</button>
   }
 }
 

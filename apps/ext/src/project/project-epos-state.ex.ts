@@ -1,5 +1,5 @@
-import type { Initial, Versioner } from '../../_states/state/state.ex.sw'
-import type { Models } from '../../_states/states.ex.sw'
+import type { Initial, Versioner } from '../state/state.ex.sw'
+import type { Models } from '../states/states.ex.sw'
 
 const DEFAULT_STATE_NAME = ':default'
 

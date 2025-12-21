@@ -4,7 +4,7 @@
 
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
-import type { DbName, DbStoreKey, DbStoreName } from '../../idb/idb.sw'
+import type { DbName, DbStoreKey, DbStoreName } from '../idb/idb.sw'
 
 export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')
