@@ -44,7 +44,7 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.eject = (name: string, asDev = false) => this.projects.map[name].zip(asDev)
+    self.eject = (name: string, asDev = false) => this.projects.map[name]?.zip(asDev) ?? null
     self.remove = (name: string) => this.projects.remove(name)
     self.install = (name: string, asDev = false) => this.projects.install(name, asDev)
   }

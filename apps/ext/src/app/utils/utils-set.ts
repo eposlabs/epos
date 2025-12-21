@@ -2,6 +2,7 @@ import { is } from 'dropcap/utils'
 
 export function set(target: unknown, path: PropertyKey[], value: unknown) {
   const [key, ...rest] = path
+  if (key === undefined) return
 
   if (is.object(target)) {
     if (rest.length === 0) {

@@ -13,16 +13,10 @@ export class Projects extends vw.Unit {
     await this.watcher.init()
   }
 
-  getSelected() {
-    if (!this.selectedProjectName) return null
-    return this.map[this.selectedProjectName] ?? null
-  }
-
-  select(name: string) {
-    if (!this.map[name]) throw this.never()
-    this.selectedProjectName = name
-    this.$.rerender()
-    localStorage.setItem('Projects.selectedProjectName', name)
+  getTabId() {
+    const tabId = Number(this.$.env.params.tabId)
+    if (!tabId) throw this.never()
+    return tabId
   }
 
   private onWatcherData(data: WatcherData) {
@@ -40,8 +34,8 @@ export class Projects extends vw.Unit {
       delete this.map[projectName]
     }
 
-    // Update projects
-    for (const projectName of data.updatedProjectNames) {
+    // Update retained projects
+    for (const projectName of data.retainedProjectNames) {
       const project = this.map[projectName]
       if (!project) throw this.never()
       const info = data.infoMap[projectName]
@@ -57,16 +51,34 @@ export class Projects extends vw.Unit {
     }
 
     // Select the first project if none selected
-    if (!this.selectedProjectName || !this.map[this.selectedProjectName]) {
-      this.selectedProjectName = this.list.find(project => project.hash)?.name ?? null
-    }
+    const project = this.list.find(project => project.name === this.selectedProjectName && project.hash)
+    if (!project) this.selectedProjectName = this.list.find(project => project.hash)?.name ?? null
 
     // Rerender app
     this.$.rerender()
   }
 
+  private async selectProject(name: string) {
+    const project = this.map[name]
+    if (!project) return
+
+    if (project.hash) {
+      this.selectedProjectName = name
+      localStorage.setItem('Projects.selectedProjectName', name)
+    } else {
+      await project.processAction()
+    }
+
+    this.$.rerender()
+  }
+
+  private async openSidePanel() {
+    const tabId = this.getTabId()
+    await this.$.tools.medium.openSidePanel(tabId)
+    self.close()
+  }
+
   View = () => {
-    if (this.list.length === 0) return null
     return (
       <div>
         <this.HeaderView />
@@ -76,13 +88,20 @@ export class Projects extends vw.Unit {
   }
 
   private HeaderView = () => {
+    if (!this.selectedProjectName) return null
+    const projects = this.list.filter(project => project.hash || project.action)
+    if (projects.length <= 1) return null
+
     return (
-      <div class="h-8">
-        <select value={this.selectedProjectName ?? ''} onChange={e => this.select(e.currentTarget.value)}>
-          {this.list.map(project => (
-            <project.OptionView key={project.name} />
+      <div className="flex h-7 items-center justify-center">
+        <select value={this.selectedProjectName} onChange={e => this.selectProject(e.currentTarget.value)}>
+          {projects.map(project => (
+            <option key={project.name} value={project.name}>
+              {project.title ?? project.name} {!project.hash && ' 🔵'}
+            </option>
           ))}
         </select>
+        <this.SidePanelButtonView />
       </div>
     )
   }
@@ -96,7 +115,19 @@ export class Projects extends vw.Unit {
       </div>
     )
   }
+
+  private SidePanelButtonView = () => {
+    if (!this.$.env.is.vwPopup) return null
+    if (!this.list.some(project => project.hasSidePanel)) return null
+
+    return <button onClick={() => this.openSidePanel()}>[SIDE PANEL]</button>
+  }
 }
+
+// getSelected() {
+//   if (!this.selectedProjectName) return null
+//   return this.map[this.selectedProjectName] ?? null
+// }
 
 // import type { TargetedEvent } from 'preact'
 
@@ -159,8 +190,8 @@ export class Projects extends vw.Unit {
 //             'transform-[translate(calc(100%-min(100%,32px)),calc(-100%+7px))] text-transparent',
 //         )}
 //       >
-//         <div class="absolute -inset-x-8 -inset-y-6 z-0" />
-//         <div class="relative flex h-full">
+//         <div className="absolute -inset-x-8 -inset-y-6 z-0" />
+//         <div className="relative flex h-full">
 //           <this.SelectView />
 //           <this.ActionButtonView />
 //           <this.SidePanelButtonView />

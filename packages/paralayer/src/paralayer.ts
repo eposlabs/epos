@@ -1,5 +1,5 @@
 import { watch, type FSWatcher } from 'chokidar'
-import { Queue, Unit, safe } from 'dropcap/utils'
+import { Queue, Unit, safe, is } from 'dropcap/utils'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
 
@@ -166,9 +166,10 @@ export class Paralayer extends Unit {
   private extractExportedClassNames(content: string) {
     if (content.includes('paralayer-ignore')) return []
     return content
-      .split('export class ')
+      .split(/^export class /m)
       .slice(1)
-      .map(part => part.split(' ')[0].split('<')[0])
+      .map(part => part.split(' ')[0]?.split('<')[0])
+      .filter(is.present)
   }
 
   private generateLayerContent(layer: string, layerPaths: string[]) {

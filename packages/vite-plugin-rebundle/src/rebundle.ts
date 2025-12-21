@@ -71,6 +71,7 @@ export class RebundleVite {
       const info = this.config.logger.info
       this.config.logger.info = (message, options) => {
         const path = message.split(/\s+/)[0]
+        if (is.absent(path)) return
         if (extname(path) === '.js') return
         info(message, options)
       }
@@ -97,7 +98,11 @@ export class RebundleVite {
     // Get modified entry chunks
     const modifiedEntryChunks = this.getEntryChunks(bundle).filter(chunk => {
       const usedPaths = [chunk.fileName, ...chunk.imports]
-      return usedPaths.some(path => 'code' in bundle[path] && bundle[path].code !== this.originals[path])
+      return usedPaths.some(path => {
+        if (!bundle[path]) return false
+        if (!('code' in bundle[path])) return false
+        return bundle[path].code !== this.originals[path]
+      })
     })
 
     // Rebundle modified entry chunks

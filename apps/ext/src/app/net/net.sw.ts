@@ -39,6 +39,7 @@ export class Net extends sw.Unit {
       return id
     } else {
       const id = [...this.freeRuleIds][0]
+      if (this.$.utils.is.undefined(id)) throw this.never()
       this.freeRuleIds.delete(id)
       return id
     }

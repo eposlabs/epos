@@ -140,13 +140,14 @@ export class Projects extends sw.Unit {
   }
 
   private async upsert(bundle: Bundle) {
-    if (!this.map[bundle.spec.name]) {
-      const project = await sw.Project.new(this, bundle)
-      this.map[bundle.spec.name] = project
-    } else {
-      const project = this.map[bundle.spec.name]
+    let project = this.map[bundle.spec.name]
+    if (project) {
       project.update(bundle)
+      return
     }
+
+    project = await sw.Project.new(this, bundle)
+    this.map[bundle.spec.name] = project
   }
 
   private async handleActionClick(tab: chrome.tabs.Tab) {
@@ -174,6 +175,7 @@ export class Projects extends sw.Unit {
     // Single action? -> Process that action
     if (projectsWithAction.length === 1) {
       const project = projectsWithAction[0]
+      if (!project) throw this.never()
       if (project.spec.action === true) {
         const projectEposBus = this.$.bus.create(`ProjectEpos[${project.spec.name}]`)
         await projectEposBus.send(':action', tab)
@@ -184,9 +186,9 @@ export class Projects extends sw.Unit {
 
     // Has kit package? -> Open @kit page
     if (this.map.kit) {
-      const tabs = await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' })
-      if (tabs.length > 0) {
-        await this.$.browser.tabs.update(tabs[0].id, { active: true })
+      const kitTab = (await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' }))[0]
+      if (kitTab) {
+        await this.$.browser.tabs.update(kitTab.id, { active: true })
       } else {
         await this.$.browser.tabs.create({ url: 'https://epos.dev/@kit', active: true })
       }
@@ -288,7 +290,7 @@ export class Projects extends sw.Unit {
       if (this.cspProtectedOrigins.has(origin)) return
 
       // Check if origin is CSP-protected
-      const [{ result: hasCspError }] = await this.$.browser.scripting.executeScript({
+      const [checkCspResult] = await this.$.browser.scripting.executeScript({
         target: { tabId },
         world: 'MAIN',
         injectImmediately: true,
@@ -296,6 +298,7 @@ export class Projects extends sw.Unit {
       })
 
       // No CSP errors? -> Do nothing
+      const hasCspError = !!checkCspResult?.result
       if (!hasCspError) return
 
       // First attempt to fix CSP? -> Unregister all service workers to drop cached headers (x.com)

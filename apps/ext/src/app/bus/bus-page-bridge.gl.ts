@@ -211,6 +211,7 @@ export class BusPageBridge extends gl.Unit {
 
     for (let i = 0; i < root.frames.length; i++) {
       const frame = root.frames[i]
+      if (!frame) throw this.never()
       const subframes = this.getAllFrames(frame)
       frames.push(frame, ...subframes)
     }

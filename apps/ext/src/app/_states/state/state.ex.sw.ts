@@ -200,6 +200,7 @@ export class State extends exSw.Unit {
           for (const version of versions) {
             if (this.$.utils.is.number(this.root.data[':version']) && this.root.data[':version'] >= version)
               continue
+            if (!this.versioner[version]) throw this.never()
             this.versioner[version].call(this.root.data, this.root.data)
             this.root.data[':version'] = version
           }
@@ -710,6 +711,7 @@ export class State extends exSw.Unit {
     // Run versioner
     for (const version of versions) {
       if (this.$.utils.is.number(model[':version']) && model[':version'] >= version) continue
+      if (!Model[_modelVersioner_][version]) throw this.never()
       Model[_modelVersioner_][version].call(model, model)
       model[':version'] = version
     }
@@ -811,7 +813,7 @@ export class State extends exSw.Unit {
 
   private getModelByName(name: unknown) {
     if (!this.$.utils.is.string(name)) return null
-    return this.$states.models[name]
+    return this.$states.models[name] ?? null
   }
 
   private getModelByInstance(instance: Obj) {

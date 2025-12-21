@@ -59,8 +59,8 @@
     "Popup": {
       "type": "object",
       "properties": {
-        "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 400 },
-        "height": { "type": "number", "minimum": 150, "maximum": 568, "default": 568 }
+        "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 380 },
+        "height": { "type": "number", "minimum": 150, "maximum": 572, "default": 572 }
       },
       "additionalProperties": false
     },

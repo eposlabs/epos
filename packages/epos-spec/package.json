@@ -1,6 +1,7 @@
 {
-  "private": true,
   "name": "epos-spec",
+  "version": "*",
+  "private": true,
   "type": "module",
   "scripts": {
     "lint": "tsc --noEmit"

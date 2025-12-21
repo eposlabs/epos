@@ -166,6 +166,7 @@ export class ToolsBrowserApi extends ex.Unit {
     if (error) throw error
 
     // Update API object as new APIs might be added
+    if (!result) throw this.never()
     if (result.granted) Object.assign(root, await this.createRoot())
 
     return result

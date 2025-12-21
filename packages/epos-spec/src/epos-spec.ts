@@ -7,7 +7,7 @@ export type Action = true | string
 export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
-export type UrlMatchPattern = string // e.g., '*://*.example.com/*'
+export type UrlMatchPattern = string // '*://*.example.com/*'
 export type Manifest = Obj
 
 export type Spec = {
@@ -16,7 +16,7 @@ export type Spec = {
   title: string | null
   version: string
   description: string | null
-  popup: Popup | null
+  popup: Popup
   action: Action | null
   config: Config
   assets: Path[]
@@ -26,8 +26,8 @@ export type Spec = {
 }
 
 export type Popup = {
-  width?: number
-  height?: number
+  width: number
+  height: number
 }
 
 export type Config = {
@@ -96,8 +96,8 @@ const schema = {
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
   popup: {
     keys: ['width', 'height'],
-    width: { min: 150, max: 800, default: 400 },
-    height: { min: 150, max: 568, default: 568 },
+    width: { min: 150, max: 800, default: 380 },
+    height: { min: 150, max: 572, default: 572 },
   },
   config: {
     keys: ['noPreloadAssets', 'allowMissingModels'],
@@ -126,7 +126,7 @@ export function parseEposSpec(json: string): Spec {
 
   const keys = [...schema.keys, ...schema.target.keys]
   const badKey = Object.keys(spec).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown spec key: '${JSON.stringify(badKey)}'`)
+  if (badKey) throw new Error(`Unknown spec key: '${badKey}'`)
 
   return {
     name: parseName(spec),
@@ -201,9 +201,8 @@ function parseDescription(spec: Obj): string | null {
   return description
 }
 
-function parsePopup(spec: Obj): Popup | null {
-  const popup = structuredClone(spec.popup ?? null)
-  if (popup === null) return null
+function parsePopup(spec: Obj) {
+  const popup = structuredClone(spec.popup ?? {})
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
 
   const { keys, width, height } = schema.popup
@@ -220,7 +219,7 @@ function parsePopup(spec: Obj): Popup | null {
   if (popup.height < height.min) throw new Error(`'popup.height' must be ≥ ${height.min}`)
   if (popup.height > height.max) throw new Error(`'popup.height' must be ≤ ${height.max}`)
 
-  return popup
+  return popup as Popup
 }
 
 function parseAction(spec: Obj): Action | null {

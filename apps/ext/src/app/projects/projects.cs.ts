@@ -15,16 +15,19 @@ export class Projects extends cs.Unit {
     const chunksByKey: Record<string, string[]> = {}
     for (const part of document.cookie.split('; ')) {
       const [name, value] = part.split('=')
+      if (!this.$.utils.is.string(name)) continue
+      if (!this.$.utils.is.string(value)) continue
       if (!name.startsWith('__epos_')) continue
       const [key, index] = name.replace('__epos_', '').split('_')
+      if (!this.$.utils.is.string(key)) continue
+      if (!this.$.utils.is.string(index)) continue
       chunksByKey[key] ??= []
       chunksByKey[key][Number(index)] = value
       document.cookie = `${name}=; Max-Age=0;`
     }
 
     // Decompress and execute lite JS
-    for (const key in chunksByKey) {
-      const chunks = chunksByKey[key]
+    for (const chunks of Object.values(chunksByKey)) {
       const js = this.$.libs.lzString.decompressFromBase64(chunks.join(''))
       this.executeJs(js)
     }

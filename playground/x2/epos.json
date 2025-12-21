@@ -1,0 +1,5 @@
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "x2",
+  "action": "https://epos.dev/@x2"
+}

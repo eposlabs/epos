@@ -43,6 +43,7 @@ export class Queue {
 
     while (this.tasks.length > 0) {
       const task = this.tasks[0]
+      if (!task) break
       const [result, error] = await safe(task.fn)
       this.tasks.shift()
       if (error) {

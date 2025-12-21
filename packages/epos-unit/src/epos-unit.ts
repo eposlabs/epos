@@ -43,6 +43,7 @@ export class Unit<TRoot = unknown> {
     for (const key of keys) {
       if (key === 'constructor') continue
       const descriptor = descriptors[key]
+      if (!descriptor) continue
       if (descriptor.get || descriptor.set) continue
       if (typeof descriptor.value !== 'function') continue
       _this[key] = descriptor.value.bind(this)
@@ -53,6 +54,7 @@ export class Unit<TRoot = unknown> {
       if (typeof key === 'symbol') continue
       if (!key.endsWith('View')) continue
       const descriptor = descriptors[key]
+      if (!descriptor) continue
       if (descriptor.get || descriptor.set) continue
       if (typeof _this[key] !== 'function') continue
       _this[key] = epos.component(_this[key] as FC)

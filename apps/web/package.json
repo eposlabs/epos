@@ -1,6 +1,7 @@
 {
-  "private": true,
   "name": "web",
+  "version": "*",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vitepress dev",

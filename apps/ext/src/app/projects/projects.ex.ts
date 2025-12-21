@@ -19,7 +19,7 @@ export class Projects extends ex.Unit {
   }
 
   private onWatcherData(data: WatcherData) {
-    if (data.updatedProjectNames.length === 0) return
+    if (data.reloadedProjectNames.length === 0) return
     const hasAutoreloadParam = new URL(location.href).searchParams.has('autoreload')
     if (!hasAutoreloadParam) return
     location.reload()
@@ -89,25 +89,21 @@ export class Projects extends ex.Unit {
     if (!self.__eposElement) throw this.never()
     const ready$ = Promise.withResolvers()
     const blob = new Blob([js], { type: 'application/javascript' })
-    const url = URL.createObjectURL(blob)
     const script = document.createElement('script')
     script.epos = true
-    script.src = url
+    script.src = URL.createObjectURL(blob)
     script.onload = () => ready$.resolve(true)
     self.__eposElement.prepend(script)
     await ready$.promise
-    URL.revokeObjectURL(url)
   }
 
   private injectCss(css: string) {
     if (!self.__eposElement) throw this.never()
     const blob = new Blob([css], { type: 'text/css' })
-    const url = URL.createObjectURL(blob)
     const link = document.createElement('link')
     link.epos = true
     link.rel = 'stylesheet'
-    link.href = url
-    link.onload = () => URL.revokeObjectURL(url)
+    link.href = URL.createObjectURL(blob)
     self.__eposElement.prepend(link)
   }
 }

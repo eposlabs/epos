@@ -34,9 +34,9 @@ export class LearnApp extends ln.Unit {
 
   View() {
     return (
-      <div class="mx-auto mt-5 mb-12 flex max-w-100 flex-col gap-3 px-5">
+      <div className="mx-auto mt-5 mb-12 flex max-w-100 flex-col gap-3 px-5">
         <div>Test Browser API:</div>
-        <div class="flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           {this.permissions.map(permission => (
             <permission.ui key={permission.name} />
           ))}

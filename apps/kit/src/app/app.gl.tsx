@@ -34,7 +34,7 @@ export class App extends gl.Unit {
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
       const otherTab = tabs.find(tab => tab.id !== epos.env.tabId)
       if (otherTab?.id) await epos.browser.tabs.remove(otherTab.id)
-    } else if (!tabs[0].pinned) {
+    } else if (tabs[0] && !tabs[0].pinned) {
       await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
     }

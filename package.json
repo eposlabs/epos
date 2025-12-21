@@ -1,6 +1,7 @@
 {
-  "private": true,
   "name": "epos-mono",
+  "version": "*",
+  "private": true,
   "type": "module",
   "workspaces": [
     "apps/*",
@@ -10,6 +11,7 @@
   "scripts": {
     "edge": "ncu --upgrade --deep",
     "prettier": "prettier --write ./",
+    "lint": "npm -w ext -w kit -w dropcap -w epos -w epos-spec -w epos-unit -w paralayer -w vite-plugin-rebundle run lint",
     "reinstall": "rm -f package-lock.json && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && npm install",
     "release": "npm run release:epos && npm run release:epos-unit && npm run release:dropcap && npm run release:paralayer && npm run release:rebundle",
     "release:epos": "npm -w epos run release",

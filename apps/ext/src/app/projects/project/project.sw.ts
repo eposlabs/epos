@@ -219,6 +219,7 @@ export class Project extends sw.Unit {
     }
 
     const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
+    if (!icon) throw this.never()
     const icon128 = await this.$.utils.convertImage(icon, {
       type: 'image/png',
       quality: 1,
@@ -304,6 +305,7 @@ export class Project extends sw.Unit {
 
       // Get target's lite JS code
       const target = this.targets[targetIndex]
+      if (!target) throw this.never()
       const resources = target.resources.filter(resource => resource.type === 'lite-js')
       const liteJs = resources.map(resource => this.sources[resource.path]).join('\n')
       if (!liteJs) continue

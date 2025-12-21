@@ -6,7 +6,8 @@ export type WatcherData = {
   infoMap: InfoMap
   addedProjectNames: string[]
   removedProjectNames: string[]
-  updatedProjectNames: string[]
+  retainedProjectNames: string[]
+  reloadedProjectNames: string[]
 }
 
 export class ProjectsWatcher extends exOsVw.Unit {
@@ -25,6 +26,7 @@ export class ProjectsWatcher extends exOsVw.Unit {
 
   private async refetch() {
     const infoMap = await this.$.bus.send<InfoMap>('Projects.getInfoMap', location.href)
+    if (!infoMap) throw this.never()
 
     const im1 = this.infoMap
     const im2 = infoMap
@@ -34,13 +36,15 @@ export class ProjectsWatcher extends exOsVw.Unit {
     const names2 = Object.keys(im2)
     const addedProjectNames = names2.filter(name => !im1[name])
     const removedProjectNames = names1.filter(name => !im2[name])
-    const updatedProjectNames = names1.filter(name => im2[name] && im1[name].hash !== im2[name].hash)
+    const retainedProjectNames = names1.filter(name => im2[name])
+    const reloadedProjectNames = names1.filter(name => im2[name] && im1[name]!.hash !== im2[name].hash)
 
     this.onData({
       infoMap,
       addedProjectNames,
       removedProjectNames,
-      updatedProjectNames,
+      retainedProjectNames,
+      reloadedProjectNames,
     })
   }
 }

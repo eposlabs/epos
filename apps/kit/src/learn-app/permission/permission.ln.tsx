@@ -22,10 +22,10 @@ export class Permission extends ln.Unit {
   ui() {
     if (this.name === 'contextMenus') return
     return (
-      <div class="flex flex-col">
+      <div className="flex flex-col">
         <button
           onClick={this.play}
-          class="flex cursor-pointer gap-2 rounded-sm bg-gray-200 px-3 py-1.5 text-left hover:brightness-95 dark:bg-black"
+          className="flex cursor-pointer gap-2 rounded-sm bg-gray-200 px-3 py-1.5 text-left hover:brightness-95 dark:bg-black"
         >
           <div>{this.name}</div>
         </button>

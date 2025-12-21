@@ -24,8 +24,8 @@ export class Projects extends os.Unit {
       delete this.map[projectName]
     }
 
-    // Update projects
-    for (const projectName of data.updatedProjectNames) {
+    // Update retained projects
+    for (const projectName of data.retainedProjectNames) {
       const project = this.map[projectName]
       if (!project) throw this.never()
       const info = data.infoMap[projectName]

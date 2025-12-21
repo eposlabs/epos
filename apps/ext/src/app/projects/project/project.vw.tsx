@@ -1,11 +1,6 @@
 import type { Info } from './project.sw'
 
-export const DEFAULT_POPUP_WIDTH = 380
-export const DEFAULT_POPUP_HEIGHT = 568
-
 export class Project extends vw.Unit {
-  static DEFAULT_POPUP_WIDTH = DEFAULT_POPUP_WIDTH
-  static DEFAULT_POPUP_HEIGHT = DEFAULT_POPUP_HEIGHT
   private $projects = this.closest(vw.Projects)!
   name: Info['name']
   icon: Info['icon']
@@ -15,6 +10,7 @@ export class Project extends vw.Unit {
   env: Info['env']
   hash: Info['hash']
   hasSidePanel: Info['hasSidePanel']
+  private visited = false
 
   constructor(parent: vw.Unit, data: Info) {
     super(parent)
@@ -38,9 +34,34 @@ export class Project extends vw.Unit {
     this.hasSidePanel = updates.hasSidePanel
   }
 
+  async processAction() {
+    if (!this.action) return
+
+    // Action is a URL? -> Open this URL
+    if (this.$.utils.is.string(this.action)) {
+      const actionTab = (await this.$.browser.tabs.query({ url: this.action }))[0]
+      if (actionTab) {
+        await this.$.browser.tabs.update(actionTab.id, { active: true })
+      } else {
+        await this.$.browser.tabs.create({ url: this.action, active: true })
+      }
+      if (this.$.env.is.vwPopup) self.close()
+    }
+
+    // Action is `true`? -> Send `:action` event
+    else {
+      const tabId = this.$projects.getTabId()
+      const tab = await this.$.browser.tabs.get(tabId)
+      const projectEposBus = this.$.bus.create(`ProjectEpos[${this.name}]`)
+      await projectEposBus.send(':action', tab)
+      if (this.$.env.is.vwPopup) self.close()
+    }
+  }
+
   View = () => {
     if (!this.hash) return null
     const selected = this.$projects.selectedProjectName === this.name
+    if (selected) this.visited = true
     return (
       <iframe
         key={this.hash}
@@ -52,52 +73,12 @@ export class Project extends vw.Unit {
     )
   }
 
-  OptionView = () => {
-    if (!this.hash && !this.action) return null
-    return (
-      <option key={this.name} value={this.name}>
-        {this.title ?? this.name} {!this.hash && ' (action)'}
-      </option>
-    )
-  }
-
-  ButtonView = () => {
-    if (!this.hash && !this.action) return null
-    const icon = this.hash ? '🔵' : '🟠'
-
-    const onClick = async () => {
-      if (this.hash) {
-        alert('popup')
-      } else if (this.action) {
-        if (this.$.utils.is.string(this.action)) {
-          const tabs = await this.$.browser.tabs.query({ url: this.action })
-          if (tabs.length > 0) {
-            await this.$.browser.tabs.update(tabs[0].id, { active: true })
-          } else {
-            await this.$.browser.tabs.create({ url: this.action, active: true })
-          }
-        } else {
-          const tabId = this.getTabId()
-          const tab = await this.$.browser.tabs.get(tabId)
-          const projectEposBus = this.$.bus.create(`ProjectEpos[${this.name}]`)
-          await projectEposBus.send(':action', tab)
-          self.close()
-        }
-      }
-    }
-
-    return (
-      <div onClick={onClick}>
-        {icon} {this.name}
-      </div>
-    )
-  }
-
   private getSrc() {
+    if (!this.visited) return 'about:blank'
     return this.$.env.url.project({
       name: this.name,
       locus: this.getLocus(),
-      tabId: this.getTabId(),
+      tabId: this.$projects.getTabId(),
       env: this.env,
     })
   }
@@ -108,27 +89,11 @@ export class Project extends vw.Unit {
     return locus
   }
 
-  private getTabId() {
-    const tabId = Number(this.$.env.params.tabId)
-    if (!tabId) throw this.never()
-    return tabId
-  }
-
   private getStyle() {
-    let width: number | string
-    let height: number | string
     if (this.$.env.is.vwPopup) {
-      width = this.popup?.width ?? DEFAULT_POPUP_WIDTH
-      height = this.popup?.height ?? DEFAULT_POPUP_HEIGHT
+      return { width: this.popup.width, height: this.popup.height }
     } else if (this.$.env.is.vwSidePanel) {
-      width = '100vw'
-      height = '100vh'
-    } else {
-      throw this.never()
+      return { width: '100vw', height: '100vh' }
     }
-
-    console.warn(width, height)
-
-    return { width, height }
   }
 }

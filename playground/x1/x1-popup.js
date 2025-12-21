@@ -1,6 +1,6 @@
 /// <reference types="epos" />
 
-console.warn('popup')
+// console.warn('popup')
 
 // // class X1App extends epos.Unit {}
 // const state = await epos.connect(() => ({ title: 'abc' }))
@@ -10,6 +10,7 @@ console.warn('popup')
 
 document.body.innerHTML = `
   <div style="display: flex; flex-direction: column; gap: 20px">
+    <h1>X1 Popup</h1>
     <input type="range" min="0" max="100" value="50" onInput="window.onChange(event)"/>
   </div>
 `
