@@ -6,8 +6,8 @@ import { rebundle } from 'vite-plugin-rebundle/ts'
 
 export default defineConfig(async ({ mode }) => {
   const setupLayersJs = await paralayer({
-    input: ['./src/app', './src/learn-app'],
-    output: './src/layers',
+    input: ['./src'],
+    output: './src/@layers',
     watch: mode !== 'production',
   })
 

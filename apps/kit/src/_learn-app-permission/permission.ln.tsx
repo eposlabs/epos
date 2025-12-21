@@ -1,8 +1,8 @@
 export class Permission extends ln.Unit {
-  name: chrome.runtime.ManifestPermissions
+  name: chrome.runtime.ManifestPermission
   declare private engine: any
 
-  constructor(parent: ln.Unit, name: chrome.runtime.ManifestPermissions) {
+  constructor(parent: ln.Unit, name: chrome.runtime.ManifestPermission) {
     super(parent)
     this.name = name
   }

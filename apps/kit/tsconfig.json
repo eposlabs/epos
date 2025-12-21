@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "vite.config.ts", "src/learn-app/permissions.ts"]
+  "include": ["src", "vite.config.ts", "src/_learn-app/permissions.ts"]
 }

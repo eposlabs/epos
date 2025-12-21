@@ -1,5 +1,5 @@
-import './types/file-system-observer'
-import './types/wicg-file-system-access'
+import './core-file-system-observer'
+import './core-wicg-file-system-access'
 import { clsx, type ClassValue } from 'clsx'
 import type * as types from 'dropcap/types'
 import 'epos'
