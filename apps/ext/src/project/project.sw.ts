@@ -191,11 +191,8 @@ export class Project extends sw.Unit {
       'system.html',
       'project.html',
       'offscreen.html',
+      ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
     ]
-
-    if (asDev) {
-      engineFiles.push('ex.dev.js', 'ex-mini.dev.js')
-    }
 
     for (const path of engineFiles) {
       const blob = await fetch(`/${path}`).then(r => r.blob())
@@ -240,7 +237,10 @@ export class Project extends sw.Unit {
       urlFilters.add('*://*/*')
     }
 
-    const engineManifest = await fetch('/manifest.json').then(r => r.json())
+    const engineManifestText = await fetch('/manifest.json').then(r => r.text())
+    const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
+    const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
+    if (error) throw error
 
     const manifest = {
       ...engineManifest,

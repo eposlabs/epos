@@ -1,5 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "x2",
-  "action": "https://epos.dev/@x2"
+  "action": "https://epos.dev/@x2",
+  "matches": ["<sidePanel>", "<popup>"],
+  "load": "x2.js"
 }

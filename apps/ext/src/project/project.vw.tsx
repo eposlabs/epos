@@ -34,6 +34,10 @@ export class Project extends vw.Unit {
     this.hasSidePanel = updates.hasSidePanel
   }
 
+  get label() {
+    return this.title ?? this.name
+  }
+
   async processAction() {
     if (!this.action) return
 
@@ -58,21 +62,6 @@ export class Project extends vw.Unit {
     }
   }
 
-  View = () => {
-    if (!this.hash) return null
-    const selected = this.$projects.selectedProjectName === this.name
-    if (selected) this.visited = true
-    return (
-      <iframe
-        key={this.hash}
-        name={this.name}
-        src={this.getSrc()}
-        style={this.getStyle()}
-        className={this.$.utils.cx(!selected && 'hidden')}
-      />
-    )
-  }
-
   private getSrc() {
     if (!this.visited) return 'about:blank'
     return this.$.env.url.project({
@@ -93,7 +82,26 @@ export class Project extends vw.Unit {
     if (this.$.env.is.vwPopup) {
       return { width: this.popup.width, height: this.popup.height }
     } else if (this.$.env.is.vwSidePanel) {
-      return { width: '100vw', height: '100vh' }
+      return { width: '100%', height: '100%' }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // VIEW
+  // ---------------------------------------------------------------------------
+
+  View = () => {
+    if (!this.hash) return null
+    const selected = this.$projects.selectedProjectName === this.name
+    if (selected) this.visited = true
+    return (
+      <iframe
+        key={this.hash}
+        name={this.name}
+        src={this.getSrc()}
+        style={this.getStyle()}
+        className={this.$.utils.cx(!selected && 'hidden')}
+      />
+    )
   }
 }

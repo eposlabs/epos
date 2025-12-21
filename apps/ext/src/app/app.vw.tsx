@@ -48,7 +48,7 @@ export class App extends vw.Unit {
 
     return (
       <props.context.Provider value={renderId}>
-        <div className="min-h-25 min-w-30">
+        <div className="size-fit">
           <this.$.projects.View />
         </div>
       </props.context.Provider>
