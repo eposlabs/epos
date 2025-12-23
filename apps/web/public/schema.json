@@ -60,7 +60,7 @@
       "type": "object",
       "properties": {
         "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 380 },
-        "height": { "type": "number", "minimum": 150, "maximum": 572, "default": 572 }
+        "height": { "type": "number", "minimum": 150, "maximum": 568, "default": 568 }
       },
       "additionalProperties": false
     },
@@ -68,7 +68,7 @@
     "Config": {
       "type": "object",
       "properties": {
-        "noPreloadAssets": { "type": "boolean", "default": false },
+        "preloadAssets": { "type": "boolean", "default": true },
         "allowMissingModels": { "type": "boolean", "default": false }
       },
       "additionalProperties": false

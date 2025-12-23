@@ -16,14 +16,8 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": {
-      "source": "./src/rebundle.ts",
-      "import": "./dist/rebundle.js",
-      "types": "./dist/rebundle.d.ts"
-    },
-    "./ts": {
-      "import": "./src/rebundle.ts"
-    }
+    ".": "./dist/rebundle.js",
+    "./ts": "./src/rebundle.ts"
   },
   "files": [
     "src",

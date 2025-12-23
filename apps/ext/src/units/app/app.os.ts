@@ -1,7 +1,7 @@
 export class App extends os.Unit {
   browser = chrome
+  utils = new os.Utils(this)
   libs = new osVw.Libs(this)
-  utils = new exOsSwVw.Utils(this)
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
@@ -12,7 +12,7 @@ export class App extends os.Unit {
 
   async init() {
     self.$ = this
-    this.utils.initOs()
+    this.utils.init()
     await this.projects.init()
     await this.dev.init()
   }

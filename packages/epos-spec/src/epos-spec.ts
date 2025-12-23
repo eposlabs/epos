@@ -31,7 +31,7 @@ export type Popup = {
 }
 
 export type Config = {
-  noPreloadAssets: boolean
+  preloadAssets: boolean
   allowMissingModels: boolean
 }
 
@@ -100,7 +100,8 @@ const schema = {
     height: { min: 150, max: 600 - 8 * 4, default: 600 - 8 * 4 },
   },
   config: {
-    keys: ['noPreloadAssets', 'allowMissingModels'],
+    preloadAssets: true,
+    allowMissingModels: false,
   },
   target: {
     keys: ['matches', 'load'],
@@ -237,21 +238,21 @@ function parseConfig(spec: Obj): Config {
   const config = spec.config ?? {}
   if (!is.object(config)) throw new Error(`'config' must be an object`)
 
-  const badKey = Object.keys(config).find(key => !schema.config.keys.includes(key))
+  const badKey = Object.keys(config).find(key => !(key in schema.config))
   if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
 
-  const noPreloadAssets = 'noPreloadAssets' in config ? config.noPreloadAssets : false
-  if (!is.boolean(noPreloadAssets)) {
-    throw new Error(`'config.noPreloadAssets' must be a boolean`)
+  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets
+  if (!is.boolean(preloadAssets)) {
+    throw new Error(`'config.preloadAssets' must be a boolean`)
   }
 
-  const allowMissingModels = 'allowMissingModels' in config ? config.allowMissingModels : false
+  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels
   if (!is.boolean(allowMissingModels)) {
     throw new Error(`'config.allowMissingModels' must be a boolean`)
   }
 
   return {
-    noPreloadAssets,
+    preloadAssets,
     allowMissingModels,
   }
 }

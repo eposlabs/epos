@@ -1,7 +1,7 @@
 export class App extends ex.Unit {
   browser = chrome
+  utils = new ex.Utils(this)
   libs = new ex.Libs(this)
-  utils = new exOsSwVw.Utils(this)
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 

@@ -29,13 +29,5 @@ export class Libs extends ex.Unit {
 
     // Configure MobX
     mobx.configure({ enforceActions: 'never' })
-
-    // Allow several Yjs copies (allows several epos-based apps on the same page).
-    // Use `self.self` instead of `self`, because `self` might be a Proxy (see `project-path-globals.sw.js`).
-    Object.defineProperty(self.self, '__ $YJS$ __', {
-      value: false,
-      writable: false,
-      configurable: true,
-    })
   }
 }

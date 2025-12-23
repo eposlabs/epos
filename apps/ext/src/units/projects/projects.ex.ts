@@ -58,6 +58,7 @@ export class Projects extends ex.Unit {
     // Create and start projects
     for (const projectDef of projectDefs) {
       const project = new ex.Project(this, projectDef)
+      this.map[project.name] = project
       await project.init()
     }
   }

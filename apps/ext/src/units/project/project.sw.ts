@@ -7,29 +7,28 @@ export type Assets = Record<string, Blob>
 
 /** Data saved to IndexedDB. */
 export type Snapshot = {
+  env: Env
   spec: Spec
   sources: Sources
-  /** List of permissions granted by the end-user. */
-  access: Permission[]
-  env: Env
+  grantedPermissions: Permission[]
 }
 
 /** Data required to create Project instance. */
 export type Bundle = {
+  env: Env
   spec: Spec
   sources: Sources
   assets: Assets
-  env: Env
 }
 
 /** Data for peer contexts. */
 export type Info = {
+  env: Env
   name: Spec['name']
   icon: Spec['icon']
   title: Spec['title']
   popup: Spec['popup']
   action: Spec['action']
-  env: Env
   hash: string | null
   hasSidePanel: boolean
 }
@@ -38,10 +37,10 @@ export type Info = {
 // TODO: better hash calculation, for now it only tracks resourceTexts, but what if <background>
 // is removed and hash is the same, because used texts are the same? Or `lite:` was added.
 export class Project extends sw.Unit {
+  env: Env
   spec: Spec
   sources: Sources
-  access: Permission[] = []
-  env: Env
+  grantedPermissions: Permission[] = []
 
   states: exSw.States
   targets: sw.ProjectTarget[] = []
@@ -65,9 +64,9 @@ export class Project extends sw.Unit {
 
   constructor(parent: sw.Unit, data: Omit<Bundle, 'assets'>) {
     super(parent)
+    this.env = data.env
     this.spec = data.spec
     this.sources = data.sources
-    this.env = data.env
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     this.states = new exSw.States(this, this.spec.name, ':state', { allowMissingModels: true })
   }
@@ -79,9 +78,9 @@ export class Project extends sw.Unit {
   }
 
   async update(updates: Omit<Bundle, 'assets'> & { assets?: Assets }) {
+    this.env = updates.env
     this.spec = updates.spec
     this.sources = updates.sources
-    this.env = updates.env
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     if (updates.assets) await this.saveAssets(updates.assets)
     await this.saveSnapshot()
@@ -152,12 +151,12 @@ export class Project extends sw.Unit {
 
   async getInfo(address?: Address): Promise<Info> {
     return {
+      env: this.env,
       name: this.spec.name,
       icon: this.spec.icon,
       title: this.spec.title,
       popup: this.spec.popup,
       action: this.spec.action,
-      env: this.env,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
     }
@@ -271,10 +270,10 @@ export class Project extends sw.Unit {
 
   private async saveSnapshot() {
     await this.$.idb.set<Snapshot>(this.spec.name, ':project', ':default', {
+      env: this.env,
       spec: this.spec,
       sources: this.sources,
-      access: this.access,
-      env: this.env,
+      grantedPermissions: this.grantedPermissions,
     })
   }
 

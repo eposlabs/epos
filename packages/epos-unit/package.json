@@ -13,11 +13,7 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": {
-      "source": "./src/epos-unit.ts",
-      "import": "./dist/epos-unit.js",
-      "types": "./dist/epos-unit.d.ts"
-    }
+    ".": "./dist/epos-unit.js"
   },
   "files": [
     "src",

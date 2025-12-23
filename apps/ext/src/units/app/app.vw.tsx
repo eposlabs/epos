@@ -1,13 +1,12 @@
 import type { Context } from 'preact'
 import type { Dispatch, StateUpdater } from 'preact/hooks'
-import './app.vw.css'
 
 export class App extends vw.Unit {
   private setRenderId: Dispatch<StateUpdater<string>> | null = null
 
   browser = chrome
+  utils = new vw.Utils(this)
   libs = new osVw.Libs(this)
-  utils = new exOsSwVw.Utils(this)
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 

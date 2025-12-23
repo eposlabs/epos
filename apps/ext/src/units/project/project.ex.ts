@@ -20,7 +20,7 @@ export class Project extends ex.Unit {
 
   async init() {
     await this.epos.init()
-    if (!this.config.noPreloadAssets) await this.epos.api.asset.load()
+    if (this.config.preloadAssets) await this.epos.api.asset.load()
     if (!this.fn) throw this.never()
     this.fn.call(null, this.epos.api)
     this.fn = null // Free up memory

@@ -12,16 +12,10 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    "./utils": {
-      "source": "./src/utils/utils.ts",
-      "import": "./dist/utils/utils.js",
-      "types": "./dist/utils/utils.d.ts"
-    },
-    "./types": {
-      "source": "./src/types/types.ts",
-      "import": "./dist/types/types.js",
-      "types": "./dist/types/types.d.ts"
-    }
+    "./utils": "./dist/utils/utils.js",
+    "./types": "./dist/types/types.js",
+    "./utils/ts": "./src/utils/utils.ts",
+    "./types/ts": "./src/types/types.ts"
   },
   "files": [
     "src",

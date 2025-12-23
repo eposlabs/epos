@@ -159,7 +159,7 @@ export interface Epos {
 
   // Asset
   asset: {
-    /** Load either all assets to the memory or a specific asset by its path. */
+    /** Load specified asset to memory. Load all assets if no path is provided. */
     load: {
       /** Load all assets. */
       (): Promise<void>
@@ -177,7 +177,7 @@ export interface Epos {
     url(path: string): string
     /** Get asset as Blob. */
     get(path: string): Promise<Blob | null>
-    /** Get list of all available asset files. */
+    /** Get list of all available assets. */
     list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 

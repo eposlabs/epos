@@ -4,8 +4,8 @@ import setupEposElementJs from './projects-setup-epos-element.cs?raw'
 
 export class Projects extends cs.Unit {
   async init() {
-    this.executeJs(interceptGlobalsJs)
-    this.executeJs(setupEposElementJs)
+    this.$.utils.executeJs(interceptGlobalsJs)
+    this.$.utils.executeJs(setupEposElementJs)
     this.executeLiteJsFromCookies()
     await this.injectProjects()
   }
@@ -29,7 +29,7 @@ export class Projects extends cs.Unit {
     // Decompress and execute lite JS
     for (const chunks of Object.values(chunksByKey)) {
       const js = this.$.libs.lzString.decompressFromBase64(chunks.join(''))
-      this.executeJs(js)
+      this.$.utils.executeJs(js)
     }
   }
 
@@ -46,23 +46,11 @@ export class Projects extends cs.Unit {
     if (js) this.injectJs(js)
   }
 
-  private executeJs(js: string) {
-    const div = document.createElement('div')
-    // It is important to pass `URL` as `window.URL`, otherwise `URL` equals to `location.href` (string)
-    div.setAttribute('onload', `(URL => { ${js} })(window.URL)`)
-    div.dispatchEvent(new Event('load'))
-  }
-
-  private executeFn<T extends unknown[] = []>(fn: (...args: T) => void, args: T) {
-    const js = `(${fn.toString()}).call(self, ...${JSON.stringify(args)})`
-    this.executeJs(js)
-  }
-
   private injectJs(js: string) {
     const blob = new Blob([js], { type: 'application/javascript' })
     const url = URL.createObjectURL(blob)
 
-    this.executeFn(
+    this.$.utils.executeFn(
       url => {
         const script = document.createElement('script')
         script.epos = true
@@ -81,7 +69,7 @@ export class Projects extends cs.Unit {
     const blob = new Blob([css], { type: 'text/css' })
     const url = URL.createObjectURL(blob)
 
-    this.executeFn(
+    this.$.utils.executeFn(
       url => {
         const link = document.createElement('link')
         link.epos = true

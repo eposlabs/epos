@@ -7,25 +7,15 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "tsup --config ../../tsup.config.ts --watch --dts-resolve",
-    "build": "tsup --config ../../tsup.config.ts --dts-resolve",
+    "dev": "tsup --config ../../tsup.config.ts --watch",
+    "build": "tsup --config ../../tsup.config.ts",
     "lint": "tsc --noEmit",
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": {
-      "source": "./src/epos.ts",
-      "import": "./dist/epos.js",
-      "types": "./dist/epos.d.ts"
-    },
-    "./vite": {
-      "source": "./src/epos-vite.ts",
-      "import": "./dist/epos-vite.js",
-      "types": "./dist/epos-vite.d.ts"
-    },
-    "./vite/ts": {
-      "import": "./src/epos-vite.ts"
-    }
+    ".": "./dist/epos.js",
+    "./vite": "./dist/epos-vite.js",
+    "./vite/ts": "./src/epos-vite.ts"
   },
   "files": [
     "src",

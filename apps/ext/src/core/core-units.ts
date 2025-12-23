@@ -12,7 +12,6 @@ class UnitExSw extends Unit<ex.App | sw.App> {}
 class UnitOsVw extends Unit<os.App | vw.App> {}
 class UnitSwVw extends Unit<sw.App | vw.App> {}
 class UnitExOsVw extends Unit<ex.App | os.App | vw.App> {}
-class UnitExOsSwVw extends Unit<ex.App | os.App | sw.App | vw.App> {}
 
 cs.Unit = UnitCs
 ex.Unit = UnitEx
@@ -26,7 +25,6 @@ exSw.Unit = UnitExSw
 osVw.Unit = UnitOsVw
 swVw.Unit = UnitSwVw
 exOsVw.Unit = UnitExOsVw
-exOsSwVw.Unit = UnitExOsSwVw
 
 // prettier-ignore
 declare global {
@@ -42,7 +40,6 @@ declare global {
   interface OsVw { Unit: typeof UnitOsVw }
   interface SwVw { Unit: typeof UnitSwVw }
   interface ExOsVw { Unit: typeof UnitExOsVw }
-  interface ExOsSwVw { Unit: typeof UnitExOsSwVw }
 
   interface cs { Unit: UnitCs }
   interface ex { Unit: UnitEx }
@@ -56,7 +53,6 @@ declare global {
   interface osVw { Unit: UnitOsVw }
   interface swVw { Unit: UnitSwVw }
   interface exOsVw { Unit: UnitExOsVw }
-  interface exOsSwVw { Unit: UnitExOsSwVw }
 
   namespace cs { export type Unit = UnitCs }
   namespace ex { export type Unit = UnitEx }
@@ -70,5 +66,4 @@ declare global {
   namespace osVw { export type Unit = UnitOsVw }
   namespace swVw { export type Unit = UnitSwVw }
   namespace exOsVw { export type Unit = UnitExOsVw }
-  namespace exOsSwVw { export type Unit = UnitExOsSwVw }
 }

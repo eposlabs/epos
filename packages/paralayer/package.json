@@ -19,14 +19,8 @@
     "paralayer": "./src/bin.js"
   },
   "exports": {
-    ".": {
-      "source": "./src/paralayer.ts",
-      "import": "./dist/paralayer.js",
-      "types": "./dist/paralayer.d.ts"
-    },
-    "./ts": {
-      "import": "./src/paralayer.ts"
-    }
+    ".": "./dist/paralayer.js",
+    "./ts": "./src/paralayer.ts"
   },
   "files": [
     "src",
