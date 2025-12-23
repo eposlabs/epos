@@ -27,10 +27,6 @@ export class ProjectEpos extends ex.Unit {
 
   private createApi() {
     const epos: Epos = {
-      // TODO: change to project API
-      // @ts-ignore
-      engine: this.$,
-
       // General
       fetch: this.$.utils.link(this.general, 'fetch'),
       browser: this.general.browser,
@@ -116,6 +112,11 @@ export class ProjectEpos extends ex.Unit {
         stateModelStrict: this.symbols.stateModelStrict,
         stateModelVersioner: this.symbols.stateModelVersioner,
       },
+
+      // Engine
+      ...(this.$project.config.access.includes('engine') && {
+        engine: this.$,
+      }),
     }
 
     // Set prototype to see `Epos` in DevTools instead of a plain object

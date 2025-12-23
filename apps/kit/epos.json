@@ -5,7 +5,12 @@
   "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
-  "config": { "allowMissingModels": true },
+  "permissions": ["downloads", "optional:cookies"],
+
+  "config": {
+    "access": ["engine"],
+    "allowMissingModels": true
+  },
 
   "targets": [
     {

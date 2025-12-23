@@ -8,6 +8,7 @@ export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
 export type UrlMatchPattern = string // '*://*.example.com/*'
+export type Access = 'engine'
 export type Manifest = Obj
 
 export type Spec = {
@@ -31,6 +32,7 @@ export type Popup = {
 }
 
 export type Config = {
+  access: Access[]
   preloadAssets: boolean
   allowMissingModels: boolean
 }
@@ -100,23 +102,30 @@ const schema = {
     height: { min: 150, max: 600 - 8 * 4, default: 600 - 8 * 4 },
   },
   config: {
-    preloadAssets: true,
-    allowMissingModels: false,
+    keys: ['access', 'preloadAssets', 'allowMissingModels'],
+    access: { default: [], variants: ['engine'] },
+    preloadAssets: { default: true },
+    allowMissingModels: { default: false },
   },
   target: {
     keys: ['matches', 'load'],
   },
-  permissions: {
-    variants: [
-      'background',
-      'browsingData',
-      'contextMenus',
-      'cookies',
-      'downloads',
-      'notifications',
-      'storage',
-    ] satisfies Permission[],
-  },
+  permissions: [
+    'background',
+    'browsingData',
+    'contextMenus',
+    'cookies',
+    'downloads',
+    'notifications',
+    'storage',
+    'optional:background',
+    'optional:browsingData',
+    'optional:contextMenus',
+    'optional:cookies',
+    'optional:downloads',
+    'optional:notifications',
+    'optional:storage',
+  ] satisfies (Permission | `optional:${Permission}`)[],
 }
 
 export function parseEposSpec(json: string): Spec {
@@ -238,20 +247,22 @@ function parseConfig(spec: Obj): Config {
   const config = spec.config ?? {}
   if (!is.object(config)) throw new Error(`'config' must be an object`)
 
-  const badKey = Object.keys(config).find(key => !(key in schema.config))
+  const badKey = Object.keys(config).find(key => !schema.config.keys.includes(key))
   if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
 
-  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets
-  if (!is.boolean(preloadAssets)) {
-    throw new Error(`'config.preloadAssets' must be a boolean`)
-  }
+  const access = config.access ?? schema.config.access.default
+  if (!isArrayOfStrings(access)) throw new Error(`'config.access' must be an array of strings`)
+  const badAccess = access.find(value => !schema.config.access.variants.includes(value))
+  if (badAccess) throw new Error(`Unknown 'config.access' value: '${badAccess}'`)
 
-  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels
-  if (!is.boolean(allowMissingModels)) {
-    throw new Error(`'config.allowMissingModels' must be a boolean`)
-  }
+  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets.default
+  if (!is.boolean(preloadAssets)) throw new Error(`'config.preloadAssets' must be a boolean`)
+
+  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels.default
+  if (!is.boolean(allowMissingModels)) throw new Error(`'config.allowMissingModels' must be a boolean`)
 
   return {
+    access: access as Access[],
     preloadAssets,
     allowMissingModels,
   }
@@ -344,25 +355,29 @@ function parsePermissions(spec: Obj): Permissions {
   const permissions = spec.permissions ?? []
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
-  const parsed = permissions.map(parsePermission)
-  const mandatory = parsed.filter(perm => !perm.optional).map(perm => perm.value)
-  const optional = parsed.filter(perm => perm.optional).map(perm => perm.value)
+  const badPermission = permissions.find(value => !schema.permissions.includes(value as Permission))
+  if (badPermission) throw new Error(`Unknown permission: '${badPermission}'`)
 
-  const all = [...mandatory, ...optional]
-  const duplicate = all.find((perm, index) => all.indexOf(perm) !== index)
-  if (duplicate) throw new Error(`Duplicate permission: '${duplicate}'`)
+  const mandatoryPermissions = new Set<string>()
+  const optionalPermissions = new Set<string>()
+  for (const permission of permissions) {
+    if (permission.startsWith('optional:')) {
+      optionalPermissions.add(permission.replace('optional:', ''))
+    } else {
+      mandatoryPermissions.add(permission)
+    }
+  }
 
-  return { mandatory, optional }
-}
+  for (const permission of mandatoryPermissions) {
+    if (optionalPermissions.has(permission)) {
+      throw new Error(`Permission cannot be both mandatory and optional: '${permission}'`)
+    }
+  }
 
-function parsePermission(value: string) {
-  const optional = value.startsWith('optional:')
-  if (optional) value = value.replace('optional:', '')
-
-  const variants = schema.permissions.variants
-  if (!variants.includes(value as Permission)) throw new Error(`Unknown permission: '${value}'`)
-
-  return { value: value as Permission, optional }
+  return {
+    mandatory: [...mandatoryPermissions] as Permission[],
+    optional: [...optionalPermissions] as Permission[],
+  }
 }
 
 function parseManifest(spec: Obj): Manifest | null {

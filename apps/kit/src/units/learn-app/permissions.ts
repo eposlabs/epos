@@ -1,4 +1,4 @@
-export const permissionList: chrome.runtime.ManifestPermissions[] = [
+export const permissionList: chrome.runtime.ManifestPermission[] = [
   // 'accessibilityFeatures.modify',
   // 'accessibilityFeatures.read',
   // 'activeTab', // ☁️ allowed

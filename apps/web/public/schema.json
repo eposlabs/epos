@@ -68,10 +68,16 @@
     "Config": {
       "type": "object",
       "properties": {
+        "access": { "type": "array", "items": { "$ref": "#/definitions/Access" }, "default": [] },
         "preloadAssets": { "type": "boolean", "default": true },
         "allowMissingModels": { "type": "boolean", "default": false }
       },
       "additionalProperties": false
+    },
+
+    "Access": {
+      "type": "string",
+      "enum": ["engine"]
     },
 
     "Assets": {

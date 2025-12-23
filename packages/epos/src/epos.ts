@@ -209,6 +209,9 @@ export interface Epos {
     readonly stateModelStrict: symbol
     readonly stateModelVersioner: symbol
   }
+
+  // Engine
+  engine?: any
 }
 
 declare global {

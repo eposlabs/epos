@@ -83,7 +83,7 @@ export class Projects extends vw.Unit {
   // ---------------------------------------------------------------------------
 
   View = () => {
-    const cx = this.$.utils.cx
+    const cn = this.$.utils.cn
     const selectedProject = this.list.find(project => project.name === this.selectedProjectName)
     const dropdownProjects = this.list
       .filter(project => project.hash || project.action)
@@ -94,7 +94,7 @@ export class Projects extends vw.Unit {
 
     return (
       <div
-        className={cx('flex flex-col font-mono text-xs', this.$.env.is.vwSidePanel && 'h-screen w-screen')}
+        className={cn('flex flex-col font-mono text-xs', this.$.env.is.vwSidePanel && 'h-screen w-screen')}
       >
         {/* Header */}
         {hasHeader && (
@@ -105,7 +105,7 @@ export class Projects extends vw.Unit {
             {/* Dropdown */}
             {dropdownProjects.length > 1 && (
               <div
-                className={cx(
+                className={cn(
                   'relative flex h-full items-center gap-1.5 px-2.5',
                   this.$.env.is.vwSidePanel && 'pl-3',
                 )}

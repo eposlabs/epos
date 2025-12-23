@@ -29,7 +29,6 @@ export class Project extends gl.Unit {
 
   async init() {
     this.handle = null
-    this.engine = (epos as any).engine
     this.observer = null
     this.updateTimer = undefined
     this.state = epos.state.local({ error: null })
@@ -71,14 +70,14 @@ export class Project extends gl.Unit {
     // const sources = readSources()
     // if sources.includes unminified files and !dev -> warn user
 
-    const blob = await this.engine.bus.send('Projects.export', this.name, dev)
+    const blob = await epos.engine.bus.send('Projects.export', this.name, dev)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
   }
 
   async remove() {
-    await this.engine.bus.send('Projects.remove', this.name)
+    await epos.engine.bus.send('Projects.remove', this.name)
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
@@ -99,7 +98,7 @@ export class Project extends gl.Unit {
 
       // Name has been changed? -> Remove project from epos extension
       if (spec.name && this.name !== spec.name) {
-        await this.engine.bus.send('ProjectsInstaller.remove', this.name)
+        await epos.engine.bus.send('ProjectsInstaller.remove', this.name)
       }
 
       // Update spec and name
@@ -123,7 +122,7 @@ export class Project extends gl.Unit {
 
       // Prepare & install bundle
       const bundle: Bundle = { env: 'development', spec: this.spec, sources, assets }
-      await this.engine.bus.send('Projects.install', bundle)
+      await epos.engine.bus.send('Projects.install', bundle)
 
       // Done
       this.updatedAt = Date.now()

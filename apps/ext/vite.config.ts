@@ -8,7 +8,7 @@ export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
   const setupLayersJs = await paralayer({
-    input: './src',
+    input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
     globalLayerName: 'gl',

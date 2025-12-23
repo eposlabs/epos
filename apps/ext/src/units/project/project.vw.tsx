@@ -100,7 +100,7 @@ export class Project extends vw.Unit {
         name={this.name}
         src={this.getSrc()}
         style={this.getStyle()}
-        className={this.$.utils.cx(!selected && 'hidden')}
+        className={this.$.utils.cn(!selected && 'hidden')}
       />
     )
   }
