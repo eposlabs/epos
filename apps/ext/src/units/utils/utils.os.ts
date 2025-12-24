@@ -1,5 +1,4 @@
 import { is, safe } from 'dropcap/utils'
-import { convertImage } from './utils-convert-image'
 import { id } from './utils-id'
 import { info } from './utils-info'
 import { time } from './utils-time'
@@ -7,12 +6,10 @@ import { without } from './utils-without'
 
 export class Utils extends os.Unit {
   init() {
-    this.$.bus.on('Utils.convertImage', this.convertImage, this)
     this.$.bus.on('Utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))
     this.$.bus.on('Utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }
 
-  convertImage = convertImage
   id = id
   info = info
   is = is

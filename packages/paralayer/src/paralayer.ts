@@ -1,5 +1,5 @@
 import { watch, type FSWatcher } from 'chokidar'
-import { Queue, Unit, safe, is } from 'dropcap/utils'
+import { Queue, Unit, is, safe } from 'dropcap/utils'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
 

@@ -343,11 +343,11 @@ export class Projects extends sw.Unit {
     // Fetch assets
     const assets: Assets = {}
     for (const path of spec.assets) {
-      const assetUrl = new URL(path, specUrl).href
-      const [res] = await this.$.utils.safe(fetch(assetUrl))
-      if (!res?.ok) throw new Error(`Failed to fetch: ${assetUrl}`)
+      const url = new URL(path, specUrl).href
+      const [res] = await this.$.utils.safe(fetch(url))
+      if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
       const [blob] = await this.$.utils.safe(res.blob())
-      if (!blob) throw new Error(`Failed to fetch: ${assetUrl}`)
+      if (!blob) throw new Error(`Failed to fetch: ${url}`)
       assets[path] = blob
     }
 

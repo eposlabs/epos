@@ -1,5 +1,4 @@
 import { is, Queue, safe, safeSync, unique } from 'dropcap/utils'
-import { convertImage } from './utils-convert-image'
 import { get } from './utils-get'
 import { hash } from './utils-hash'
 import { id } from './utils-id'
@@ -8,7 +7,6 @@ import { normalizeUrl } from './utils-normalize-url'
 import { time } from './utils-time'
 
 export class Utils extends sw.Unit {
-  convertImage = convertImage
   get = get
   hash = hash
   id = id
