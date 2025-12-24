@@ -13,7 +13,6 @@
     "dropcap": "*",
     "epos-spec": "*",
     "epos": "*",
-    "jszip": "^3.10.1",
     "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",

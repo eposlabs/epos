@@ -1,3 +1,5 @@
+import type { Mode } from 'epos'
+
 export class App extends sw.Unit {
   browser = chrome
   utils = new sw.Utils(this)
@@ -25,16 +27,8 @@ export class App extends sw.Unit {
     await this.dev.init()
   }
 
-  async exportKit() {
-    await this.projects.install('http://localhost:3022/apps/kit/epos.json')
-    const blob = await this.projects.export('kit')
-    const url = await this.bus.send<string>('Utils.createObjectUrl', blob)
-    if (!url) throw this.never()
-    await this.browser.tabs.create({ url, active: true })
-  }
-
   private printInfo() {
-    const hasDevProject = this.projects.list.some(project => project.env === 'development')
+    const hasDevProject = this.projects.list.some(project => project.mode === 'development')
     if (!hasDevProject) return
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
@@ -44,9 +38,8 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.eject = (name: string, asDev = false) => this.projects.map[name]?.zip(asDev) ?? null
+    self.install = (name: string, mode: Mode = 'production') => this.projects.install(name, mode)
     self.remove = (name: string) => this.projects.remove(name)
-    self.install = (name: string, asDev = false) => this.projects.install(name, asDev)
   }
 
   private async setupContentScript() {

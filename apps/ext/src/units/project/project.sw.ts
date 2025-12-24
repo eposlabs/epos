@@ -1,34 +1,23 @@
+import type { Assets, Bundle, Mode, Sources } from 'epos'
 import type { Permission, Spec } from 'epos-spec'
 import type { Address } from './project-target.sw'
 
-export type Env = 'development' | 'production'
-export type Sources = Record<string, string>
-export type Assets = Record<string, Blob>
-
 /** Data saved to IndexedDB. */
 export type Snapshot = {
-  env: Env
+  mode: Mode
   spec: Spec
   sources: Sources
   grantedPermissions: Permission[]
 }
 
-/** Data required to create Project instance. */
-export type Bundle = {
-  env: Env
-  spec: Spec
-  sources: Sources
-  assets: Assets
-}
-
 /** Data for peer contexts. */
 export type Info = {
-  env: Env
   name: Spec['name']
   icon: Spec['icon']
   title: Spec['title']
   popup: Spec['popup']
   action: Spec['action']
+  mode: Mode
   hash: string | null
   hasSidePanel: boolean
 }
@@ -37,7 +26,7 @@ export type Info = {
 // TODO: better hash calculation, for now it only tracks resourceTexts, but what if <background>
 // is removed and hash is the same, because used texts are the same? Or `lite:` was added.
 export class Project extends sw.Unit {
-  env: Env
+  mode: Mode
   spec: Spec
   sources: Sources
   grantedPermissions: Permission[] = []
@@ -64,7 +53,7 @@ export class Project extends sw.Unit {
 
   constructor(parent: sw.Unit, data: Omit<Bundle, 'assets'>) {
     super(parent)
-    this.env = data.env
+    this.mode = data.mode
     this.spec = data.spec
     this.sources = data.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
@@ -78,7 +67,7 @@ export class Project extends sw.Unit {
   }
 
   async update(updates: Omit<Bundle, 'assets'> & { assets?: Assets }) {
-    this.env = updates.env
+    this.mode = updates.mode
     this.spec = updates.spec
     this.sources = updates.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
@@ -142,6 +131,7 @@ export class Project extends sw.Unit {
     return [
       `{`,
       `  name: ${JSON.stringify(this.spec.name)},`,
+      `  mode: ${JSON.stringify(this.mode)},`,
       `  shadowCss: ${JSON.stringify(shadowCss)},`,
       `  config: ${JSON.stringify(this.spec.config)},`,
       `  async fn(epos, React = epos.libs.react) { ${js} },`,
@@ -151,12 +141,12 @@ export class Project extends sw.Unit {
 
   async getInfo(address?: Address): Promise<Info> {
     return {
-      env: this.env,
       name: this.spec.name,
       icon: this.spec.icon,
       title: this.spec.title,
       popup: this.spec.popup,
       action: this.spec.action,
+      mode: this.mode,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
     }
@@ -169,108 +159,14 @@ export class Project extends sw.Unit {
     const matchingResources = matchingTargets.flatMap(target => target.resources)
     const matchingResourcePaths = this.$.utils.unique(matchingResources.map(resource => resource.path))
     const matchingResourceTexts = matchingResourcePaths.map(path => this.sources[path])
-    const hash = await this.$.utils.hash([this.env, this.spec.assets, matchingResourceTexts])
+    const hash = await this.$.utils.hash([this.mode, this.spec.assets, matchingResourceTexts])
 
     return hash
   }
 
-  /** Create standalone extension ZIP file out of the project. */
-  async zip(asDev = false) {
-    const zip = new this.$.libs.Zip()
-
-    const engineFiles = [
-      'cs.js',
-      'ex-mini.js',
-      'ex.js',
-      'os.js',
-      'sw.js',
-      'vw.css',
-      'vw.js',
-      'view.html',
-      'system.html',
-      'project.html',
-      'offscreen.html',
-      ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
-    ]
-
-    for (const path of engineFiles) {
-      const blob = await fetch(`/${path}`).then(r => r.blob())
-      zip.file(path, blob)
-    }
-
-    const bundle = {
-      env: asDev ? 'development' : 'production',
-      spec: this.spec,
-      sources: this.sources,
-    }
-    zip.file('project.json', JSON.stringify(bundle, null, 2))
-
-    const assets: Record<string, Blob> = {}
-    const paths = await this.$.idb.keys(this.spec.name, ':assets')
-    for (const path of paths) {
-      const blob = await this.$.idb.get<Blob>(this.spec.name, ':assets', path)
-      if (!blob) throw this.never()
-      assets[path] = blob
-      zip.file(`assets/${path}`, blob)
-    }
-
-    const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
-    if (!icon) throw this.never()
-    const icon128 = await this.$.utils.convertImage(icon, {
-      type: 'image/png',
-      quality: 1,
-      cover: true,
-      size: 128,
-    })
-    zip.file('icon.png', icon128)
-
-    const urlFilters = new Set<string>()
-    for (const target of this.targets) {
-      for (let match of target.matches) {
-        if (match.context === 'locus') continue
-        urlFilters.add(match.value)
-      }
-    }
-    if (urlFilters.has('*://*/*')) {
-      urlFilters.clear()
-      urlFilters.add('*://*/*')
-    }
-
-    const engineManifestText = await fetch('/manifest.json').then(r => r.text())
-    const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
-    const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
-    if (error) throw error
-
-    const manifest = {
-      ...engineManifest,
-      name: this.spec.title ?? this.spec.name,
-      version: this.spec.version,
-      description: this.spec.description ?? '',
-      action: { default_title: this.spec.title ?? this.spec.name },
-      // ...(this.spec.manifest ?? {}),
-    }
-
-    const mandatoryPermissions = [
-      'alarms',
-      'declarativeNetRequest',
-      'offscreen',
-      'scripting',
-      'tabs',
-      'unlimitedStorage',
-      'webNavigation',
-    ]
-
-    const permissions = new Set<string>(manifest.permissions ?? [])
-    for (const perm of mandatoryPermissions) permissions.add(perm)
-    manifest.permissions = [...permissions].sort()
-
-    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
-    return await zip.generateAsync({ type: 'blob' })
-  }
-
   private async saveSnapshot() {
     await this.$.idb.set<Snapshot>(this.spec.name, ':project', ':default', {
-      env: this.env,
+      mode: this.mode,
       spec: this.spec,
       sources: this.sources,
       grantedPermissions: this.grantedPermissions,

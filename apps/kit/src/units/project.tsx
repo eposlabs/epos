@@ -1,7 +1,7 @@
 import { parseEposSpec, type Spec } from 'epos-spec'
 
 export type Bundle = {
-  env: 'development' | 'production'
+  mode: 'development' | 'production'
   spec: Spec
   sources: Record<string, string>
   assets: Record<string, Blob>
@@ -63,14 +63,12 @@ export class Project extends gl.Unit {
     }
   }
 
-  async export(dev = false) {
-    console.log(`📦 [${this.name}] Export`, { dev })
-
+  async export(asDev = false) {
+    console.log(`📦 [${this.name}] Export`, { asDev })
     // TODO:
     // const sources = readSources()
     // if sources.includes unminified files and !dev -> warn user
-
-    const blob = await epos.engine.bus.send('Projects.export', this.name, dev)
+    const blob = await epos.engine.bus.send('Projects.export', this.name, asDev)
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
@@ -121,7 +119,7 @@ export class Project extends gl.Unit {
       }
 
       // Prepare & install bundle
-      const bundle: Bundle = { env: 'development', spec: this.spec, sources, assets }
+      const bundle: Bundle = { mode: 'development', spec: this.spec, sources, assets }
       await epos.engine.bus.send('Projects.install', bundle)
 
       // Done
@@ -271,3 +269,97 @@ export class Project extends gl.Unit {
     },
   }
 }
+
+// /** Create standalone extension ZIP file out of the project. */
+// async zip(asDev = false) {
+//   const zip = new this.$.libs.Zip()
+
+//   const engineFiles = [
+//     'cs.js',
+//     'ex-mini.js',
+//     'ex.js',
+//     'os.js',
+//     'sw.js',
+//     'vw.css',
+//     'vw.js',
+//     'view.html',
+//     'system.html',
+//     'project.html',
+//     'offscreen.html',
+//     ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
+//   ]
+
+//   for (const path of engineFiles) {
+//     const blob = await fetch(`/${path}`).then(r => r.blob())
+//     zip.file(path, blob)
+//   }
+
+//   const bundle = {
+//     env: asDev ? 'development' : 'production',
+//     spec: this.spec,
+//     sources: this.sources,
+//   }
+//   zip.file('project.json', JSON.stringify(bundle, null, 2))
+
+//   const assets: Record<string, Blob> = {}
+//   const paths = await this.$.idb.keys(this.spec.name, ':assets')
+//   for (const path of paths) {
+//     const blob = await this.$.idb.get<Blob>(this.spec.name, ':assets', path)
+//     if (!blob) throw this.never()
+//     assets[path] = blob
+//     zip.file(`assets/${path}`, blob)
+//   }
+
+//   const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
+//   if (!icon) throw this.never()
+//   const icon128 = await this.$.utils.convertImage(icon, {
+//     type: 'image/png',
+//     quality: 1,
+//     cover: true,
+//     size: 128,
+//   })
+//   zip.file('icon.png', icon128)
+
+//   const urlFilters = new Set<string>()
+//   for (const target of this.targets) {
+//     for (let match of target.matches) {
+//       if (match.context === 'locus') continue
+//       urlFilters.add(match.value)
+//     }
+//   }
+//   if (urlFilters.has('*://*/*')) {
+//     urlFilters.clear()
+//     urlFilters.add('*://*/*')
+//   }
+
+//   const engineManifestText = await fetch('/manifest.json').then(r => r.text())
+//   const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
+//   const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
+//   if (error) throw error
+
+//   const manifest = {
+//     ...engineManifest,
+//     name: this.spec.title ?? this.spec.name,
+//     version: this.spec.version,
+//     description: this.spec.description ?? '',
+//     action: { default_title: this.spec.title ?? this.spec.name },
+//     // ...(this.spec.manifest ?? {}),
+//   }
+
+//   const mandatoryPermissions = [
+//     'alarms',
+//     'declarativeNetRequest',
+//     'offscreen',
+//     'scripting',
+//     'tabs',
+//     'unlimitedStorage',
+//     'webNavigation',
+//   ]
+
+//   const permissions = new Set<string>(manifest.permissions ?? [])
+//   for (const perm of mandatoryPermissions) permissions.add(perm)
+//   manifest.permissions = [...permissions].sort()
+
+//   zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+//   return await zip.generateAsync({ type: 'blob' })
+// }

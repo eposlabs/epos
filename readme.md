@@ -44,6 +44,7 @@
   - epos.asset.get
   - epos.asset.list
 - **Env**
+  - epos.env.mode
   - epos.env.tabId
   - epos.env.project
   - epos.env.isPopup

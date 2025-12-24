@@ -5,7 +5,6 @@
   "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
-  "permissions": ["downloads", "optional:cookies"],
 
   "config": {
     "access": ["engine"],

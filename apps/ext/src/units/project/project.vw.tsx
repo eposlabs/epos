@@ -7,19 +7,19 @@ export class Project extends vw.Unit {
   title: Info['title']
   popup: Info['popup']
   action: Info['action']
-  env: Info['env']
+  mode: Info['mode']
   hash: Info['hash']
   hasSidePanel: Info['hasSidePanel']
   private visited = false
 
   constructor(parent: vw.Unit, data: Info) {
     super(parent)
+    this.mode = data.mode
     this.name = data.name
     this.icon = data.icon
     this.title = data.title
     this.popup = data.popup
     this.action = data.action
-    this.env = data.env
     this.hash = data.hash
     this.hasSidePanel = data.hasSidePanel
   }
@@ -29,7 +29,7 @@ export class Project extends vw.Unit {
     this.title = updates.title
     this.popup = updates.popup
     this.action = updates.action
-    this.env = updates.env
+    this.mode = updates.mode
     this.hash = updates.hash
     this.hasSidePanel = updates.hasSidePanel
   }
@@ -68,7 +68,7 @@ export class Project extends vw.Unit {
       name: this.name,
       locus: this.getLocus(),
       tabId: this.$projects.getTabId(),
-      env: this.env,
+      mode: this.mode,
     })
   }
 

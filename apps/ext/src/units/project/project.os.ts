@@ -5,8 +5,8 @@ export type Frame = { name: string; url: string }
 
 export class Project extends os.Unit {
   name: Info['name']
+  mode: Info['mode']
   hash: Info['hash']
-  env: Info['env']
   bus: ReturnType<gl.Bus['create']>
 
   /** Prefix used for frame names. */
@@ -14,11 +14,11 @@ export class Project extends os.Unit {
     return `${this.name}:`
   }
 
-  constructor(parent: os.Unit, data: Pick<Info, 'name' | 'hash' | 'env'>) {
+  constructor(parent: os.Unit, data: Pick<Info, 'name' | 'mode' | 'hash'>) {
     super(parent)
     this.name = data.name
+    this.mode = data.mode
     this.hash = data.hash
-    this.env = data.env
     this.bus = this.$.bus.create(`Project[${this.name}]`)
     if (this.hash) this.startBackground()
 
@@ -27,7 +27,7 @@ export class Project extends os.Unit {
     this.bus.on('closeFrame', this.closeFrame, this)
   }
 
-  update(updates: Pick<Info, 'hash' | 'env'>) {
+  update(updates: Pick<Info, 'mode' | 'hash'>) {
     // Hash changed? -> Create / reload main frame
     if (this.hash !== updates.hash) {
       if (!this.hasBackground()) {
@@ -38,8 +38,8 @@ export class Project extends os.Unit {
     }
 
     // Update data
+    this.mode = updates.mode
     this.hash = updates.hash
-    this.env = updates.env
   }
 
   dispose() {
@@ -101,7 +101,7 @@ export class Project extends os.Unit {
   }
 
   private getBackgroundUrl() {
-    return this.$.env.url.project({ name: this.name, locus: 'background', env: this.env })
+    return this.$.env.url.project({ name: this.name, locus: 'background', mode: this.mode })
   }
 
   // ---------------------------------------------------------------------------
@@ -196,7 +196,7 @@ export class Project extends os.Unit {
   // ---------------------------------------------------------------------------
 
   private info(message: string, details?: string) {
-    if (this.env !== 'development') return
+    if (this.mode !== 'development') return
     this.$.utils.info(message, { label: this.name, timestamp: true, details })
   }
 

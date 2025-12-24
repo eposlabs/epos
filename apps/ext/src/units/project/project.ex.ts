@@ -1,5 +1,6 @@
 export class Project extends ex.Unit {
   name: ProjectDef['name']
+  mode: ProjectDef['mode']
   shadowCss: ProjectDef['shadowCss']
   config: ProjectDef['config']
   fn: ProjectDef['fn'] | null = null
@@ -10,6 +11,7 @@ export class Project extends ex.Unit {
   constructor(parent: ex.Unit, def: ProjectDef) {
     super(parent)
     this.name = def.name
+    this.mode = def.mode
     this.shadowCss = def.shadowCss
     this.config = def.config
     this.fn = def.fn

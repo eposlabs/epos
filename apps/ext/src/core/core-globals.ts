@@ -1,7 +1,7 @@
 /// <reference types="rolldown-vite/client" />
-import type { Epos } from 'epos'
-import type { Config } from 'epos-spec'
 import type * as types from 'dropcap/types'
+import type { Epos, Mode } from 'epos'
+import type { Config } from 'epos-spec'
 
 declare global {
   type Obj = types.Obj
@@ -11,12 +11,20 @@ declare global {
   type AsyncFn<T = any> = types.AsyncFn<T>
   type Url = string
 
+  type PartialEpos = Omit<Epos, 'installer' | 'engine'> & {
+    installer?: Epos['installer']
+    engine?: Epos['engine']
+  }
+
   type ProjectDef = {
     name: string
+    mode: Mode
     shadowCss: string
     config: Config
-    fn: (epos: Epos) => void
+    fn: (epos: PartialEpos) => void
   }
+
+  type S = Fn
 
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
 
@@ -46,6 +54,5 @@ declare global {
     // Global methods for `sw`
     install: any
     remove: any
-    eject: any
   }
 }

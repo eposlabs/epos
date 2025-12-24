@@ -1,6 +1,5 @@
 import { matchPattern } from 'browser-extension-url-match'
 import { parseEposSpec } from 'epos-spec'
-import Zip from 'jszip'
 import { compressToBase64 } from 'lz-string'
 import * as mobx from 'mobx'
 import stripJsonComments from 'strip-json-comments'
@@ -15,7 +14,6 @@ export class Libs extends sw.Unit {
   stripJsonComments = stripJsonComments
   terser = { minify }
   yjs = yjs
-  Zip = Zip
 
   constructor(parent: sw.Unit) {
     super(parent)

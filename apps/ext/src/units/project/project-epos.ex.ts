@@ -1,5 +1,3 @@
-import type { Epos } from 'epos'
-
 export class ProjectEpos extends ex.Unit {
   private $project = this.closest(ex.Project)!
   declare api: ReturnType<ProjectEpos['createApi']>
@@ -12,6 +10,7 @@ export class ProjectEpos extends ex.Unit {
   env = new ex.ProjectEposEnv(this)
   libs = new ex.ProjectEposLibs(this)
   symbols = new ex.ProjectEposSymbols(this)
+  installer = new ex.ProjectEposInstaller(this)
 
   async init() {
     await this.general.init()
@@ -26,7 +25,7 @@ export class ProjectEpos extends ex.Unit {
   }
 
   private createApi() {
-    const epos: Epos = {
+    const epos: PartialEpos = {
       // General
       fetch: this.$.utils.link(this.general, 'fetch'),
       browser: this.general.browser,
@@ -86,6 +85,7 @@ export class ProjectEpos extends ex.Unit {
 
       // Env
       env: {
+        mode: this.env.mode,
         tabId: this.env.tabId,
         project: this.env.project,
         isPopup: this.env.isPopup,
@@ -112,6 +112,14 @@ export class ProjectEpos extends ex.Unit {
         stateModelStrict: this.symbols.stateModelStrict,
         stateModelVersioner: this.symbols.stateModelVersioner,
       },
+
+      // Installer
+      ...(this.$project.config.access.includes('installer') && {
+        installer: {
+          install: this.$.utils.link(this.installer, 'install'),
+          remove: this.$.utils.link(this.installer, 'remove'),
+        },
+      }),
 
       // Engine
       ...(this.$project.config.access.includes('engine') && {

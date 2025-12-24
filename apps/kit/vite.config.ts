@@ -9,6 +9,7 @@ export default defineConfig(async ({ mode }) => {
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
+    defaultLayerName: 'gl',
   })
 
   return {
@@ -18,7 +19,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: `let cx;\n${setupLayersJs}`,
+          banner: `let cn;\n${setupLayersJs}`,
         },
       }),
     ],

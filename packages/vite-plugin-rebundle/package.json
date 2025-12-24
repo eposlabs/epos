@@ -20,8 +20,8 @@
     "./ts": "./src/rebundle.ts"
   },
   "files": [
-    "src",
-    "dist"
+    "dist",
+    "src"
   ],
   "dependencies": {
     "@types/ws": "^8.18.1",

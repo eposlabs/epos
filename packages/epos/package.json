@@ -18,14 +18,15 @@
     "./vite/ts": "./src/epos-vite.ts"
   },
   "files": [
-    "src",
-    "dist"
+    "dist",
+    "src"
   ],
   "dependencies": {
     "@parcel/watcher": "^2.5.1",
     "@types/chrome": "^0.1.32",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "epos-spec": "^1.0.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "portfinder": "^1.0.38",

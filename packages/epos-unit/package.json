@@ -16,8 +16,8 @@
     ".": "./dist/epos-unit.js"
   },
   "files": [
-    "src",
-    "dist"
+    "dist",
+    "src"
   ],
   "dependencies": {
     "dropcap": "^1.0.0",

@@ -1,5 +1,6 @@
+import type { Assets, Bundle, Mode, Sources } from 'epos'
 import type { Address } from '../project/project-target.sw'
-import type { Assets, Bundle, Env, Info, Snapshot, Sources } from '../project/project.sw'
+import type { Info, Snapshot } from '../project/project.sw'
 import patchGlobalsJs from './projects-patch-globals.sw.js?raw'
 
 export type InfoMap = { [projectName: string]: Info }
@@ -27,8 +28,6 @@ export class Projects extends sw.Unit {
 
     this.$.bus.on('Projects.install', this.install, this)
     this.$.bus.on('Projects.remove', this.remove, this)
-    this.$.bus.on('Projects.export', this.export, this)
-
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
@@ -41,25 +40,17 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async install(input: Bundle | Url, asDev = false) {
-    // Install from a bundle
+  async install(input: Url | Bundle, mode: Mode = 'production') {
+    let bundle: Bundle
     if (this.$.utils.is.object(input)) {
-      await this.upsert(input)
-    }
-
-    // Install from a URL
-    else if (URL.canParse(input)) {
-      const env = asDev ? 'development' : 'production'
-      const bundle = await this.fetchBundle(input, env)
-      await this.upsert(bundle)
-    }
-
-    // Invalid URL? -> Throw an error
-    else {
+      bundle = input
+    } else if (URL.canParse(input)) {
+      bundle = await this.fetchBundle(input, mode)
+    } else {
       throw new Error(`Invalid URL: ${input}`)
     }
 
-    // Broadcast change
+    await this.upsert(bundle)
     await this.$.bus.send('Projects.changed')
   }
 
@@ -74,12 +65,6 @@ export class Projects extends sw.Unit {
 
     // Broadcast change
     await this.$.bus.send('Projects.changed')
-  }
-
-  async export(projectName: string, dev = false) {
-    const project = this.map[projectName]
-    if (!project) throw new Error(`No such project: ${projectName}`)
-    return await project.zip(dev)
   }
 
   hasPopup() {
@@ -100,7 +85,7 @@ export class Projects extends sw.Unit {
     const origin = address ? this.getAddressOrigin(address) : null
     if (origin !== location.origin) {
       const hasReact = defJsList.some(js => this.hasReactCode(js))
-      const hasDevProject = projects.some(project => project.env === 'development')
+      const hasDevProject = projects.some(project => project.mode === 'development')
       const ex = hasReact ? this.ex.full : this.ex.mini
       const exJs = hasDevProject ? ex.dev : ex.prod
       engineJs = `${patchGlobalsJs}; (async () => { ${exJs} })();`
@@ -322,7 +307,7 @@ export class Projects extends sw.Unit {
     })
   }
 
-  private async fetchBundle(specUrl: string, env: Env = 'production'): Promise<Bundle> {
+  private async fetchBundle(specUrl: string, mode: Mode = 'production'): Promise<Bundle> {
     // Check if URL is valid
     if (!URL.parse(specUrl)) throw new Error(`Invalid URL: ${specUrl}`)
 
@@ -363,7 +348,7 @@ export class Projects extends sw.Unit {
       assets[path] = blob
     }
 
-    return { env, spec, sources, assets }
+    return { mode, spec, sources, assets }
   }
 
   private compareSemver(semver1: string, semver2: string) {

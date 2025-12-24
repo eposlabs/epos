@@ -93,10 +93,6 @@ export class Unit<TRoot = unknown> {
     return this.versioner
   }
 
-  static defineVersioner(versioner: Record<number, (this: any, unit: any) => void>) {
-    return versioner
-  }
-
   // ---------------------------------------------------------------------------
   // ROOT
   // ---------------------------------------------------------------------------
@@ -141,6 +137,12 @@ export class Unit<TRoot = unknown> {
     const id = self.setInterval(...args)
     this[_disposers_].add(() => self.clearInterval(id))
     return id
+  }
+
+  never(message = 'This should never happen') {
+    const error = new Error(`🔴 [${this['@']}] ${message}`)
+    Error.captureStackTrace(error, this.never)
+    throw error
   }
 }
 

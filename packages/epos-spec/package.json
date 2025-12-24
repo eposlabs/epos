@@ -1,20 +1,28 @@
 {
   "name": "epos-spec",
-  "version": "*",
-  "private": true,
+  "version": "1.1.0",
   "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "",
+  "keywords": [],
   "scripts": {
-    "lint": "tsc --noEmit"
+    "dev": "tsup --config ../../tsup.config.ts --watch",
+    "build": "tsup --config ../../tsup.config.ts",
+    "lint": "tsc --noEmit",
+    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./src/epos-spec.ts"
+    ".": "./dist/epos-spec.js",
+    "./ts": "./src/epos-spec.ts"
   },
   "files": [
+    "dist",
     "src"
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",
-    "dropcap": "*",
+    "dropcap": "^1.0.0",
     "strip-json-comments": "^5.0.3"
   }
 }

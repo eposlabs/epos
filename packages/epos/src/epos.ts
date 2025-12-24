@@ -1,3 +1,4 @@
+import { Spec } from 'epos-spec'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'
@@ -15,12 +16,11 @@ export type ModelClass = new (...args: any[]) => any
 export type Model = InstanceType<ModelClass>
 export type Initial<T extends Obj | Model> = T | (() => T)
 export type Attrs = Record<string, string | number>
+export type Mode = 'development' | 'production'
+export type Sources = { [path: string]: string }
+export type Assets = { [path: string]: Blob }
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
-
-export type StateConfig = {
-  allowMissingModels?: boolean | string[]
-}
 
 export type ReqInit = {
   body: RequestInit['body']
@@ -66,6 +66,13 @@ export type Storage = {
   keys(): Promise<string[]>
   /** Clear the storage. Deletes all keys and storage itself. */
   clear(): Promise<void>
+}
+
+export type Bundle = {
+  mode: Mode
+  spec: Spec
+  sources: Sources
+  assets: Assets
 }
 
 export interface Epos {
@@ -183,6 +190,7 @@ export interface Epos {
 
   // Env
   env: {
+    mode: Mode
     tabId: number
     project: string
     isPopup: boolean
@@ -210,8 +218,17 @@ export interface Epos {
     readonly stateModelVersioner: symbol
   }
 
+  // Installer
+  installer: {
+    install: {
+      (url: string, mode?: Mode): Promise<void>
+      (bundle: Bundle): Promise<void>
+    }
+    remove(name: string): Promise<void>
+  }
+
   // Engine
-  engine?: any
+  engine: any
 }
 
 declare global {

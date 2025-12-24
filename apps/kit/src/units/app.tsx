@@ -1,4 +1,5 @@
 export class App extends gl.Unit {
+  libs = new gl.Libs(this)
   utils = new gl.Utils(this)
   idb = new gl.Idb(this)
   ui = new gl.Ui(this)
@@ -57,7 +58,7 @@ export class App extends gl.Unit {
   View() {
     return (
       <div
-        className={cx(
+        className={cn(
           'flex min-h-screen min-w-screen justify-center bg-gray-100 px-4 pt-4 font-mono text-sm',
           'dark:bg-gray-800',
         )}
@@ -85,7 +86,7 @@ export class App extends gl.Unit {
           <this.ui.Button
             label="ADD PROJECT"
             onClick={this.addProject}
-            className={cx(this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute')}
+            className={cn(this.projects.length > 0 && 'right-4 bottom-4 [&]:absolute')}
           />
         </div>
       </div>
@@ -113,6 +114,9 @@ export class App extends gl.Unit {
     5() {
       this.ui = new gl.Ui(this)
       delete this.view
+    },
+    6() {
+      this.libs = new gl.Libs(this)
     },
   }
 }

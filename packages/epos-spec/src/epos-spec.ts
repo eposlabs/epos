@@ -8,7 +8,7 @@ export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
 export type UrlMatchPattern = string // '*://*.example.com/*'
-export type Access = 'engine'
+export type Access = 'installer' | 'engine'
 export type Manifest = Obj
 
 export type Spec = {
@@ -103,7 +103,7 @@ const schema = {
   },
   config: {
     keys: ['access', 'preloadAssets', 'allowMissingModels'],
-    access: { default: [], variants: ['engine'] },
+    access: { default: [], variants: ['installer', 'engine'] },
     preloadAssets: { default: true },
     allowMissingModels: { default: false },
   },
@@ -125,7 +125,7 @@ const schema = {
     'optional:downloads',
     'optional:notifications',
     'optional:storage',
-  ] satisfies (Permission | `optional:${Permission}`)[],
+  ],
 }
 
 export function parseEposSpec(json: string): Spec {
@@ -309,21 +309,40 @@ function parseTarget(target: unknown): Target {
 
 function parseMatches(target: Obj): Match[] {
   const matches = ensureArray(target.matches ?? [])
-  return matches.map(match => parseMatch(match))
+  return matches.map(match => parseMatch(match)).flat()
 }
 
-function parseMatch(match: unknown): Match {
+function parseMatch(match: unknown): Match | Match[] {
   if (!is.string(match)) throw new Error(`Invalid match pattern: '${JSON.stringify(match)}'`)
+
   if (match === '<popup>') return { context: 'locus', value: 'popup' }
   if (match === '<sidePanel>') return { context: 'locus', value: 'sidePanel' }
   if (match === '<background>') return { context: 'locus', value: 'background' }
-  if (!match.startsWith('frame:')) return { context: 'top', value: parseMatchPattern(match) }
-  return { context: 'frame', value: parseMatchPattern(match.replace('frame:', '')) }
+
+  const context = match.startsWith('frame:') ? 'frame' : 'top'
+  let pattern = context === 'frame' ? match.replace('frame:', '') : match
+
+  if (pattern === '<allUrls>') return { context, value: '<all_urls>' }
+  if (pattern === '<all_urls>') throw new Error(`Use '<allUrls>' instead of '<all_urls>'`)
+
+  if (pattern.startsWith('exact:')) {
+    return { context, value: parseMatchPattern(pattern.replace('exact:', '')) }
+  }
+
+  // Ensure pattern url has a path: `*://example.com` -> `*://example.com/`
+  const href = pattern.replaceAll('*', 'wildcard--')
+  if (!URL.canParse(href)) throw new Error(`Invalid match pattern: '${match}'`)
+  const url = new URL(href)
+  if (url.pathname === '') url.pathname = '/'
+  pattern = url.href.replaceAll('wildcard--', '*')
+
+  return [
+    { context, value: parseMatchPattern(pattern) },
+    { context, value: parseMatchPattern(`${pattern}?*`) },
+  ]
 }
 
 function parseMatchPattern(pattern: string): MatchPattern {
-  if (pattern === '<allUrls>') return '<all_urls>'
-  if (pattern === '<all_urls>') throw new Error(`Use '<allUrls>' instead of '<all_urls>'`)
   const matcher = matchPattern(pattern)
   if (!matcher.valid) throw new Error(`Invalid match pattern: '${pattern}'`)
   return pattern
@@ -355,7 +374,7 @@ function parsePermissions(spec: Obj): Permissions {
   const permissions = spec.permissions ?? []
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
-  const badPermission = permissions.find(value => !schema.permissions.includes(value as Permission))
+  const badPermission = permissions.find(value => !schema.permissions.includes(value))
   if (badPermission) throw new Error(`Unknown permission: '${badPermission}'`)
 
   const mandatoryPermissions = new Set<string>()
