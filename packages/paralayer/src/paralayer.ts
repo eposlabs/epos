@@ -52,9 +52,9 @@ export class Paralayer extends Unit {
     await this.queue.add(() => this.build())
     if (!this.options.watch) await this.watcher.close()
 
-    // Return content of setup.js
-    const setupJsPath = join(this.options.output, 'setup.js')
-    return await readFile(setupJsPath, 'utf-8')
+    // Return content of define.js
+    const defineJsPath = join(this.options.output, 'define.js')
+    return await readFile(defineJsPath, 'utf-8')
   }
 
   // ---------------------------------------------------------------------------
@@ -153,10 +153,10 @@ export class Paralayer extends Unit {
       }
     }
 
-    // Generate setup.js file
-    const setupFile = join(this.options.output, 'setup.js')
-    const setupContent = this.generateSetupContent(allLayers)
-    await this.write(setupFile, setupContent)
+    // Generate define.js file
+    const defineFile = join(this.options.output, 'define.js')
+    const defineContent = this.generateDefineContent(allLayers)
+    await this.write(defineFile, defineContent)
   }
 
   // ---------------------------------------------------------------------------
@@ -235,7 +235,7 @@ export class Paralayer extends Unit {
     return [...imports].join('\n')
   }
 
-  private generateSetupContent(allLayers: string[]) {
+  private generateDefineContent(allLayers: string[]) {
     const layers = allLayers.toSorted((layer1, layer2) => {
       if (layer1.length !== layer2.length) return layer1.length - layer2.length
       return layer1.localeCompare(layer2)
@@ -284,8 +284,8 @@ export class Paralayer extends Unit {
 }
 
 export async function paralayer(options: Options) {
-  const setupLayersJs = await new Paralayer(options).start()
-  return setupLayersJs
+  const defineLayersJs = await new Paralayer(options).start()
+  return defineLayersJs
 }
 
 export default paralayer

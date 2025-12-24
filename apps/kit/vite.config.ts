@@ -7,7 +7,7 @@ import { rebundle } from 'vite-plugin-rebundle/ts'
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
-  const setupLayersJs = await paralayer({
+  const defineLayersJs = await paralayer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
@@ -27,7 +27,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: `let cn;\n${setupLayersJs}`,
+          banner: `let cn;\n${defineLayersJs}`,
         },
       }),
     ],

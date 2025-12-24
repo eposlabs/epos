@@ -1,11 +1,11 @@
 import type { Address } from '../project/project-target.sw'
-import interceptGlobalsJs from './projects-intercept-globals.cs?raw'
-import setupEposElementJs from './projects-setup-epos-element.cs?raw'
+import defineEposElementJs from './projects-define-epos-element.cs?raw'
+import tamperInterceptGlobalsJs from './projects-tamper-intercept-globals.cs?raw'
 
 export class Projects extends cs.Unit {
   async init() {
-    this.$.utils.executeJs(interceptGlobalsJs)
-    this.$.utils.executeJs(setupEposElementJs)
+    this.$.utils.executeJs(defineEposElementJs)
+    this.$.utils.executeJs(tamperInterceptGlobalsJs)
     this.executeLiteJsFromCookies()
     await this.injectProjects()
   }

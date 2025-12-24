@@ -1,7 +1,8 @@
 import type { Assets, Bundle, Mode, Sources } from 'epos'
 import type { Address } from '../project/project-target.sw'
 import type { Info, Snapshot } from '../project/project.sw'
-import patchGlobalsJs from './projects-patch-globals.sw.js?raw'
+import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
+import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
 export type InfoMap = { [projectName: string]: Info }
 export type HashMap = { [projectName: string]: string | null }
@@ -88,7 +89,9 @@ export class Projects extends sw.Unit {
       const hasDevProject = projects.some(project => project.mode === 'development')
       const ex = hasReact ? this.ex.full : this.ex.mini
       const exJs = hasDevProject ? ex.dev : ex.prod
-      engineJs = `${patchGlobalsJs}; (async () => { ${exJs} })();`
+      // Do not patch `window` for projects code, because it can have checks like
+      // `e.source === window` which will break if `window` is a proxy
+      engineJs = `${tamperUseGlobalsJs}; (async () => { ${tamperPatchWindowJs};\n${exJs} })()`
     }
 
     return [

@@ -7,7 +7,7 @@ import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle/ts'
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
-  const setupLayersJs = await paralayer({
+  const defineLayersJs = await paralayer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
@@ -24,7 +24,7 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     output: {
-      banner: `(async () => {\n${setupLayersJs}\n`,
+      banner: `(async () => {\n${defineLayersJs}\n`,
       footer: '})()',
       minify: mode !== 'development',
     },
