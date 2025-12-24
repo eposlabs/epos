@@ -96,21 +96,10 @@ export class ProjectEposStorage extends ex.Unit {
   }
 
   private prepareName(name: unknown, caller: Fn) {
-    if (this.$.utils.is.absent(name)) {
-      return DEFAULT_STORAGE_NAME
-    }
-
-    if (!this.$.utils.is.string(name)) {
-      throw this.$epos.error(`Storage name must be a string`, caller)
-    }
-
-    if (name === '') {
-      throw this.$epos.error(`Storage name must be a non-empty string`, caller)
-    }
-
-    if (name.length > 30) {
-      throw this.$epos.error(`Storage name is too long: '${name}'`, caller)
-    }
+    if (this.$.utils.is.absent(name)) return DEFAULT_STORAGE_NAME
+    if (!this.$.utils.is.string(name)) throw this.$epos.error(`Storage name must be a string`, caller)
+    if (name === '') throw this.$epos.error(`Storage name must be a non-empty string`, caller)
+    if (name.length > 30) throw this.$epos.error(`Storage name is too long: '${name}'`, caller)
 
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
@@ -124,18 +113,9 @@ export class ProjectEposStorage extends ex.Unit {
   }
 
   private prepareKey(key: unknown, caller: Fn) {
-    if (!this.$.utils.is.string(key)) {
-      throw this.$epos.error(`Storage key must be a string`, caller)
-    }
-
-    if (key.length === 0) {
-      throw this.$epos.error('Storage key must be a non-empty string', caller)
-    }
-
-    if (key.length > 100) {
-      throw this.$epos.error(`Storage key is too long: '${key}'`, caller)
-    }
-
+    if (!this.$.utils.is.string(key)) throw this.$epos.error(`Storage key must be a string`, caller)
+    if (key.length === 0) throw this.$epos.error('Storage key must be a non-empty string', caller)
+    if (key.length > 100) throw this.$epos.error(`Storage key is too long: '${key}'`, caller)
     return key
   }
 

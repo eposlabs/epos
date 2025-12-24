@@ -68,21 +68,10 @@ export class ProjectEposState extends ex.Unit {
   }
 
   private prepareName(name: unknown, caller: Fn) {
-    if (this.$.utils.is.absent(name)) {
-      return DEFAULT_STATE_NAME
-    }
-
-    if (!this.$.utils.is.string(name)) {
-      throw this.$epos.error(`State name must be a string`, caller)
-    }
-
-    if (name === '') {
-      throw this.$epos.error(`State name must be a non-empty string`, caller)
-    }
-
-    if (name.length > 30) {
-      throw this.$epos.error(`State name is too long: '${name}'`, caller)
-    }
+    if (this.$.utils.is.absent(name)) return DEFAULT_STATE_NAME
+    if (!this.$.utils.is.string(name)) throw this.$epos.error(`State name must be a string`, caller)
+    if (name === '') throw this.$epos.error(`State name must be a non-empty string`, caller)
+    if (name.length > 30) throw this.$epos.error(`State name is too long: '${name}'`, caller)
 
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
@@ -104,9 +93,7 @@ export class ProjectEposState extends ex.Unit {
   }
 
   private prepareVersioner(versioner: unknown, caller: Fn) {
-    if (!this.$.utils.is.object(versioner)) {
-      throw this.$epos.error(`Versioner must be an object`, caller)
-    }
+    if (!this.$.utils.is.object(versioner)) throw this.$epos.error(`Versioner must be an object`, caller)
 
     const keys = Object.keys(versioner)
     const nonNumericKey = keys.find(key => !this.$.utils.is.numeric(key))
@@ -126,10 +113,7 @@ export class ProjectEposState extends ex.Unit {
   }
 
   private prepareLocalStateData(data: unknown, caller: Fn) {
-    if (!this.$.utils.is.object(data)) {
-      throw this.$epos.error(`State must be an object`, caller)
-    }
-
+    if (!this.$.utils.is.object(data)) throw this.$epos.error(`State must be an object`, caller)
     return data
   }
 }

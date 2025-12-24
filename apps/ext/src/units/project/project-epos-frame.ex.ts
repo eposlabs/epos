@@ -65,33 +65,16 @@ export class ProjectEposFrame extends ex.Unit {
   }
 
   private prepareUrl(url: unknown, caller: Fn) {
-    if (!this.$.utils.is.string(url)) {
-      throw this.$epos.error(`Frame URL must be a string`, caller)
-    }
-
-    if (!URL.canParse(url)) {
-      throw this.$epos.error(`Invalid frame URL: '${url}'`, caller)
-    }
-
+    if (!this.$.utils.is.string(url)) throw this.$epos.error(`Frame URL must be a string`, caller)
+    if (!URL.canParse(url)) throw this.$epos.error(`Invalid frame URL: '${url}'`, caller)
     return url
   }
 
   private prepareName(name: unknown, caller: Fn) {
-    if (this.$.utils.is.absent(name)) {
-      return DEFAULT_FRAME_NAME
-    }
-
-    if (!this.$.utils.is.string(name)) {
-      throw this.$epos.error(`Frame name must be a string`, caller)
-    }
-
-    if (name === '') {
-      throw this.$epos.error(`Frame name must be a non-empty string`, caller)
-    }
-
-    if (name.length > 30) {
-      throw this.$epos.error(`Frame name is too long: '${name}'`, caller)
-    }
+    if (this.$.utils.is.absent(name)) return DEFAULT_FRAME_NAME
+    if (!this.$.utils.is.string(name)) throw this.$epos.error(`Frame name must be a string`, caller)
+    if (name === '') throw this.$epos.error(`Frame name must be a non-empty string`, caller)
+    if (name.length > 30) throw this.$epos.error(`Frame name is too long: '${name}'`, caller)
 
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
@@ -105,13 +88,8 @@ export class ProjectEposFrame extends ex.Unit {
   }
 
   private prepareAttrs(attrs: unknown, caller: Fn) {
-    if (this.$.utils.is.absent(attrs)) {
-      return {}
-    }
-
-    if (!this.$.utils.is.object(attrs)) {
-      throw this.$epos.error(`Frame attributes must be an object`, caller)
-    }
+    if (this.$.utils.is.absent(attrs)) return {}
+    if (!this.$.utils.is.object(attrs)) throw this.$epos.error(`Frame attributes must be an object`, caller)
 
     const isValid = (value: unknown) => this.$.utils.is.string(value) || this.$.utils.is.number(value)
     const badKey = Object.keys(attrs).find(key => !isValid(attrs[key]))

@@ -21,7 +21,7 @@
   - epos.state.disconnect
   - epos.state.transaction
   - epos.state.local
-  - epos.state.destroy
+  - epos.state.remove
   - epos.state.list
   - epos.state.register
 - **Storage**
