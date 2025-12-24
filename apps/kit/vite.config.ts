@@ -5,6 +5,8 @@ import { defineConfig } from 'rolldown-vite'
 import { rebundle } from 'vite-plugin-rebundle/ts'
 
 export default defineConfig(async ({ mode }) => {
+  const env = mode === 'development' ? 'development' : 'production'
+
   const setupLayersJs = await paralayer({
     input: './src/units',
     output: './src/layers',
@@ -13,6 +15,12 @@ export default defineConfig(async ({ mode }) => {
   })
 
   return {
+    define: {
+      'import.meta.env.DEV': JSON.stringify(mode === 'development'),
+      'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
+      'process.env.NODE_ENV': JSON.stringify(env),
+    },
+
     plugins: [
       epos(),
       tailwindcss(),
@@ -31,8 +39,6 @@ export default defineConfig(async ({ mode }) => {
       rolldownOptions: {
         input: {
           gl: './src/gl.tsx',
-          ln: './src/ln.tsx',
-          tw: './src/tw.css',
         },
         output: {
           entryFileNames: '[name].js',

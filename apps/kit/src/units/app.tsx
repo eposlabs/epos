@@ -4,6 +4,7 @@ export class App extends gl.Unit {
   idb = new gl.Idb(this)
   ui = new gl.Ui(this)
   projects: gl.Project[] = []
+  learn = new gl.Learn(this)
 
   async init() {
     await this.ensureSingleTab()
@@ -117,6 +118,9 @@ export class App extends gl.Unit {
     },
     6() {
       this.libs = new gl.Libs(this)
+    },
+    7() {
+      this.learn = new gl.Learn(this)
     },
   }
 }

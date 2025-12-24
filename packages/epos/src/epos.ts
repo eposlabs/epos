@@ -103,8 +103,8 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T extends Obj | Model>(initial?: Initial<T>, versioner?: Versioner): Promise<T>
-      <T extends Obj | Model>(name?: string, initial?: Initial<T>, versioner?: Versioner): Promise<T>
+      <T extends Obj | Model = Obj>(initial?: Initial<T>, versioner?: Versioner): Promise<T>
+      <T extends Obj | Model = Obj>(name?: string, initial?: Initial<T>, versioner?: Versioner): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void

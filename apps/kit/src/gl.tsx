@@ -1,9 +1,22 @@
 import './core/core-globals'
-import './core/core-units'
 import './layers/index.gl'
+import './gl.css'
 
 epos.state.register({ ...gl })
-const state = await epos.state.connect(() => ({ app: new gl.App(null) }))
-epos.render(<state.app.View />)
+let app = await epos.state.connect(() => new gl.App(null))
 
-Object.assign(self, { epos, state, $: state.app, units: gl })
+// Migrate old state
+if (!app['@']) {
+  await epos.state.remove()
+  app = await epos.state.connect(() => new gl.App(null))
+}
+
+if (location.pathname === '/@kit') {
+  epos.render(<app.View />)
+} else if (location.pathname === '/@learn') {
+  epos.render(<app.learn.View />)
+}
+
+if (import.meta.env.DEV) {
+  Object.assign(self, { epos, $: app, gl })
+}

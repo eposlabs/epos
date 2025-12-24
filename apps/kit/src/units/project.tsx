@@ -1,11 +1,5 @@
+import { Bundle } from 'epos'
 import { parseEposSpec, type Spec } from 'epos-spec'
-
-export type Bundle = {
-  mode: 'development' | 'production'
-  spec: Spec
-  sources: Record<string, string>
-  assets: Record<string, Blob>
-}
 
 export class Project extends gl.Unit {
   id = this.$.utils.id()
@@ -75,7 +69,7 @@ export class Project extends gl.Unit {
   }
 
   async remove() {
-    await epos.engine.bus.send('Projects.remove', this.name)
+    if (this.name) await epos.installer.remove(this.name)
     this.$.projects.splice(this.$.projects.indexOf(this), 1)
   }
 
@@ -95,8 +89,8 @@ export class Project extends gl.Unit {
       const spec = await this.readSpec()
 
       // Name has been changed? -> Remove project from epos extension
-      if (spec.name && this.name !== spec.name) {
-        await epos.engine.bus.send('ProjectsInstaller.remove', this.name)
+      if (spec.name && this.name && this.name !== spec.name) {
+        await epos.installer.remove(this.name)
       }
 
       // Update spec and name
@@ -120,7 +114,7 @@ export class Project extends gl.Unit {
 
       // Prepare & install bundle
       const bundle: Bundle = { mode: 'development', spec: this.spec, sources, assets }
-      await epos.engine.bus.send('Projects.install', bundle)
+      await epos.installer.install(bundle)
 
       // Done
       this.updatedAt = Date.now()
