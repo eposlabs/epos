@@ -128,7 +128,7 @@ const schema = {
   ],
 }
 
-export function parseEposSpec(json: string): Spec {
+export function parseSpec(json: string): Spec {
   json = stripJsonComments(json)
   const [spec, error] = safeSync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
@@ -439,4 +439,4 @@ function parsePath(path: string) {
   return normalizedPath
 }
 
-export default parseEposSpec
+export default parseSpec

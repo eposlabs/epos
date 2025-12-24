@@ -1,9 +1,15 @@
+import { parseSpec } from 'epos-spec'
 import Zip from 'jszip'
+import stripJsonComments from 'strip-json-comments'
 
 export class Libs extends gl.Unit {
+  declare parseSpec: typeof parseSpec
+  declare stripJsonComments: typeof stripJsonComments
   declare Zip: typeof Zip
 }
 
 Object.assign(Libs.prototype, {
+  parseSpec,
+  stripJsonComments,
   Zip,
 })

@@ -320,7 +320,7 @@ export class Projects extends sw.Unit {
     if (!json) throw new Error(`Failed to read ${specUrl}`)
 
     // Parse spec file
-    const spec = this.$.libs.parseEposSpec(json)
+    const spec = this.$.libs.parseSpec(json)
 
     // Fetch sources
     const sources: Sources = {}

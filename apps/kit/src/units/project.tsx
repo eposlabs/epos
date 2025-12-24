@@ -1,5 +1,5 @@
-import { Bundle } from 'epos'
-import { parseEposSpec, type Spec } from 'epos-spec'
+import type { Bundle } from 'epos'
+import type { Spec } from 'epos-spec'
 
 export class Project extends gl.Unit {
   id = this.$.utils.id()
@@ -11,10 +11,10 @@ export class Project extends gl.Unit {
 
   /** Root project dir handle. */
   declare handle: FileSystemDirectoryHandle | null
-  declare private engine: any
   declare private observer: FileSystemObserver | null
   declare private updateTimer: number | undefined
   declare state: { error: string | null }
+  declare bundle: Bundle | null
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
@@ -22,6 +22,7 @@ export class Project extends gl.Unit {
   }
 
   async init() {
+    this.bundle = null
     this.handle = null
     this.observer = null
     this.updateTimer = undefined
@@ -59,10 +60,8 @@ export class Project extends gl.Unit {
 
   async export(asDev = false) {
     console.log(`📦 [${this.name}] Export`, { asDev })
-    // TODO:
-    // const sources = readSources()
-    // if sources.includes unminified files and !dev -> warn user
-    const blob = await epos.engine.bus.send('Projects.export', this.name, asDev)
+    const blob = await this.createZip(asDev)
+    console.warn({ blob })
     const url = URL.createObjectURL(blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
@@ -114,6 +113,7 @@ export class Project extends gl.Unit {
 
       // Prepare & install bundle
       const bundle: Bundle = { mode: 'development', spec: this.spec, sources, assets }
+      this.bundle = bundle
       await epos.installer.install(bundle)
 
       // Done
@@ -168,7 +168,7 @@ export class Project extends gl.Unit {
     const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
     if (jsonError) throw new Error(`Failed to read epos.json: ${jsonError.message}`)
 
-    const [spec, specError] = this.$.utils.safeSync(() => parseEposSpec(specJson))
+    const [spec, specError] = this.$.utils.safeSync(() => this.$.libs.parseSpec(specJson))
     if (specError) throw new Error(`Failed to parse epos.json: ${specError.message}`)
 
     return spec
@@ -195,6 +195,109 @@ export class Project extends gl.Unit {
     const hhmmss = new Date(time).toString().split(' ')[4]
     const ms = new Date(time).getMilliseconds().toString().padStart(3, '0')
     return `${hhmmss}:${ms}`
+  }
+
+  // /** Create standalone extension ZIP file out of the project. */
+  private async createZip(asDev = false) {
+    const bundle = this.bundle
+    if (!bundle) throw new Error('Project is not loaded yet')
+    const zip = new this.$.libs.Zip()
+
+    const engineFiles = [
+      'cs.js',
+      'ex-mini.js',
+      'ex.js',
+      'os.js',
+      'sw.js',
+      'vw.css',
+      'vw.js',
+      'view.html',
+      'system.html',
+      'project.html',
+      'offscreen.html',
+      ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
+    ]
+
+    for (const path of engineFiles) {
+      const blob = await fetch(epos.browser.runtime.getURL(`/${path}`)).then(r => r.blob())
+      zip.file(path, blob)
+    }
+
+    zip.file(
+      'project.json',
+      JSON.stringify(
+        {
+          env: asDev ? 'development' : 'production',
+          spec: bundle.spec,
+          sources: bundle.sources,
+        },
+        null,
+        2,
+      ),
+    )
+
+    const assets = bundle.assets
+    for (const path in assets) {
+      const blob = assets[path]
+      if (!blob) throw this.never()
+      zip.file(`assets/${path}`, blob)
+    }
+
+    const icon = bundle.spec.icon
+      ? assets[bundle.spec.icon]
+      : await fetch(epos.browser.runtime.getURL('/icon.png')).then(r => r.blob())
+    if (!icon) throw this.never()
+
+    // const icon128 = await this.$.utils.convertImage(icon, {
+    //   type: 'image/png',
+    //   quality: 1,
+    //   cover: true,
+    //   size: 128,
+    // })
+    zip.file('icon.png', icon)
+
+    // const urlFilters = new Set<string>()
+    // for (const target of this.targets) {
+    //   for (let match of target.matches) {
+    //     if (match.context === 'locus') continue
+    //     urlFilters.add(match.value)
+    //   }
+    // }
+    // if (urlFilters.has('*://*/*')) {
+    //   urlFilters.clear()
+    //   urlFilters.add('*://*/*')
+    // }
+
+    const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(r => r.text())
+    const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
+    const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
+    if (error) throw error
+
+    const manifest = {
+      ...engineManifest,
+      name: bundle.spec.title ?? bundle.spec.name,
+      version: bundle.spec.version,
+      description: bundle.spec.description ?? '',
+      action: { default_title: bundle.spec.title ?? bundle.spec.name },
+      // ...(bundle.spec.manifest ?? {}),
+    }
+
+    // const mandatoryPermissions = [
+    //   'alarms',
+    //   'declarativeNetRequest',
+    //   'offscreen',
+    //   'scripting',
+    //   'tabs',
+    //   'unlimitedStorage',
+    //   'webNavigation',
+    // ]
+
+    // const permissions = new Set<string>(manifest.permissions ?? [])
+    // for (const perm of mandatoryPermissions) permissions.add(perm)
+    // manifest.permissions = [...permissions].sort()
+
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+    return await zip.generateAsync({ type: 'blob' })
   }
 
   // ---------------------------------------------------------------------------
@@ -263,97 +366,3 @@ export class Project extends gl.Unit {
     },
   }
 }
-
-// /** Create standalone extension ZIP file out of the project. */
-// async zip(asDev = false) {
-//   const zip = new this.$.libs.Zip()
-
-//   const engineFiles = [
-//     'cs.js',
-//     'ex-mini.js',
-//     'ex.js',
-//     'os.js',
-//     'sw.js',
-//     'vw.css',
-//     'vw.js',
-//     'view.html',
-//     'system.html',
-//     'project.html',
-//     'offscreen.html',
-//     ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
-//   ]
-
-//   for (const path of engineFiles) {
-//     const blob = await fetch(`/${path}`).then(r => r.blob())
-//     zip.file(path, blob)
-//   }
-
-//   const bundle = {
-//     env: asDev ? 'development' : 'production',
-//     spec: this.spec,
-//     sources: this.sources,
-//   }
-//   zip.file('project.json', JSON.stringify(bundle, null, 2))
-
-//   const assets: Record<string, Blob> = {}
-//   const paths = await this.$.idb.keys(this.spec.name, ':assets')
-//   for (const path of paths) {
-//     const blob = await this.$.idb.get<Blob>(this.spec.name, ':assets', path)
-//     if (!blob) throw this.never()
-//     assets[path] = blob
-//     zip.file(`assets/${path}`, blob)
-//   }
-
-//   const icon = bundle.spec.icon ? assets[bundle.spec.icon] : await fetch('/icon.png').then(r => r.blob())
-//   if (!icon) throw this.never()
-//   const icon128 = await this.$.utils.convertImage(icon, {
-//     type: 'image/png',
-//     quality: 1,
-//     cover: true,
-//     size: 128,
-//   })
-//   zip.file('icon.png', icon128)
-
-//   const urlFilters = new Set<string>()
-//   for (const target of this.targets) {
-//     for (let match of target.matches) {
-//       if (match.context === 'locus') continue
-//       urlFilters.add(match.value)
-//     }
-//   }
-//   if (urlFilters.has('*://*/*')) {
-//     urlFilters.clear()
-//     urlFilters.add('*://*/*')
-//   }
-
-//   const engineManifestText = await fetch('/manifest.json').then(r => r.text())
-//   const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
-//   const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
-//   if (error) throw error
-
-//   const manifest = {
-//     ...engineManifest,
-//     name: this.spec.title ?? this.spec.name,
-//     version: this.spec.version,
-//     description: this.spec.description ?? '',
-//     action: { default_title: this.spec.title ?? this.spec.name },
-//     // ...(this.spec.manifest ?? {}),
-//   }
-
-//   const mandatoryPermissions = [
-//     'alarms',
-//     'declarativeNetRequest',
-//     'offscreen',
-//     'scripting',
-//     'tabs',
-//     'unlimitedStorage',
-//     'webNavigation',
-//   ]
-
-//   const permissions = new Set<string>(manifest.permissions ?? [])
-//   for (const perm of mandatoryPermissions) permissions.add(perm)
-//   manifest.permissions = [...permissions].sort()
-
-//   zip.file('manifest.json', JSON.stringify(manifest, null, 2))
-//   return await zip.generateAsync({ type: 'blob' })
-// }

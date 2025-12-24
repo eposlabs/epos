@@ -17,7 +17,7 @@ $: {
       if (key === 'parent' && isTop) return windowProxy
       const value = originalGlobals[key] ?? pageWindow[key]
       if (!isMethod(key, value)) return value
-      methods[key] ??= value.bind(pageWindow)
+      methods[key] ??= value.bind(null)
       return methods[key]
     },
     set(_, key, value) {
@@ -32,8 +32,8 @@ $: {
     },
   })
 
-  self = windowProxy
-  window = windowProxy
+  // self = windowProxy
+  // window = windowProxy
   globalThis = windowProxy
 
   if (isTop) {
