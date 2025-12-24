@@ -197,7 +197,7 @@ export class Project extends gl.Unit {
     return `${hhmmss}:${ms}`
   }
 
-  // /** Create standalone extension ZIP file out of the project. */
+  /** Create standalone extension ZIP file out of the project. */
   private async createZip(asDev = false) {
     const bundle = this.bundle
     if (!bundle) throw new Error('Project is not loaded yet')
@@ -247,26 +247,20 @@ export class Project extends gl.Unit {
       ? assets[bundle.spec.icon]
       : await fetch(epos.browser.runtime.getURL('/icon.png')).then(r => r.blob())
     if (!icon) throw this.never()
-
-    // const icon128 = await this.$.utils.convertImage(icon, {
-    //   type: 'image/png',
-    //   quality: 1,
-    //   cover: true,
-    //   size: 128,
-    // })
     zip.file('icon.png', icon)
 
-    // const urlFilters = new Set<string>()
-    // for (const target of this.targets) {
-    //   for (let match of target.matches) {
-    //     if (match.context === 'locus') continue
-    //     urlFilters.add(match.value)
-    //   }
-    // }
-    // if (urlFilters.has('*://*/*')) {
-    //   urlFilters.clear()
-    //   urlFilters.add('*://*/*')
-    // }
+    const matchPatterns = new Set<string>()
+    for (const target of bundle.spec.targets) {
+      for (let match of target.matches) {
+        if (match.context === 'locus') continue
+        matchPatterns.add(match.value)
+      }
+    }
+
+    if (matchPatterns.has('<all_urls>')) {
+      matchPatterns.clear()
+      matchPatterns.add('<all_urls>')
+    }
 
     const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(r => r.text())
     const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
@@ -279,8 +273,11 @@ export class Project extends gl.Unit {
       version: bundle.spec.version,
       description: bundle.spec.description ?? '',
       action: { default_title: bundle.spec.title ?? bundle.spec.name },
+      host_permissions: [...matchPatterns],
       // ...(bundle.spec.manifest ?? {}),
     }
+
+    console.log(JSON.stringify(manifest, null, 2))
 
     // const mandatoryPermissions = [
     //   'alarms',
@@ -296,8 +293,8 @@ export class Project extends gl.Unit {
     // for (const perm of mandatoryPermissions) permissions.add(perm)
     // manifest.permissions = [...permissions].sort()
 
-    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
-    return await zip.generateAsync({ type: 'blob' })
+    // zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+    // return await zip.generateAsync({ type: 'blob' })
   }
 
   // ---------------------------------------------------------------------------
