@@ -15,7 +15,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { IconCalendar, IconHome, IconInbox, IconPlus } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -23,9 +23,27 @@ export class App extends gl.Unit {
   idb = new gl.Idb(this)
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
+  theme = 'light'
 
   async init() {
     await this.ensureSingleTab()
+
+    this.theme = this.getSystemTheme()
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      this.theme = this.getSystemTheme()
+    })
+
+    this.reaction(
+      () => this.theme,
+      theme => {
+        document.documentElement.classList.toggle('dark', theme === 'dark')
+      },
+      { fireImmediately: true },
+    )
+  }
+
+  private getSystemTheme() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
 
   /** Ensure only one tab is open and it is pinned. */
@@ -53,6 +71,7 @@ export class App extends gl.Unit {
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <this.SidebarView />
+        <Separator orientation="vertical" />
         <this.ContentView />
       </SidebarProvider>
     )
@@ -150,5 +169,11 @@ export class App extends gl.Unit {
         <this.projects.View />
       </SidebarInset>
     )
+  }
+
+  static versioner: any = {
+    1() {
+      this.theme = 'light'
+    },
   }
 }

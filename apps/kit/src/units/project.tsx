@@ -1,8 +1,11 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 import {
+  IconAlertCircle,
   IconCircleCheck,
   IconPackageExport,
   IconPointFilled,
@@ -24,7 +27,7 @@ export class Project extends gl.Unit {
   declare handle: FileSystemDirectoryHandle | null
   declare private observer: FileSystemObserver | null
   declare private updateTimer: number | undefined
-  declare state: { error: string | null }
+  declare state: { error: string | null; errorDetails: string | null }
   declare bundle: Bundle | null
   declare private $projects: gl.Projects
 
@@ -47,7 +50,7 @@ export class Project extends gl.Unit {
     this.handle = null
     this.observer = null
     this.updateTimer = undefined
-    this.state = epos.state.local({ error: null })
+    this.state = epos.state.local({ error: null, errorDetails: null })
     this.$projects = this.closest(gl.Projects)!
 
     // Perform updates in a queue
@@ -146,6 +149,9 @@ export class Project extends gl.Unit {
       )
     } catch (e) {
       this.state.error = this.$.utils.is.error(e) ? e.message : String(e)
+      if (this.$.utils.is.error(e)) {
+        this.state.errorDetails = e.cause ? String(e.cause) : null
+      }
       this.updatedAt = Date.now()
       console.error(`⛔ [${this.name}] Failed to update`, e)
     }
@@ -184,13 +190,13 @@ export class Project extends gl.Unit {
     if (!specHandle) throw new Error('epos.json not found')
 
     const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
-    if (fileError) throw new Error(`Failed to read epos.json: ${fileError.message}`)
+    if (fileError) throw new Error('Failed to read epos.json', { cause: fileError.message })
 
     const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
-    if (jsonError) throw new Error(`Failed to read epos.json: ${jsonError.message}`)
+    if (jsonError) throw new Error('Failed to read epos.json', { cause: jsonError.message })
 
     const [spec, specError] = this.$.utils.safeSync(() => this.$.libs.parseSpec(specJson))
-    if (specError) throw new Error(`Failed to parse epos.json: ${specError.message}`)
+    if (specError) throw new Error('Failed to parse epos.json', { cause: specError.message })
 
     return spec
   }
@@ -314,8 +320,8 @@ export class Project extends gl.Unit {
     // for (const perm of mandatoryPermissions) permissions.add(perm)
     // manifest.permissions = [...permissions].sort()
 
-    // zip.file('manifest.json', JSON.stringify(manifest, null, 2))
-    // return await zip.generateAsync({ type: 'blob' })
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2))
+    return await zip.generateAsync({ type: 'blob' })
   }
 
   // ---------------------------------------------------------------------------
@@ -325,8 +331,8 @@ export class Project extends gl.Unit {
   View() {
     // return <div>PRPJECT {this.name}</div>
     return (
-      <div className="flex flex-col bg-white p-4 dark:bg-black">
-        <Item variant="outline">
+      <div className="flex flex-col gap-2 bg-white p-4 dark:bg-black">
+        <Item>
           <ItemMedia variant="icon">
             <IconCircleCheck className="text-green-500" />
           </ItemMedia>
@@ -353,44 +359,19 @@ export class Project extends gl.Unit {
           </ItemActions>
         </Item>
 
-        <div className="_flex hidden items-center justify-between gap-4">
-          {/* Name */}
-          <div className="flex items-center gap-2 text-nowrap">
-            {/* {this.state.error && <Icon />} */}
-            {!this.state.error && <IconCircleCheck size={16} className="text-green-500" />}
-            {this.name ?? 'unknown'}
-          </div>
-
-          {/* Right controls */}
-          <div className="flex items-baseline gap-3">
-            {this.updatedAt && (
-              <div className="mr-2 hidden text-xs text-gray-400">
-                Updated at {this.getTimeString(this.updatedAt)}
-              </div>
-            )}
-            <ButtonGroup>
-              {!this.state.error && (
-                <Button variant="outline" onClick={e => this.export(e.shiftKey)}>
-                  <IconPackageExport /> EXPORT
-                </Button>
-              )}
-              <Button variant="outline" onClick={this.update}>
-                <IconRefresh /> REFRESH
-              </Button>
-              <Button variant="outline" onClick={this.remove}>
-                <IconTrash /> REMOVE
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-
-        {/* Error */}
-        {this.state.error && (
-          <div className="mt-4 bg-red-100 p-2.5 px-3 text-pretty text-gray-800 dark:bg-red-900 dark:text-white">
-            {this.state.error}
-          </div>
-        )}
+        <this.ErrorView />
       </div>
+    )
+  }
+
+  ErrorView() {
+    if (!this.state.error) return null
+    return (
+      <Alert variant="destructive">
+        <IconAlertCircle />
+        <AlertTitle>{this.state.error}</AlertTitle>
+        {this.state.errorDetails && <AlertDescription>{this.state.errorDetails}</AlertDescription>}
+      </Alert>
     )
   }
 
@@ -398,7 +379,7 @@ export class Project extends gl.Unit {
     return (
       <SidebarMenuItem key={this.handleId}>
         <SidebarMenuButton isActive={this.selected} onClick={this.select}>
-          <IconPointFilled className="text-green-500" />
+          <IconPointFilled className={cn('text-green-500', this.state.error && 'text-red-500')} />
           <div>{this.spec?.name ?? 'unknown'}</div>
         </SidebarMenuButton>
       </SidebarMenuItem>
