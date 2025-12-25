@@ -5,6 +5,7 @@
   "version": "1.8",
   "title": "[epos]",
   "description": "Build browser extensions.",
+  "assets": ["public/icon.svg"],
 
   "config": {
     "access": ["engine", "installer"],
@@ -14,7 +15,7 @@
   "targets": [
     {
       "matches": ["https://epos.dev/@kit", "https://epos.dev/@learn"],
-      "load": ["dist/gl.js", "shadow:dist/gl.css"]
+      "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"]
     }
   ],
 

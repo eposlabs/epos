@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite/ts'
+import { resolve } from 'node:path'
 import { paralayer } from 'paralayer/ts'
 import { defineConfig } from 'rolldown-vite'
 import { rebundle } from 'vite-plugin-rebundle/ts'
@@ -15,6 +16,12 @@ export default defineConfig(async ({ mode }) => {
   })
 
   return {
+    resolve: {
+      alias: {
+        '@': resolve(import.meta.dirname, './src/shadcn'),
+      },
+    },
+
     define: {
       'import.meta.env.DEV': JSON.stringify(mode === 'development'),
       'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
@@ -27,7 +34,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: `let cn;\n${defineLayersJs}`,
+          banner: defineLayersJs,
         },
       }),
     ],

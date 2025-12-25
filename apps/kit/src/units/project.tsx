@@ -1,3 +1,14 @@
+import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item'
+import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import {
+  IconCircleCheck,
+  IconPackageExport,
+  IconPointFilled,
+  IconRefresh,
+  IconTrash,
+} from '@tabler/icons-react'
 import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
@@ -15,10 +26,20 @@ export class Project extends gl.Unit {
   declare private updateTimer: number | undefined
   declare state: { error: string | null }
   declare bundle: Bundle | null
+  declare private $projects: gl.Projects
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
     this.handleId = handleId
+  }
+
+  get selected() {
+    return this.$projects.selectedProjectName === this.name
+  }
+
+  select() {
+    if (!this.name) return
+    this.$projects.selectedProjectName = this.name
   }
 
   async init() {
@@ -27,6 +48,7 @@ export class Project extends gl.Unit {
     this.observer = null
     this.updateTimer = undefined
     this.state = epos.state.local({ error: null })
+    this.$projects = this.closest(gl.Projects)!
 
     // Perform updates in a queue
     const q = new this.$.utils.Queue()
@@ -61,15 +83,14 @@ export class Project extends gl.Unit {
   async export(asDev = false) {
     console.log(`📦 [${this.name}] Export`, { asDev })
     const blob = await this.createZip(asDev)
-    console.warn({ blob })
-    const url = URL.createObjectURL(blob)
+    const url = URL.createObjectURL(blob as any as Blob)
     await epos.browser.downloads.download({ url, filename: `${this.name}.zip` })
     URL.revokeObjectURL(url)
   }
 
   async remove() {
     if (this.name) await epos.installer.remove(this.name)
-    this.$.projects.splice(this.$.projects.indexOf(this), 1)
+    this.$.projects.list.splice(this.$.projects.list.indexOf(this), 1)
   }
 
   // ---------------------------------------------------------------------------
@@ -302,24 +323,64 @@ export class Project extends gl.Unit {
   // ---------------------------------------------------------------------------
 
   View() {
+    // return <div>PRPJECT {this.name}</div>
     return (
       <div className="flex flex-col bg-white p-4 dark:bg-black">
-        <div className="flex items-center justify-between gap-4">
+        <Item variant="outline">
+          <ItemMedia variant="icon">
+            <IconCircleCheck className="text-green-500" />
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle>{this.name ?? 'unknown'}</ItemTitle>
+            {this.updatedAt && (
+              <ItemDescription>Updated at {this.getTimeString(this.updatedAt)}</ItemDescription>
+            )}
+          </ItemContent>
+          <ItemActions>
+            <ButtonGroup>
+              {!this.state.error && (
+                <Button variant="outline" onClick={e => this.export(e.shiftKey)}>
+                  <IconPackageExport /> EXPORT
+                </Button>
+              )}
+              <Button variant="outline" onClick={this.update}>
+                <IconRefresh /> REFRESH
+              </Button>
+              <Button variant="outline" onClick={this.remove}>
+                <IconTrash /> REMOVE
+              </Button>
+            </ButtonGroup>
+          </ItemActions>
+        </Item>
+
+        <div className="_flex hidden items-center justify-between gap-4">
           {/* Name */}
-          <div className="text-nowrap">
-            {this.state.error ? '🚫' : '✅'} {this.name ?? 'unknown'}
+          <div className="flex items-center gap-2 text-nowrap">
+            {/* {this.state.error && <Icon />} */}
+            {!this.state.error && <IconCircleCheck size={16} className="text-green-500" />}
+            {this.name ?? 'unknown'}
           </div>
 
           {/* Right controls */}
           <div className="flex items-baseline gap-3">
             {this.updatedAt && (
-              <div className="mr-2 text-xs text-gray-400">
+              <div className="mr-2 hidden text-xs text-gray-400">
                 Updated at {this.getTimeString(this.updatedAt)}
               </div>
             )}
-            {!this.state.error && <this.$.ui.Button label="EXPORT" onClick={e => this.export(e.shiftKey)} />}
-            <this.$.ui.Button label="UPDATE" onClick={this.update} />
-            <this.$.ui.Button label="REMOVE" onClick={this.remove} />
+            <ButtonGroup>
+              {!this.state.error && (
+                <Button variant="outline" onClick={e => this.export(e.shiftKey)}>
+                  <IconPackageExport /> EXPORT
+                </Button>
+              )}
+              <Button variant="outline" onClick={this.update}>
+                <IconRefresh /> REFRESH
+              </Button>
+              <Button variant="outline" onClick={this.remove}>
+                <IconTrash /> REMOVE
+              </Button>
+            </ButtonGroup>
           </div>
         </div>
 
@@ -333,33 +394,14 @@ export class Project extends gl.Unit {
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
-
-  static versioner: any = {
-    1() {
-      delete this.time
-      this.updatedAt = null
-    },
-    2() {
-      this.watcher = {}
-    },
-    3() {
-      delete this.watcher
-    },
-    4() {
-      this.updating = false
-    },
-    5() {
-      delete this.updating
-    },
-    6() {
-      this.fs = new gl.ProjectFs(this)
-    },
-    7() {
-      this.updatedAt = this.lastUpdatedAt
-      delete this.lastUpdatedAt
-    },
+  SidebarView() {
+    return (
+      <SidebarMenuItem key={this.handleId}>
+        <SidebarMenuButton isActive={this.selected} onClick={this.select}>
+          <IconPointFilled className="text-green-500" />
+          <div>{this.spec?.name ?? 'unknown'}</div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
   }
 }
