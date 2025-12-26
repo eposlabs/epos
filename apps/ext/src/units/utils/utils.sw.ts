@@ -1,4 +1,4 @@
-import { is, Queue, safe, safeSync, unique } from 'dropcap/utils'
+import { is, link, Queue, safe, safeSync, unique } from 'dropcap/utils'
 import { get } from './utils-get'
 import { hash } from './utils-hash'
 import { id } from './utils-id'
@@ -12,6 +12,7 @@ export class Utils extends sw.Unit {
   id = id
   info = info
   is = is
+  link = link
   normalizeUrl = normalizeUrl
   Queue = Queue
   safe = safe

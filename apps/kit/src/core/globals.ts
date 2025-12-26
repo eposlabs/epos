@@ -14,6 +14,10 @@ declare global {
 
   const DEV: boolean
   const PROD: boolean
+
+  interface Array<T> {
+    remove(value: T): boolean
+  }
 }
 
 class UnitGl<T extends gl = gl> extends Unit<T['App']> {}

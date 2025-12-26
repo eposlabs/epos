@@ -20,8 +20,8 @@ import { AppLogo } from './app-logo'
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
   utils = new gl.Utils(this)
-  theme = new gl.AppTheme(this)
   idb = new gl.Idb(this)
+  theme = new gl.AppTheme(this)
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
 
@@ -83,11 +83,11 @@ export class App extends gl.Unit {
                   {this.projects.list.map(project => (
                     // Project item
                     <SidebarMenuItem key={project.id}>
-                      <SidebarMenuButton isActive={project.selected} onClick={project.select}>
+                      <SidebarMenuButton isActive={project.isSelected()} onClick={project.select}>
                         <IconPointFilled
                           className={cn('text-green-500', project.state.error && 'text-red-500')}
                         />
-                        <div>{project.spec?.name ?? 'unknown'}</div>
+                        <div>{project.name ?? '<unknown>'}</div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

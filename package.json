@@ -9,7 +9,7 @@
     "playground/*"
   ],
   "scripts": {
-    "edge": "ncu --upgrade --deep",
+    "edge": "ncu --upgrade --deep && npm install",
     "lint": "npm -w apps -w packages run lint",
     "prettier": "prettier --write ./",
     "reinstall": "rimraf node_modules/ **/node_modules/ package-lock.json && npm install"

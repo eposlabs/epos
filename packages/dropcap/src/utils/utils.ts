@@ -7,7 +7,8 @@ import { safe, safeSync } from './utils-safe'
 import { unique } from './utils-unique'
 import { Unit } from './utils-unit'
 import { wait } from './utils-wait'
+import { link } from './utils-link'
 
 export type { Log }
 
-export { colorHash, createLog, ensureArray, is, Queue, safe, safeSync, unique, Unit, wait }
+export { colorHash, createLog, ensureArray, is, Queue, safe, safeSync, unique, Unit, wait, link }

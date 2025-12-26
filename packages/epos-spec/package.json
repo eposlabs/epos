@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",
-    "dropcap": "^1.1.0",
+    "dropcap": "^1.4.0",
     "strip-json-comments": "^5.0.3"
   }
 }

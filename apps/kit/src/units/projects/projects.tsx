@@ -1,23 +1,13 @@
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
-  selectedProjectName = 'lingolock'
+  selectedProjectId: string | null = null
+
+  get map() {
+    return Object.fromEntries(this.list.map(project => [project.name, project]))
+  }
 
   get selected() {
-    return this.list.find(project => project.name === this.selectedProjectName) ?? null
-  }
-
-  async init() {
-    await this.deleteOrphanedHandles()
-  }
-
-  /** Delete handles from IDB that do not have corresponding projects. */
-  private async deleteOrphanedHandles() {
-    // const idbHandleIds = await this.$.idb.keys('kit', 'handles')
-    // const projectHandleIds = new Set(this.$.projects.list.map(project => project.handleId))
-    // for (const idbHandleId of idbHandleIds) {
-    //   if (projectHandleIds.has(idbHandleId)) continue
-    //   await this.$.idb.delete('kit', 'handles', idbHandleId)
-    // }
+    return this.list.find(project => project.isSelected()) ?? null
   }
 
   async add() {
@@ -26,33 +16,39 @@ export class Projects extends gl.Unit {
     if (!handle) return
 
     // Save the handle to IDB
-    const handleId = this.$.utils.id()
+    const handleId = this.$.libs.nanoid()
     await this.$.idb.set('kit', 'handles', handleId, handle)
 
-    // Create new project
+    // Create new project and select it
     const project = new gl.Project(this, handleId)
     this.list.push(project)
-
-    // TODO: wait till project is ready (data is read), then select it
+    this.selectedProjectId = project.id
   }
 
   View() {
-    const project = this.list.find(project => project.selected)
-    if (!project) return null
+    const selectedProject = this.selected
+    if (!selectedProject) return <div>No project selected</div>
     return (
       <div>
-        <project.View />
+        <selectedProject.View />
       </div>
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
-
-  static versioner: any = {
-    1() {
-      this.selectedProjectName = 'lingolock'
-    },
-  }
+  static versioner: any = {}
 }
+
+// async init() {
+//   await this.deleteOrphanedHandles()
+// }
+
+// TODO: do not remove, instead "restore" from idb
+// /** Delete handles from IDB that do not have corresponding projects. */
+// private async deleteOrphanedHandles() {
+//   // const idbHandleIds = await this.$.idb.keys('kit', 'handles')
+//   // const projectHandleIds = new Set(this.$.projects.list.map(project => project.handleId))
+//   // for (const idbHandleId of idbHandleIds) {
+//   //   if (projectHandleIds.has(idbHandleId)) continue
+//   //   await this.$.idb.delete('kit', 'handles', idbHandleId)
+//   // }
+// }

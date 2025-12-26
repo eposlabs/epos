@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
-    "dropcap": "^1.1.0",
+    "dropcap": "^1.4.0",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
     "rolldown": "^1.0.0-beta.57",

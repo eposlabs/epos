@@ -17,6 +17,7 @@ export class Unit<TRoot = unknown> {
   declare private [_root_]: TRoot
   declare private [_parent_]: Unit<TRoot> | null // Parent reference for a not-yet-attached unit
   declare private [_disposers_]: Set<() => void>
+  declare private init$: PromiseWithResolvers<void>
 
   static get [epos.symbols.stateModelStrict]() {
     return true
@@ -31,11 +32,12 @@ export class Unit<TRoot = unknown> {
   // INIT
   // ---------------------------------------------------------------------------
 
-  [epos.symbols.stateModelInit]() {
+  async [epos.symbols.stateModelInit]() {
     const _this = this as any
     const Unit = this.constructor
     const descriptors: Descriptors = Object.getOwnPropertyDescriptors(Unit.prototype)
     const keys = Reflect.ownKeys(descriptors)
+    this.init$ = Promise.withResolvers<void>()
 
     // Setup disposers container
     const disposers = new Set<() => void>()
@@ -68,7 +70,12 @@ export class Unit<TRoot = unknown> {
     Reflect.defineProperty(this, 'log', { get: () => log })
 
     // Call init method
-    if (typeof _this.init === 'function') _this.init()
+    if (typeof _this.init === 'function') await _this.init()
+    this.init$.resolve()
+  }
+
+  async waitInit() {
+    await this.init$.promise
   }
 
   // ---------------------------------------------------------------------------
