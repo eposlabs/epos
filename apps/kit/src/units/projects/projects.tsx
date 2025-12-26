@@ -20,7 +20,7 @@ export class Projects extends gl.Unit {
     // }
   }
 
-  async addProject() {
+  async add() {
     // Ask user for a directory handle
     const [handle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
     if (!handle) return

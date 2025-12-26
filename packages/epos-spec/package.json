@@ -13,12 +13,10 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./dist/epos-spec.js",
-    "./ts": "./src/epos-spec.ts"
+    ".": "./dist/epos-spec.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",

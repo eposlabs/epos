@@ -1,18 +1,19 @@
-export const _cleanup_ = Symbol('cleanup')
+import type { AsyncFn } from '../types/types'
+import { Queue, is } from '../utils/utils'
 
+export const _dispose_ = Symbol('dispose')
+
+export type Db = IDBDatabase & { [_dispose_]?: () => void }
 export type DbName = string
 export type DbStoreName = string
 export type DbStoreKey = string
-export type Database = IDBDatabase & { [_cleanup_]?: () => void }
 
-export class Idb extends gl.Unit {
-  static _cleanup_ = _cleanup_
-  declare private dbs: { [name: DbName]: Database }
-  declare private queues: Record<string, InstanceType<typeof this.$.utils.Queue>>
+export class Idb {
+  private dbs: { [name: DbName]: Db } = {}
+  private queues: Record<string, Queue> = {}
+  static _dispose_ = _dispose_
 
-  init() {
-    this.dbs = {}
-    this.queues = {}
+  constructor() {
     this.get = this.enqueueByDbName(this.get)
     this.has = this.enqueueByDbName(this.has)
     this.set = this.enqueueByDbName(this.set)
@@ -89,7 +90,7 @@ export class Idb extends gl.Unit {
     return await new Promise<DbStoreKey[]>((resolve, reject) => {
       const tx = db.transaction([storeName], 'readonly')
       const req = tx.objectStore(storeName).getAllKeys()
-      req.onsuccess = () => resolve(req.result.filter(this.$.utils.is.string))
+      req.onsuccess = () => resolve(req.result.filter(is.string))
       req.onerror = () => reject(req.error)
     })
   }
@@ -124,7 +125,7 @@ export class Idb extends gl.Unit {
   /** Get a list of all database names. */
   async listDatabases() {
     const dbs = await indexedDB.databases()
-    return dbs.map(db => db.name).filter(this.$.utils.is.present)
+    return dbs.map(db => db.name).filter(is.present)
   }
 
   /** Delete the store from the database. */
@@ -141,7 +142,7 @@ export class Idb extends gl.Unit {
     this.unregister(dbName)
 
     // Delete store (new DB instance is created during upgrade)
-    const newDb = await new Promise<Database>((resolve, reject) => {
+    const newDb = await new Promise<Db>((resolve, reject) => {
       const req = indexedDB.open(dbName, db.version + 1)
       req.onsuccess = () => resolve(req.result)
       req.onerror = () => reject(req.error)
@@ -198,7 +199,7 @@ export class Idb extends gl.Unit {
     const version = meta?.version || 1
 
     // Create DB / connnect to the existing one
-    const db = await new Promise<Database>((resolve, reject) => {
+    const db = await new Promise<Db>((resolve, reject) => {
       const req = indexedDB.open(dbName, version)
       req.onsuccess = () => resolve(req.result)
       req.onerror = () => reject(req.error)
@@ -222,7 +223,7 @@ export class Idb extends gl.Unit {
     this.unregister(dbName)
 
     // Create store (new DB instance is created during upgrade)
-    const newDb = await new Promise<Database>((resolve, reject) => {
+    const newDb = await new Promise<Db>((resolve, reject) => {
       const req = indexedDB.open(dbName, db.version + 1)
       req.onsuccess = () => resolve(req.result)
       req.onerror = () => reject(req.error)
@@ -235,26 +236,26 @@ export class Idb extends gl.Unit {
     return newDb
   }
 
-  private register(dbName: DbName, db: Database) {
+  private register(dbName: DbName, db: Db) {
     this.dbs[dbName] = db
 
     // 'close' event is fired when closed unexpectedly, e.g. by deleting via devtools
     const onClose = () => delete this.dbs[dbName]
     db.addEventListener('close', onClose)
-    db[_cleanup_] = () => db.removeEventListener('close', onClose)
+    db[_dispose_] = () => db.removeEventListener('close', onClose)
   }
 
   private unregister(dbName: DbName) {
     if (!this.dbs[dbName]) return
     this.dbs[dbName].close()
-    this.dbs[dbName][_cleanup_]?.()
+    this.dbs[dbName][_dispose_]?.()
     delete this.dbs[dbName]
   }
 
   /** Wrap method to be run in a queue for the given database. */
   private enqueueByDbName<T extends AsyncFn>(fn: T) {
     return (async (dbName: DbName, ...args: unknown[]) => {
-      const queue = (this.queues[dbName] ??= new this.$.utils.Queue(dbName))
+      const queue = (this.queues[dbName] ??= new Queue(dbName))
       const result = await queue.add(() => fn.call(this, dbName, ...args))
       if (queue.isEmpty()) delete this.queues[dbName]
       return result

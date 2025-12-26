@@ -16,12 +16,10 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./dist/rebundle.js",
-    "./ts": "./src/rebundle.ts"
+    ".": "./dist/rebundle.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "dependencies": {
     "@types/ws": "^8.18.1",

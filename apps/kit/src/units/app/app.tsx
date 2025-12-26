@@ -73,7 +73,7 @@ export class App extends gl.Unit {
             <SidebarGroup>
               {/* Projects header */}
               <SidebarGroupLabel>Projects</SidebarGroupLabel>
-              <SidebarGroupAction title="Add Project" onClick={this.projects.addProject}>
+              <SidebarGroupAction title="Add Project" onClick={this.projects.add}>
                 <IconPlus /> <span className="sr-only">Add Project</span>
               </SidebarGroupAction>
 

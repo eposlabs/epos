@@ -1,4 +1,4 @@
-import type { Fn, Obj, Arr } from '../types/types.js'
+import type { Fn, Obj, Arr } from '../types/types'
 
 export const is = {
   null: (v: unknown) => v === null,

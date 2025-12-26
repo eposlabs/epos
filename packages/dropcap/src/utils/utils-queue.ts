@@ -1,8 +1,8 @@
-import { safe } from './utils-safe.js'
-import type { AsyncFn, Fn } from '../types/types.js'
+import type { AsyncFn } from '../types/types'
+import { safe } from './utils-safe'
 
-type TaskFn<T> = () => Promise<T>
-type Task<T = any> = { fn: TaskFn<T>; result$: PromiseWithResolvers<T> }
+export type TaskFn<T> = () => Promise<T>
+export type Task<T = any> = { fn: TaskFn<T>; result$: PromiseWithResolvers<T> }
 
 export class Queue {
   name: string | null

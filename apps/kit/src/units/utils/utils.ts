@@ -6,10 +6,6 @@ export class Utils extends gl.Unit {
   declare safe: typeof safe
   declare safeSync: typeof safeSync
   declare wait: typeof wait
-
-  id(): string {
-    return crypto.randomUUID()
-  }
 }
 
 Object.assign(Utils.prototype, {

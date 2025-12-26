@@ -14,12 +14,10 @@
   },
   "exports": {
     ".": "./dist/epos.js",
-    "./vite": "./dist/epos-vite.js",
-    "./vite/ts": "./src/epos-vite.ts"
+    "./vite": "./dist/epos-vite.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "dependencies": {
     "@parcel/watcher": "^2.5.1",

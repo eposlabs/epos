@@ -19,11 +19,9 @@
     "paralayer": "./src/bin.js"
   },
   "exports": {
-    ".": "./dist/paralayer.js",
-    "./ts": "./src/paralayer.ts"
+    ".": "./dist/paralayer.js"
   },
   "files": [
-    "src",
     "dist"
   ],
   "dependencies": {

@@ -1,8 +1,8 @@
 import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import { paralayer } from 'paralayer/ts'
+import { paralayer } from 'paralayer'
 import { defineConfig } from 'rolldown-vite'
-import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle/ts'
+import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
