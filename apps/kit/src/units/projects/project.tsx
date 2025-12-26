@@ -2,13 +2,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item'
-import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
 import {
   IconAlertCircle,
   IconCircleCheck,
   IconPackageExport,
-  IconPointFilled,
   IconRefresh,
   IconTrash,
 } from '@tabler/icons-react'
@@ -16,19 +13,17 @@ import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
 export class Project extends gl.Unit {
-  id = this.$.utils.id()
-  handleId: string
   name: string | null = null
   spec: Spec | null = null
+  handleId: string
   updatedAt: number | null = null
   fs = new gl.ProjectFs(this)
 
-  /** Root project dir handle. */
   declare handle: FileSystemDirectoryHandle | null
+  declare bundle: Bundle | null
+  declare state: { error: string | null; errorDetails: string | null }
   declare private observer: FileSystemObserver | null
   declare private updateTimer: number | undefined
-  declare state: { error: string | null; errorDetails: string | null }
-  declare bundle: Bundle | null
   declare private $projects: gl.Projects
 
   constructor(parent: gl.Unit, handleId: string) {
@@ -46,17 +41,15 @@ export class Project extends gl.Unit {
   }
 
   async init() {
-    this.bundle = null
     this.handle = null
+    this.bundle = null
+    this.state = epos.state.local({ error: null, errorDetails: null })
     this.observer = null
     this.updateTimer = undefined
-    this.state = epos.state.local({ error: null, errorDetails: null })
     this.$projects = this.closest(gl.Projects)!
+    this.update = new this.$.utils.Queue().wrap(this.update)
 
-    // Perform updates in a queue
-    const q = new this.$.utils.Queue()
-    this.update = q.wrap(this.update, this)
-
+    // TODO: do not remove, should show error in UI and re-connect button
     // Project's handle was removed from IDB? -> Remove project itself
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     if (!handle) {

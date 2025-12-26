@@ -11,6 +11,9 @@ declare global {
   type Cls<T = any> = types.Cls<T>
   type Fn<T = any> = types.Fn<T>
   type AsyncFn<T = any> = types.AsyncFn<T>
+
+  const DEV: boolean
+  const PROD: boolean
 }
 
 class UnitGl<T extends gl = gl> extends Unit<T['App']> {}
