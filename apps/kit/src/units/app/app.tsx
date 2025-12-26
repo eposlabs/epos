@@ -15,7 +15,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { IconPlus } from '@tabler/icons-react'
+import { IconPlus, IconPointFilled } from '@tabler/icons-react'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -70,26 +70,59 @@ export class App extends gl.Unit {
   View() {
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
-        <this.SidebarView />
-        <Separator orientation="vertical" />
-        <this.ContentView />
-      </SidebarProvider>
-    )
+        {/* Sidebar */}
+        <Sidebar collapsible="none">
+          {/* Sidebar header */}
+          <SidebarHeader>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
+                  <this.LogoView />
+                  <div>[epos]</div>
+                  <div className="text-muted-foreground ml-auto tracking-widest">v1.8</div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+            <div className="px-2">
+              <Separator />
+            </div>
+          </SidebarHeader>
 
-    return (
-      <SidebarProvider>
-        <Sidebar variant="inset">
-          <SidebarGroup>
-            <SidebarGroupLabel>Projects</SidebarGroupLabel>
-            <SidebarGroupAction title="Add Project">
-              <IconPlus /> <span className="sr-only">Add Project</span>
-            </SidebarGroupAction>
-            <SidebarGroupContent />
-          </SidebarGroup>
+          {/* Sidebar content */}
+          <SidebarContent>
+            {/* Projects section */}
+            <SidebarGroup>
+              {/* Projects header */}
+              <SidebarGroupLabel>Projects</SidebarGroupLabel>
+              <SidebarGroupAction title="Add Project" onClick={this.projects.addProject}>
+                <IconPlus /> <span className="sr-only">Add Project</span>
+              </SidebarGroupAction>
+
+              {/* Projects content */}
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {this.projects.list.map(project => (
+                    // Project item
+                    <SidebarMenuItem key={project.id}>
+                      <SidebarMenuButton isActive={project.selected} onClick={project.select}>
+                        <IconPointFilled
+                          className={cn('text-green-500', project.state.error && 'text-red-500')}
+                        />
+                        <div>{project.spec?.name ?? 'unknown'}</div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
         </Sidebar>
-        <SidebarInset>
-          <main>[CONTENT]</main>
-        </SidebarInset>
+
+        {/* Separator */}
+        <Separator orientation="vertical" />
+
+        {/* Content */}
+        <SidebarInset>{this.projects.selected && <this.projects.selected.View />}</SidebarInset>
       </SidebarProvider>
     )
 
@@ -136,38 +169,6 @@ export class App extends gl.Unit {
           fill="black"
         />
       </svg>
-    )
-  }
-
-  private SidebarView() {
-    return (
-      <Sidebar collapsible="none">
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
-                <this.LogoView />
-                <div>[epos]</div>
-                <div className="text-muted-foreground ml-auto tracking-widest">v1.8</div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <div className="px-2">
-            <Separator />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <this.projects.SidebarView />
-        </SidebarContent>
-      </Sidebar>
-    )
-  }
-
-  private ContentView() {
-    return (
-      <SidebarInset>
-        <this.projects.View />
-      </SidebarInset>
     )
   }
 

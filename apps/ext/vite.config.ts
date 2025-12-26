@@ -32,8 +32,8 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     define: {
-      'import.meta.env.DEV': JSON.stringify(mode === 'development'),
-      'import.meta.env.PROD': JSON.stringify(mode !== 'development'),
+      'DEV': JSON.stringify(mode === 'development'),
+      'PROD': JSON.stringify(mode !== 'development'),
       'process.env.NODE_ENV': 'process.env.NODE_ENV',
     },
 

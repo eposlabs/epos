@@ -1,6 +1,7 @@
-import 'epos'
 import type { Cls } from 'dropcap/types'
 import { createLog, Log } from 'dropcap/utils'
+import 'epos'
+import { nanoid } from 'nanoid'
 import type { FC } from 'react'
 
 export const _root_ = Symbol('root')
@@ -9,11 +10,12 @@ export const _disposers_ = Symbol('disposers')
 export type Descriptors = Record<string | symbol, PropertyDescriptor>
 
 export class Unit<TRoot = unknown> {
+  id = nanoid()
   declare '@': string
   declare log: Log;
   declare [':version']?: number
   declare private [_root_]: TRoot
-  declare private [_parent_]: Unit<TRoot> | null // Parent reference for not-yet-attached units
+  declare private [_parent_]: Unit<TRoot> | null // Parent reference for a not-yet-attached unit
   declare private [_disposers_]: Set<() => void>
 
   static get [epos.symbols.stateModelStrict]() {
@@ -140,7 +142,7 @@ export class Unit<TRoot = unknown> {
   }
 
   never(message = 'This should never happen') {
-    const error = new Error(`🔴 [${this['@']}] ${message}`)
+    const error = new Error(`[${this['@']}] ${message}`)
     Error.captureStackTrace(error, this.never)
     throw error
   }

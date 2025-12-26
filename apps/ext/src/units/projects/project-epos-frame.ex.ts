@@ -1,4 +1,4 @@
-import type { Attrs, Frame } from './project.os'
+import type { Attrs, Frame } from '../project/project.os'
 
 export const DEFAULT_FRAME_NAME = '<frame>'
 

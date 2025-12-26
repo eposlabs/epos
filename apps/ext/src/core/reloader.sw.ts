@@ -1,4 +1,4 @@
-if (import.meta.env.DEV) {
+if (DEV) {
   const ws = new WebSocket(`ws://localhost:${import.meta.env.REBUNDLE_PORT}`)
 
   ws.addEventListener('message', async e => {

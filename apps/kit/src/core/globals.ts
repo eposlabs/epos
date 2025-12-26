@@ -2,8 +2,8 @@
 import * as types from 'dropcap/types'
 import 'epos'
 import { Unit } from 'epos-unit'
-import './core-types-file-system-access'
-import './core-types-file-system-observer'
+import './file-system-access'
+import './file-system-observer'
 
 declare global {
   type Obj = types.Obj

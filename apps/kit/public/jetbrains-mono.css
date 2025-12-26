@@ -1,6 +1,6 @@
 /* cyrillic-ext */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -10,7 +10,7 @@
 }
 /* cyrillic */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -20,7 +20,7 @@
 }
 /* greek */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -30,7 +30,7 @@
 }
 /* vietnamese */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -42,7 +42,7 @@
 }
 /* latin-ext */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -54,7 +54,7 @@
 }
 /* latin */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: italic;
   font-weight: 100 800;
   font-display: swap;
@@ -66,7 +66,7 @@
 }
 /* cyrillic-ext */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
@@ -76,7 +76,7 @@
 }
 /* cyrillic */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
@@ -86,7 +86,7 @@
 }
 /* greek */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
@@ -96,7 +96,7 @@
 }
 /* vietnamese */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
@@ -108,7 +108,7 @@
 }
 /* latin-ext */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
@@ -120,7 +120,7 @@
 }
 /* latin */
 @font-face {
-  font-family: '[kit] JetBrains Mono';
+  font-family: '[google] JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;

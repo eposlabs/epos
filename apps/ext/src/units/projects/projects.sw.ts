@@ -1,6 +1,6 @@
 import type { Assets, Bundle, Mode, Sources } from 'epos'
-import type { Address } from '../project/project-target.sw'
-import type { Info, Snapshot } from '../project/project.sw'
+import type { Address } from './project-target.sw'
+import type { Info, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 

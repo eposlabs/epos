@@ -27,7 +27,7 @@ export class Dev extends gl.Unit {
       })
     }
 
-    if (!import.meta.env.DEV) return
+    if (!DEV) return
 
     if (this.$.env.is.sw) {
       const { _init_, _cleanup_, _versioner_ } = exSw.State

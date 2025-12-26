@@ -1,6 +1,6 @@
 {
   "name": "epos-unit",
-  "version": "1.11.0",
+  "version": "1.14.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -20,7 +20,8 @@
     "src"
   ],
   "dependencies": {
-    "dropcap": "^1.0.0",
-    "epos": "^1.30.0"
+    "dropcap": "^1.1.0",
+    "epos": "^1.32.0",
+    "nanoid": "^3.3.11"
   }
 }

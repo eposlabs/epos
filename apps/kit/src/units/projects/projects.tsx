@@ -1,15 +1,10 @@
-import {
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-} from '@/components/ui/sidebar'
-import { IconPlus } from '@tabler/icons-react'
-
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
   selectedProjectName = 'lingolock'
+
+  get selected() {
+    return this.list.find(project => project.name === this.selectedProjectName) ?? null
+  }
 
   async init() {
     await this.deleteOrphanedHandles()
@@ -48,24 +43,6 @@ export class Projects extends gl.Unit {
       <div>
         <project.View />
       </div>
-    )
-  }
-
-  SidebarView() {
-    return (
-      <SidebarGroup>
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <SidebarGroupAction title="Add Project" onClick={this.addProject}>
-          <IconPlus /> <span className="sr-only">Add Project</span>
-        </SidebarGroupAction>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {this.list.map(project => (
-              <project.SidebarView key={project.handleId} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
     )
   }
 

@@ -4,6 +4,10 @@ import type { Epos, Mode } from 'epos'
 import type { Config } from 'epos-spec'
 
 declare global {
+  var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
+  var DEV: boolean
+  var PROD: boolean
+
   type Obj = types.Obj
   type Arr = types.Arr
   type Cls<T = any> = types.Cls<T>
@@ -24,16 +28,6 @@ declare global {
     fn: (epos: PartialEpos) => void
   }
 
-  type S = Fn
-
-  var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
-
-  /** App instance for `cs`, `os`, `sw` and `vw`. */
-  var $: any
-
-  /** App instance for `ex`, dev-only. */
-  var $epos: any
-
   interface ImportMetaEnv {
     readonly REBUNDLE_PORT: number
   }
@@ -50,6 +44,12 @@ declare global {
     __eposTabBusToken?: string | null
     __eposProjectDefs?: ProjectDef[]
     __eposOriginalGlobals?: Record<string, unknown>
+
+    // App instance for `cs`, `os`, `sw` and `vw`
+    $: any
+
+    // App instance for `ex`, dev-only
+    $epos: any
 
     // Global methods for `sw`
     install: any

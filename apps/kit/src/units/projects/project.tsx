@@ -374,15 +374,4 @@ export class Project extends gl.Unit {
       </Alert>
     )
   }
-
-  SidebarView() {
-    return (
-      <SidebarMenuItem key={this.handleId}>
-        <SidebarMenuButton isActive={this.selected} onClick={this.select}>
-          <IconPointFilled className={cn('text-green-500', this.state.error && 'text-red-500')} />
-          <div>{this.spec?.name ?? 'unknown'}</div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    )
-  }
 }

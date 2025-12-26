@@ -1,4 +1,4 @@
-import './core/core-globals'
+import './core/globals'
 import './layers/index.gl'
 import './gl.css'
 
@@ -17,6 +17,6 @@ if (location.pathname === '/@kit') {
   epos.render(<app.learn.View />)
 }
 
-if (import.meta.env.DEV) {
+if (DEV) {
   Object.assign(self, { epos, $: app, gl })
 }

@@ -1,5 +1,5 @@
 import type { DbName, DbStoreName } from '../idb/idb.sw'
-import type { Initial, ModelClass, Versioner } from '../state/state.ex.sw'
+import type { Initial, ModelClass, Versioner } from './state.ex.sw'
 
 export const _local_ = Symbol('local')
 export const _exclude_ = Symbol('exclude')

@@ -1,4 +1,4 @@
-import type { Address } from '../project/project-target.sw'
+import type { Address } from './project-target.sw'
 import defineEposElementJs from './projects-define-epos-element.cs?raw'
 import tamperInterceptGlobalsJs from './projects-tamper-intercept-globals.cs?raw'
 
