@@ -10,7 +10,7 @@ export class Libs extends cs.Unit {
 
   private allowSeveralYjsInstances() {
     this.$.utils.executeFn(() => {
-      Object.defineProperty(self, '__ $YJS$ __', {
+      Reflect.defineProperty(self, '__ $YJS$ __', {
         configurable: true,
         get: () => false,
         set: () => true,

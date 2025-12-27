@@ -24,6 +24,11 @@
   - epos.state.remove
   - epos.state.list
   - epos.state.register
+  - epos.state.PARENT
+  - epos.state.LOCALS
+  - epos.state.ATTACH
+  - epos.state.DETACH
+  - epos.state.VERSIONER
 - **Storage**
   - epos.storage.get
   - epos.storage.set
@@ -58,9 +63,3 @@
   - epos.libs.reactDomClient
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
-- **Symbols**
-  - epos.symbols.stateParent
-  - epos.symbols.stateModelInit
-  - epos.symbols.stateModelDispose
-  - epos.symbols.stateModelStrict
-  - epos.symbols.stateModelVersioner

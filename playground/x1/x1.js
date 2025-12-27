@@ -1,6 +1,6 @@
 /// <reference types="epos" />
 
-console.warn('[x1]', window.setTimeout)
+// console.warn('[x1]', window.setTimeout)
 // console.warn('x1.js')
 // self.epos = epos
 // self.state = await epos.state.connect()

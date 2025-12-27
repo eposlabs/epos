@@ -20,9 +20,9 @@ export class Queue {
     return await task.result$.promise
   }
 
-  wrap<T extends AsyncFn>(fn: T, thisValue: unknown = null) {
+  wrap<T extends AsyncFn>(fn: T, thisArg: unknown = null) {
     return (async (...args: Parameters<T>) => {
-      return await this.add(() => fn.call(thisValue, ...args))
+      return await this.add(() => fn.call(thisArg, ...args))
     }) as T
   }
 

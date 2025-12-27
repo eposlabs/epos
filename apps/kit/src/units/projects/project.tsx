@@ -12,23 +12,38 @@ import {
 import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
+export type State = { error: Error | null; updating: boolean }
+
 export class Project extends gl.Unit {
+  // static locals = ['_*', 'state']
+  // [epos.state.LOCALS] = ['handle', 'state']
+  // [epos.state.VERSIONER]
+
   name: string | null = null
   spec: Spec | null = null
   handleId: string
   updatedAt: number | null = null
   fs = new gl.ProjectFs(this)
 
-  declare handle: FileSystemDirectoryHandle | null
-  declare bundle: Bundle | null
-  declare state: { error: Error | null; updating: boolean }
-  declare private observer: FileSystemObserver | null
-  declare private updateTimer: number
-  declare private $projects: gl.Projects
+  _handle: FileSystemDirectoryHandle | null = null
+  _bundle: Bundle | null = null
+  _state = epos.state.local<State>({ error: null, updating: false })
+  _observer: FileSystemObserver | null = null
+  private _updateTimer: number = -1
+  _$projects = this.$.closest(gl.Projects)!
+
+  // declare handle: FileSystemDirectoryHandle | null
+  // declare bundle: Bundle | null
+  // declare state: { error: Error | null; updating: boolean }
+  // declare private observer: FileSystemObserver | null
+  // declare private updateTimer: number
+  // declare private $projects: gl.Projects
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
     this.handleId = handleId
+    this.update = this.$.utils.enqueue(this.update)
+    // console.log(this._updateTimer)
   }
 
   async init() {
@@ -38,8 +53,7 @@ export class Project extends gl.Unit {
     this.observer = null
     this.updateTimer = -1
     this.$projects = this.closest(gl.Projects)!
-    this.update = new this.$.utils.Queue().wrap(this.update)
-
+    this.update = this.$.utils.enqueue(this.update)
     this.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     await this.update()
   }

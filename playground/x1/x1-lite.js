@@ -4,7 +4,7 @@ const patches = []
 const _original_ = Symbol('original __d')
 const _patched_ = Symbol('patched __d')
 
-Object.defineProperty(Object.prototype, '__d', {
+Reflect.defineProperty(Object.prototype, '__d', {
   get() {
     this[_patched_] ??= (...args) => {
       const name = args[0]

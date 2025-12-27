@@ -12,6 +12,10 @@
       "matches": "<allUrls>",
       "load": "x1.js"
     },
+    {
+      "matches": ["*://epos.dev/@x1"],
+      "load": ["x1-hub.js"]
+    },
     // {
     //   "matches": ["<allUrls>", "*://epos.dev/@x1"],
     //   "load": ["lite:x1-lite.js", "x1.js", "shadow:x1.css"]

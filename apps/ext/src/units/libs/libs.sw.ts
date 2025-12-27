@@ -1,5 +1,5 @@
 import { matchPattern } from 'browser-extension-url-match'
-import { Idb } from 'dropcap/idb'
+import { idb } from 'dropcap/idb'
 import { parseSpec } from 'epos-spec'
 import { compressToBase64 } from 'lz-string'
 import * as mobx from 'mobx'
@@ -8,7 +8,7 @@ import { minify } from 'terser'
 import * as yjs from 'yjs'
 
 export class Libs extends sw.Unit {
-  Idb = Idb
+  idb = idb
   lzString = { compressToBase64 }
   matchPattern = matchPattern
   mobx = mobx

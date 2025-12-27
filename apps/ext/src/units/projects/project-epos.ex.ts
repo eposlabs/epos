@@ -9,7 +9,6 @@ export class ProjectEpos extends ex.Unit {
   frame = new ex.ProjectEposFrame(this)
   env = new ex.ProjectEposEnv(this)
   libs = new ex.ProjectEposLibs(this)
-  symbols = new ex.ProjectEposSymbols(this)
   installer = new ex.ProjectEposInstaller(this)
 
   async init() {
@@ -19,7 +18,7 @@ export class ProjectEpos extends ex.Unit {
   }
 
   error(message: string, caller: Fn) {
-    const error = new Error(`[epos] ${message}`)
+    const error = new Error(message)
     Error.captureStackTrace(error, caller)
     return error
   }
@@ -53,6 +52,10 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.state, 'list'),
         remove: this.$.utils.link(this.state, 'remove'),
         register: this.$.utils.link(this.state, 'register'),
+        PARENT: this.state._parent_,
+        ATTACH: this.state._attach_,
+        DETACH: this.state._detach_,
+        VERSIONER: this.state._versioner_,
       },
 
       // Storage
@@ -102,15 +105,6 @@ export class ProjectEpos extends ex.Unit {
         reactDomClient: this.libs.reactDomClient,
         reactJsxRuntime: this.libs.reactJsxRuntime,
         yjs: this.libs.yjs,
-      },
-
-      // Symbols
-      symbols: {
-        stateParent: this.symbols.stateParent,
-        stateModelInit: this.symbols.stateModelInit,
-        stateModelDispose: this.symbols.stateModelDispose,
-        stateModelStrict: this.symbols.stateModelStrict,
-        stateModelVersioner: this.symbols.stateModelVersioner,
       },
 
       // Installer

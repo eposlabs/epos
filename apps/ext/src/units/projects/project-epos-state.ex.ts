@@ -8,6 +8,11 @@ export class ProjectEposState extends ex.Unit {
   private $project = this.closest(ex.Project)!
   static DEFAULT_STATE_NAME = DEFAULT_STATE_NAME
 
+  _parent_ = exSw.State._parent_
+  _attach_ = exSw.State._attach_
+  _detach_ = exSw.State._detach_
+  _versioner_ = exSw.State._versioner_
+
   async connect(initial?: Initial, versioner?: Versioner): Promise<Obj>
   async connect(name: string, initial?: Initial, versioner?: Versioner): Promise<Obj>
   async connect(arg0?: unknown, arg1?: unknown, arg2?: unknown): Promise<Obj> {

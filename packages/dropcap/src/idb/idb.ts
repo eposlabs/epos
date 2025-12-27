@@ -262,3 +262,5 @@ export class Idb {
     }) as T
   }
 }
+
+export const idb = new Idb()

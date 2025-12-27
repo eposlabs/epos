@@ -118,6 +118,10 @@ export interface Epos {
     remove(name?: string): Promise<void>
     /** Register models to be used by all states. */
     register(models: Record<string, ModelClass>): void
+    PARENT: symbol
+    ATTACH: symbol
+    DETACH: symbol
+    VERSIONER: symbol
   }
 
   // Storage
@@ -207,15 +211,6 @@ export interface Epos {
     reactDomClient: typeof reactDomClient
     reactJsxRuntime: typeof reactJsxRuntime
     yjs: typeof yjs
-  }
-
-  // Internal symbols
-  symbols: {
-    readonly stateParent: symbol
-    readonly stateModelInit: symbol
-    readonly stateModelDispose: symbol
-    readonly stateModelStrict: symbol
-    readonly stateModelVersioner: symbol
   }
 
   // Installer

@@ -1,4 +1,4 @@
-import type { DbName, DbStoreName } from '../idb/idb.sw'
+import type { DbName, DbStoreName } from 'dropcap/idb'
 import type { Initial, ModelClass, Versioner } from './state.ex.sw'
 
 export const _local_ = Symbol('local')
@@ -109,8 +109,8 @@ export class States extends exSw.Unit {
   private setupAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {
-        const connected = await state.hasExPeer()
-        if (!connected) await this.disconnect(state.name)
+        const hasExPeer = await state.hasExPeer()
+        if (!hasExPeer) await this.disconnect(state.name)
       }
     }, this.$.utils.time('15s'))
   }

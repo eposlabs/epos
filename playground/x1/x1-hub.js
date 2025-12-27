@@ -1,15 +1,73 @@
 /// <reference types="epos" />
 
-const state = await epos.state.connect({
-  initial: () => ({ title: 'abc' }),
-  versioner: {
-    1() {
-      this.title = 'abc'
-    },
+class Model {
+  ready = false
+
+  attach() {
+    setTimeout(() => {
+      this.ready = true
+    })
+  }
+
+  detach() {}
+
+  // static get [epos.symbols.stateModelStrict]() {
+  //   return true
+  // }
+
+  title = 'hello x1 hub'
+  _value = 50
+
+  setup() {
+    document.addEventListener('click', this.onClick)
+  }
+
+  onClick() {
+    console.log('click')
+  }
+}
+
+// epos.state.register({ Model })
+self.epos = epos
+const s = await epos.state.connect()
+
+// does it make sense to have attach/detach on plain objects?
+// maybe for models (classes) only?
+s.user = {
+  name: 'imkost',
+  [epos.state.ATTACH]() {
+    console.log('attach', Object.keys(this[epos.state.PARENT]))
   },
-})
-console.log(state)
-self.state = state
+  [epos.state.DETACH]() {
+    console.log('detach')
+  },
+}
+
+class App {
+  updater = new Updater()
+  settings = new Settings()
+}
+
+// const updater = new Updater()
+// app.updater = updater // ATTACH
+// app.updater.init()
+// app.updaters = [new Updater(), new Updater()]
+// app.updaters.forEach(u => u.inti())
+
+class Updater {
+  attach() {
+    if (this.$.settings.enabled) {
+      setInterval(() => update())
+    }
+  }
+}
+
+// const model = new Model()
+// model.setup()
+// s.model = model
+// self.model = model
+self.s = s
+
 // class X1App extends epos.Unit {}
 
 // const state = await epos.connect(() => ({ title: 'abc' }))
