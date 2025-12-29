@@ -121,7 +121,6 @@ export interface Epos {
     PARENT: symbol
     ATTACH: symbol
     DETACH: symbol
-    VERSIONER: symbol
   }
 
   // Storage

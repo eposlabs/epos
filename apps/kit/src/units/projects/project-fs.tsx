@@ -1,8 +1,6 @@
 export class ProjectFs extends gl.Unit {
-  declare private $project: gl.Project
-
-  init() {
-    this.$project = this.closest(gl.Project)!
+  get $project() {
+    return this.closest(gl.Project)!
   }
 
   async readFile(path: string) {
@@ -22,8 +20,8 @@ export class ProjectFs extends gl.Unit {
     if (!name) throw this.never()
 
     // Get dir handle
-    if (!this.$project.handle) throw this.never()
-    let dirHandle = this.$project.handle
+    if (!this.$project.state.handle) throw this.never()
+    let dirHandle = this.$project.state.handle
     for (const dir of dirs) {
       const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
       if (!nextDirHandle) throw new Error(`File not found: ${path}`)

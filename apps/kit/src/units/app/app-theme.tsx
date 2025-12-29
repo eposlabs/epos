@@ -1,12 +1,12 @@
 export class AppTheme extends gl.Unit {
   value: 'light' | 'dark' = this.getSystemTheme()
 
-  init() {
+  attach() {
     this.syncWithSystemTheme()
     this.setDocumentElementClass()
   }
 
-  dispose() {
+  detach() {
     window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.onSystemThemeChange)
   }
 

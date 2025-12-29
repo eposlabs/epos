@@ -52,10 +52,9 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.state, 'list'),
         remove: this.$.utils.link(this.state, 'remove'),
         register: this.$.utils.link(this.state, 'register'),
-        PARENT: this.state._parent_,
-        ATTACH: this.state._attach_,
-        DETACH: this.state._detach_,
-        VERSIONER: this.state._versioner_,
+        PARENT: this.state.PARENT,
+        ATTACH: this.state.ATTACH,
+        DETACH: this.state.DETACH,
       },
 
       // Storage

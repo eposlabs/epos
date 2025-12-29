@@ -28,7 +28,6 @@ export class Bus extends gl.Unit {
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.once<T>(scoped(name), fn, thisArg),
       setSignal: (name: string, ...args: unknown[]) => this.setSignal(scoped(name), ...args),
       waitSignal: <T>(name: string, timeout?: number) => this.waitSignal<T>(scoped(name), timeout),
-      /** Removes all listeners within this bus namespace. */
       dispose: () => {
         for (const action of this.actions) {
           if (!action.name.startsWith(prefix)) continue

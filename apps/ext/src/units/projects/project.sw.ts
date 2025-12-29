@@ -126,7 +126,6 @@ export class Project extends sw.Unit {
     // Extract and prepare JS
     const jsResources = matchingResources.filter(resource => resource.type === 'js')
     const jsPaths = this.$.utils.unique(jsResources.map(resource => resource.path))
-    console.log(jsPaths)
     const js = jsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
 
     return [

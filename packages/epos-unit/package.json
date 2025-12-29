@@ -21,7 +21,6 @@
   ],
   "dependencies": {
     "dropcap": "^1.4.0",
-    "epos": "^1.32.0",
-    "nanoid": "^5.1.6"
+    "epos": "^1.32.0"
   }
 }

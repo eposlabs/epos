@@ -7,7 +7,7 @@
     "dev": "vite build --mode development",
     "build": "vite build --mode production",
     "lint": "tsc --noEmit",
-    "shadcn": "shadcn add"
+    "ui": "node scripts/script-ui.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",

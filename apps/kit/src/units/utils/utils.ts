@@ -1,11 +1,6 @@
 import { enqueue, is, link, Queue, safe, safeSync, wait } from 'dropcap/utils'
 
 export class Utils extends gl.Unit {
-  // static [epos.symbols.stateLocalFields] = ['*']
-
-  // is = is
-  // Queue = Queue
-
   declare enqueue: typeof enqueue
   declare is: typeof is
   declare link: typeof link

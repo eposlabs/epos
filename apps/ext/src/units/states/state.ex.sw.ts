@@ -2,11 +2,15 @@
 // After reload, it is initialized first.
 // this.messages.push(new Message('new')).
 
-// x TODO: why parent is not inside meta? To allow state.value[epos.state.PARENT]
-// TODO: isFreshModel -> can this logic be moved to `ATTACH` call?
-// TODO: probably call attach not inside mnodechange, but inside proxify ?
-// proxify -> attach (?)
-// TODO: for sw, do not allow methods on objects
+// TODO: for sw, do not allow methods on objects (?why?)
+// TODO: idea, what if '@' is always set to modelName (?)
+// TODO: maybe always set `@`
+
+// TODO: why methods are needed to be supported on state?
+// probably forbid them?
+// because we can want to set during attach (see kit idb):
+// this.get = this.$.utils.link(this.$.libs.idb, 'get'), it can't be set on prototype,
+// or could be, but we need to import `idb` and `link` from dropcap
 
 import type { DbName, DbStoreKey, DbStoreName } from 'dropcap/idb'
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
@@ -42,7 +46,6 @@ export type Meta = {
   mNode: MNode
   yNode: YNode
   unwire: () => void
-  model: null | { keys: Set<string> } // Present for model nodes
 }
 
 // MobX change types
@@ -65,21 +68,22 @@ export class State extends exSw.Unit {
 
   name: string
   private $states = this.closest(exSw.States)!
-  private root!: Root
   private doc = new this.$.libs.yjs.Doc()
-  private bus: ReturnType<gl.Bus['create']>
+  private root: Root | null = null
   private initial: Initial
   private versioner: Versioner
   private connected = false
+  private bus: ReturnType<gl.Bus['create']>
   private applyingYjsToMobx = false
   private saveTimeout: number | undefined = undefined
-  private SAVE_DELAY = this.$.env.is.dev ? 300 : 300 // TODO: pass delay via args (?)
+  private SAVE_DELAY = 300
 
   get id() {
     return this.location.join('/')
   }
 
   get data(): Obj {
+    if (!this.root) throw this.never()
     return this.root.data
   }
 
@@ -98,7 +102,7 @@ export class State extends exSw.Unit {
 
   async init() {
     await this.$.peer.mutex(`State.setup[${this.id}]`, () => this.setup())
-    if (this.$.env.is.ex) this.bus.on('exConnected', () => true)
+    this.bus.on('connected', () => true)
   }
 
   async disconnect() {
@@ -106,7 +110,7 @@ export class State extends exSw.Unit {
     this.connected = false
     this.doc.destroy()
     this.bus.dispose()
-    await this.save()
+    await this.save(true)
   }
 
   transaction(fn: () => void) {
@@ -117,8 +121,8 @@ export class State extends exSw.Unit {
     })
   }
 
-  async hasExPeer() {
-    return !!(await this.bus.send<boolean>('exConnected'))
+  async hasPeers() {
+    return !!(await this.bus.send<boolean>('connected'))
   }
 
   private async setup() {
@@ -135,16 +139,14 @@ export class State extends exSw.Unit {
     // Load state data
     if (this.$.env.is.sw) {
       const data = await this.$.idb.get<Obj>(...this.location)
-      this.root = this.proxify({ data: data ?? {} }, null) as Root
+      this.root = this.attach({ data: data ?? {} }, null) as Root
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
       if (!docAsUpdate) throw this.never()
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
-      this.applyingYjsToMobx = true
-      this.root = this.proxify(yRoot, null) as Root
-      this.applyingYjsToMobx = false
+      this.root = this.attach(yRoot, null) as Root
     }
 
     // Apply missed updates
@@ -159,128 +161,154 @@ export class State extends exSw.Unit {
       await this.bus.send('update', update)
     })
 
+    // Set initial state / run versioner
+    this.transaction(() => {
+      if (!this.root) throw this.never()
+
+      // Get sorted version numbers
+      const versions = Object.keys(this.versioner)
+        .map(Number)
+        .sort((v1, v2) => v1 - v2)
+
+      // Empty state? -> Set initial state
+      if (Object.keys(this.root.data).length === 0) {
+        this.root.data = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
+        if (versions.length > 0) this.root.data[':version'] = versions.at(-1)
+        return
+      }
+
+      // Non-empty state? -> Run versioner
+      const data = this.root.data
+      for (const version of versions) {
+        if (this.$.utils.is.number(data[':version']) && data[':version'] >= version) continue
+        const versionFn = this.versioner[version]
+        if (!versionFn) throw this.never()
+        versionFn.call(data, data)
+        data[':version'] = version
+      }
+    })
+
+    // Mark as connected
     this.connected = true
-    // 5. Set initial state; run state versioner; commit attached & detached nodes
-    // this.transaction(() => {
-    //   // Initialize initial state or run state versioner
-    //   $: (() => {
-    //     const versions = this.getVersionsAsc(this.versioner)
-
-    //     // Empty state?
-    //     if (Object.keys(this.root.data).length === 0) {
-    //       // Set initial state
-    //       const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-    //       this.root.data = initial
-
-    //       // State itself is a model? -> Don't use state versioner (model versioner will be used)
-    //       if (this.isModelNode(this.root.data)) return
-
-    //       // Set the latest version
-    //       if (versions.length === 0) return
-    //       this.set(this.root.data, ':version', versions.at(-1))
-    //     }
-
-    //     // Non-empty state?
-    //     else {
-    //       // State itself is a model? -> Don't run state versioner (model versioner will be run)
-    //       if (this.isModelNode(this.root.data)) return
-
-    //       // Run state versioner
-    //       for (const version of versions) {
-    //         if (this.$.utils.is.number(this.root.data[':version']) && this.root.data[':version'] >= version)
-    //           continue
-    //         if (!this.versioner[version]) throw this.never()
-    //         this.versioner[version].call(this.root.data, this.root.data)
-    //         this.root.data[':version'] = version
-    //       }
-    //     }
-    //   })()
-
-    //   // Mark state as ready, from now on all changes will be tracked for commit
-    //   this.connected = true
-
-    //   // Commit attached & detached nodes
-    //   this.commit()
-    // })
 
     // Save changes
-    this.saveDebounced()
+    this.saveWithDelay()
   }
 
   // ---------------------------------------------------------------------------
-  // PROXIFY / DEPROXIFY
+  // ATTACH / DETACH
   // ---------------------------------------------------------------------------
 
-  private proxify(value: unknown, parent: Parent) {
-    if (value instanceof this.$.libs.yjs.Map) return this.proxifyYMap(value, parent)
-    if (value instanceof this.$.libs.yjs.Array) return this.proxifyYArray(value, parent)
-    if (this.$.utils.is.object(value)) return this.proxifyObject(value, parent)
-    if (this.$.utils.is.array(value)) return this.proxifyArray(value, parent)
+  private attach(value: unknown, parent: Parent) {
+    if (value instanceof this.$.libs.yjs.Map) return this.attachYMap(value, parent)
+    if (value instanceof this.$.libs.yjs.Array) return this.attachYArray(value, parent)
+    if (this.$.utils.is.object(value)) return this.attachObject(value, parent)
+    if (this.$.utils.is.array(value)) return this.attachArray(value, parent)
     if (this.isSupportedValue(value)) return value
-    throw new Error(`Unsupported state value: ${value.constructor.name}`)
+    console.log({ value, parent })
+    const type = value?.constructor.name ?? typeof value
+    const message = `State does not support ${type} values`
+    const tip = `Supported types: object, array, string, number, boolean, null, undefined`
+    throw new Error(`${message}. ${tip}.`)
   }
 
-  private proxifyYMap(yMap: YMap, parent: Parent) {
-    const modelName: unknown = yMap.get('@')
-    const Model = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
-    this.checkMissingModel(modelName, Model)
+  private attachYMap(yMap: YMap, parent: Parent) {
+    // Get model if `@` tag is present
+    const tag = this.$.utils.is.string(yMap.get('@')) ? String(yMap.get('@')) : null
+    const Model = tag ? this.getModelByName(tag) : null
+
+    // Create empty MobX node
     const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false })
-    this.wire(mObject, yMap, parent, Model)
+
+    // Wire nodes
+    this.wire(mObject, yMap, parent)
+
+    // Set model prototype
+    if (Model) Reflect.setPrototypeOf(mObject, Model.prototype)
+
+    // Populate MobX node ignoring MobX -> Yjs sync
+    const prevApplyingYjsToMobx = this.applyingYjsToMobx
+    this.applyingYjsToMobx = true
     yMap.forEach((value, key) => (mObject[key] = value))
+    this.applyingYjsToMobx = prevApplyingYjsToMobx
+
+    // Call attach hook if present
     if (this.$.utils.is.function(mObject[_attach_])) mObject[_attach_]()
+
     return mObject
   }
 
-  private proxifyYArray(yArray: YArray, parent: Parent) {
+  private attachYArray(yArray: YArray, parent: Parent) {
+    // Create empty MobX node
     const mArray: MArray = this.$.libs.mobx.observable.array([], { deep: false })
-    this.wire(mArray, yArray, parent, null)
+
+    // Wire nodes
+    this.wire(mArray, yArray, parent)
+
+    // Populate MobX node ignoring MobX -> Yjs sync
+    const prevApplyingYjsToMobx = this.applyingYjsToMobx
+    this.applyingYjsToMobx = true
     yArray.forEach(item => mArray.push(item))
+    this.applyingYjsToMobx = prevApplyingYjsToMobx
+
     return mArray
   }
 
-  private proxifyObject(object: Obj, parent: Parent) {
-    const modelName = object['@']
-    const ModelByName = this.$.utils.is.string(modelName) ? this.getModelByName(modelName) : null
+  private attachObject(object: Obj, parent: Parent) {
+    // Get model if `@` tag is present
+    const tag = this.$.utils.is.string(object['@']) ? object['@'] : null
+    const ModelByTag = tag ? this.getModelByName(tag) : null
     const ModelByInstance = this.getModelByInstance(object)
-    const Model = ModelByName ?? ModelByInstance
-    this.checkMissingModel(modelName, Model)
+    const Model = ModelByTag ?? ModelByInstance
+
+    // Create empty MobX and Yjs nodes
     const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false })
     const yMap = !parent ? this.doc.getMap('root') : new this.$.libs.yjs.Map()
-    this.wire(mObject, yMap, parent, Model, !!ModelByInstance)
-    this.getKeys(object).forEach(key => (mObject[key] = object[key]))
+
+    // Wire nodes
+    this.wire(mObject, yMap, parent)
+
+    // Set model prototype and `@` tag
+    if (Model) Reflect.setPrototypeOf(mObject, Model.prototype)
+    if (ModelByInstance) mObject['@'] = this.getModelName(ModelByInstance)
+
+    // Populate MobX node (Yjs node will be populated automatically via MobX observer)
+    Object.keys(object).forEach(key => (mObject[key] = object[key]))
+
+    // Call attach hook if present
     if (this.$.utils.is.function(mObject[_attach_])) mObject[_attach_]()
+
     return mObject
   }
 
-  private proxifyArray(array: Arr, parent: Parent) {
+  private attachArray(array: Arr, parent: Parent) {
+    // Create empty MobX and Yjs nodes
     const mArray: MArray = this.$.libs.mobx.observable.array([], { deep: false })
     const yArray = new this.$.libs.yjs.Array()
-    this.wire(mArray, yArray, parent, null)
+
+    // Wire nodes
+    this.wire(mArray, yArray, parent)
+
+    // Populate MobX node (Yjs node will be populated automatically via MobX observer)
     array.forEach(item => mArray.push(item))
+
     return mArray
   }
 
-  private deproxify(value: unknown): unknown {
-    if (this.$.utils.is.object(value)) {
-      const object: Obj = {}
-      this.getKeys(object).forEach(key => (object[key] = this.deproxify(object[key])))
-      return object
-    } else if (this.$.utils.is.array(value)) {
-      return value.map(item => this.deproxify(item))
-    } else {
-      return value
+  private detach(target: unknown) {
+    // Not attached? -> Skip
+    const meta = this.getMeta(target)
+    if (!meta) return
+
+    if (this.$.utils.is.object(target)) {
+      Object.keys(target).forEach(key => this.detach(target[key]))
+      if (this.$.utils.is.function(target[_detach_])) target[_detach_]()
+    } else if (this.$.utils.is.array(target)) {
+      target.forEach(item => this.detach(item))
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // WIRE
-  // ---------------------------------------------------------------------------
-
-  private wire(mNode: MNode, yNode: YNode, parent: Parent, Model: ModelClass | null, isFreshModel = false) {
-    // Start node observers
-    const unobserveMNode = this.$.libs.mobx.intercept(mNode, this.onMNodeChange as any)
-    yNode.observe(this.onYNodeChange)
-
+  private wire(mNode: MNode, yNode: YNode, parent: Parent) {
     // Define unwire method
     const unwire = () => {
       // Stop node observers
@@ -300,73 +328,25 @@ export class State extends exSw.Unit {
       delete mNode.__
     }
 
+    // Start node observers
+    const unobserveMNode = this.$.libs.mobx.intercept(mNode, this.onMNodeChange as any)
+    yNode.observe(this.onYNodeChange)
+
     // Define meta
-    const meta: Meta = { mNode, yNode, isModel: !!Model, unwire }
+    const meta: Meta = { mNode, yNode, unwire }
     Reflect.defineProperty(mNode, _meta_, { configurable: true, get: () => meta })
     Reflect.defineProperty(yNode, _meta_, { configurable: true, get: () => meta })
 
-    // Define parent. Do not store parent in meta, to allow `state.value[epos.state.PARENT]` access.
+    // Define parent. Do not store parent on meta, to allow `state.value[epos.state.PARENT]` access.
     Reflect.defineProperty(mNode, _parent_, { configurable: true, get: () => parent })
 
     // Define dev helpers
-    // TODO: deproxify should skeep getters (or maybe not(?), maybe __ should skeep getters)
     Reflect.defineProperty(mNode, '_', { configurable: true, get: () => this.deproxify(mNode) })
     Reflect.defineProperty(yNode, '_', { configurable: true, get: () => yNode.toJSON() })
-    Reflect.defineProperty(mNode, '__', { configurable: true, get: () => this.$.libs.mobx.toJS(mNode) })
-
-    // Setup model
-    if (Model) {
-      // Apply model prototype
-      if (!this.$.utils.is.object(mNode)) throw this.never()
-      Reflect.setPrototypeOf(mNode, Model.prototype)
-
-      // Set '@' and ':version' fields if this is a fresh model instance
-      // TODO: why not just `'@' in mNode?`
-      if (isFreshModel) {
-        const name = this.getModelName(Model)
-        if (this.$.utils.is.undefined(name)) throw this.never()
-        mNode['@'] = name
-        const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
-        if (versions.length > 0) mNode[':version'] = versions.at(-1)
-      }
-    }
-  }
-
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-
-  private detach(target: unknown) {
-    // Not attached? -> Skip
-    if (!this.isAttached(target)) return
-
-    // Detach mObject and all its children
-    if (this.$.utils.is.object(target)) {
-      this.getKeys(target).forEach(key => this.detach(target[key]))
-      if (this.$.utils.is.function(target[_detach_])) target[_detach_]()
-    }
-
-    // Detach mArray and all its children
-    else if (this.$.utils.is.array(target)) {
-      target.forEach(item => this.detach(item))
-    }
   }
 
   // ---------------------------------------------------------------------------
-  // MOBX CHANGE HANDLERS
+  // MOBX CHANGE PROCESSING
   // ---------------------------------------------------------------------------
 
   private onMNodeChange = (change: MNodeChange) => {
@@ -378,8 +358,7 @@ export class State extends exSw.Unit {
       // - object[newKey] = value (add)
       // - object[existingKey] = value (update)
       if (change.type === 'add' || change.type === 'update') {
-        const prevent = this.processMObjectSet(change)
-        if (prevent) return
+        this.processMObjectSet(change)
       }
       // - delete object[key]
       else if (change.type === 'remove') {
@@ -397,10 +376,8 @@ export class State extends exSw.Unit {
       }
     }
 
-    // Save state to IDB
-    if (this.connected) {
-      this.saveDebounced()
-    }
+    // Save changes
+    this.saveWithDelay()
 
     return change
   }
@@ -409,34 +386,19 @@ export class State extends exSw.Unit {
     // Skip symbols
     if (this.$.utils.is.symbol(change.name)) return
 
+    // change.object[change.name] can access method from prototype
+    // so Reflect.definepropert(obj, method) won't be bounced out by this check:
+    // console.log(change.name, Reflect.getOwnPropertyDescriptor(change.object, change.name))
+    // if (self.deb) debugger
+
     // Skip if value didn't change. Also applied for getters (undefined === undefined in this case).
     if (change.newValue === change.object[change.name]) return
 
-    // PREVENT
-    // if (this.isUnderscorePrefixed(change.name)) {
-    // }
-    // if (this.$.utils.is.function(change.newValue)) {
-    // }
-    const isLocal = this.$.utils.is.string(change.name) && change.name.startsWith('_')
-    const isMethod = this.$.utils.is.object(change.object) && this.$.utils.is.function(change.newValue)
-    if (isLocal || isMethod) {
-      let value = change.newValue
-      Reflect.defineProperty(change.object, change.name, {
-        configurable: true,
-        get: () => value,
-        set: (v: unknown) => {
-          if (isMethod && !this.$.utils.is.function(v)) {
-            throw new Error('Unsupported type')
-          } else {
-            value = v
-          }
-        },
-      })
-      return true
-    }
+    // GETTER
+    if (change.newValue === undefined && !change.object.hasOwnProperty(change.name)) return
 
-    // Proxify new value
-    change.newValue = this.proxify(change.newValue, change.object)
+    // Attach new value
+    change.newValue = this.attach(change.newValue, change.object)
 
     // Detach old value
     this.detach(change.object[change.name])
@@ -446,6 +408,10 @@ export class State extends exSw.Unit {
       this.doc.transact(() => {
         const yMap = this.getYNode(change.object)
         if (!yMap) throw this.never()
+        if (change.name === 'show') {
+          console.warn('ymap set', change.name)
+          console.warn(change)
+        }
         yMap.set(String(change.name), this.getYNode(change.newValue) ?? change.newValue)
       })
     }
@@ -470,8 +436,7 @@ export class State extends exSw.Unit {
 
   private processMArrayUpdate(change: MArrayUpdateChange) {
     // Attach new value
-    change.newValue = this.proxify(change.newValue, change.object)
-    // if (change.newValue._) console.warn('attach', change.newValue._)
+    change.newValue = this.attach(change.newValue, change.object)
 
     // Detach old value
     this.detach(change.object[change.index])
@@ -489,12 +454,7 @@ export class State extends exSw.Unit {
 
   private processMArraySplice(change: MArraySpliceChange) {
     // Attach added items
-    change.added = change.added.map(item => {
-      const proxy = this.proxify(item, change.object)
-      // if (proxy._) console.warn('attach', proxy._)
-      // console.log('!!', proxy[_parent_][_parent_].preview)
-      return proxy
-    })
+    change.added = change.added.map(item => this.attach(item, change.object))
 
     // Detach removed items
     for (let i = change.index; i < change.index + change.removedCount; i++) {
@@ -518,7 +478,7 @@ export class State extends exSw.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // YJS CHANGE HANDLERS
+  // YJS CHANGE PROCESSING
   // ---------------------------------------------------------------------------
 
   private onYNodeChange = async (e: YMapEvent<unknown> | YArrayEvent<unknown>) => {
@@ -527,13 +487,13 @@ export class State extends exSw.Unit {
 
     // Apply remote changes
     if (e instanceof this.$.libs.yjs.YMapEvent) {
-      this.applyYMapChange(e)
+      this.processYMapChange(e)
     } else {
-      this.applyYArrayChange(e)
+      this.processYArrayChange(e)
     }
   }
 
-  private applyYMapChange(e: YMapEvent<unknown>) {
+  private processYMapChange(e: YMapEvent<unknown>) {
     // Get corresponding MobX node
     const yMap = e.target
     const mObject = this.getMNode(yMap)
@@ -556,7 +516,7 @@ export class State extends exSw.Unit {
     })
   }
 
-  private applyYArrayChange(e: YArrayEvent<unknown>) {
+  private processYArrayChange(e: YArrayEvent<unknown>) {
     // Get corresponding MobX node
     const yArray = e.target
     const mArray = this.getMNode(yArray)
@@ -585,86 +545,22 @@ export class State extends exSw.Unit {
   }
 
   // ---------------------------------------------------------------------------
-  // MODEL MANAGEMENT
-  // ---------------------------------------------------------------------------
-
-  private checkMissingModel(modelName: unknown, Model: ModelClass | null) {
-    if (this.$.env.is.sw) return
-    if (this.$states.config.allowMissingModels) return
-    const isMissing = this.$.utils.is.string(modelName) && !Model
-    if (!isMissing) return
-
-    throw new Error(
-      `Missing model: '${modelName}'. ` +
-        'Make sure the model is registered via `epos.state.register` before calling `epos.state.connect`. ' +
-        'To allow missing models, set `config.allowMissingModels = true` in epos.json.',
-    )
-  }
-
-  private runModelVersioner(model: MObject) {
-    const Model = this.getModelByInstance(model)
-    if (!Model) throw this.never()
-
-    // No versions? -> Ignore
-    if (!Model[_versioner_]) return
-    const versions = this.getVersionsAsc(Model[_versioner_])
-    if (versions.length === 0) return
-
-    // Save current values
-    const valuesBefore = { ...model }
-
-    // Get keys before versioner
-    const keysBefore = new Set(Object.keys(model))
-
-    // Run versioner
-    for (const version of versions) {
-      if (this.$.utils.is.number(model[':version']) && model[':version'] >= version) continue
-      if (!Model[_versioner_][version]) throw this.never()
-      Model[_versioner_][version].call(model, model)
-      model[':version'] = version
-    }
-
-    // Get keys after versioner
-    const keysAfter = new Set(Object.keys(model))
-
-    // Notify MobX about deleted keys
-    for (const key of keysBefore) {
-      if (keysAfter.has(key)) continue
-      // Manually detach old values. Detach won't happen automatically, because inside versioner,
-      // we delete fields with `delete model[key]` while `mobx.remove` is required for auto-detection.
-      this.detach(valuesBefore[key])
-      model[key] = null // Required for MobX to detect change inside 'delete' below
-      this.delete(model, key)
-    }
-
-    // Notify MobX about added keys
-    for (const key of keysAfter) {
-      if (keysBefore.has(key)) continue
-      const value = model[key]
-      delete model[key] // Required for MobX to detect change inside 'set' below
-      this.set(model, key, value)
-    }
-  }
-
-  private runModelMethod(model: MObject, method: PropertyKey) {
-    if (!this.$.utils.is.function(model[method])) return
-    model[method]()
-  }
-
-  // ---------------------------------------------------------------------------
   // PERSISTENCE
   // ---------------------------------------------------------------------------
 
-  private async save() {
+  private async save(force = false) {
     if (!this.$.env.is.sw) return
+    if (!this.connected && !force) return
+    if (!this.root) throw this.never()
     self.clearTimeout(this.saveTimeout)
-    const data = this.deproxify(this.root.data)
+    const data = this.$.libs.mobx.toJS(this.root.data)
     const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.location, data))
     if (error) this.log.error('Failed to save state to IndexedDB', error)
   }
 
-  private saveDebounced() {
+  private saveWithDelay() {
     if (!this.$.env.is.sw) return
+    if (!this.connected) return
     self.clearTimeout(this.saveTimeout)
     this.saveTimeout = self.setTimeout(() => this.save(), this.SAVE_DELAY)
   }
@@ -673,16 +569,8 @@ export class State extends exSw.Unit {
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private delete(mObject: MObject, key: string) {
-    this.$.libs.mobx.remove(mObject, key)
-  }
-
   private getMeta(target: any): Meta | null {
     return (target?.[_meta_] as Meta) ?? null
-  }
-
-  private isAttached(value: unknown) {
-    return !!this.getMeta(value)
   }
 
   private getMNode<T extends YNode>(yNode: T) {
@@ -697,6 +585,59 @@ export class State extends exSw.Unit {
     return meta.yNode as T extends MObject ? YMap : YArray
   }
 
+  private getModelByName(name: string) {
+    const Model = this.$states.models[name]
+    if (Model) return Model
+
+    const allowMissingModels = this.$.env.is.sw || this.$states.config.allowMissingModels
+    if (allowMissingModels) return null
+
+    const message = `Model '${name}' is not registered`
+    const tip1 = `Make sure you registered it via epos.state.register() before calling epos.state.connect()`
+    const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
+    throw new Error(`${message}. ${tip1}. ${tip2}.`)
+  }
+
+  private getModelByInstance(instance: Obj) {
+    if (instance.constructor === Object) return null
+    const regisretedModels = Object.values(this.$states.models)
+
+    // Exact match:
+    // > class Model {}
+    // > register({ Model })
+    // > const model = new Model()
+    // getModelByInstance(model) -> Model
+    const exactMatch = regisretedModels.find(Model => instance.constructor === Model)
+    if (exactMatch) return exactMatch
+
+    // Inherited match:
+    // > class Model extends Base {}
+    // > register({ Model }) // Base is not registered
+    // > const base = new Base()
+    // getModelByInstance(base) -> Model
+    // const inheritedMatch = models.find(Model => Model.prototype instanceof instance.constructor)
+    // if (inheritedMatch) return inheritedMatch
+
+    return null
+  }
+
+  private getModelName(Model: ModelClass) {
+    const registeredModelNames = Object.keys(this.$states.models)
+    return registeredModelNames.find(name => this.$states.models[name] === Model) ?? null
+  }
+
+  private deproxify(value: unknown): unknown {
+    if (this.$.utils.is.object(value)) {
+      const object: Obj = {}
+      Object.keys(value).forEach(key => (object[key] = this.deproxify(value[key])))
+      return object
+    } else if (this.$.utils.is.array(value)) {
+      return value.map(item => this.deproxify(item))
+    } else {
+      return value
+    }
+  }
+
   private isSupportedValue(value: unknown) {
     return (
       this.$.utils.is.object(value) ||
@@ -707,41 +648,6 @@ export class State extends exSw.Unit {
       this.$.utils.is.null(value) ||
       this.$.utils.is.undefined(value)
     )
-  }
-
-  private isModelNode(mNode: MNode): mNode is MObject & { __model: true } {
-    // TODO: seems like better approach is to check if model.constructor !== Object
-    const meta = this.getMeta(mNode)
-    if (!meta) throw this.never()
-    return meta.isModel
-  }
-
-  private getModelByName(name: unknown) {
-    if (!this.$.utils.is.string(name)) return null
-    return this.$states.models[name] ?? null
-  }
-
-  private getModelByInstance(instance: Obj) {
-    if (instance.constructor === Object) return null
-    return (
-      Object.values(this.$states.models).find(Model => instance.constructor === Model) ||
-      Object.values(this.$states.models).find(Model => Model.prototype instanceof instance.constructor) ||
-      null
-    )
-  }
-
-  private getModelName(Model: ModelClass) {
-    return Object.keys(this.$states.models).find(name => this.$states.models[name] === Model) ?? null
-  }
-
-  private getVersionsAsc(versioner: Versioner) {
-    return Object.keys(versioner)
-      .map(Number)
-      .sort((v1, v2) => v1 - v2)
-  }
-
-  private getKeys(object: Obj) {
-    return Reflect.ownKeys(object).filter(key => object.propertyIsEnumerable(key))
   }
 }
 
@@ -846,4 +752,98 @@ export class State extends exSw.Unit {
 //       }
 //     }
 //   }
+// }
+
+// private setModelFields(mObject: MObject, Model: ModelClass) {
+//   const name = this.getModelName(Model)
+//   if (this.$.utils.is.undefined(name)) throw this.never()
+//   mObject['@'] = name
+//   const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
+//   if (versions.length > 0) mObject[':version'] = versions.at(-1)
+// }
+
+// private runModelVersioner(model: MObject) {
+//   const Model = this.getModelByInstance(model)
+//   if (!Model) throw this.never()
+
+//   // No versions? -> Ignore
+//   if (!Model[_versioner_]) return
+//   const versions = this.getVersionsAsc(Model[_versioner_])
+//   if (versions.length === 0) return
+
+//   // Save current values
+//   const valuesBefore = { ...model }
+
+//   // Get keys before versioner
+//   const keysBefore = new Set(Object.keys(model))
+
+//   // Run versioner
+//   for (const version of versions) {
+//     if (this.$.utils.is.number(model[':version']) && model[':version'] >= version) continue
+//     if (!Model[_versioner_][version]) throw this.never()
+//     Model[_versioner_][version].call(model, model)
+//     model[':version'] = version
+//   }
+
+//   // Get keys after versioner
+//   const keysAfter = new Set(Object.keys(model))
+
+//   // Notify MobX about deleted keys
+//   for (const key of keysBefore) {
+//     if (keysAfter.has(key)) continue
+//     // Manually detach old values. Detach won't happen automatically, because inside versioner,
+//     // we delete fields with `delete model[key]` while `mobx.remove` is required for auto-detection.
+//     this.detach(valuesBefore[key])
+//     model[key] = null // Required for MobX to detect change inside 'delete' below
+//     this.delete(model, key)
+//   }
+
+//   // Notify MobX about added keys
+//   for (const key of keysAfter) {
+//     if (keysBefore.has(key)) continue
+//     const value = model[key]
+//     delete model[key] // Required for MobX to detect change inside 'set' below
+//     this.set(model, key, value)
+//   }
+// }
+
+// private runModelMethod(model: MObject, method: PropertyKey) {
+//   if (!this.$.utils.is.function(model[method])) return
+//   model[method]()
+// }
+
+// private isModelNode(mNode: MNode): mNode is MObject & { __model: true } {
+//   // TODO: seems like better approach is to check if model.constructor !== Object
+//   const meta = this.getMeta(mNode)
+//   if (!meta) throw this.never()
+//   return meta.isModel
+// }
+
+// private delete(mObject: MObject, key: string) {
+//   this.$.libs.mobx.remove(mObject, key)
+// }
+
+// private getVersionsAsc(versioner: Versioner) {
+//   return Object.keys(versioner)
+//     .map(Number)
+//     .sort((v1, v2) => v1 - v2)
+// }
+
+// Method? -> Ignore MobX reactivity
+// if (this.$.utils.is.function(change.newValue)) {
+//   const key = change.name
+//   let value = change.newValue
+//   Reflect.defineProperty(change.object, key, {
+//     configurable: true,
+//     get: () => value,
+//     set: (v: unknown) => {
+//       if (this.$.utils.is.function(v)) {
+//         value = v
+//       } else {
+//         delete change.object[key]
+//         change.object[key] = v
+//       }
+//     },
+//   })
+//   return true
 // }

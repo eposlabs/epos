@@ -8,7 +8,7 @@ export class Learn extends gl.Unit {
     new gl.Permission(this, 'storage'),
   ]
 
-  async init() {
+  async attach() {
     this.setupContextMenu()
   }
 

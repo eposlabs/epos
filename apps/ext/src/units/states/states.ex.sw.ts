@@ -109,8 +109,8 @@ export class States extends exSw.Unit {
   private setupAutoDisconnect() {
     self.setInterval(async () => {
       for (const state of this.list) {
-        const hasExPeer = await state.hasExPeer()
-        if (!hasExPeer) await this.disconnect(state.name)
+        const hasPeers = await state.hasPeers()
+        if (!hasPeers) await this.disconnect(state.name)
       }
     }, this.$.utils.time('15s'))
   }

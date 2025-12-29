@@ -18,7 +18,7 @@ export default defineConfig(async ({ mode }) => {
   return {
     resolve: {
       alias: {
-        '@': resolve(import.meta.dirname, './src/shadcn'),
+        '@ui': resolve(import.meta.dirname, './src/ui'),
       },
     },
 

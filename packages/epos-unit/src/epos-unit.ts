@@ -1,47 +1,58 @@
 import type { Cls } from 'dropcap/types'
-import { createLog, Log } from 'dropcap/utils'
+import { createLog, is, Log } from 'dropcap/utils'
 import 'epos'
-import { nanoid } from 'nanoid'
-import type { FC } from 'react'
 
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
+export const _ancestors_ = Symbol('ancestors')
 export const _disposers_ = Symbol('disposers')
 export type Descriptors = Record<string | symbol, PropertyDescriptor>
 
 export class Unit<TRoot = unknown> {
-  id = nanoid()
-  declare '@': string
-  declare log: Log;
+  declare '@': string;
   declare [':version']?: number
+  declare log: Log
   declare private [_root_]: TRoot
-  declare private [_parent_]: Unit<TRoot> | null // Parent reference for a not-yet-attached unit
+  declare private [_parent_]: Unit<TRoot> | null // Parent reference for a not-yet-attached units
+  declare private [_ancestors_]: Map<Cls, unknown>
   declare private [_disposers_]: Set<() => void>
-  declare private init$: PromiseWithResolvers<void>
-
-  static get [epos.symbols.stateModelStrict]() {
-    return true
-  }
 
   constructor(parent: Unit<TRoot> | null) {
-    // Define parent for not-yet-attached units
     Reflect.defineProperty(this, _parent_, { get: () => parent })
   }
 
-  // ---------------------------------------------------------------------------
-  // INIT
-  // ---------------------------------------------------------------------------
+  async [epos.state.ATTACH]() {
+    epos.state.transaction(() => {
+      const versioner: Record<number, (unit: Unit<TRoot>) => void> | undefined = (this.constructor as any)
+        .versioner
 
-  async [epos.symbols.stateModelInit]() {
-    const _this = this as any
+      if (versioner) {
+        const versions = Object.keys(versioner)
+          .map(Number)
+          .sort((v1, v2) => v1 - v2)
+
+        for (const version of versions) {
+          if (is.number(this[':version']) && this[':version'] >= version) continue
+          const versionFn = versioner[version]
+          if (!versionFn) throw this.never()
+          versionFn.call(this, this)
+          this[':version'] = version
+        }
+      }
+    })
+
+    const thisAsAny = this as any
+    const disposers = new Set()
+    const ancestors = new Map()
+    Reflect.defineProperty(this, _disposers_, { get: () => disposers })
+    Reflect.defineProperty(this, _ancestors_, { get: () => ancestors })
+
     const Unit = this.constructor
     const descriptors: Descriptors = Object.getOwnPropertyDescriptors(Unit.prototype)
     const keys = Reflect.ownKeys(descriptors)
-    this.init$ = Promise.withResolvers<void>()
 
-    // Setup disposers container
-    const disposers = new Set<() => void>()
-    Reflect.defineProperty(this, _disposers_, { get: () => disposers })
+    // Create logger
+    this.log = createLog(this['@'])
 
     // Bind all methods
     for (const key of keys) {
@@ -49,78 +60,55 @@ export class Unit<TRoot = unknown> {
       const descriptor = descriptors[key]
       if (!descriptor) continue
       if (descriptor.get || descriptor.set) continue
-      if (typeof descriptor.value !== 'function') continue
-      _this[key] = descriptor.value.bind(this)
+      if (!is.function(descriptor.value)) continue
+      thisAsAny[key] = descriptor.value.bind(this)
     }
 
     // Create components out of `View` methods
     for (const key of keys) {
-      if (typeof key === 'symbol') continue
+      if (is.symbol(key)) continue
       if (!key.endsWith('View')) continue
       const descriptor = descriptors[key]
       if (!descriptor) continue
       if (descriptor.get || descriptor.set) continue
-      if (typeof _this[key] !== 'function') continue
-      _this[key] = epos.component(_this[key] as FC)
-      _this[key].displayName = `${this['@']}.${key}`
+      if (!is.function(thisAsAny[key])) continue
+      const Component = epos.component(thisAsAny[key])
+      Component.displayName = `${this['@']}.${key}`
+      Reflect.defineProperty(this, key, { get: () => Component })
     }
 
-    // Define log method
-    const log = createLog(this['@'])
-    Reflect.defineProperty(this, 'log', { get: () => log })
-
-    // Call init method
-    if (typeof _this.init === 'function') await _this.init()
-    this.init$.resolve()
+    // Call `attach` method
+    if (is.function(thisAsAny.attach)) await thisAsAny.attach()
   }
 
-  async waitInit() {
-    await this.init$.promise
-  }
-
-  // ---------------------------------------------------------------------------
-  // DISPOSE
-  // ---------------------------------------------------------------------------
-
-  [epos.symbols.stateModelDispose]() {
-    const _this = this as any
+  [epos.state.DETACH]() {
+    const thisAsAny = this as any
 
     // Call disposers
     this[_disposers_].forEach(disposer => disposer())
     this[_disposers_].clear()
 
-    // Call dispose method
-    if (typeof _this.dispose === 'function') _this.dispose()
+    // Call `detach` method
+    if (is.function(thisAsAny.detach)) thisAsAny.detach()
   }
-
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
-
-  static get [epos.symbols.stateModelVersioner]() {
-    if (!('versioner' in this)) return null
-    return this.versioner
-  }
-
-  // ---------------------------------------------------------------------------
-  // ROOT
-  // ---------------------------------------------------------------------------
 
   get $() {
-    this[_root_] ??= findRoot(this) as TRoot
-    return this[_root_]
+    return (this[_root_] ??= findRoot<TRoot>(this))
   }
 
-  // ---------------------------------------------------------------------------
-  // METHODS
-  // ---------------------------------------------------------------------------
-
   closest<T extends Unit>(Ancestor: Cls<T>): T | null {
+    const ancestors = (this[_ancestors_] ??= new Map())
+    if (ancestors.has(Ancestor)) return ancestors.get(Ancestor) as T
+
     let cursor: unknown = getParent(this)
     while (cursor) {
-      if (cursor instanceof Ancestor) return cursor
+      if (cursor instanceof Ancestor) {
+        ancestors.set(Ancestor, cursor)
+        return cursor
+      }
       cursor = getParent(cursor)
     }
+
     return null
   }
 
@@ -160,10 +148,10 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 
 function getParent(child: any) {
-  return child[_parent_] ?? child[epos.symbols.stateParent]
+  return child[_parent_] ?? child[epos.state.PARENT]
 }
 
-function findRoot(unit: Unit) {
+function findRoot<T>(unit: Unit): T {
   let root = unit
   let cursor: any = unit
 
@@ -172,5 +160,13 @@ function findRoot(unit: Unit) {
     cursor = getParent(cursor)
   }
 
-  return root
+  return root as T
 }
+
+// function defineProperty(target: InstanceType<Cls>, key: PropertyKey, value: unknown) {
+//   Reflect.defineProperty(target, key, {
+//     configurable: true,
+//     get: () => value,
+//     set: v => (value = v),
+//   })
+// }

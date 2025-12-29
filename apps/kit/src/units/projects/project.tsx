@@ -1,7 +1,7 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { ButtonGroup } from '@/components/ui/button-group'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item'
+import { Alert, AlertDescription, AlertTitle } from '@ui/components/ui/alert'
+import { Button } from '@ui/components/ui/button'
+import { ButtonGroup } from '@ui/components/ui/button-group'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@ui/components/ui/item'
 import {
   IconAlertCircle,
   IconCircleCheck,
@@ -12,54 +12,49 @@ import {
 import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
-export type State = { error: Error | null; updating: boolean }
-
 export class Project extends gl.Unit {
-  // static locals = ['_*', 'state']
-  // [epos.state.LOCALS] = ['handle', 'state']
-  // [epos.state.VERSIONER]
-
+  id = Math.random().toString(36).slice(2)
   name: string | null = null
   spec: Spec | null = null
   handleId: string
   updatedAt: number | null = null
   fs = new gl.ProjectFs(this)
 
-  _handle: FileSystemDirectoryHandle | null = null
-  _bundle: Bundle | null = null
-  _state = epos.state.local<State>({ error: null, updating: false })
-  _observer: FileSystemObserver | null = null
-  private _updateTimer: number = -1
-  _$projects = this.$.closest(gl.Projects)!
+  get $projects() {
+    return this.closest(gl.Projects)!
+  }
 
-  // declare handle: FileSystemDirectoryHandle | null
-  // declare bundle: Bundle | null
-  // declare state: { error: Error | null; updating: boolean }
-  // declare private observer: FileSystemObserver | null
-  // declare private updateTimer: number
-  // declare private $projects: gl.Projects
+  get state(): {
+    error: Error | null
+    updating: boolean
+    handle: FileSystemDirectoryHandle | null
+    bundle: Bundle | null
+    observer: FileSystemObserver | null
+    updateTimer: number
+  } {
+    return {
+      error: null,
+      updating: false,
+      handle: null,
+      bundle: null,
+      observer: null,
+      updateTimer: -1,
+    }
+  }
 
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
     this.handleId = handleId
-    this.update = this.$.utils.enqueue(this.update)
-    // console.log(this._updateTimer)
   }
 
-  async init() {
-    this.handle = null
-    this.bundle = null
-    this.state = epos.state.local({ error: null, updating: false })
-    this.observer = null
-    this.updateTimer = -1
-    this.$projects = this.closest(gl.Projects)!
+  async attach() {
     this.update = this.$.utils.enqueue(this.update)
-    this.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
+    this.state.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     await this.update()
   }
 
   async dispose() {
-    if (this.observer) this.observer.disconnect()
+    if (this.state.observer) this.state.observer.disconnect()
     if (this.name && this.name !== 'kit') await epos.installer.remove(this.name)
   }
 
@@ -92,10 +87,10 @@ export class Project extends gl.Unit {
     try {
       this.state.error = null
       this.state.updating = true
-      this.bundle = await this.readBundle()
-      if (this.name && this.name !== this.bundle.spec.name) await epos.installer.remove(this.name)
-      this.name = this.bundle.spec.name
-      await epos.installer.install(this.bundle)
+      this.state.bundle = await this.readBundle()
+      if (this.name && this.name !== this.state.bundle.spec.name) await epos.installer.remove(this.name)
+      this.name = this.state.bundle.spec.name
+      await epos.installer.install(this.state.bundle)
     } catch (e) {
       console.log(e)
       this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
@@ -106,8 +101,8 @@ export class Project extends gl.Unit {
   }
 
   private updateWithDelay() {
-    self.clearTimeout(this.updateTimer)
-    this.updateTimer = self.setTimeout(() => this.update(), 50)
+    self.clearTimeout(this.state.updateTimer)
+    this.state.updateTimer = self.setTimeout(() => this.update(), 50)
   }
 
   private async readBundle(): Promise<Bundle> {
@@ -144,7 +139,7 @@ export class Project extends gl.Unit {
   // ---------------------------------------------------------------------------
 
   private startObserver() {
-    this.observer = new FileSystemObserver(records => {
+    this.state.observer = new FileSystemObserver(records => {
       if (this.state.error) {
         this.updateWithDelay()
         return
@@ -159,8 +154,8 @@ export class Project extends gl.Unit {
       }
     })
 
-    if (!this.handle) throw this.never()
-    this.observer.observe(this.handle, { recursive: true })
+    if (!this.state.handle) throw this.never()
+    this.state.observer.observe(this.state.handle, { recursive: true })
   }
 
   // ---------------------------------------------------------------------------
@@ -169,7 +164,7 @@ export class Project extends gl.Unit {
 
   /** Create standalone extension ZIP file out of the project. */
   async zip(asDev = false) {
-    const bundle = this.bundle
+    const bundle = this.state.bundle
     if (!bundle) throw new Error('Project is not loaded yet')
     const zip = new this.$.libs.Zip()
 
@@ -351,12 +346,13 @@ export class Project extends gl.Unit {
 
   ErrorView() {
     if (!this.state.error) return null
-    return null
     return (
       <Alert variant="destructive">
         <IconAlertCircle />
-        <AlertTitle>{this.state.error}</AlertTitle>
-        {this.state.errorDetails && <AlertDescription>{this.state.errorDetails}</AlertDescription>}
+        <AlertTitle>{this.state.error.message}</AlertTitle>
+        {this.$.utils.is.string(this.state.error.cause) && (
+          <AlertDescription>{this.state.error.cause}</AlertDescription>
+        )}
       </Alert>
     )
   }

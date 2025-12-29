@@ -1,4 +1,4 @@
-import { Separator } from '@/components/ui/separator'
+import { Separator } from '@ui/components/ui/separator'
 import {
   Sidebar,
   SidebarContent,
@@ -12,8 +12,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
+} from '@ui/components/ui/sidebar'
+import { cn } from '@ui/lib/utils'
 import { IconPlus, IconPointFilled } from '@tabler/icons-react'
 import { AppLogo } from './app-logo'
 
@@ -25,7 +25,7 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
 
-  async init() {
+  async attach() {
     await this.ensureSingleTab()
   }
 
@@ -112,6 +112,9 @@ export class App extends gl.Unit {
     },
     2() {
       this.theme = new gl.AppTheme(this)
+    },
+    3() {
+      this.v = 2
     },
   }
 }

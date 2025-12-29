@@ -26,10 +26,4 @@ export class Unit<TRoot = unknown> {
     Error.captureStackTrace(error, this.never)
     return error
   }
-
-  Error(message?: string) {
-    const error = new Error(`[${this.constructor.name}] ${message}`)
-    Error.captureStackTrace(error, this.Error)
-    return error
-  }
 }

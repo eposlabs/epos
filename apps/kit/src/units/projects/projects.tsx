@@ -3,7 +3,7 @@ export class Projects extends gl.Unit {
   selectedProjectId: string | null = null
 
   get map() {
-    return Object.fromEntries(this.list.map(project => [project.name, project]))
+    return Object.fromEntries(this.list.map(project => [project.id, project]))
   }
 
   get selected() {

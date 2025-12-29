@@ -1,6 +1,5 @@
 export class Permission extends gl.Unit {
   name: chrome.runtime.ManifestPermission
-  declare private engine: any
 
   constructor(parent: gl.Unit, name: chrome.runtime.ManifestPermission) {
     super(parent)
