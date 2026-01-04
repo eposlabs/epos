@@ -1,98 +1,123 @@
-import type { Cls } from 'dropcap/types'
-import { createLog, is, Log } from 'dropcap/utils'
+import type { Arr, Cls, Obj } from 'dropcap/types'
+import { createLog, is } from 'dropcap/utils'
 import 'epos'
 
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
-export const _ancestors_ = Symbol('ancestors')
-export const _disposers_ = Symbol('disposers')
 export const _attached_ = Symbol('attached')
-export const _pendingAttachHooks_ = Symbol('pendingAttachHooks')
+export const _disposers_ = Symbol('disposers')
+export const _ancestors_ = Symbol('ancestors')
+export const _attachQueue_ = Symbol('pendingAttachHooks')
+
+export type Node<T> = Unit<T> | Obj | Arr
 
 export class Unit<TRoot = unknown> {
-  declare '@': string;
-  declare [':version']?: number
-  declare log: Log
-  declare private [_root_]: TRoot
-  declare private [_parent_]: Unit<TRoot> | null // Parent reference for a not-yet-attached units
-  declare private [_ancestors_]: Map<Cls, unknown>
-  declare private [_disposers_]: Set<() => void>
-  declare private [_attached_]: boolean
-  declare private [_pendingAttachHooks_]?: (() => void)[]
+  declare '@': string
+  declare log: ReturnType<typeof createLog>;
+  declare [':version']?: number;
+  declare [_root_]?: TRoot;
+  declare [_parent_]?: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
+  declare [_attached_]?: boolean;
+  declare [_disposers_]?: Set<() => void>;
+  declare [_ancestors_]?: Map<Cls, unknown>;
+  declare [_attachQueue_]?: (() => void)[]
 
   constructor(parent: Unit<TRoot> | null) {
-    Reflect.defineProperty(this, _parent_, { get: () => parent })
+    this[_parent_] = parent
+    const versions = getVersions(this.constructor)
+    if (versions.length > 0) this[':version'] = versions.at(-1)
   }
 
   [epos.state.ATTACH]() {
-    const prototypeDescriptors = Object.getOwnPropertyDescriptors(this.constructor.prototype)
-    const prototypeKeys = Reflect.ownKeys(prototypeDescriptors)
+    // 1. Setup logger
+    setProperty(this, 'log', createLog(this['@']))
 
-    // Apply versioner
-    epos.state.transaction(() => applyVersioner(this))
+    // 2. Apply versioner
+    epos.state.transaction(() => {
+      const versioner: unknown = Reflect.get(this.constructor, 'versioner')
+      if (!is.object(versioner)) return
+      const versions = getVersions(this.constructor)
 
-    // Setup disposers
-    const disposers = new Set()
-    Reflect.defineProperty(this, _disposers_, { get: () => disposers })
+      for (const version of versions) {
+        if (is.number(this[':version']) && this[':version'] >= version) continue
+        const versionFn = versioner[version]
+        if (!is.function(versionFn)) continue
+        versionFn.call(this, this)
+        this[':version'] = version
+      }
+    })
 
-    // Setup ancestors
-    const ancestors = new Map()
-    Reflect.defineProperty(this, _ancestors_, { get: () => ancestors })
+    // 3. Prepare methods:
+    // - Create components for methods ending with `View`
+    // - Bind all other methods to the unit instance
+    for (const prototype of getPrototypes(this)) {
+      const descriptors = Object.getOwnPropertyDescriptors(prototype)
 
-    // Setup logger
-    const log = createLog(this['@'])
-    Reflect.defineProperty(this, 'log', { get: () => log })
+      for (const [key, descriptor] of Object.entries(descriptors)) {
+        if (key === 'constructor') continue
+        if (this.hasOwnProperty(key)) continue
 
-    // Process prototype methods:
-    // - Bind all methods to `this`
-    // - Wrap methods ending with `View` into components
-    for (const key of prototypeKeys) {
-      if (is.symbol(key)) continue
-      if (key === 'constructor') continue
+        if (descriptor.get || descriptor.set) continue
+        if (!is.function(descriptor.value)) continue
+        const fn = descriptor.value.bind(this)
 
-      const descriptor = prototypeDescriptors[key]
-      if (!descriptor) continue
-      if (descriptor.get || descriptor.set) continue
-      if (!is.function(descriptor.value)) continue
-      const fn = descriptor.value.bind(this)
-
-      if (key.endsWith('View')) {
-        const Component = epos.component(fn)
-        Component.displayName = `${this.constructor.name}.${key}`
-        Reflect.defineProperty(this, key, { configurable: true, get: () => Component })
-      } else {
-        Reflect.defineProperty(this, key, { configurable: true, get: () => fn })
+        if (key.endsWith('View')) {
+          let Component = epos.component(fn)
+          Component.displayName = `${this.constructor.name}.${key}`
+          setProperty(this, key, Component)
+        } else {
+          setProperty(this, key, fn)
+        }
       }
     }
 
-    // Process attach hook
-    processAttachHook(this)
+    // 4. Process attach queue
+    const attach = Reflect.get(this, 'attach')
+    if (is.function(attach)) {
+      const unattachedRoot = findUnattachedRoot(this)
+      if (!unattachedRoot) throw this.never()
 
-    // Mark as attached
-    Reflect.defineProperty(this, _attached_, { get: () => true })
+      ensureProperty(unattachedRoot, _attachQueue_, () => [])
+      unattachedRoot[_attachQueue_].push(() => attach())
+
+      if (this[_attachQueue_]) {
+        this[_attachQueue_].forEach(attach => attach())
+        delete this[_attachQueue_]
+      }
+    }
+
+    // 5. Mark as attached
+    setProperty(this, _attached_, true)
   }
 
   [epos.state.DETACH]() {
-    // Call disposers
-    this[_disposers_].forEach(disposer => disposer())
-    this[_disposers_].clear()
+    if (this[_disposers_]) {
+      this[_disposers_].forEach(disposer => disposer())
+      this[_disposers_].clear()
+    }
 
-    // Call `detach` method
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
+
+    delete this[_root_]
+    delete this[_attached_]
+    delete this[_ancestors_]
+    delete this[_disposers_]
+    delete this[_attachQueue_]
   }
 
   get $() {
-    if (this[_root_]) return this[_root_]
-    const root = findRoot(this)
-    Reflect.defineProperty(this, _root_, { get: () => root })
-    return root
+    ensureProperty(this, _root_, () => findRoot(this))
+    return this[_root_]
   }
 
-  closest<T extends Unit>(Ancestor: Cls<T>): T | null {
+  closest<T extends Unit>(Ancestor: Cls<T>) {
+    // Has cached value? -> Return it
+    ensureProperty(this, _ancestors_, () => new Map())
     if (this[_ancestors_].has(Ancestor)) return this[_ancestors_].get(Ancestor) as T
 
-    let cursor: unknown = getParent(this)
+    // Find the closest ancestor and cache it
+    let cursor: Node<TRoot> | null = this
     while (cursor) {
       if (cursor instanceof Ancestor) {
         this[_ancestors_].set(Ancestor, cursor)
@@ -106,24 +131,28 @@ export class Unit<TRoot = unknown> {
 
   autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
     const disposer = epos.libs.mobx.autorun(...args)
+    ensureProperty(this, _disposers_, () => new Set())
     this[_disposers_].add(disposer)
     return disposer
   }
 
   reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
     const disposer = epos.libs.mobx.reaction(...args)
+    ensureProperty(this, _disposers_, () => new Set())
     this[_disposers_].add(disposer)
     return disposer
   }
 
   setTimeout(...args: Parameters<typeof self.setTimeout>) {
     const id = self.setTimeout(...args)
+    ensureProperty(this, _disposers_, () => new Set())
     this[_disposers_].add(() => self.clearTimeout(id))
     return id
   }
 
   setInterval(...args: Parameters<typeof self.setInterval>) {
     const id = self.setInterval(...args)
+    ensureProperty(this, _disposers_, () => new Set())
     this[_disposers_].add(() => self.clearInterval(id))
     return id
   }
@@ -136,43 +165,37 @@ export class Unit<TRoot = unknown> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------------------------
-
-function applyVersioner<T>(unit: Unit<T>) {
-  const versioner: Record<number, (unit: Unit<T>) => void> | undefined = (unit.constructor as any).versioner
-  if (!versioner) return
-
-  const versions = Object.keys(versioner)
-    .map(Number)
-    .sort((v1, v2) => v1 - v2)
-
-  for (const version of versions) {
-    if (is.number(unit[':version']) && unit[':version'] >= version) continue
-    const versionFn = versioner[version]
-    if (!versionFn) throw unit.never()
-    versionFn.call(unit, unit)
-    unit[':version'] = version
-  }
+function setProperty<T extends object, K extends PropertyKey, V>(
+  object: T,
+  key: K,
+  value: V,
+): asserts object is T & { [key in K]: V } {
+  Reflect.defineProperty(object, key, {
+    configurable: true,
+    get: () => value,
+    set: v => (value = v),
+  })
 }
 
-function processAttachHook<T>(unit: Unit<T>) {
-  const attach = Reflect.get(unit, 'attach')
-  if (!is.function(attach)) return
+function ensureProperty<T extends object, K extends PropertyKey, V>(
+  object: T,
+  key: K,
+  getValue: () => V,
+): asserts object is T & { [key in K]: V } {
+  if (key in object) return
+  const value = getValue()
+  Reflect.defineProperty(object, key, { configurable: true, get: () => value })
+}
 
-  const head = findHead(unit)
-  head[_pendingAttachHooks_] ??= []
-  head[_pendingAttachHooks_].push(() => attach())
-
-  if (!unit[_pendingAttachHooks_]) return
-  unit[_pendingAttachHooks_].forEach(attach => attach())
-  delete unit[_pendingAttachHooks_]
+function getPrototypes(object: object): object[] {
+  const prototype = Reflect.getPrototypeOf(object)
+  if (!prototype || prototype === Object.prototype) return []
+  return [prototype, ...getPrototypes(prototype)]
 }
 
 function findRoot<T>(unit: Unit<T>) {
-  let root = unit
-  let cursor = unit
+  let root: Unit<T> | null = null
+  let cursor: Node<T> | null = unit
 
   while (cursor) {
     if (cursor instanceof Unit) root = cursor
@@ -182,19 +205,28 @@ function findRoot<T>(unit: Unit<T>) {
   return root as T
 }
 
-/** Find the highest unattached unit in the hierarchy. */
-function findHead<T>(unit: Unit<T>) {
-  let head = unit
-  let cursor = unit
+function findUnattachedRoot<T>(unit: Unit<T>) {
+  let unattachedRoot: Unit<T> | null = null
+  let cursor: Node<T> | null = unit
 
   while (cursor) {
-    if (cursor instanceof Unit && !cursor[_attached_]) head = cursor
+    if (cursor instanceof Unit && !cursor[_attached_]) unattachedRoot = cursor
     cursor = getParent(cursor)
   }
 
-  return head
+  return unattachedRoot
 }
 
-function getParent(child: any) {
-  return child[_parent_] ?? child[epos.state.PARENT]
+function getParent<T>(node: Node<T>) {
+  const parent: Node<T> | null = Reflect.get(node, _parent_) ?? Reflect.get(node, epos.state.PARENT) ?? null
+  return parent
+}
+
+function getVersions(Unit: Function): number[] {
+  const versioner: unknown = Reflect.get(Unit, 'versioner')
+  if (!is.object(versioner)) return []
+
+  return Object.keys(versioner)
+    .map(Number)
+    .sort((v1, v2) => v1 - v2)
 }

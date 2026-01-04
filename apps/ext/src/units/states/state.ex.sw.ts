@@ -166,17 +166,18 @@ export class State extends exSw.Unit {
       if (Object.keys(this.root.data).length === 0) {
         this.root.data = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
         if (versions.length > 0) this.root.data[':version'] = versions.at(-1)
-        return
       }
 
       // Non-empty state? -> Run versioner
-      const data = this.root.data
-      for (const version of versions) {
-        if (this.$.utils.is.number(data[':version']) && data[':version'] >= version) continue
-        const versionFn = this.versioner[version]
-        if (!versionFn) throw this.never()
-        versionFn.call(data, data)
-        data[':version'] = version
+      else {
+        const data = this.root.data
+        for (const version of versions) {
+          if (this.$.utils.is.number(data[':version']) && data[':version'] >= version) continue
+          const versionFn = this.versioner[version]
+          if (!versionFn) throw this.never()
+          versionFn.call(data, data)
+          data[':version'] = version
+        }
       }
 
       // Release pending attach hooks
@@ -342,8 +343,8 @@ export class State extends exSw.Unit {
   }
 
   private processAttachHook(mObject: MObject) {
-    const attach = this.$.utils.is.function(mObject[_attach_]) ? mObject[_attach_] : null
-    if (!attach) return
+    const attach = mObject[_attach_]
+    if (!this.$.utils.is.function(attach)) return
 
     if (this.connected) {
       attach.call(mObject)
