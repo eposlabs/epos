@@ -167,7 +167,7 @@ export class Project extends os.Unit {
 
     // Remove network rule
     const ruleId = Number(iframe.getAttribute('data-net-rule-id'))
-    async: this.$.bus.send<sw.Net['removeRule']>('Net.removeRule', ruleId)
+    void this.$.bus.send<sw.Net['removeRule']>('Net.removeRule', ruleId)
 
     // Remove iframe
     iframe.remove()

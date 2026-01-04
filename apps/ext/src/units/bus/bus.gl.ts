@@ -47,9 +47,9 @@ export class Bus extends gl.Unit {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('Bus.registerTabProxyAction', name)
+          void this.extBridge.send('Bus.registerTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('Bus.registerContextProxyAction', name)
+          void this.pageBridge.sendToTop('Bus.registerContextProxyAction', name)
         }
       }
     }
@@ -74,9 +74,9 @@ export class Bus extends gl.Unit {
       const actions = this.actions.filter(action => action.name === name)
       if (actions.length === 0) {
         if (this.$.env.is.csTop) {
-          async: this.extBridge.send('Bus.removeTabProxyAction', name)
+          void this.extBridge.send('Bus.removeTabProxyAction', name)
         } else {
-          async: this.pageBridge.sendToTop('Bus.removeContextProxyAction', name)
+          void this.pageBridge.sendToTop('Bus.removeContextProxyAction', name)
         }
       }
     }
@@ -123,7 +123,7 @@ export class Bus extends gl.Unit {
   setSignal(name: string, value: unknown = true) {
     name = `signal[${name}]`
     this.on(name, () => value)
-    async: this.send(name, value)
+    void this.send(name, value)
   }
 
   async waitSignal<T = unknown>(name: string, timeout?: number) {

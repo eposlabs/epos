@@ -64,7 +64,7 @@ export class ToolsBrowserApi extends ex.Unit {
 
     this.listenerIds.add(listenerId)
     this.$.bus.on(`ToolsBrowser.listener[${listenerId}]`, cb)
-    async: this.$.bus.send('ToolsBrowser.registerListener', this.$.peer.id, listenerId, apiPath)
+    void this.$.bus.send('ToolsBrowser.registerListener', this.$.peer.id, listenerId, apiPath)
   }
 
   private hasListener(apiPath: string[], cb: Callback) {
@@ -86,7 +86,7 @@ export class ToolsBrowserApi extends ex.Unit {
 
     this.$.bus.off(`ToolsBrowser.listener[${listenerId}]`)
     this.listenerIds.delete(listenerId)
-    async: this.$.bus.send('ToolsBrowser.unregisterListener', listenerId)
+    void this.$.bus.send('ToolsBrowser.unregisterListener', listenerId)
   }
 
   private buildListenerId(apiPath: string[], cb: Callback) {

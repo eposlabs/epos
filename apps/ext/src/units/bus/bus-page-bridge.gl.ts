@@ -110,7 +110,7 @@ export class BusPageBridge extends gl.Unit {
     // This happens on iframe refresh or page navigation inside an iframe.
     // `csFrame` and `exFrame` run in the same context (WindowProxy), but call for both, because
     // for `<background>` frames, only `exFrame` is present, and for web frames, `exFrame` may be absent.
-    async: this.sendToTop('Bus.removeAllContextProxyActions')
+    void this.sendToTop('Bus.removeAllContextProxyActions')
 
     // Listen for messages from `csTop` / `vw` / `os`.
     // The listener is attached to `self`, so only targeted messages are handled.
@@ -173,7 +173,7 @@ export class BusPageBridge extends gl.Unit {
           if (!containsIframe) continue
 
           if (this.$.env.is.csFrame) {
-            async: this.sendToTop('Bus.invalidateProxyActions')
+            void this.sendToTop('Bus.invalidateProxyActions')
           } else {
             this.invalidateProxyActions()
           }

@@ -4,7 +4,7 @@ export class Alive extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
     this.initBus()
-    async: this.initAlarm()
+    void this.initAlarm()
   }
 
   status() {

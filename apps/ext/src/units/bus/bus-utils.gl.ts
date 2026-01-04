@@ -28,7 +28,7 @@ export class BusUtils extends gl.Unit {
     for (const promise of promises) {
       if (!promise) continue
 
-      async: (async () => {
+      void (async () => {
         const [result, error] = await this.$.utils.safe(promise)
         processed += 1
 

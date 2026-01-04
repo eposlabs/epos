@@ -65,7 +65,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Register proxy action for the specified tab (`csTop`)
       if (req.name === 'Bus.registerTabProxyAction') {
-        async: (async () => {
+        void (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
@@ -79,7 +79,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Remove proxy action for the specified tab (`csTop`)
       if (req.name === 'Bus.removeTabProxyAction') {
-        async: (async () => {
+        void (async () => {
           if (!this.$.utils.is.number(tabId)) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
@@ -99,7 +99,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Special method for blobs support, see BusSerializer for details
       if (req.name === 'Bus.blobIdToObjectUrl') {
-        async: (async () => {
+        void (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [blobId] = args
@@ -120,7 +120,7 @@ export class BusExtBridge extends gl.Unit {
       if (actions.length === 0) return
 
       // Execute actions and respond with the result
-      async: (async () => {
+      void (async () => {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
         if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))
@@ -136,7 +136,7 @@ export class BusExtBridge extends gl.Unit {
     // Remove all proxy actions left from the previous `csTop`.
     // This happens on tab refresh or page navigation.
     if (this.$.env.is.csTop) {
-      async: this.send('Bus.removeAllTabProxyActions')
+      void this.send('Bus.removeAllTabProxyActions')
     }
 
     // Listen for runtime messages from other peers
@@ -146,7 +146,7 @@ export class BusExtBridge extends gl.Unit {
       const actions = this.$bus.actions.filter(action => action.name === req.name)
       if (actions.length === 0) return
 
-      async: (async () => {
+      void (async () => {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
         if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))

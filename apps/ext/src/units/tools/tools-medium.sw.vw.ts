@@ -55,7 +55,7 @@ export class ToolsMedium extends swVw.Unit {
   async openSidePanel(tabId: number) {
     const path = this.$.env.url.view({ locus: 'sidePanel', tabId })
     // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
-    async: this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
+    void this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
   }
 

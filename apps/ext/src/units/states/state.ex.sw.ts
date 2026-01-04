@@ -1,16 +1,4 @@
-// TODO: (see dev.gl.ts) problem: when versioner is applied, this 'new' is initialized first, before other messages.
-// After reload, it is initialized first.
-// this.messages.push(new Message('new')).
-
-// TODO: for sw, do not allow methods on objects (?why?)
 // TODO: idea, what if '@' is always set to modelName (?)
-// TODO: maybe always set `@`
-
-// TODO: why methods are needed to be supported on state?
-// probably forbid them?
-// because we can want to set during attach (see kit idb):
-// this.get = this.$.utils.link(this.$.libs.idb, 'get'), it can't be set on prototype,
-// or could be, but we need to import `idb` and `link` from dropcap
 
 import type { DbName, DbStoreKey, DbStoreName } from 'dropcap/idb'
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
@@ -75,6 +63,7 @@ export class State extends exSw.Unit {
   private connected = false
   private bus: ReturnType<gl.Bus['create']>
   private applyingYjsToMobx = false
+  private pendingAttachHooks: (() => void)[] = []
   private saveTimeout: number | undefined = undefined
   private SAVE_DELAY = 300
 
@@ -161,7 +150,10 @@ export class State extends exSw.Unit {
       await this.bus.send('update', update)
     })
 
-    // Set initial state / run versioner
+    // Finalize setup:
+    // - Set initial state
+    // - Apply versioner
+    // - Release pending attach hooks
     this.transaction(() => {
       if (!this.root) throw this.never()
 
@@ -186,6 +178,10 @@ export class State extends exSw.Unit {
         versionFn.call(data, data)
         data[':version'] = version
       }
+
+      // Release pending attach hooks
+      this.pendingAttachHooks.forEach(attach => attach())
+      this.pendingAttachHooks = []
     })
 
     // Mark as connected
@@ -205,10 +201,10 @@ export class State extends exSw.Unit {
     if (this.$.utils.is.object(value)) return this.attachObject(value, parent)
     if (this.$.utils.is.array(value)) return this.attachArray(value, parent)
     if (this.isSupportedValue(value)) return value
-    console.log({ value, parent })
     const type = value?.constructor.name ?? typeof value
     const message = `State does not support ${type} values`
     const tip = `Supported types: object, array, string, number, boolean, null, undefined`
+    console.error('Unsupported value:', value)
     throw new Error(`${message}. ${tip}.`)
   }
 
@@ -232,8 +228,8 @@ export class State extends exSw.Unit {
     yMap.forEach((value, key) => (mObject[key] = value))
     this.applyingYjsToMobx = prevApplyingYjsToMobx
 
-    // Call attach hook if present
-    if (this.$.utils.is.function(mObject[_attach_])) mObject[_attach_]()
+    // Process attach hook
+    this.processAttachHook(mObject)
 
     return mObject
   }
@@ -275,8 +271,8 @@ export class State extends exSw.Unit {
     // Populate MobX node (Yjs node will be populated automatically via MobX observer)
     Object.keys(object).forEach(key => (mObject[key] = object[key]))
 
-    // Call attach hook if present
-    if (this.$.utils.is.function(mObject[_attach_])) mObject[_attach_]()
+    // Process attach hook
+    this.processAttachHook(mObject)
 
     return mObject
   }
@@ -345,6 +341,17 @@ export class State extends exSw.Unit {
     Reflect.defineProperty(yNode, '_', { configurable: true, get: () => yNode.toJSON() })
   }
 
+  private processAttachHook(mObject: MObject) {
+    const attach = this.$.utils.is.function(mObject[_attach_]) ? mObject[_attach_] : null
+    if (!attach) return
+
+    if (this.connected) {
+      attach.call(mObject)
+    } else {
+      this.pendingAttachHooks.push(() => attach.call(mObject))
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // MOBX CHANGE PROCESSING
   // ---------------------------------------------------------------------------
@@ -386,16 +393,11 @@ export class State extends exSw.Unit {
     // Skip symbols
     if (this.$.utils.is.symbol(change.name)) return
 
-    // change.object[change.name] can access method from prototype
-    // so Reflect.definepropert(obj, method) won't be bounced out by this check:
-    // console.log(change.name, Reflect.getOwnPropertyDescriptor(change.object, change.name))
-    // if (self.deb) debugger
-
-    // Skip if value didn't change. Also applied for getters (undefined === undefined in this case).
-    if (change.newValue === change.object[change.name]) return
-
-    // GETTER
+    // Skip getters
     if (change.newValue === undefined && !change.object.hasOwnProperty(change.name)) return
+
+    // Skip if value didn't change
+    if (change.newValue === change.object[change.name]) return
 
     // Attach new value
     change.newValue = this.attach(change.newValue, change.object)
@@ -408,10 +410,6 @@ export class State extends exSw.Unit {
       this.doc.transact(() => {
         const yMap = this.getYNode(change.object)
         if (!yMap) throw this.never()
-        if (change.name === 'show') {
-          console.warn('ymap set', change.name)
-          console.warn(change)
-        }
         yMap.set(String(change.name), this.getYNode(change.newValue) ?? change.newValue)
       })
     }
@@ -588,10 +586,8 @@ export class State extends exSw.Unit {
   private getModelByName(name: string) {
     const Model = this.$states.models[name]
     if (Model) return Model
-
     const allowMissingModels = this.$.env.is.sw || this.$states.config.allowMissingModels
     if (allowMissingModels) return null
-
     const message = `Model '${name}' is not registered`
     const tip1 = `Make sure you registered it via epos.state.register() before calling epos.state.connect()`
     const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
@@ -599,26 +595,8 @@ export class State extends exSw.Unit {
   }
 
   private getModelByInstance(instance: Obj) {
-    if (instance.constructor === Object) return null
     const regisretedModels = Object.values(this.$states.models)
-
-    // Exact match:
-    // > class Model {}
-    // > register({ Model })
-    // > const model = new Model()
-    // getModelByInstance(model) -> Model
-    const exactMatch = regisretedModels.find(Model => instance.constructor === Model)
-    if (exactMatch) return exactMatch
-
-    // Inherited match:
-    // > class Model extends Base {}
-    // > register({ Model }) // Base is not registered
-    // > const base = new Base()
-    // getModelByInstance(base) -> Model
-    // const inheritedMatch = models.find(Model => Model.prototype instanceof instance.constructor)
-    // if (inheritedMatch) return inheritedMatch
-
-    return null
+    return regisretedModels.find(Model => instance.constructor === Model) ?? null
   }
 
   private getModelName(Model: ModelClass) {
@@ -650,200 +628,3 @@ export class State extends exSw.Unit {
     )
   }
 }
-
-// private commit() {
-//   // @ts-ignore
-//   const pretty = nodes => {
-//     return [...nodes].filter(n => this.isModelNode(n)).map(a => a._)
-//   }
-
-//   // TOP-LEVEL
-//   if (!this.committing) {
-//     this.committing = true
-
-//     // @ts-ignore
-//     this.topLevelPhase = 'model-versioner'
-//     // @ts-ignore
-//     this.topLevelInitQueue = new Set(this.attachedNodes)
-//     // this.initialized = new Set()
-//     // console.warn(pretty(this.topLevelInitQueue))
-
-//     const attachedNodes = new Set(this.attachedNodes)
-//     this.attachedNodes.clear()
-
-//     for (const node of attachedNodes) {
-//       if (this.isModelNode(node)) {
-//         // console.log('[versioner:0]', node._)
-//         this.runModelVersioner(node)
-//       }
-//     }
-
-//     // @ts-ignore
-//     this.topLevelPhase = 'model-init'
-//     // console.warn(pretty(this.topLevelInitQueue))
-//     // @ts-ignore
-//     for (const node of this.topLevelInitQueue) {
-//       if (this.detachedNodes.has(node)) continue
-//       if (this.isModelNode(node)) {
-//         // console.log('[init:0]', node._)
-//         const meta = this.getMeta(node)
-//         // @ts-ignore
-//         meta.initialized = true
-//         this.runModelMethod(node, _attach_)
-//       }
-//     }
-
-//     for (const node of this.detachedNodes) {
-//       if (this.isModelNode(node)) {
-//         const meta = this.getMeta(node)
-//         // @ts-ignore
-//         if (!meta.initialized) continue
-//         // console.log('[dispose]', node._)
-//         this.runModelMethod(node, _detach_)
-//       }
-//     }
-
-//     for (const node of this.detachedNodes) {
-//       const meta = this.getMeta(node)
-//       if (!meta) throw this.never()
-//       meta.unwire()
-//     }
-
-//     // @ts-ignore
-//     this.initialized = new Set()
-//     this.committing = false
-//     this.detachedNodes.clear()
-//   }
-
-//   // NESTED
-//   else {
-//     const newNodes = new Set(this.attachedNodes)
-//     this.attachedNodes.clear()
-
-//     for (const node of newNodes) {
-//       if (this.isModelNode(node)) {
-//         // @ts-ignore
-//         if (this.topLevelPhase === 'model-versioner') {
-//           // console.log('[versioner]', node._)
-//           this.runModelVersioner(node)
-//           // @ts-ignore
-//           this.topLevelInitQueue = new Set([node, ...Array.from(this.topLevelInitQueue)])
-//         }
-
-//         // @ts-ignore
-//         else if (this.topLevelPhase === 'model-init') {
-//           // console.log('[versioner]', node._)
-//           this.runModelVersioner(node)
-//         }
-//       }
-//     }
-
-//     // @ts-ignore
-//     if (this.topLevelPhase === 'model-init') {
-//       for (const node of newNodes) {
-//         if (this.isModelNode(node)) {
-//           // console.log('[init]', node._)
-//           // this.initialized.add(node)
-//           const meta = this.getMeta(node)
-//           // @ts-ignore
-//           meta.initialized = true
-//           this.runModelMethod(node, _attach_)
-//         }
-//       }
-//     }
-//   }
-// }
-
-// private setModelFields(mObject: MObject, Model: ModelClass) {
-//   const name = this.getModelName(Model)
-//   if (this.$.utils.is.undefined(name)) throw this.never()
-//   mObject['@'] = name
-//   const versions = this.getVersionsAsc(Model[_versioner_] ?? {})
-//   if (versions.length > 0) mObject[':version'] = versions.at(-1)
-// }
-
-// private runModelVersioner(model: MObject) {
-//   const Model = this.getModelByInstance(model)
-//   if (!Model) throw this.never()
-
-//   // No versions? -> Ignore
-//   if (!Model[_versioner_]) return
-//   const versions = this.getVersionsAsc(Model[_versioner_])
-//   if (versions.length === 0) return
-
-//   // Save current values
-//   const valuesBefore = { ...model }
-
-//   // Get keys before versioner
-//   const keysBefore = new Set(Object.keys(model))
-
-//   // Run versioner
-//   for (const version of versions) {
-//     if (this.$.utils.is.number(model[':version']) && model[':version'] >= version) continue
-//     if (!Model[_versioner_][version]) throw this.never()
-//     Model[_versioner_][version].call(model, model)
-//     model[':version'] = version
-//   }
-
-//   // Get keys after versioner
-//   const keysAfter = new Set(Object.keys(model))
-
-//   // Notify MobX about deleted keys
-//   for (const key of keysBefore) {
-//     if (keysAfter.has(key)) continue
-//     // Manually detach old values. Detach won't happen automatically, because inside versioner,
-//     // we delete fields with `delete model[key]` while `mobx.remove` is required for auto-detection.
-//     this.detach(valuesBefore[key])
-//     model[key] = null // Required for MobX to detect change inside 'delete' below
-//     this.delete(model, key)
-//   }
-
-//   // Notify MobX about added keys
-//   for (const key of keysAfter) {
-//     if (keysBefore.has(key)) continue
-//     const value = model[key]
-//     delete model[key] // Required for MobX to detect change inside 'set' below
-//     this.set(model, key, value)
-//   }
-// }
-
-// private runModelMethod(model: MObject, method: PropertyKey) {
-//   if (!this.$.utils.is.function(model[method])) return
-//   model[method]()
-// }
-
-// private isModelNode(mNode: MNode): mNode is MObject & { __model: true } {
-//   // TODO: seems like better approach is to check if model.constructor !== Object
-//   const meta = this.getMeta(mNode)
-//   if (!meta) throw this.never()
-//   return meta.isModel
-// }
-
-// private delete(mObject: MObject, key: string) {
-//   this.$.libs.mobx.remove(mObject, key)
-// }
-
-// private getVersionsAsc(versioner: Versioner) {
-//   return Object.keys(versioner)
-//     .map(Number)
-//     .sort((v1, v2) => v1 - v2)
-// }
-
-// Method? -> Ignore MobX reactivity
-// if (this.$.utils.is.function(change.newValue)) {
-//   const key = change.name
-//   let value = change.newValue
-//   Reflect.defineProperty(change.object, key, {
-//     configurable: true,
-//     get: () => value,
-//     set: (v: unknown) => {
-//       if (this.$.utils.is.function(v)) {
-//         value = v
-//       } else {
-//         delete change.object[key]
-//         change.object[key] = v
-//       }
-//     },
-//   })
-//   return true
-// }
