@@ -69,8 +69,9 @@ export class States extends exSw.Unit {
   }
 
   async dispose() {
-    for (const name in this.map) await this.disconnect(name)
     this.bus.dispose()
+    for (const name in this.map) await this.disconnect(name)
+    await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
   }
 
   async remove(name: string) {

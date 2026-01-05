@@ -12,7 +12,7 @@ export class ProjectEposGeneral extends ex.Unit {
   }
 
   async init() {
-    this.browser = await this.$.tools.browser.create(this.$project.name)
+    this.browser = await this.$.tools.browser.create(this.$project.id)
   }
 
   render(children: ReactNode, container?: Container) {
@@ -27,7 +27,7 @@ export class ProjectEposGeneral extends ex.Unit {
 
     const projectElement = document.createElement('div')
     projectElement.epos = true
-    projectElement.setAttribute('project', this.$project.name)
+    projectElement.setAttribute('project', this.$project.id)
     eposElement.append(projectElement)
 
     this.attachRoot(projectElement)
@@ -58,7 +58,7 @@ export class ProjectEposGeneral extends ex.Unit {
       const link = document.createElement('link')
       link.epos = true
       link.rel = 'stylesheet'
-      link.setAttribute('property-rules', '')
+      link.setAttribute('data-property-rules', '')
       link.href = URL.createObjectURL(blob)
       element.prepend(link)
     }

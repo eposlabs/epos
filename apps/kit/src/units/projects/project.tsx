@@ -51,9 +51,10 @@ export class Project extends gl.Unit {
     this.update = this.$.utils.enqueue(this.update)
     this.state.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     await this.update()
+    this.startObserver()
   }
 
-  async dispose() {
+  async detach() {
     if (this.state.observer) this.state.observer.disconnect()
     if (this.name && this.name !== 'kit') await epos.installer.remove(this.name)
   }
@@ -88,9 +89,10 @@ export class Project extends gl.Unit {
       this.state.error = null
       this.state.updating = true
       this.state.bundle = await this.readBundle()
+      this.spec = this.state.bundle.spec
       if (this.name && this.name !== this.state.bundle.spec.name) await epos.installer.remove(this.name)
       this.name = this.state.bundle.spec.name
-      await epos.installer.install(this.state.bundle)
+      await epos.installer.install(this.id, this.state.bundle)
     } catch (e) {
       console.log(e)
       this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))

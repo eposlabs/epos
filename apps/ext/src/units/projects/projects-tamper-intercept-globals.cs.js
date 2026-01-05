@@ -7,7 +7,7 @@ self.__eposOriginalGlobals = globals
 // Prevent globals being non-configurable.
 // If some website has code like this:
 // > Object.defineProperty(self, 'addEventListener', { value: self.addEventListener, configurable: false })
-// then global proxy won't work (projects-patch-globals.sw.ts).
+// then global proxy won't work (projects-tamper-patch-window.sw.ts).
 const objectDefineProperty = Object.defineProperty.bind(Object)
 Object.defineProperty = (target, key, attrs) => {
   if (target === self && key in globals && attrs && !attrs.configurable) attrs.configurable = true

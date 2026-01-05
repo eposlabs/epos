@@ -1,16 +1,16 @@
 import type { Bundle, Mode } from 'epos'
 
 export class ProjectEposInstaller extends ex.Unit {
-  async install(url: Url, mode?: Mode): Promise<void>
-  async install(bundle: Bundle): Promise<void>
-  async install(inputArg: Url | Bundle, modeArg: Mode = 'production'): Promise<void> {
+  async install(id: string, url: Url, mode?: Mode): Promise<void>
+  async install(id: string, bundle: Bundle): Promise<void>
+  async install(id: string, inputArg: Url | Bundle, modeArg: Mode = 'production'): Promise<void> {
     if (this.$.utils.is.object(inputArg)) {
       const bundle = this.prepareBundle(inputArg)
-      await this.$.bus.send<sw.Projects['install']>('Projects.install', bundle)
+      await this.$.bus.send<sw.Projects['install']>('Projects.install', id, bundle)
     } else {
       const url = this.prepareUrl(inputArg)
       const mode = this.prepareMode(modeArg)
-      await this.$.bus.send<sw.Projects['install']>('Projects.install', url, mode)
+      await this.$.bus.send<sw.Projects['install']>('Projects.install', id, url, mode)
     }
   }
 
@@ -31,7 +31,7 @@ export class ProjectEposInstaller extends ex.Unit {
 
   private prepareMode(mode: unknown): Mode {
     if (mode === 'production' || mode === 'development') return mode
-    throw new Error(`Invalid mode: '${mode}'; expected 'production' or 'development'`)
+    throw new Error(`Invalid mode: '${mode}'. Expected 'production' or 'development'.`)
   }
 
   private prepareName(name: unknown): string {

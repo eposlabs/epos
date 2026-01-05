@@ -2,6 +2,7 @@ import type { Info } from './project.sw'
 
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
+  id: Info['id']
   name: Info['name']
   icon: Info['icon']
   title: Info['title']
@@ -12,26 +13,28 @@ export class Project extends vw.Unit {
   hasSidePanel: Info['hasSidePanel']
   private visited = false
 
-  constructor(parent: vw.Unit, data: Info) {
+  constructor(parent: vw.Unit, info: Info) {
     super(parent)
-    this.mode = data.mode
-    this.name = data.name
-    this.icon = data.icon
-    this.title = data.title
-    this.popup = data.popup
-    this.action = data.action
-    this.hash = data.hash
-    this.hasSidePanel = data.hasSidePanel
+    this.id = info.id
+    this.name = info.name
+    this.icon = info.icon
+    this.title = info.title
+    this.popup = info.popup
+    this.action = info.action
+    this.mode = info.mode
+    this.hash = info.hash
+    this.hasSidePanel = info.hasSidePanel
   }
 
-  update(updates: Omit<Info, 'name'>) {
-    this.icon = updates.icon
-    this.title = updates.title
-    this.popup = updates.popup
-    this.action = updates.action
-    this.mode = updates.mode
-    this.hash = updates.hash
-    this.hasSidePanel = updates.hasSidePanel
+  update(info: Omit<Info, 'id'>) {
+    this.name = info.name
+    this.icon = info.icon
+    this.title = info.title
+    this.popup = info.popup
+    this.action = info.action
+    this.mode = info.mode
+    this.hash = info.hash
+    this.hasSidePanel = info.hasSidePanel
   }
 
   get label() {
@@ -56,7 +59,7 @@ export class Project extends vw.Unit {
     else {
       const tabId = this.$projects.getTabId()
       const tab = await this.$.browser.tabs.get(tabId)
-      const projectEposBus = this.$.bus.create(`ProjectEpos[${this.name}]`)
+      const projectEposBus = this.$.bus.create(`ProjectEpos[${this.id}]`)
       await projectEposBus.send(':action', tab)
       if (this.$.env.is.vwPopup) self.close()
     }
@@ -65,7 +68,7 @@ export class Project extends vw.Unit {
   private getSrc() {
     if (!this.visited) return 'about:blank'
     return this.$.env.url.project({
-      name: this.name,
+      id: this.id,
       locus: this.getLocus(),
       tabId: this.$projects.getTabId(),
       mode: this.mode,
@@ -92,12 +95,12 @@ export class Project extends vw.Unit {
 
   View = () => {
     if (!this.hash) return null
-    const selected = this.$projects.selectedProjectName === this.name
+    const selected = this.$projects.selectedProjectId === this.id
     if (selected) this.visited = true
     return (
       <iframe
         key={this.hash}
-        name={this.name}
+        name={this.id}
         src={this.getSrc()}
         style={this.getStyle()}
         className={this.$.utils.cn(!selected && 'hidden')}

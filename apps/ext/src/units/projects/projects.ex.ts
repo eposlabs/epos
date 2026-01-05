@@ -1,7 +1,7 @@
 import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends ex.Unit {
-  map: { [name: string]: ex.Project } = {}
+  map: { [id: string]: ex.Project } = {}
   tabId = this.getTabId()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
 
@@ -19,7 +19,7 @@ export class Projects extends ex.Unit {
   }
 
   private onWatcherData(data: WatcherData) {
-    if (data.reloadedProjectNames.length === 0) return
+    if (data.reloadedProjectIds.length === 0) return
     const hasAutoreloadParam = new URL(location.href).searchParams.has('autoreload')
     if (!hasAutoreloadParam) return
     location.reload()
@@ -58,7 +58,7 @@ export class Projects extends ex.Unit {
     // Create and start projects
     for (const projectDef of projectDefs) {
       const project = new ex.Project(this, projectDef)
-      this.map[project.name] = project
+      this.map[project.id] = project
       await project.init()
     }
   }

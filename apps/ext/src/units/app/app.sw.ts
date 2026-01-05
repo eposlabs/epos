@@ -38,8 +38,8 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.install = (name: string, mode: Mode = 'production') => this.projects.install(name, mode)
-    self.remove = (name: string) => this.projects.remove(name)
+    self.install = (id: string, url: Url, mode?: Mode) => this.projects.install(id, url, mode)
+    self.remove = (id: string) => this.projects.remove(id)
   }
 
   private async setupContentScript() {

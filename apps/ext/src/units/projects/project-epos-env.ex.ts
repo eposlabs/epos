@@ -4,7 +4,7 @@ export class ProjectEposEnv extends ex.Unit {
 
   mode = this.$project.mode
   tabId = this.$projects.tabId
-  project = this.$project.name
+  project = { id: this.$project.id, spec: this.$project.spec }
   isPopup = this.$.env.is.exExtension && this.$.env.params.locus === 'popup'
   isSidePanel = this.$.env.is.exExtension && this.$.env.params.locus === 'sidePanel'
   isBackground = this.$.env.is.exExtension && this.$.env.params.locus === 'background'

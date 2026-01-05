@@ -62,11 +62,11 @@ export class ProjectTarget extends sw.Unit {
       return match.value === urlLocus
     }
 
-    // For `project.html` page, match by locus and, optionally, by project name in the URL params
+    // For `project.html` page, match by locus and, optionally, by project id in the URL params
     if (pathname === '/project.html') {
       const urlLocus = searchParams.get('locus')
-      const urlProjectName = searchParams.get('name')
-      return match.value === urlLocus && (!urlProjectName || urlProjectName === this.$project.spec.name)
+      const urlProjectId = searchParams.get('id')
+      return match.value === urlLocus && (!urlProjectId || urlProjectId === this.$project.id)
     }
 
     // For `offscreen.html` page, match only `<background>` pattern

@@ -2,7 +2,7 @@ export class ProjectEpos extends ex.Unit {
   private $project = this.closest(ex.Project)!
   declare api: ReturnType<ProjectEpos['createApi']>
   general = new ex.ProjectEposGeneral(this)
-  bus = this.$.bus.create(`ProjectEpos[${this.$project.name}]`)
+  bus = this.$.bus.create(`ProjectEpos[${this.$project.id}]`)
   state = new ex.ProjectEposState(this)
   storage = new ex.ProjectEposStorage(this)
   asset = new ex.ProjectEposAsset(this)
@@ -107,7 +107,7 @@ export class ProjectEpos extends ex.Unit {
       },
 
       // Installer
-      ...(this.$project.config.access.includes('installer') && {
+      ...(this.$project.spec.config.access.includes('installer') && {
         installer: {
           install: this.$.utils.link(this.installer, 'install'),
           remove: this.$.utils.link(this.installer, 'remove'),
@@ -115,7 +115,7 @@ export class ProjectEpos extends ex.Unit {
       }),
 
       // Engine
-      ...(this.$project.config.access.includes('engine') && {
+      ...(this.$project.spec.config.access.includes('engine') && {
         engine: this.$,
       }),
     }

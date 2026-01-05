@@ -1,9 +1,9 @@
 import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends vw.Unit {
-  map: { [name: string]: vw.Project } = {}
+  map: { [id: string]: vw.Project } = {}
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
-  selectedProjectName = localStorage.getItem('Projects.selectedProjectName')
+  selectedProjectId = localStorage.getItem('Projects.selectedProjectId')
 
   get list() {
     return Object.values(this.map)
@@ -21,24 +21,24 @@ export class Projects extends vw.Unit {
 
   private onWatcherData(data: WatcherData) {
     // Add projects
-    for (const projectName of data.addedProjectNames) {
-      const info = data.infoMap[projectName]
+    for (const projectId of data.addedProjectIds) {
+      const info = data.infoMap[projectId]
       if (!info) throw this.never()
-      this.map[projectName] = new vw.Project(this, info)
+      this.map[projectId] = new vw.Project(this, info)
     }
 
     // Remove projects
-    for (const projectName of data.removedProjectNames) {
-      const project = this.map[projectName]
+    for (const projectId of data.removedProjectIds) {
+      const project = this.map[projectId]
       if (!project) throw this.never()
-      delete this.map[projectName]
+      delete this.map[projectId]
     }
 
     // Update retained projects
-    for (const projectName of data.retainedProjectNames) {
-      const project = this.map[projectName]
+    for (const projectId of data.retainedProjectIds) {
+      const project = this.map[projectId]
       if (!project) throw this.never()
-      const info = data.infoMap[projectName]
+      const info = data.infoMap[projectId]
       if (!info) throw this.never()
       project.update(info)
     }
@@ -51,20 +51,20 @@ export class Projects extends vw.Unit {
     }
 
     // Select the first project if none selected
-    const project = this.list.find(project => project.name === this.selectedProjectName && project.hash)
-    if (!project) this.selectedProjectName = this.list.find(project => project.hash)?.name ?? null
+    const project = this.list.find(project => project.id === this.selectedProjectId && project.hash)
+    if (!project) this.selectedProjectId = this.list.find(project => project.hash)?.id ?? null
 
     // Rerender app
     this.$.rerender()
   }
 
-  private async selectProject(name: string) {
-    const project = this.map[name]
+  private async selectProject(id: string) {
+    const project = this.map[id]
     if (!project) return
 
     if (project.hash) {
-      this.selectedProjectName = name
-      localStorage.setItem('Projects.selectedProjectName', name)
+      this.selectedProjectId = id
+      localStorage.setItem('Projects.selectedProjectId', id)
     } else {
       await project.processAction()
     }
@@ -84,7 +84,7 @@ export class Projects extends vw.Unit {
 
   View = () => {
     const cn = this.$.utils.cn
-    const selectedProject = this.list.find(project => project.name === this.selectedProjectName)
+    const selectedProject = this.list.find(project => project.id === this.selectedProjectId)
     const dropdownProjects = this.list
       .filter(project => project.hash || project.action)
       .sort((project1, project2) => project1.label.localeCompare(project2.label))
@@ -125,7 +125,7 @@ export class Projects extends vw.Unit {
                   <path d="M6 9l6 6l6 -6" />
                 </svg>
                 <select
-                  value={selectedProject?.name ?? ''}
+                  value={selectedProject?.id ?? ''}
                   onChange={e => this.selectProject(e.currentTarget.value)}
                   className="absolute inset-0 opacity-0 outline-none"
                 >
@@ -135,7 +135,7 @@ export class Projects extends vw.Unit {
                     </option>
                   )}
                   {dropdownProjects.map(project => (
-                    <option key={project.name} value={project.name}>
+                    <option key={project.id} value={project.id}>
                       {project.label}
                     </option>
                   ))}
@@ -167,7 +167,7 @@ export class Projects extends vw.Unit {
         {hasContent && (
           <div className="grow">
             {this.list.map(project => (
-              <project.View key={project.name} />
+              <project.View key={project.id} />
             ))}
           </div>
         )}

@@ -22,7 +22,7 @@ export class ProjectEposStorage extends ex.Unit {
 
     const name = this.prepareName(nameArg, this.get)
     const key = this.prepareKey(keyArg, this.get)
-    return await this.$.idb.get<T>(this.$project.name, name, key)
+    return await this.$.idb.get<T>(this.$project.id, name, key)
   }
 
   async set(key: string, value: string): Promise<void>
@@ -46,7 +46,7 @@ export class ProjectEposStorage extends ex.Unit {
     const name = this.prepareName(nameArg, this.set)
     const key = this.prepareKey(keyArg, this.set)
     const value = this.prepareValue(valueArg)
-    await this.$.idb.set(this.$project.name, name, key, value)
+    await this.$.idb.set(this.$project.id, name, key, value)
   }
 
   async delete(key: string): Promise<void>
@@ -66,17 +66,17 @@ export class ProjectEposStorage extends ex.Unit {
 
     const name = this.prepareName(nameArg, this.delete)
     const key = this.prepareKey(keyArg, this.delete)
-    await this.$.idb.delete(this.$project.name, name, key)
+    await this.$.idb.delete(this.$project.id, name, key)
   }
 
   async keys(nameArg?: string) {
     const name = this.prepareName(nameArg, this.keys)
-    return await this.$.idb.keys(this.$project.name, name)
+    return await this.$.idb.keys(this.$project.id, name)
   }
 
   async clear(nameArg?: string) {
     const name = this.prepareName(nameArg, this.clear)
-    return await this.$.idb.deleteStore(this.$project.name, name)
+    return await this.$.idb.deleteStore(this.$project.id, name)
   }
 
   use(nameArg?: string) {
@@ -91,7 +91,7 @@ export class ProjectEposStorage extends ex.Unit {
   }
 
   async list() {
-    const names = await this.$.idb.listStores(this.$project.name)
+    const names = await this.$.idb.listStores(this.$project.id)
     return names.map(name => ({ name: name === DEFAULT_STORAGE_NAME ? null : name }))
   }
 
@@ -104,7 +104,7 @@ export class ProjectEposStorage extends ex.Unit {
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
       throw this.$epos.error(
-        `Invalid storage name: '${name}'; allowed chars: a-z, A-Z, 0-9, '-', and '_'`,
+        `Invalid storage name: '${name}'. Allowed chars: a-z, A-Z, 0-9, '-', and '_'.`,
         caller,
       )
     }

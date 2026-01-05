@@ -32,10 +32,10 @@ export class Unit<TRoot = unknown> {
    * Lifecycle method called when the unit is attached to the state tree.
    */
   [epos.state.ATTACH]() {
-    // 1. Setup logger
+    // Setup logger
     setProperty(this, 'log', createLog(this['@']))
 
-    // 2. Apply versioner
+    // Apply versioner
     epos.state.transaction(() => {
       const versioner = getVersioner(this)
       const versions = getVersions(this)
@@ -48,7 +48,7 @@ export class Unit<TRoot = unknown> {
       }
     })
 
-    // 3. Prepare methods:
+    // Prepare methods:
     // - Create components for methods ending with `View`
     // - Bind all other methods to the unit instance
     for (const prototype of getPrototypes(this)) {
@@ -72,7 +72,17 @@ export class Unit<TRoot = unknown> {
       }
     }
 
-    // 4. Process attach queue
+    // Setup state
+    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
+    if (stateDescriptor && stateDescriptor.get) {
+      const state = stateDescriptor.get.call(this)
+      setProperty(this, 'state', epos.libs.mobx.observable.object(state, {}, { deep: false }))
+    }
+
+    // Process attach queue.
+    // We do not execute `attach` methods immediately, but rather queue them
+    // on the highest unattached ancestor. This way we ensure that `attach`
+    // methods are called after all versioners have been applied in the entire subtree.
     const attach = Reflect.get(this, 'attach')
     if (is.function(attach)) {
       const unattachedRoot = findUnattachedRoot(this)
@@ -87,7 +97,7 @@ export class Unit<TRoot = unknown> {
       }
     }
 
-    // 5. Mark as attached
+    // Mark as attached
     setProperty(this, _attached_, true)
   }
 

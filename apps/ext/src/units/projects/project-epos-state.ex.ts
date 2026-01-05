@@ -50,7 +50,7 @@ export class ProjectEposState extends ex.Unit {
   }
 
   async list(filter: { connected?: boolean } = {}) {
-    const names = await this.$.idb.keys(this.$project.name, ':state')
+    const names = await this.$.idb.keys(this.$project.id, ':states')
     return names
       .map(name => ({
         name: name === DEFAULT_STATE_NAME ? null : name,
@@ -80,7 +80,7 @@ export class ProjectEposState extends ex.Unit {
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
       throw this.$epos.error(
-        `Invalid state name: '${name}'; allowed chars: a-z, A-Z, 0-9, '-', and '_'`,
+        `Invalid state name: '${name}'. Allowed chars: a-z, A-Z, 0-9, '-', and '_'.`,
         caller,
       )
     }

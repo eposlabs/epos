@@ -4,10 +4,10 @@ export type OnData = (data: WatcherData) => void
 
 export type WatcherData = {
   infoMap: InfoMap
-  addedProjectNames: string[]
-  removedProjectNames: string[]
-  retainedProjectNames: string[]
-  reloadedProjectNames: string[]
+  addedProjectIds: string[]
+  removedProjectIds: string[]
+  retainedProjectIds: string[]
+  reloadedProjectIds: string[]
 }
 
 export class ProjectsWatcher extends exOsVw.Unit {
@@ -25,26 +25,26 @@ export class ProjectsWatcher extends exOsVw.Unit {
   }
 
   private async refetch() {
-    const infoMap = await this.$.bus.send<InfoMap>('Projects.getInfoMap', location.href)
+    const infoMap = await this.$.bus.send<sw.Projects['getInfoMap']>('Projects.getInfoMap', location.href)
     if (!infoMap) throw this.never()
 
     const im1 = this.infoMap
     const im2 = infoMap
     this.infoMap = infoMap
 
-    const names1 = Object.keys(im1)
-    const names2 = Object.keys(im2)
-    const addedProjectNames = names2.filter(name => !im1[name])
-    const removedProjectNames = names1.filter(name => !im2[name])
-    const retainedProjectNames = names1.filter(name => im2[name])
-    const reloadedProjectNames = names1.filter(name => im2[name] && im1[name]!.hash !== im2[name].hash)
+    const ids1 = Object.keys(im1)
+    const ids2 = Object.keys(im2)
+    const addedProjectIds = ids2.filter(id => !im1[id])
+    const removedProjectIds = ids1.filter(id => !im2[id])
+    const retainedProjectIds = ids1.filter(id => im2[id])
+    const reloadedProjectIds = ids1.filter(id => im2[id] && im1[id]!.hash !== im2[id].hash)
 
     this.onData({
       infoMap,
-      addedProjectNames,
-      removedProjectNames,
-      retainedProjectNames,
-      reloadedProjectNames,
+      addedProjectIds,
+      removedProjectIds,
+      retainedProjectIds,
+      reloadedProjectIds,
     })
   }
 }

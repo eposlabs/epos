@@ -7,7 +7,7 @@ export class Projects extends gl.Unit {
   }
 
   get selected() {
-    return this.list.find(project => project.isSelected()) ?? null
+    return this.list.find(project => project.id === this.selectedProjectId) ?? null
   }
 
   async add() {

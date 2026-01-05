@@ -1,8 +1,8 @@
 export class Project extends ex.Unit {
-  name: ProjectDef['name']
+  id: ProjectDef['id']
   mode: ProjectDef['mode']
+  spec: ProjectDef['spec']
   shadowCss: ProjectDef['shadowCss']
-  config: ProjectDef['config']
   fn: ProjectDef['fn'] | null = null
   states: exSw.States
   bus: ReturnType<gl.Bus['create']>
@@ -10,21 +10,27 @@ export class Project extends ex.Unit {
 
   constructor(parent: ex.Unit, def: ProjectDef) {
     super(parent)
-    this.name = def.name
+    this.id = def.id
     this.mode = def.mode
+    this.spec = def.spec
     this.shadowCss = def.shadowCss
-    this.config = def.config
     this.fn = def.fn
-    this.bus = this.$.bus.create(`Project[${this.name}]`)
-    this.states = new exSw.States(this, this.name, ':state', this.config)
+    this.bus = this.$.bus.create(`Project[${this.id}]`)
+    this.states = new exSw.States(this, this.id, ':states', this.getStatesConfig())
     this.epos = new ex.ProjectEpos(this)
   }
 
   async init() {
     await this.epos.init()
-    if (this.config.preloadAssets) await this.epos.api.asset.load()
+    if (this.spec.config.preloadAssets) await this.epos.api.asset.load()
     if (!this.fn) throw this.never()
     this.fn.call(null, this.epos.api)
     this.fn = null // Free up memory
+  }
+
+  private getStatesConfig() {
+    return {
+      allowMissingModels: this.spec.config.allowMissingModels,
+    }
   }
 }

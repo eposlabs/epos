@@ -79,7 +79,7 @@ export class ProjectEposFrame extends ex.Unit {
     const regex = /^[a-zA-Z0-9-_]+$/
     if (!regex.test(name)) {
       throw this.$epos.error(
-        `Invalid frame name: '${name}'; allowed chars: a-z, A-Z, 0-9, '-', and '_'`,
+        `Invalid frame name: '${name}'. Allowed chars: a-z, A-Z, 0-9, '-', and '_'.`,
         caller,
       )
     }
@@ -95,7 +95,7 @@ export class ProjectEposFrame extends ex.Unit {
     const badKey = Object.keys(attrs).find(key => !isValid(attrs[key]))
     if (badKey) {
       throw this.$epos.error(
-        `Invalid value for attribute '${badKey}'; only strings and numbers are allowed`,
+        `Invalid value for attribute '${badKey}'. Only strings and numbers are allowed.`,
         caller,
       )
     }

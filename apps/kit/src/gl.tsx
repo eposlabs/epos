@@ -3,7 +3,6 @@ import './layers/index.gl'
 import './gl.css'
 
 epos.state.register({ ...gl })
-await epos.state.remove()
 let app = await epos.state.connect(() => new gl.App(null))
 
 // Migrate old state

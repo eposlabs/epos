@@ -4,11 +4,11 @@ import type { Info, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
-export type InfoMap = { [projectName: string]: Info }
-export type HashMap = { [projectName: string]: string | null }
+export type InfoMap = { [projectId: string]: Info }
+export type HashMap = { [projectId: string]: string | null }
 
 export class Projects extends sw.Unit {
-  map: { [name: string]: sw.Project } = {}
+  map: { [id: string]: sw.Project } = {}
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -41,7 +41,7 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async install(input: Url | Bundle, mode: Mode = 'production') {
+  async install(id: string, input: Url | Bundle, mode: Mode = 'production') {
     let bundle: Bundle
     if (this.$.utils.is.object(input)) {
       bundle = input
@@ -51,18 +51,18 @@ export class Projects extends sw.Unit {
       throw new Error(`Invalid URL: ${input}`)
     }
 
-    await this.upsert(bundle)
+    await this.upsert(id, bundle)
     await this.$.bus.send('Projects.changed')
   }
 
-  async remove(name: string) {
+  async remove(id: string) {
     // No project? -> Do nothing
-    const project = this.map[name]
+    const project = this.map[id]
     if (!project) return
 
     // Remove project
     await project.dispose()
-    delete this.map[name]
+    delete this.map[id]
 
     // Broadcast change
     await this.$.bus.send('Projects.changed')
@@ -121,21 +121,18 @@ export class Projects extends sw.Unit {
 
     for (const project of this.list) {
       const info = await project.getInfo(address)
-      infoMap[info.name] = info
+      infoMap[info.id] = info
     }
 
     return infoMap
   }
 
-  private async upsert(bundle: Bundle) {
-    let project = this.map[bundle.spec.name]
-    if (project) {
-      project.update(bundle)
-      return
+  private async upsert(id: string, bundle: Bundle) {
+    if (this.map[id]) {
+      this.map[id].update(bundle)
+    } else {
+      this.map[id] = await sw.Project.new(this, id, bundle)
     }
-
-    project = await sw.Project.new(this, bundle)
-    this.map[bundle.spec.name] = project
   }
 
   private async handleActionClick(tab: chrome.tabs.Tab) {
@@ -165,7 +162,7 @@ export class Projects extends sw.Unit {
       const project = projectsWithAction[0]
       if (!project) throw this.never()
       if (project.spec.action === true) {
-        const projectEposBus = this.$.bus.create(`ProjectEpos[${project.spec.name}]`)
+        const projectEposBus = this.$.bus.create(`ProjectEpos[${project.id}]`)
         await projectEposBus.send(':action', tab)
       } else if (this.$.utils.is.string(project.spec.action)) {
         await this.$.tools.medium.openTab(project.spec.action)
@@ -197,21 +194,24 @@ export class Projects extends sw.Unit {
 
   private async loadProjects() {
     // From idb
-    const names = await this.$.idb.listDatabases()
-    for (const name of names) {
-      const project = await sw.Project.restore(this, name)
+    const ids = await this.$.idb.listDatabases()
+    for (const id of ids) {
+      const project = await sw.Project.restore(this, id)
       if (!project) continue
-      this.map[name] = project
+      this.map[id] = project
     }
 
     // ---- from files
-    const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
+    // TODO: support id instead of name
+    const [snapshot] = await this.$.utils.safe<Snapshot & { id: string }>(
+      fetch('/project.json').then(res => res.json()),
+    )
     if (!snapshot) return
 
     const name = snapshot.spec.name
     const project = this.map[name]
 
-    // Already latest version? -> Skip
+    // // Already latest version? -> Skip
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
     // Load assets
@@ -222,7 +222,7 @@ export class Projects extends sw.Unit {
       assets[path] = blob
     }
 
-    await this.upsert({ ...snapshot, assets })
+    await this.upsert(name, { ...snapshot, assets })
   }
 
   private async disableCsp() {

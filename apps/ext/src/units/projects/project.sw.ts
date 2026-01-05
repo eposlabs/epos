@@ -1,5 +1,5 @@
 import type { Assets, Bundle, Mode, Sources } from 'epos'
-import type { Permission, Spec } from 'epos-spec'
+import type { Spec } from 'epos-spec'
 import type { Address } from './project-target.sw'
 
 /** Data saved to IndexedDB. */
@@ -7,11 +7,11 @@ export type Snapshot = {
   mode: Mode
   spec: Spec
   sources: Sources
-  grantedPermissions: Permission[]
 }
 
 /** Data for peer contexts. */
 export type Info = {
+  id: string
   name: Spec['name']
   icon: Spec['icon']
   title: Spec['title']
@@ -26,44 +26,45 @@ export type Info = {
 // TODO: better hash calculation, for now it only tracks resourceTexts, but what if <background>
 // is removed and hash is the same, because used texts are the same? Or `lite:` was added.
 export class Project extends sw.Unit {
+  id: string
   mode: Mode
   spec: Spec
   sources: Sources
-  grantedPermissions: Permission[] = []
 
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
 
-  static async new(parent: sw.Unit, data: Bundle) {
-    const project = new Project(parent, data)
+  static async new(parent: sw.Unit, id: string, data: Bundle) {
+    const project = new Project(parent, id, data)
     await project.saveSnapshot()
     await project.saveAssets(data.assets)
     await project.updateNetRules()
     return project
   }
 
-  static async restore(parent: sw.Unit, name: string) {
-    const snapshot = await parent.$.idb.get<Snapshot>(name, ':project', ':default')
+  static async restore(parent: sw.Unit, id: string) {
+    const snapshot = await parent.$.idb.get<Snapshot>(id, ':project', ':default')
     if (!snapshot) return null
-    const project = new Project(parent, snapshot)
+    const project = new Project(parent, id, snapshot)
     await project.updateNetRules()
     return project
   }
 
-  constructor(parent: sw.Unit, data: Omit<Bundle, 'assets'>) {
+  constructor(parent: sw.Unit, id: string, data: Omit<Bundle, 'assets'>) {
     super(parent)
+    this.id = id
     this.mode = data.mode
     this.spec = data.spec
     this.sources = data.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.states = new exSw.States(this, this.spec.name, ':state', { allowMissingModels: true })
+    this.states = new exSw.States(this, this.id, ':states', { allowMissingModels: true })
   }
 
   async dispose() {
     await this.states.dispose()
     await this.removeNetRules()
-    await this.$.idb.deleteDatabase(this.spec.name)
+    await this.$.idb.deleteDatabase(this.id)
   }
 
   async update(updates: Omit<Bundle, 'assets'> & { assets?: Assets }) {
@@ -130,10 +131,10 @@ export class Project extends sw.Unit {
 
     return [
       `{`,
-      `  name: ${JSON.stringify(this.spec.name)},`,
+      `  id: ${JSON.stringify(this.id)},`,
+      `  spec: ${JSON.stringify(this.spec)},`,
       `  mode: ${JSON.stringify(this.mode)},`,
       `  shadowCss: ${JSON.stringify(shadowCss)},`,
-      `  config: ${JSON.stringify(this.spec.config)},`,
       `  async fn(epos, React = epos.libs.react) { ${js} },`,
       `}`,
     ].join('\n')
@@ -141,6 +142,7 @@ export class Project extends sw.Unit {
 
   async getInfo(address?: Address): Promise<Info> {
     return {
+      id: this.id,
       name: this.spec.name,
       icon: this.spec.icon,
       title: this.spec.title,
@@ -165,27 +167,26 @@ export class Project extends sw.Unit {
   }
 
   private async saveSnapshot() {
-    await this.$.idb.set<Snapshot>(this.spec.name, ':project', ':default', {
+    await this.$.idb.set<Snapshot>(this.id, ':project', ':default', {
       mode: this.mode,
       spec: this.spec,
       sources: this.sources,
-      grantedPermissions: this.grantedPermissions,
     })
   }
 
   private async saveAssets(assets: Assets) {
-    const paths1 = await this.$.idb.keys(this.spec.name, ':assets')
+    const paths1 = await this.$.idb.keys(this.id, ':assets')
     const paths2 = Object.keys(assets)
 
     // Save new and updated assets
     for (const path of paths2) {
-      await this.$.idb.set(this.spec.name, ':assets', path, assets[path])
+      await this.$.idb.set(this.id, ':assets', path, assets[path])
     }
 
     // Delete removed assets
     for (const path of paths1) {
       if (paths2.includes(path)) continue
-      await this.$.idb.delete(this.spec.name, ':assets', path)
+      await this.$.idb.delete(this.id, ':assets', path)
     }
   }
 
@@ -196,7 +197,7 @@ export class Project extends sw.Unit {
     // Add new rules
     for (let targetIndex = 0; targetIndex < this.targets.length; targetIndex++) {
       // Prepare cookie namespace for the target
-      const namespace = `${this.spec.name}[${targetIndex}]`
+      const namespace = `${this.id}[${targetIndex}]`
 
       // Get target's lite JS code
       const target = this.targets[targetIndex]

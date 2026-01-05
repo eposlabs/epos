@@ -5,7 +5,7 @@ export class ProjectEposAsset extends ex.Unit {
   private paths: string[] = []
 
   async init() {
-    this.paths = await this.$.idb.keys(this.$project.name, ':assets')
+    this.paths = await this.$.idb.keys(this.$project.id, ':assets')
   }
 
   async load(pathArg?: unknown) {
@@ -48,7 +48,7 @@ export class ProjectEposAsset extends ex.Unit {
 
     if (!this.files[path]) {
       throw this.$epos.error(
-        `Asset must be loaded before accessing URL: '${path}'; call epos.asset.load(path?) first`,
+        `Asset must be loaded before accessing URL: '${path}'. Call epos.asset.load(path?) first.`,
         this.url,
       )
     }
@@ -59,7 +59,7 @@ export class ProjectEposAsset extends ex.Unit {
   async get(pathArg: unknown) {
     const path = this.preparePath(pathArg, this.get)
     if (this.files[path]) return this.files[path].blob
-    return await this.$.idb.get<Blob>(this.$project.name, ':assets', path)
+    return await this.$.idb.get<Blob>(this.$project.id, ':assets', path)
   }
 
   list(filter: { loaded?: boolean } = {}) {
@@ -93,7 +93,7 @@ export class ProjectEposAsset extends ex.Unit {
 
     if (!this.paths.includes(normalizedPath)) {
       throw this.$epos.error(
-        `Asset not found: '${path}'; ensure it is listed in epos.json 'assets' field`,
+        `Asset not found: '${path}'. Ensure it is listed in epos.json 'assets' field.`,
         caller,
       )
     }

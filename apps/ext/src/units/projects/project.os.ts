@@ -4,6 +4,7 @@ export type Attrs = Record<string, string | number>
 export type Frame = { name: string; url: string }
 
 export class Project extends os.Unit {
+  id: Info['id']
   name: Info['name']
   mode: Info['mode']
   hash: Info['hash']
@@ -11,15 +12,16 @@ export class Project extends os.Unit {
 
   /** Prefix used for frame names. */
   private get prefix() {
-    return `${this.name}:`
+    return `${this.id}:`
   }
 
-  constructor(parent: os.Unit, data: Pick<Info, 'name' | 'mode' | 'hash'>) {
+  constructor(parent: os.Unit, info: Pick<Info, 'id' | 'name' | 'mode' | 'hash'>) {
     super(parent)
-    this.name = data.name
-    this.mode = data.mode
-    this.hash = data.hash
-    this.bus = this.$.bus.create(`Project[${this.name}]`)
+    this.id = info.id
+    this.name = info.name
+    this.mode = info.mode
+    this.hash = info.hash
+    this.bus = this.$.bus.create(`Project[${this.id}]`)
     if (this.hash) this.startBackground()
 
     this.bus.on('getFrames', this.getFrames, this)
@@ -27,9 +29,9 @@ export class Project extends os.Unit {
     this.bus.on('closeFrame', this.closeFrame, this)
   }
 
-  update(updates: Pick<Info, 'mode' | 'hash'>) {
-    // Hash changed? -> Create / reload main frame
-    if (this.hash !== updates.hash) {
+  update(info: Pick<Info, 'name' | 'mode' | 'hash'>) {
+    // Hash changed? -> Reload <background> frame
+    if (this.hash !== info.hash) {
       if (!this.hasBackground()) {
         this.startBackground()
       } else {
@@ -37,9 +39,9 @@ export class Project extends os.Unit {
       }
     }
 
-    // Update data
-    this.mode = updates.mode
-    this.hash = updates.hash
+    this.name = info.name
+    this.mode = info.mode
+    this.hash = info.hash
   }
 
   dispose() {
@@ -58,13 +60,13 @@ export class Project extends os.Unit {
 
     // Create iframe
     const iframe = document.createElement('iframe')
-    iframe.name = this.name
+    iframe.name = this.id
     iframe.src = this.getBackgroundUrl()
     document.body.append(iframe)
 
     // Log info
     const message = `Started <background> process`
-    const details = `Select '${this.name}' from the DevTools context dropdown to switch to it`
+    const details = `Select '${this.id}' from the DevTools context dropdown to switch to it`
     this.info(message, details)
   }
 
@@ -97,11 +99,11 @@ export class Project extends os.Unit {
   }
 
   private getBackground() {
-    return document.querySelector<HTMLIFrameElement>(`iframe[name="${this.name}"]`)
+    return document.querySelector<HTMLIFrameElement>(`iframe[name="${this.id}"]`)
   }
 
   private getBackgroundUrl() {
-    return this.$.env.url.project({ name: this.name, locus: 'background', mode: this.mode })
+    return this.$.env.url.project({ id: this.id, locus: 'background', mode: this.mode })
   }
 
   // ---------------------------------------------------------------------------

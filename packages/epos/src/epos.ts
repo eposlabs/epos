@@ -50,7 +50,7 @@ export type Res = {
   headers: {
     get: Response['headers']['get']
     has: Response['headers']['has']
-    /** Get list of all header keys. */
+    /** Get all header keys. */
     keys: () => string[]
   }
 }
@@ -195,7 +195,7 @@ export interface Epos {
   env: {
     mode: Mode
     tabId: number
-    project: string
+    project: { id: string; spec: Spec }
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean
@@ -215,8 +215,8 @@ export interface Epos {
   // Installer
   installer: {
     install: {
-      (url: string, mode?: Mode): Promise<void>
-      (bundle: Bundle): Promise<void>
+      (id: string, url: string, mode?: Mode): Promise<void>
+      (id: string, bundle: Bundle): Promise<void>
     }
     remove(name: string): Promise<void>
   }
