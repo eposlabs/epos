@@ -35,6 +35,13 @@ export class Unit<TRoot = unknown> {
     // Setup logger
     setProperty(this, 'log', createLog(this['@']))
 
+    // Setup state
+    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
+    if (stateDescriptor && stateDescriptor.get) {
+      const state = stateDescriptor.get.call(this)
+      setProperty(this, 'state', epos.libs.mobx.observable.object(state, {}, { deep: false }))
+    }
+
     // Apply versioner
     epos.state.transaction(() => {
       const versioner = getVersioner(this)
@@ -70,13 +77,6 @@ export class Unit<TRoot = unknown> {
           setProperty(this, key, fn)
         }
       }
-    }
-
-    // Setup state
-    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
-    if (stateDescriptor && stateDescriptor.get) {
-      const state = stateDescriptor.get.call(this)
-      setProperty(this, 'state', epos.libs.mobx.observable.object(state, {}, { deep: false }))
     }
 
     // Process attach queue.

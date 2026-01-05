@@ -3,11 +3,7 @@ import type { Info } from './project.sw'
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
   id: Info['id']
-  name: Info['name']
-  icon: Info['icon']
-  title: Info['title']
-  popup: Info['popup']
-  action: Info['action']
+  spec: Info['spec']
   mode: Info['mode']
   hash: Info['hash']
   hasSidePanel: Info['hasSidePanel']
@@ -16,41 +12,33 @@ export class Project extends vw.Unit {
   constructor(parent: vw.Unit, info: Info) {
     super(parent)
     this.id = info.id
-    this.name = info.name
-    this.icon = info.icon
-    this.title = info.title
-    this.popup = info.popup
-    this.action = info.action
+    this.spec = info.spec
     this.mode = info.mode
     this.hash = info.hash
     this.hasSidePanel = info.hasSidePanel
   }
 
   update(info: Omit<Info, 'id'>) {
-    this.name = info.name
-    this.icon = info.icon
-    this.title = info.title
-    this.popup = info.popup
-    this.action = info.action
+    this.spec = info.spec
     this.mode = info.mode
     this.hash = info.hash
     this.hasSidePanel = info.hasSidePanel
   }
 
   get label() {
-    return this.title ?? this.name
+    return this.spec.title ?? this.spec.name
   }
 
   async processAction() {
-    if (!this.action) return
+    if (!this.spec.action) return
 
     // Action is a URL? -> Open this URL
-    if (this.$.utils.is.string(this.action)) {
-      const actionTab = (await this.$.browser.tabs.query({ url: this.action }))[0]
+    if (this.$.utils.is.string(this.spec.action)) {
+      const actionTab = (await this.$.browser.tabs.query({ url: this.spec.action }))[0]
       if (actionTab) {
         await this.$.browser.tabs.update(actionTab.id, { active: true })
       } else {
-        await this.$.browser.tabs.create({ url: this.action, active: true })
+        await this.$.browser.tabs.create({ url: this.spec.action, active: true })
       }
       if (this.$.env.is.vwPopup) self.close()
     }
@@ -83,7 +71,7 @@ export class Project extends vw.Unit {
 
   private getStyle() {
     if (this.$.env.is.vwPopup) {
-      return { width: this.popup.width, height: this.popup.height }
+      return { width: this.spec.popup.width, height: this.spec.popup.height }
     } else if (this.$.env.is.vwSidePanel) {
       return { width: '100%', height: '100%' }
     }
@@ -100,7 +88,8 @@ export class Project extends vw.Unit {
     return (
       <iframe
         key={this.hash}
-        name={this.id}
+        name={this.spec.name}
+        data-project-id={this.id}
         src={this.getSrc()}
         style={this.getStyle()}
         className={this.$.utils.cn(!selected && 'hidden')}

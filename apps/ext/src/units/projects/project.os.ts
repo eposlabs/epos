@@ -5,20 +5,15 @@ export type Frame = { name: string; url: string }
 
 export class Project extends os.Unit {
   id: Info['id']
-  name: Info['name']
+  spec: Info['spec']
   mode: Info['mode']
   hash: Info['hash']
   bus: ReturnType<gl.Bus['create']>
 
-  /** Prefix used for frame names. */
-  private get prefix() {
-    return `${this.id}:`
-  }
-
-  constructor(parent: os.Unit, info: Pick<Info, 'id' | 'name' | 'mode' | 'hash'>) {
+  constructor(parent: os.Unit, info: Pick<Info, 'id' | 'spec' | 'mode' | 'hash'>) {
     super(parent)
     this.id = info.id
-    this.name = info.name
+    this.spec = info.spec
     this.mode = info.mode
     this.hash = info.hash
     this.bus = this.$.bus.create(`Project[${this.id}]`)
@@ -29,7 +24,7 @@ export class Project extends os.Unit {
     this.bus.on('closeFrame', this.closeFrame, this)
   }
 
-  update(info: Pick<Info, 'name' | 'mode' | 'hash'>) {
+  update(info: Pick<Info, 'spec' | 'mode' | 'hash'>) {
     // Hash changed? -> Reload <background> frame
     if (this.hash !== info.hash) {
       if (!this.hasBackground()) {
@@ -39,7 +34,7 @@ export class Project extends os.Unit {
       }
     }
 
-    this.name = info.name
+    this.spec = info.spec
     this.mode = info.mode
     this.hash = info.hash
   }
@@ -60,13 +55,15 @@ export class Project extends os.Unit {
 
     // Create iframe
     const iframe = document.createElement('iframe')
-    iframe.name = this.id
+    iframe.name = this.spec.name
+    iframe.setAttribute('data-type', 'background')
+    iframe.setAttribute('data-project-id', this.id)
     iframe.src = this.getBackgroundUrl()
     document.body.append(iframe)
 
     // Log info
     const message = `Started <background> process`
-    const details = `Select '${this.id}' from the DevTools context dropdown to switch to it`
+    const details = `Select '${this.spec.name}' from the DevTools context dropdown to switch to it`
     this.info(message, details)
   }
 
@@ -99,7 +96,8 @@ export class Project extends os.Unit {
   }
 
   private getBackground() {
-    return document.querySelector<HTMLIFrameElement>(`iframe[name="${this.id}"]`)
+    const selector = `iframe[data-type="background"][data-project-id="${this.id}"]`
+    return document.querySelector<HTMLIFrameElement>(selector)
   }
 
   private getBackgroundUrl() {
@@ -111,12 +109,14 @@ export class Project extends os.Unit {
   // ---------------------------------------------------------------------------
 
   private getFrames(): Frame[] {
-    const iframes = [...document.querySelectorAll<HTMLIFrameElement>(`iframe[name^="${this.prefix}"]`)]
+    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
+    const iframes = [...document.querySelectorAll<HTMLIFrameElement>(selector)]
 
-    return iframes.map(iframe => ({
-      name: iframe.name.replace(this.prefix, ''),
-      url: iframe.src,
-    }))
+    return iframes.map(iframe => {
+      const name = iframe.getAttribute('data-frame-name')
+      if (!name) throw this.never()
+      return { name, url: iframe.src }
+    })
   }
 
   private async openFrame(name: string, url: string, attrs?: Attrs) {
@@ -140,15 +140,18 @@ export class Project extends os.Unit {
 
     // Prepare iframe attributes
     attrs = {
-      'name': `${this.prefix}${name}`,
-      'src': url,
+      'name': `${this.spec.name}:${name}`,
+      'data-type': 'frame',
+      'data-project-id': this.id,
+      'data-frame-name': name,
       'data-net-rule-id': ruleId,
+      'src': url,
+      ...attrs,
       'width': screen.availWidth,
       'height': screen.availHeight,
       'referrerpolicy': 'unsafe-url',
       'allow': `fullscreen; geolocation; microphone; camera; clipboard-read; clipboard-write; autoplay; payment; usb; accelerometer; gyroscope; magnetometer; midi; encrypted-media; picture-in-picture; display-capture; screen-wake-lock; gamepad; xr-spatial-tracking`,
       'sandbox': `allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation`,
-      ...this.$.utils.without(attrs ?? {}, ['name', 'src', 'data-net-rule-id']),
     }
 
     // Create iframe
@@ -158,13 +161,20 @@ export class Project extends os.Unit {
 
     // Log info
     const nameSuffix = this.getNameSuffix(name)
-    const message = !exists ? `Opened${nameSuffix} frame ${url}` : `Reopened${nameSuffix} frame ${url}`
-    this.info(message)
+    if (exists) {
+      const message = `Reopened${nameSuffix} frame ${url}`
+      this.info(message)
+    } else {
+      const message = `Opened${nameSuffix} frame ${url}`
+      const details = `Select '${this.spec.name}:${name}' from the DevTools context dropdown to switch to it`
+      this.info(message, details)
+    }
   }
 
   private closeFrame(name: string, noInfo = false) {
     // No iframe? -> Ignore
-    const iframe = document.querySelector<HTMLIFrameElement>(`iframe[name="${this.prefix}${name}"]`)
+    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-name="${name}"]`
+    const iframe = document.querySelector<HTMLIFrameElement>(selector)
     if (!iframe) return
 
     // Remove network rule
@@ -181,16 +191,19 @@ export class Project extends os.Unit {
   }
 
   private closeAllFrames() {
-    const iframes = document.querySelectorAll<HTMLIFrameElement>(`iframe[name^="${this.prefix}"]`)
+    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
+    const iframes = document.querySelectorAll<HTMLIFrameElement>(selector)
 
     for (const iframe of iframes) {
-      const name = iframe.name.replace(this.prefix, '')
+      const name = iframe.getAttribute('data-frame-name')
+      if (!name) throw this.never()
       this.closeFrame(name)
     }
   }
 
   private hasFrame(name: string) {
-    return !!document.querySelector<HTMLIFrameElement>(`iframe[name="${this.prefix}${name}"]`)
+    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-name="${name}"]`
+    return !!document.querySelector<HTMLIFrameElement>(selector)
   }
 
   // ---------------------------------------------------------------------------
@@ -199,7 +212,7 @@ export class Project extends os.Unit {
 
   private info(message: string, details?: string) {
     if (this.mode !== 'development') return
-    this.$.utils.info(message, { label: this.name, timestamp: true, details })
+    this.$.utils.info(message, { label: this.spec.name, timestamp: true, details })
   }
 
   private getNameSuffix(name: string) {

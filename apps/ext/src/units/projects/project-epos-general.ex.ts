@@ -27,7 +27,8 @@ export class ProjectEposGeneral extends ex.Unit {
 
     const projectElement = document.createElement('div')
     projectElement.epos = true
-    projectElement.setAttribute('project', this.$project.id)
+    projectElement.setAttribute('data-project-name', this.$project.spec.name)
+    projectElement.setAttribute('data-project-id', this.$project.id)
     eposElement.append(projectElement)
 
     this.attachRoot(projectElement)
@@ -38,7 +39,7 @@ export class ProjectEposGeneral extends ex.Unit {
 
   private attachRoot(target: HTMLElement | ShadowRoot) {
     const root = document.createElement('div')
-    root.setAttribute('root', '')
+    root.setAttribute('data-project-root', '')
     target.append(root)
   }
 
@@ -76,12 +77,12 @@ export class ProjectEposGeneral extends ex.Unit {
 
   private getContainer() {
     if (!this.$project.shadowCss) {
-      const root = this.element.querySelector('[root]')
+      const root = this.element.querySelector('[data-project-root]')
       if (!root) throw this.never()
       return root
     } else {
       if (!this.element.shadowRoot) throw this.never()
-      const root = this.element.shadowRoot.querySelector('[root]')
+      const root = this.element.shadowRoot.querySelector('[data-project-root]')
       if (!root) throw this.never()
       return root
     }

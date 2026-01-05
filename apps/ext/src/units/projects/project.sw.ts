@@ -12,11 +12,7 @@ export type Snapshot = {
 /** Data for peer contexts. */
 export type Info = {
   id: string
-  name: Spec['name']
-  icon: Spec['icon']
-  title: Spec['title']
-  popup: Spec['popup']
-  action: Spec['action']
+  spec: Spec
   mode: Mode
   hash: string | null
   hasSidePanel: boolean
@@ -143,11 +139,7 @@ export class Project extends sw.Unit {
   async getInfo(address?: Address): Promise<Info> {
     return {
       id: this.id,
-      name: this.spec.name,
-      icon: this.spec.icon,
-      title: this.spec.title,
-      popup: this.spec.popup,
-      action: this.spec.action,
+      spec: this.spec,
       mode: this.mode,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
