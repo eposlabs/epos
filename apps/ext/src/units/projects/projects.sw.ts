@@ -12,7 +12,7 @@ export class Projects extends sw.Unit {
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
-  /** Source code of `ex.js`, `ex-mini.js`, `ex.dev.js`, and `ex-mini.dev.js`. */
+  /** Source code of `ex.prod.js`, `ex-mini.prod.js`, `ex.dev.js`, and `ex-mini.dev.js`. */
   private ex = {
     full: { dev: '', prod: '' },
     mini: { dev: '', prod: '' },
@@ -181,15 +181,15 @@ export class Projects extends sw.Unit {
   }
 
   private async loadEx() {
-    // Dev versions are absent for standalone projects
+    // Development versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(res => res.text()))
     const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(res => res.text()))
     this.ex.full.dev = exFullDev ?? ''
     this.ex.mini.dev = exMiniDev ?? ''
 
-    // Prod versions are always present
-    this.ex.full.prod = await fetch('/ex.js').then(res => res.text())
-    this.ex.mini.prod = await fetch('/ex-mini.js').then(res => res.text())
+    // Production versions are always present
+    this.ex.full.prod = await fetch('/ex.prod.js').then(res => res.text())
+    this.ex.mini.prod = await fetch('/ex-mini.prod.js').then(res => res.text())
   }
 
   private async loadProjects() {

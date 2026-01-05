@@ -74,8 +74,8 @@ export class ProjectEposStorage extends ex.Unit {
     return await this.$.idb.keys(this.$project.id, name)
   }
 
-  async clear(nameArg?: string) {
-    const name = this.prepareName(nameArg, this.clear)
+  async remove(nameArg?: string) {
+    const name = this.prepareName(nameArg, this.remove)
     return await this.$.idb.deleteStore(this.$project.id, name)
   }
 
@@ -86,7 +86,7 @@ export class ProjectEposStorage extends ex.Unit {
       set: (key: string, value: unknown) => this.set(name, key, value),
       delete: (key: string) => this.delete(name, key),
       keys: () => this.keys(name),
-      clear: () => this.clear(name),
+      remove: () => this.remove(name),
     }
   }
 

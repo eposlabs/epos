@@ -173,8 +173,8 @@ export class Project extends gl.Unit {
 
     const engineFiles = [
       'cs.js',
-      'ex-mini.js',
-      'ex.js',
+      'ex-mini.prod.js',
+      'ex.prod.js',
       'os.js',
       'sw.js',
       'vw.css',
@@ -269,21 +269,21 @@ export class Project extends gl.Unit {
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private async readSpec() {
-    const [specHandle] = await this.$.utils.safe(() => this.fs.getFileHandle('epos.json'))
-    if (!specHandle) throw new Error('epos.json not found')
+  // private async readSpec() {
+  //   const [specHandle] = await this.$.utils.safe(() => this.fs.getFileHandle('epos.json'))
+  //   if (!specHandle) throw new Error('epos.json not found')
 
-    const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
-    if (fileError) throw new Error('Failed to read epos.json', { cause: fileError.message })
+  //   const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
+  //   if (fileError) throw new Error('Failed to read epos.json', { cause: fileError.message })
 
-    const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
-    if (jsonError) throw new Error('Failed to read epos.json', { cause: jsonError.message })
+  //   const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
+  //   if (jsonError) throw new Error('Failed to read epos.json', { cause: jsonError.message })
 
-    const [spec, specError] = this.$.utils.safeSync(() => this.$.libs.parseSpec(specJson))
-    if (specError) throw new Error('Failed to parse epos.json', { cause: specError.message })
+  //   const [spec, specError] = this.$.utils.safeSync(() => this.$.libs.parseSpec(specJson))
+  //   if (specError) throw new Error('Failed to parse epos.json', { cause: specError.message })
 
-    return spec
-  }
+  //   return spec
+  // }
 
   usesPath(path: string) {
     if (path === 'epos.json') return true

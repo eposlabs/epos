@@ -12,7 +12,7 @@
       const { searchParams } = new URL(location.href)
       const isDev = searchParams.get('env') === 'development'
       const script = document.createElement('script')
-      script.src = isDev ? '/ex.dev.js' : '/ex.js'
+      script.src = isDev ? '/ex.dev.js' : '/ex.prod.js'
       document.head.append(script)
     </script>
   </head>

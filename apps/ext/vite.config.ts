@@ -5,6 +5,7 @@ import { defineConfig } from 'rolldown-vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
+  if (mode !== 'development' && mode !== 'production' && mode !== 'preview') throw new Error('Invalid mode')
   const env = mode === 'development' ? 'development' : 'production'
 
   const defineLayersJs = await paralayer({
@@ -14,19 +15,19 @@ export default defineConfig(async ({ mode }) => {
     globalLayerName: 'gl',
   })
 
-  const bundle = (name: string, forceDev = false): RolldownOptions => ({
+  const bundle = (name: string, forceMode?: 'development' | 'production'): RolldownOptions => ({
     input: {
       transform: {
         define: {
           'BUNDLE': JSON.stringify(name),
-          'process.env.NODE_ENV': forceDev ? JSON.stringify('development') : JSON.stringify(env),
+          'process.env.NODE_ENV': forceMode ? JSON.stringify(forceMode) : JSON.stringify(env),
         },
       },
     },
     output: {
       banner: `(async () => {\n${defineLayersJs}\n`,
       footer: '})()',
-      minify: mode !== 'development',
+      minify: (forceMode ?? mode) !== 'development',
     },
   })
 
@@ -42,10 +43,10 @@ export default defineConfig(async ({ mode }) => {
       preact({ reactAliasesEnabled: false }),
       rebundle(null, {
         'cs': bundle('cs'),
-        'ex': bundle('ex'),
-        'ex.dev': bundle('ex', true),
-        'ex-mini': bundle('ex-mini'),
-        'ex-mini.dev': bundle('ex-mini', true),
+        'ex.dev': bundle('ex', 'development'),
+        'ex.prod': bundle('ex', 'production'),
+        'ex-mini.dev': bundle('ex-mini', 'development'),
+        'ex-mini.prod': bundle('ex-mini', 'production'),
         'os': bundle('os'),
         'sm': bundle('sm'),
         'sw': bundle('sw'),
@@ -60,10 +61,10 @@ export default defineConfig(async ({ mode }) => {
       rolldownOptions: {
         input: {
           'cs': './src/cs.ts', // Content Script
-          'ex': './src/ex.ts', // Execution
           'ex.dev': './src/ex.ts', // Execution with forced NODE_ENV=development
-          'ex-mini': './src/ex.ts', // Execution without React
+          'ex.prod': './src/ex.ts', // Execution with forced NODE_ENV=production
           'ex-mini.dev': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
+          'ex-mini.prod': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
           'os': './src/os.ts', // Offscreen
           'sm': './src/sm.ts', // System
           'sw': './src/sw.ts', // Service Worker

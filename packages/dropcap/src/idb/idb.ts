@@ -128,7 +128,7 @@ export class Idb {
     return dbs.map(db => db.name).filter(is.present)
   }
 
-  /** Delete the store from the database. */
+  /** Removes the store from the database. */
   async deleteStore(dbName: DbName, storeName: DbStoreName) {
     // DB does not exist? -> Done
     const exists = await this.exists(dbName)
@@ -153,7 +153,7 @@ export class Idb {
     this.register(dbName, newDb)
   }
 
-  /** Delete the entire database. */
+  /** Removes the entire database. */
   async deleteDatabase(dbName: DbName) {
     // DB does not exist? -> Done
     const exists = await this.exists(dbName)

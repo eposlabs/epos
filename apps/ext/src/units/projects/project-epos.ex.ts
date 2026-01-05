@@ -63,7 +63,7 @@ export class ProjectEpos extends ex.Unit {
         set: this.$.utils.link(this.storage, 'set'),
         delete: this.$.utils.link(this.storage, 'delete'),
         keys: this.$.utils.link(this.storage, 'keys'),
-        clear: this.$.utils.link(this.storage, 'clear'),
+        remove: this.$.utils.link(this.storage, 'remove'),
         use: this.$.utils.link(this.storage, 'use'),
         list: this.$.utils.link(this.storage, 'list'),
       },

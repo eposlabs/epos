@@ -44,9 +44,10 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  local<T extends Obj = {}>(dataArg = {} as T): T {
-    const data = this.prepareLocalStateData(dataArg, this.local)
-    return this.$.libs.mobx.observable(data) as T
+  local<T extends Obj = {}>(valueArg = {} as T, optsArg?: { deep: boolean }): T {
+    const value = this.prepareLocalStateValue(valueArg, this.local)
+    const opts = this.prepareLocalStateOpts(optsArg, this.local)
+    return this.$.libs.mobx.observable(value, {}, opts) as T
   }
 
   async list(filter: { connected?: boolean } = {}) {
@@ -116,8 +117,16 @@ export class ProjectEposState extends ex.Unit {
     return versioner as Versioner
   }
 
-  private prepareLocalStateData(data: unknown, caller: Fn) {
-    if (!this.$.utils.is.object(data)) throw this.$epos.error(`State must be an object`, caller)
-    return data
+  private prepareLocalStateValue(value: unknown, caller: Fn) {
+    if (!this.$.utils.is.object(value)) throw this.$epos.error(`State must be an object`, caller)
+    return value
+  }
+
+  private prepareLocalStateOpts(opts: unknown, caller: Fn) {
+    if (!opts) return { deep: true }
+    if (!this.$.utils.is.object(opts)) throw this.$epos.error(`Options must be an object`, caller)
+    if (!('deep' in opts)) return { deep: true }
+    if (!this.$.utils.is.boolean(opts.deep)) throw this.$epos.error(`Option 'deep' must be a boolean`, caller)
+    return { deep: opts.deep }
   }
 }

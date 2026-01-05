@@ -60,12 +60,12 @@ export type Storage = {
   get<T = unknown>(key: string): Promise<T | null>
   /** Set value in the storage. */
   set(key: string, value: unknown): Promise<void>
-  /** Delete value from the storage. */
+  /** Delete key from the storage. */
   delete(key: string): Promise<void>
   /** Get all keys from the storage. */
   keys(): Promise<string[]>
-  /** Clear the storage. Deletes all keys and storage itself. */
-  clear(): Promise<void>
+  /** Remove the storage. Removes all keys and storage itself. */
+  remove(): Promise<void>
 }
 
 export type Bundle = {
@@ -111,7 +111,7 @@ export interface Epos {
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    local<T extends Obj = {}>(state?: T): T
+    local<T extends Obj = {}>(value?: T, opts?: { deep: boolean }): T
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
@@ -135,15 +135,15 @@ export interface Epos {
       <T = unknown>(key: string, value: T): Promise<void>
       <T = unknown>(name: string, key: string, value: T): Promise<void>
     }
-    /** Delete value from the storage. */
+    /** Delete key from the storage. */
     delete: {
       (key: string): Promise<void>
       (name: string, key: string): Promise<void>
     }
     /** Get all keys from the storage. */
     keys(name?: string): Promise<string[]>
-    /** Clear storage. Removes all keys and storage itself. */
-    clear(name?: string): Promise<void>
+    /** Remove storage. Removes all keys and storage itself. */
+    remove(name?: string): Promise<void>
     /** Get storage API for a specific storage. */
     use(name?: string): Storage
     /** Get this list of all storages. */

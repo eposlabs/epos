@@ -37,9 +37,13 @@ export class Unit<TRoot = unknown> {
 
     // Setup state
     const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
-    if (stateDescriptor && stateDescriptor.get) {
-      const state = stateDescriptor.get.call(this)
-      setProperty(this, 'state', epos.libs.mobx.observable.object(state, {}, { deep: false }))
+    if (stateDescriptor) {
+      if (stateDescriptor.get) {
+        const state = stateDescriptor.get.call(this)
+        setProperty(this, 'state', epos.state.local(state, { deep: false }))
+      }
+    } else {
+      setProperty(this, 'state', epos.state.local({}, { deep: false }))
     }
 
     // Apply versioner
@@ -55,9 +59,10 @@ export class Unit<TRoot = unknown> {
       }
     })
 
-    // Prepare methods:
+    // Prepare fields:
     // - Create components for methods ending with `View`
     // - Bind all other methods to the unit instance
+    // - Turn getters into MobX computed properties
     for (const prototype of getPrototypes(this)) {
       const descriptors = Object.getOwnPropertyDescriptors(prototype)
 
@@ -65,16 +70,19 @@ export class Unit<TRoot = unknown> {
         if (key === 'constructor') continue
         if (this.hasOwnProperty(key)) continue
 
-        if (descriptor.get || descriptor.set) continue
-        if (!is.function(descriptor.value)) continue
-        const fn = descriptor.value.bind(this)
-
-        if (key.endsWith('View')) {
-          let Component = epos.component(fn)
-          Component.displayName = `${this.constructor.name}.${key}`
-          setProperty(this, key, Component)
-        } else {
-          setProperty(this, key, fn)
+        if (is.function(descriptor.value)) {
+          const fn = descriptor.value.bind(this)
+          if (key.endsWith('View')) {
+            const Component = epos.component(fn)
+            Component.displayName = `${this.constructor.name}.${key}`
+            setProperty(this, key, Component)
+          } else {
+            setProperty(this, key, fn)
+          }
+        } else if (descriptor.get) {
+          const getter = descriptor.get
+          const computed = epos.libs.mobx.computed(() => getter.call(this))
+          Reflect.defineProperty(this, key, { configurable: true, get: () => computed.get() })
         }
       }
     }
