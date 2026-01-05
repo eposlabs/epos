@@ -63,8 +63,9 @@ export class Project extends gl.Unit {
     this.$projects.selectedProjectId = this.id
   }
 
-  remove() {
+  async remove() {
     this.$.projects.list.remove(this)
+    await epos.installer.remove(this.id)
   }
 
   isSelected() {

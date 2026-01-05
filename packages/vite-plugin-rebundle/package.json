@@ -27,7 +27,7 @@
     "dropcap": "^1.4.0",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
-    "rolldown": "^1.0.0-beta.57",
+    "rolldown": "^1.0.0-beta.58",
     "rollup": "^4.54.0",
     "vite": "^7.3.0",
     "ws": "^8.18.3"
