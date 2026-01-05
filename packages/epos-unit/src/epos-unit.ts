@@ -28,6 +28,9 @@ export class Unit<TRoot = unknown> {
     if (versions.length > 0) this[':version'] = versions.at(-1)!
   }
 
+  /**
+   * Lifecycle method called when the unit is attached to the state tree.
+   */
   [epos.state.ATTACH]() {
     // 1. Setup logger
     setProperty(this, 'log', createLog(this['@']))
@@ -88,26 +91,40 @@ export class Unit<TRoot = unknown> {
     setProperty(this, _attached_, true)
   }
 
+  /**
+   * Lifecycle method called when the unit is detached from the state tree.
+   */
   [epos.state.DETACH]() {
+    // 1. Run disposers
     if (this[_disposers_]) {
       this[_disposers_].forEach(disposer => disposer())
       this[_disposers_].clear()
     }
 
+    // 2. Call detach method
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
 
+    // 3. Clean up internal properties
     delete this[_root_]
     delete this[_attached_]
     delete this[_ancestors_]
     delete this[_disposers_]
   }
 
+  /**
+   * Gets the root unit of the current unit's tree.
+   * The result is cached for subsequent calls.
+   */
   get $() {
     ensureProperty(this, _root_, () => findRoot(this))
     return this[_root_]
   }
 
+  /**
+   * Finds the closest ancestor unit of a given type.
+   * The result is cached for subsequent calls.
+   */
   closest<T extends Unit>(Ancestor: Cls<T>) {
     // Has cached value? -> Return it
     ensureProperty(this, _ancestors_, () => new Map())
@@ -126,6 +143,10 @@ export class Unit<TRoot = unknown> {
     return null
   }
 
+  /**
+   * A wrapper around MobX's `autorun` that automatically disposes
+   * the reaction when the unit is detached.
+   */
   autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
     const disposer = epos.libs.mobx.autorun(...args)
     ensureProperty(this, _disposers_, () => new Set())
@@ -133,6 +154,10 @@ export class Unit<TRoot = unknown> {
     return disposer
   }
 
+  /**
+   * A wrapper around MobX's `reaction` that automatically disposes
+   * the reaction when the unit is detached.
+   */
   reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
     const disposer = epos.libs.mobx.reaction(...args)
     ensureProperty(this, _disposers_, () => new Set())
@@ -140,6 +165,10 @@ export class Unit<TRoot = unknown> {
     return disposer
   }
 
+  /**
+   * A wrapper around `setTimeout` that automatically clears the timeout
+   * when the unit is detached.
+   */
   setTimeout(...args: Parameters<typeof self.setTimeout>) {
     const id = self.setTimeout(...args)
     ensureProperty(this, _disposers_, () => new Set())
@@ -147,6 +176,10 @@ export class Unit<TRoot = unknown> {
     return id
   }
 
+  /**
+   * A wrapper around `setInterval` that automatically clears the interval
+   * when the unit is detached.
+   */
   setInterval(...args: Parameters<typeof self.setInterval>) {
     const id = self.setInterval(...args)
     ensureProperty(this, _disposers_, () => new Set())
@@ -154,6 +187,9 @@ export class Unit<TRoot = unknown> {
     return id
   }
 
+  /**
+   * Creates an error for an unreachable code path.
+   */
   never(message = 'This should never happen') {
     const details = message ? `: ${message}` : ''
     const error = new Error(`[${this.constructor.name}] This should never happen${details}`)
@@ -166,6 +202,9 @@ export class Unit<TRoot = unknown> {
 // HELPERS
 // ---------------------------------------------------------------------------
 
+/**
+ * Defines a configurable property on an object.
+ */
 function setProperty(object: object, key: PropertyKey, value: unknown) {
   Reflect.defineProperty(object, key, {
     configurable: true,
@@ -174,6 +213,9 @@ function setProperty(object: object, key: PropertyKey, value: unknown) {
   })
 }
 
+/**
+ * Ensures a property exists on an object, initializing it if it doesn't.
+ */
 function ensureProperty<T extends object, K extends PropertyKey, V>(
   object: T,
   key: K,
@@ -184,12 +226,18 @@ function ensureProperty<T extends object, K extends PropertyKey, V>(
   Reflect.defineProperty(object, key, { configurable: true, get: () => value })
 }
 
+/**
+ * Gets all prototypes of an object up to `Object.prototype`.
+ */
 function getPrototypes(object: object): object[] {
   const prototype = Reflect.getPrototypeOf(object)
   if (!prototype || prototype === Object.prototype) return []
   return [prototype, ...getPrototypes(prototype)]
 }
 
+/**
+ * Finds the root `Unit` in the hierarchy for a given unit.
+ */
 function findRoot<T>(unit: Unit<T>) {
   let root: Unit<T> | null = null
   let cursor: Node<T> | null = unit
@@ -202,6 +250,9 @@ function findRoot<T>(unit: Unit<T>) {
   return root as T
 }
 
+/**
+ * Finds the highest unattached `Unit` in the hierarchy for a given unit.
+ */
 function findUnattachedRoot<T>(unit: Unit<T>) {
   let unattachedRoot: Unit<T> | null = null
   let cursor: Node<T> | null = unit
@@ -214,17 +265,26 @@ function findUnattachedRoot<T>(unit: Unit<T>) {
   return unattachedRoot
 }
 
+/**
+ * Gets the parent of a node, which can be a `Unit`, an object, or an array.
+ */
 function getParent<T>(node: Node<T>) {
   const parent: Node<T> | null = Reflect.get(node, _parent_) ?? Reflect.get(node, epos.state.PARENT) ?? null
   return parent
 }
 
+/**
+ * Gets the versioner object from a unit's constructor.
+ */
 function getVersioner<T>(unit: Unit<T>) {
   const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
   if (!is.object(versioner)) return {}
   return versioner
 }
 
+/**
+ * Gets a sorted list of numeric version keys from a unit's versioner.
+ */
 function getVersions<T>(unit: Unit<T>) {
   const versioner = getVersioner(unit)
   const numericKeys = Object.keys(versioner).filter(key => is.numeric(key))

@@ -1,4 +1,3 @@
-import { createLog } from 'dropcap/utils'
 import * as mobx from 'mobx'
 import * as yjs from 'yjs'
 
@@ -15,7 +14,6 @@ const reactDomClient: ReactDomClient = BUNDLE === 'ex-mini' ? null : require('re
 const reactJsxRuntime: ReactJsxRuntime = BUNDLE === 'ex-mini' ? null : require('react/jsx-runtime')
 
 export class Libs extends ex.Unit {
-  createLog = createLog
   mobx = mobx
   mobxReactLite = mobxReactLite
   react = react

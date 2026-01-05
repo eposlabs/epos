@@ -118,9 +118,9 @@ export interface Epos {
     remove(name?: string): Promise<void>
     /** Register models to be used by all states. */
     register(models: Record<string, ModelClass>): void
-    readonly PARENT: unique symbol
-    readonly ATTACH: unique symbol
-    readonly DETACH: unique symbol
+    PARENT: symbol
+    ATTACH: symbol
+    DETACH: symbol
   }
 
   // Storage
