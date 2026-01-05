@@ -7,7 +7,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _attachQueue_ = Symbol('pendingAttachHooks')
+export const _pendingAttachFns_ = Symbol('pendingAttachFns')
 
 export type Node<T> = Unit<T> | Obj | Arr
 
@@ -20,12 +20,12 @@ export class Unit<TRoot = unknown> {
   declare [_attached_]?: boolean;
   declare [_disposers_]?: Set<() => void>;
   declare [_ancestors_]?: Map<Cls, unknown>;
-  declare [_attachQueue_]?: (() => void)[]
+  declare [_pendingAttachFns_]?: (() => void)[]
 
   constructor(parent: Unit<TRoot> | null) {
     this[_parent_] = parent
-    const versions = getVersions(this.constructor)
-    if (versions.length > 0) this[':version'] = versions.at(-1)
+    const versions = getVersions(this)
+    if (versions.length > 0) this[':version'] = versions.at(-1)!
   }
 
   [epos.state.ATTACH]() {
@@ -34,10 +34,8 @@ export class Unit<TRoot = unknown> {
 
     // 2. Apply versioner
     epos.state.transaction(() => {
-      const versioner: unknown = Reflect.get(this.constructor, 'versioner')
-      if (!is.object(versioner)) return
-      const versions = getVersions(this.constructor)
-
+      const versioner = getVersioner(this)
+      const versions = getVersions(this)
       for (const version of versions) {
         if (is.number(this[':version']) && this[':version'] >= version) continue
         const versionFn = versioner[version]
@@ -77,12 +75,12 @@ export class Unit<TRoot = unknown> {
       const unattachedRoot = findUnattachedRoot(this)
       if (!unattachedRoot) throw this.never()
 
-      ensureProperty(unattachedRoot, _attachQueue_, () => [])
-      unattachedRoot[_attachQueue_].push(() => attach())
+      ensureProperty(unattachedRoot, _pendingAttachFns_, () => [])
+      unattachedRoot[_pendingAttachFns_].push(() => attach())
 
-      if (this[_attachQueue_]) {
-        this[_attachQueue_].forEach(attach => attach())
-        delete this[_attachQueue_]
+      if (this[_pendingAttachFns_]) {
+        this[_pendingAttachFns_].forEach(attach => attach())
+        delete this[_pendingAttachFns_]
       }
     }
 
@@ -103,7 +101,6 @@ export class Unit<TRoot = unknown> {
     delete this[_attached_]
     delete this[_ancestors_]
     delete this[_disposers_]
-    delete this[_attachQueue_]
   }
 
   get $() {
@@ -165,11 +162,11 @@ export class Unit<TRoot = unknown> {
   }
 }
 
-function setProperty<T extends object, K extends PropertyKey, V>(
-  object: T,
-  key: K,
-  value: V,
-): asserts object is T & { [key in K]: V } {
+// ---------------------------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------------------------
+
+function setProperty(object: object, key: PropertyKey, value: unknown) {
   Reflect.defineProperty(object, key, {
     configurable: true,
     get: () => value,
@@ -180,10 +177,10 @@ function setProperty<T extends object, K extends PropertyKey, V>(
 function ensureProperty<T extends object, K extends PropertyKey, V>(
   object: T,
   key: K,
-  getValue: () => V,
+  getInitialValue: () => V,
 ): asserts object is T & { [key in K]: V } {
   if (key in object) return
-  const value = getValue()
+  const value = getInitialValue()
   Reflect.defineProperty(object, key, { configurable: true, get: () => value })
 }
 
@@ -222,11 +219,14 @@ function getParent<T>(node: Node<T>) {
   return parent
 }
 
-function getVersions(Unit: Function): number[] {
-  const versioner: unknown = Reflect.get(Unit, 'versioner')
-  if (!is.object(versioner)) return []
+function getVersioner<T>(unit: Unit<T>) {
+  const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
+  if (!is.object(versioner)) return {}
+  return versioner
+}
 
-  return Object.keys(versioner)
-    .map(Number)
-    .sort((v1, v2) => v1 - v2)
+function getVersions<T>(unit: Unit<T>) {
+  const versioner = getVersioner(unit)
+  const numericKeys = Object.keys(versioner).filter(key => is.numeric(key))
+  return numericKeys.map(Number).sort((v1, v2) => v1 - v2)
 }
