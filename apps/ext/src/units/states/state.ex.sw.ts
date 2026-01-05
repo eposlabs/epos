@@ -594,8 +594,16 @@ export class State extends exSw.Unit {
   }
 
   private getModelByInstance(instance: Obj) {
+    if (instance.constructor === Object) return null
     const regisretedModels = Object.values(this.$states.models)
-    return regisretedModels.find(Model => instance.constructor === Model) ?? null
+    const Model = regisretedModels.find(Model => instance.constructor === Model) ?? null
+    if (Model) return Model
+    const allowMissingModels = this.$.env.is.sw || this.$states.config.allowMissingModels
+    if (allowMissingModels) return null
+    const message = `Class '${instance.constructor.name}' is not registered as a model`
+    const tip1 = `Make sure you registered it via epos.state.register()`
+    const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
+    throw new Error(`${message}. ${tip1}. ${tip2}.`)
   }
 
   private getModelName(Model: ModelClass) {

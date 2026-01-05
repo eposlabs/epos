@@ -1,9 +1,6 @@
 import type { DbName, DbStoreName } from 'dropcap/idb'
 import type { Initial, ModelClass, Versioner } from './state.ex.sw'
 
-export const _local_ = Symbol('local')
-export const _exclude_ = Symbol('exclude')
-
 export type Models = Record<string, ModelClass>
 export type Config = { allowMissingModels?: boolean }
 
