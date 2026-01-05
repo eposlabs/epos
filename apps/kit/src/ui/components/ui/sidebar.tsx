@@ -12,7 +12,7 @@ import { Separator } from '@ui/components/ui/separator'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@ui/components/ui/sheet'
 import { Skeleton } from '@ui/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/components/ui/tooltip'
-import { useIsMobile } from '@ui/lib/hooks/use-mobile'
+import { useIsMobile } from '@ui/hooks/use-mobile'
 import { IconLayoutSidebar } from '@tabler/icons-react'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'

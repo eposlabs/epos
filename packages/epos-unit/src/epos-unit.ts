@@ -90,11 +90,11 @@ export class Unit<TRoot = unknown> {
 
       ensureProperty(unattachedRoot, _pendingAttachFns_, () => [])
       unattachedRoot[_pendingAttachFns_].push(() => attach())
+    }
 
-      if (this[_pendingAttachFns_]) {
-        this[_pendingAttachFns_].forEach(attach => attach())
-        delete this[_pendingAttachFns_]
-      }
+    if (this[_pendingAttachFns_]) {
+      this[_pendingAttachFns_].forEach(attach => attach())
+      delete this[_pendingAttachFns_]
     }
 
     // Mark as attached
