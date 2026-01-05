@@ -8,7 +8,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _pendingAttachHooks_ = Symbol('pendingAttachFns')
+export const _pendingAttachHooks_ = Symbol('pendingAttachHooks')
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
 
 export type Node<T> = Unit<T> | Obj | Arr
@@ -70,7 +70,10 @@ export class Unit<TRoot = unknown> {
       Reflect.defineProperty(this, 'state', { get: () => state })
     }
 
-    // Prepare properties for the whole prototype chain
+    // Prepare properties for the whole prototype chain:
+    // - Create components for methods ending with `View`
+    // - Bind all other methods to the unit instance
+    // - Turn getters into MobX computed properties
     for (const prototype of getPrototypes(this)) {
       const descriptors = Object.getOwnPropertyDescriptors(prototype)
       for (const [key, descriptor] of Object.entries(descriptors)) {
@@ -113,9 +116,8 @@ export class Unit<TRoot = unknown> {
     }
 
     // Queue attach hook.
-    // We do not execute `attach` hooks immediately, but rather queue them on the
-    // highest unattached ancestor. This way we ensure that `attach` hooks are called
-    // after all versioners have been applied in the entire subtree.
+    // Do not execute `attach` hooks immediately, but rather queue them on the highest unattached ancestor.
+    // This way `attach` hooks are called after all versioners have been applied in the entire subtree.
     const attach = Reflect.get(this, 'attach')
     if (is.function(attach)) {
       const unattachedRoot = findUnattachedRoot(this)
@@ -138,19 +140,20 @@ export class Unit<TRoot = unknown> {
    * Lifecycle method called when the unit is detached from the state tree.
    */
   [epos.state.DETACH]() {
-    // Run disposers
+    // Run and clear disposers
     if (this[_disposers_]) {
       this[_disposers_].forEach(disposer => disposer())
       this[_disposers_].clear()
     }
 
+    // Clear ancestors cache
+    if (this[_ancestors_]) {
+      this[_ancestors_].clear()
+    }
+
     // Call detach method
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
-
-    // Clear caches
-    if (this[_ancestors_]) this[_ancestors_].clear()
-    if (this[_disposers_]) this[_disposers_].clear()
   }
 
   // ---------------------------------------------------------------------------

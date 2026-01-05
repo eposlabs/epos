@@ -194,9 +194,8 @@ export interface Epos {
 
   // Env
   env: {
-    mode: Mode
     tabId: number
-    project: { id: string; spec: Spec }
+    project: { id: string; mode: Mode; spec: Spec }
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean

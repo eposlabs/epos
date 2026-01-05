@@ -32,7 +32,7 @@
   - epos.storage.set
   - epos.storage.delete
   - epos.storage.keys
-  - epos.storage.clear
+  - epos.storage.remove
   - epos.storage.use
   - epos.storage.list
 - **Frame**
@@ -47,7 +47,6 @@
   - epos.asset.get
   - epos.asset.list
 - **Env**
-  - epos.env.mode
   - epos.env.tabId
   - epos.env.project
   - epos.env.isPopup

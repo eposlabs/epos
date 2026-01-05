@@ -22,7 +22,7 @@
     // },
     {
       "matches": ["frame:*://*.epos.dev/*"],
-      "load": ["lite:x1-lite-2.js"]
+      "load": ["lite:x1-lite-2.js", "x1-frame.js"]
     },
     {
       "matches": ["<popup>"],

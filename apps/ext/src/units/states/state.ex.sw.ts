@@ -1,5 +1,3 @@
-// TODO: idea, what if '@' is always set to modelName (?)
-
 import type { DbName, DbStoreKey, DbStoreName } from 'dropcap/idb'
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
@@ -168,7 +166,7 @@ export class State extends exSw.Unit {
         if (versions.length > 0) this.root.data[':version'] = versions.at(-1)
       }
 
-      // Non-empty state? -> Run versioner
+      // Non-empty state? -> Apply versioner
       else {
         const data = this.root.data
         for (const version of versions) {

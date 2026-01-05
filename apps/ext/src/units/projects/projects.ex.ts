@@ -78,11 +78,9 @@ export class Projects extends ex.Unit {
       return tabId
     }
 
-    // External frame? -> Get tab id from the special `__eposTabId` URL param
+    // External frame? -> Tab id is not available, return -1
     else {
-      const tabIdParam = new URLSearchParams(location.search).get('__eposTabId')
-      if (!this.$.utils.is.numeric(tabIdParam)) throw this.never()
-      return Number(tabIdParam)
+      return -1
     }
   }
 
