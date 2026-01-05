@@ -1,6 +1,7 @@
 import type { Arr, Cls, Obj } from 'dropcap/types'
 import { createLog, is } from 'dropcap/utils'
 import 'epos'
+import { customAlphabet } from 'nanoid'
 
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
@@ -8,11 +9,13 @@ export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
 export const _pendingAttachHooks_ = Symbol('pendingAttachFns')
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
 
 export type Node<T> = Unit<T> | Obj | Arr
 
 export class Unit<TRoot = unknown> {
   declare '@': string
+  declare id: string
   declare log: ReturnType<typeof createLog>;
   declare [':version']?: number;
   declare [_root_]?: TRoot;
@@ -23,6 +26,7 @@ export class Unit<TRoot = unknown> {
   declare [_pendingAttachHooks_]?: (() => void)[]
 
   constructor(parent: Unit<TRoot> | null) {
+    this.id = nanoid()
     this[_parent_] = parent
     const versioner = getVersioner(this)
     const versions = getVersions(versioner)
@@ -144,11 +148,9 @@ export class Unit<TRoot = unknown> {
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
 
-    // Remove internal properties
-    delete this[_root_]
-    delete this[_attached_]
-    delete this[_ancestors_]
-    delete this[_disposers_]
+    // Clear caches
+    if (this[_ancestors_]) this[_ancestors_].clear()
+    if (this[_disposers_]) this[_disposers_].clear()
   }
 
   // ---------------------------------------------------------------------------

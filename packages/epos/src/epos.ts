@@ -21,6 +21,7 @@ export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
+export type Project = { id: string; mode: Mode; spec: Spec }
 
 export type ReqInit = {
   body: RequestInit['body']
@@ -219,6 +220,8 @@ export interface Epos {
       (id: string, bundle: Bundle): Promise<void>
     }
     remove(name: string): Promise<void>
+    watch(handler: (projects: Project[]) => void): void
+    list(): Promise<Project[]>
   }
 
   // Engine

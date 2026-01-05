@@ -111,6 +111,8 @@ export class ProjectEpos extends ex.Unit {
         installer: {
           install: this.$.utils.link(this.installer, 'install'),
           remove: this.$.utils.link(this.installer, 'remove'),
+          watch: this.$.utils.link(this.installer, 'watch'),
+          list: this.$.utils.link(this.installer, 'list'),
         },
       }),
 

@@ -13,7 +13,6 @@ import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
 export class Project extends gl.Unit {
-  id = Math.random().toString(36).slice(2)
   name: string | null = null
   spec: Spec | null = null
   handleId: string

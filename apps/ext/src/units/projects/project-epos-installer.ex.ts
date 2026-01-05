@@ -1,6 +1,17 @@
 import type { Bundle, Mode } from 'epos'
+import type { Spec } from 'epos-spec'
+
+export type Project = { id: string; mode: Mode; spec: Spec }
+export type WatchHandler = (projects: Project[]) => void
 
 export class ProjectEposInstaller extends ex.Unit {
+  private watchHandlers: WatchHandler[] = []
+
+  constructor(parent: ex.Unit) {
+    super(parent)
+    this.$.bus.on('Projects.changed', this.onProjectsChanged, this)
+  }
+
   async install(id: string, url: Url, mode?: Mode): Promise<void>
   async install(id: string, bundle: Bundle): Promise<void>
   async install(id: string, inputArg: Url | Bundle, modeArg: Mode = 'production'): Promise<void> {
@@ -17,6 +28,26 @@ export class ProjectEposInstaller extends ex.Unit {
   async remove(nameArg: string) {
     const name = this.prepareName(nameArg)
     await this.$.bus.send<sw.Projects['remove']>('Projects.remove', name)
+  }
+
+  watch(handler: WatchHandler) {
+    this.watchHandlers.push(handler)
+  }
+
+  async list(): Promise<Project[]> {
+    const infoMap = await this.$.bus.send<sw.Projects['getInfoMap']>('Projects.getInfoMap')
+    if (!infoMap) throw this.never()
+
+    return Object.values(infoMap).map(info => ({
+      id: info.id,
+      mode: info.mode,
+      spec: info.spec,
+    }))
+  }
+
+  private async onProjectsChanged() {
+    const projects = await this.list()
+    this.watchHandlers.forEach(handler => handler(projects))
   }
 
   private prepareBundle(bundle: Obj): Bundle {
