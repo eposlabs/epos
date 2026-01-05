@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -24,11 +24,11 @@
   "dependencies": {
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
-    "dropcap": "^1.4.0",
+    "dropcap": "^1.5.0",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
     "rolldown": "^1.0.0-beta.58",
-    "rollup": "^4.54.0",
+    "rollup": "^4.55.1",
     "vite": "^7.3.0",
     "ws": "^8.18.3"
   }

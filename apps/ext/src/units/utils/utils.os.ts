@@ -1,4 +1,4 @@
-import { is, safe } from 'dropcap/utils'
+import { colorHash, is, safe } from 'dropcap/utils'
 import { id } from './utils-id'
 import { info } from './utils-info'
 import { time } from './utils-time'
@@ -10,6 +10,7 @@ export class Utils extends os.Unit {
     this.$.bus.on('Utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }
 
+  colorHash = colorHash
   id = id
   info = info
   is = is

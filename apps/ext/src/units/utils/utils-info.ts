@@ -1,25 +1,30 @@
-import { colorHash } from 'dropcap/utils'
+export function info(params: {
+  title: string
+  color?: string
+  label?: string
+  subtitle?: string
+  timestamp?: boolean
+}) {
+  const title = params.title
+  const color = params.color ?? '#d7eb00'
+  const label = params.label ? `[${params.label}] ` : ''
+  const subtitle = params.subtitle ?? null
+  const timestamp = params.timestamp ? ` ${getTime()}` : ''
 
-export function info(message: string, params: { label?: string; timestamp?: boolean; details?: string }) {
   // CSS marker, use \u200B (zero-width space) to allow subsequent CSS markers
   const css = `%c\u200B`
 
-  const label = params.label ? `[${params.label}] ` : ''
-  const color = params.label ? colorHash(params.label) : '#d7eb00'
-  const time = params.timestamp ? ` ${getTime()}` : ''
-  const details = params.details ?? null
-
   console.log(
-    `${css}${css}${label}${css}${message}${css}${time}${details ? `\n${css}${details}` : css}`,
+    `${css}${css}${label}${css}${title}${css}${timestamp}${subtitle ? `\n${css}${subtitle}` : css}`,
 
-    // First row (label + message + time)
+    // First row (label + title + timestamp)
     style({
       'border-left': `2px solid ${color}`,
       'margin-top': '8px',
       'padding-left': '8px',
       'padding-top': '2px',
       'padding-bottom': '3px',
-      ...(!details && {
+      ...(!subtitle && {
         'margin-bottom': '8px',
         'padding-bottom': '2px',
       }),
@@ -28,15 +33,15 @@ export function info(message: string, params: { label?: string; timestamp?: bool
     // Label
     style({ 'font-weight': 'bold' }),
 
-    // Message
+    // Title
     style({}),
 
-    // Time
+    // Timestamp
     style({ 'color': 'gray' }),
 
-    // Details
+    // Second row (subtitle)
     style({
-      ...(details && {
+      ...(subtitle && {
         'border-left': `2px solid ${color}`,
         'margin-top': '-1px',
         'margin-bottom': '8px',

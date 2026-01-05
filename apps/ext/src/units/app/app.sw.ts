@@ -19,7 +19,7 @@ export class App extends sw.Unit {
     self.$ = this
     await this.net.init()
     await this.projects.init()
-    this.printInfo()
+    this.logInfo()
     this.initGlobalMethods()
     await this.setupContentScript()
     await this.createOffscreen()
@@ -27,14 +27,14 @@ export class App extends sw.Unit {
     await this.dev.init()
   }
 
-  private printInfo() {
+  private logInfo() {
     const hasDevProject = this.projects.list.some(project => project.mode === 'development')
     if (!hasDevProject) return
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
-    const message = `ᛃ epos is running, v${version} ${docsUrl}`
-    const details = 'To inspect <background> process, open offscreen.html from the extension details page'
-    this.$.utils.info(message, { details })
+    const title = `ᛃ epos is running, v${version} ${docsUrl}`
+    const subtitle = 'To inspect <background> process, open offscreen.html from the extension details page'
+    this.$.utils.info({ title, subtitle })
   }
 
   private initGlobalMethods() {

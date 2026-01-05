@@ -62,9 +62,9 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const message = `Started <background> process`
-    const details = `Select '${this.spec.name}' from the DevTools context dropdown to switch to it`
-    this.info(message, details)
+    const title = `Started <background> process`
+    const subtitle = `Select '${this.spec.name}' from the DevTools context dropdown to switch to it`
+    this.info({ title, subtitle })
   }
 
   private restartBackground() {
@@ -76,7 +76,7 @@ export class Project extends os.Unit {
     iframe.src = this.getBackgroundUrl()
 
     // Log info
-    this.info(`Restarted <background> process`)
+    this.info({ title: `Restarted <background> process` })
   }
 
   private removeBackground() {
@@ -88,7 +88,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    this.info(`Stopped <background> process`)
+    this.info({ title: `Stopped <background> process` })
   }
 
   private hasBackground() {
@@ -162,12 +162,12 @@ export class Project extends os.Unit {
     // Log info
     const nameSuffix = this.getNameSuffix(name)
     if (exists) {
-      const message = `Reopened${nameSuffix} frame ${url}`
-      this.info(message)
+      const title = `Reopened${nameSuffix} frame ${url}`
+      this.info({ title })
     } else {
-      const message = `Opened${nameSuffix} frame ${url}`
-      const details = `Select '${this.spec.name}:${name}' from the DevTools context dropdown to switch to it`
-      this.info(message, details)
+      const title = `Opened${nameSuffix} frame ${url}`
+      const subtitle = `Select '${this.spec.name}:${name}' from the DevTools context dropdown to switch to it`
+      this.info({ title, subtitle })
     }
   }
 
@@ -187,7 +187,7 @@ export class Project extends os.Unit {
     // Log info
     if (noInfo) return
     const nameSuffix = this.getNameSuffix(name)
-    this.info(`Closed${nameSuffix} frame`)
+    this.info({ title: `Closed${nameSuffix} frame` })
   }
 
   private closeAllFrames() {
@@ -210,9 +210,14 @@ export class Project extends os.Unit {
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private info(message: string, details?: string) {
+  private info(params: { title: string; subtitle?: string }) {
     if (this.mode !== 'development') return
-    this.$.utils.info(message, { label: this.spec.name, timestamp: true, details })
+    this.$.utils.info({
+      ...params,
+      color: this.$.utils.colorHash(this.id),
+      label: this.spec.name,
+      timestamp: true,
+    })
   }
 
   private getNameSuffix(name: string) {

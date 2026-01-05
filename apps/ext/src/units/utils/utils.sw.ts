@@ -1,4 +1,4 @@
-import { enqueue, is, link, Queue, safe, safeSync, unique } from 'dropcap/utils'
+import { colorHash, enqueue, is, link, Queue, safe, safeSync, unique } from 'dropcap/utils'
 import { get } from './utils-get'
 import { hash } from './utils-hash'
 import { id } from './utils-id'
@@ -7,6 +7,7 @@ import { normalizeUrl } from './utils-normalize-url'
 import { time } from './utils-time'
 
 export class Utils extends sw.Unit {
+  colorHash = colorHash
   enqueue = enqueue
   get = get
   hash = hash
