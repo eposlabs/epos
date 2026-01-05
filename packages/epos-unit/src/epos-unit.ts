@@ -7,7 +7,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _pendingAttachFns_ = Symbol('pendingAttachFns')
+export const _pendingAttachHooks_ = Symbol('pendingAttachFns')
 
 export type Node<T> = Unit<T> | Obj | Arr
 
@@ -20,36 +20,27 @@ export class Unit<TRoot = unknown> {
   declare [_attached_]?: boolean;
   declare [_disposers_]?: Set<() => void>;
   declare [_ancestors_]?: Map<Cls, unknown>;
-  declare [_pendingAttachFns_]?: (() => void)[]
+  declare [_pendingAttachHooks_]?: (() => void)[]
 
   constructor(parent: Unit<TRoot> | null) {
     this[_parent_] = parent
-    const versions = getVersions(this)
+    const versioner = getVersioner(this)
+    const versions = getVersions(versioner)
     if (versions.length > 0) this[':version'] = versions.at(-1)!
   }
+
+  // ---------------------------------------------------------------------------
+  // ATTACH / DETACH
+  // ---------------------------------------------------------------------------
 
   /**
    * Lifecycle method called when the unit is attached to the state tree.
    */
   [epos.state.ATTACH]() {
-    // Setup logger
-    setProperty(this, 'log', createLog(this['@']))
-
-    // Setup state
-    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
-    if (stateDescriptor) {
-      if (stateDescriptor.get) {
-        const state = stateDescriptor.get.call(this)
-        setProperty(this, 'state', epos.state.local(state, { deep: false }))
-      }
-    } else {
-      setProperty(this, 'state', epos.state.local({}, { deep: false }))
-    }
-
     // Apply versioner
     epos.state.transaction(() => {
       const versioner = getVersioner(this)
-      const versions = getVersions(this)
+      const versions = getVersions(versioner)
       for (const version of versions) {
         if (is.number(this[':version']) && this[':version'] >= version) continue
         const versionFn = versioner[version]
@@ -59,84 +50,176 @@ export class Unit<TRoot = unknown> {
       }
     })
 
-    // Prepare fields:
-    // - Create components for methods ending with `View`
-    // - Bind all other methods to the unit instance
-    // - Turn getters into MobX computed properties
+    // Setup logger
+    let log = createLog(this['@'])
+    Reflect.defineProperty(this, 'log', {
+      configurable: true,
+      get: () => log,
+      set: v => (log = v),
+    })
+
+    // Setup state
+    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
+    if (stateDescriptor && stateDescriptor.get) {
+      const value = stateDescriptor.get.call(this)
+      const state = epos.state.local(value, { deep: false })
+      Reflect.defineProperty(this, 'state', { get: () => state })
+    }
+
+    // Prepare properties for the whole prototype chain
     for (const prototype of getPrototypes(this)) {
       const descriptors = Object.getOwnPropertyDescriptors(prototype)
-
       for (const [key, descriptor] of Object.entries(descriptors)) {
+        // Skip constructor and already defined properties
         if (key === 'constructor') continue
         if (this.hasOwnProperty(key)) continue
 
-        if (is.function(descriptor.value)) {
-          const fn = descriptor.value.bind(this)
-          if (key.endsWith('View')) {
-            const Component = epos.component(fn)
-            Component.displayName = `${this.constructor.name}.${key}`
-            setProperty(this, key, Component)
-          } else {
-            setProperty(this, key, fn)
-          }
-        } else if (descriptor.get) {
+        // Create components for methods ending with `View`
+        if (is.function(descriptor.value) && key.endsWith('View')) {
+          let Component = epos.component(descriptor.value.bind(this))
+          Component.displayName = `${this.constructor.name}.${key}`
+          Reflect.defineProperty(this, key, {
+            configurable: true,
+            get: () => Component,
+            set: v => (Component = v),
+          })
+        }
+
+        // Bind all other methods to the unit instance
+        else if (is.function(descriptor.value)) {
+          let method = descriptor.value.bind(this)
+          Reflect.defineProperty(this, key, {
+            configurable: true,
+            get: () => method,
+            set: v => (method = v),
+          })
+        }
+
+        // Turn getters into MobX computed properties
+        else if (descriptor.get) {
           const getter = descriptor.get
           const computed = epos.libs.mobx.computed(() => getter.call(this))
-          Reflect.defineProperty(this, key, { configurable: true, get: () => computed.get() })
+          Reflect.defineProperty(this, key, {
+            configurable: true,
+            get: () => computed.get(),
+            set: descriptor.set,
+          })
         }
       }
     }
 
-    // Process attach queue.
-    // We do not execute `attach` methods immediately, but rather queue them
-    // on the highest unattached ancestor. This way we ensure that `attach`
-    // methods are called after all versioners have been applied in the entire subtree.
+    // Queue attach hook.
+    // We do not execute `attach` hooks immediately, but rather queue them on the
+    // highest unattached ancestor. This way we ensure that `attach` hooks are called
+    // after all versioners have been applied in the entire subtree.
     const attach = Reflect.get(this, 'attach')
     if (is.function(attach)) {
       const unattachedRoot = findUnattachedRoot(this)
       if (!unattachedRoot) throw this.never()
-
-      ensureProperty(unattachedRoot, _pendingAttachFns_, () => [])
-      unattachedRoot[_pendingAttachFns_].push(() => attach())
+      ensure(unattachedRoot, _pendingAttachHooks_, () => [])
+      unattachedRoot[_pendingAttachHooks_].push(() => attach())
     }
 
-    if (this[_pendingAttachFns_]) {
-      this[_pendingAttachFns_].forEach(attach => attach())
-      delete this[_pendingAttachFns_]
+    // Release attach hooks
+    if (this[_pendingAttachHooks_]) {
+      this[_pendingAttachHooks_].forEach(attach => attach())
+      delete this[_pendingAttachHooks_]
     }
 
     // Mark as attached
-    setProperty(this, _attached_, true)
+    Reflect.defineProperty(this, _attached_, { configurable: true, get: () => true })
   }
 
   /**
    * Lifecycle method called when the unit is detached from the state tree.
    */
   [epos.state.DETACH]() {
-    // 1. Run disposers
+    // Run disposers
     if (this[_disposers_]) {
       this[_disposers_].forEach(disposer => disposer())
       this[_disposers_].clear()
     }
 
-    // 2. Call detach method
+    // Call detach method
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
 
-    // 3. Clean up internal properties
+    // Remove internal properties
     delete this[_root_]
     delete this[_attached_]
     delete this[_ancestors_]
     delete this[_disposers_]
   }
 
+  // ---------------------------------------------------------------------------
+  // ROOT GETTER
+  // ---------------------------------------------------------------------------
+
   /**
    * Gets the root unit of the current unit's tree.
    * The result is cached for subsequent calls.
    */
   get $() {
-    ensureProperty(this, _root_, () => findRoot(this))
+    ensure(this, _root_, () => findRoot(this))
     return this[_root_]
+  }
+
+  // ---------------------------------------------------------------------------
+  // METHODS
+  // ---------------------------------------------------------------------------
+
+  /**
+   * A wrapper around MobX's `autorun` that automatically disposes
+   * the reaction when the unit is detached.
+   */
+  autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
+    const disposer = epos.libs.mobx.autorun(...args)
+    ensure(this, _disposers_, () => new Set())
+    this[_disposers_].add(disposer)
+    return disposer
+  }
+
+  /**
+   * A wrapper around MobX's `reaction` that automatically disposes
+   * the reaction when the unit is detached.
+   */
+  reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
+    const disposer = epos.libs.mobx.reaction(...args)
+    ensure(this, _disposers_, () => new Set())
+    this[_disposers_].add(disposer)
+    return disposer
+  }
+
+  /**
+   * A wrapper around `setTimeout` that automatically clears the timeout
+   * when the unit is detached.
+   */
+  setTimeout(...args: Parameters<typeof self.setTimeout>) {
+    const id = self.setTimeout(...args)
+    ensure(this, _disposers_, () => new Set())
+    this[_disposers_].add(() => self.clearTimeout(id))
+    return id
+  }
+
+  /**
+   * A wrapper around `setInterval` that automatically clears the interval
+   * when the unit is detached.
+   */
+  setInterval(...args: Parameters<typeof self.setInterval>) {
+    const id = self.setInterval(...args)
+    ensure(this, _disposers_, () => new Set())
+    this[_disposers_].add(() => self.clearInterval(id))
+    return id
+  }
+
+  /**
+   * Creates an error for an unreachable code path.
+   */
+  never(message = 'This should never happen') {
+    const details = message ? `: ${message}` : ''
+    const error = new Error(`[${this.constructor.name}] This should never happen${details}`)
+    Error.captureStackTrace(error, this.never)
+    return error
   }
 
   /**
@@ -145,7 +228,7 @@ export class Unit<TRoot = unknown> {
    */
   closest<T extends Unit>(Ancestor: Cls<T>) {
     // Has cached value? -> Return it
-    ensureProperty(this, _ancestors_, () => new Map())
+    ensure(this, _ancestors_, () => new Map())
     if (this[_ancestors_].has(Ancestor)) return this[_ancestors_].get(Ancestor) as T
 
     // Find the closest ancestor and cache it
@@ -160,60 +243,6 @@ export class Unit<TRoot = unknown> {
 
     return null
   }
-
-  /**
-   * A wrapper around MobX's `autorun` that automatically disposes
-   * the reaction when the unit is detached.
-   */
-  autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
-    const disposer = epos.libs.mobx.autorun(...args)
-    ensureProperty(this, _disposers_, () => new Set())
-    this[_disposers_].add(disposer)
-    return disposer
-  }
-
-  /**
-   * A wrapper around MobX's `reaction` that automatically disposes
-   * the reaction when the unit is detached.
-   */
-  reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
-    const disposer = epos.libs.mobx.reaction(...args)
-    ensureProperty(this, _disposers_, () => new Set())
-    this[_disposers_].add(disposer)
-    return disposer
-  }
-
-  /**
-   * A wrapper around `setTimeout` that automatically clears the timeout
-   * when the unit is detached.
-   */
-  setTimeout(...args: Parameters<typeof self.setTimeout>) {
-    const id = self.setTimeout(...args)
-    ensureProperty(this, _disposers_, () => new Set())
-    this[_disposers_].add(() => self.clearTimeout(id))
-    return id
-  }
-
-  /**
-   * A wrapper around `setInterval` that automatically clears the interval
-   * when the unit is detached.
-   */
-  setInterval(...args: Parameters<typeof self.setInterval>) {
-    const id = self.setInterval(...args)
-    ensureProperty(this, _disposers_, () => new Set())
-    this[_disposers_].add(() => self.clearInterval(id))
-    return id
-  }
-
-  /**
-   * Creates an error for an unreachable code path.
-   */
-  never(message = 'This should never happen') {
-    const details = message ? `: ${message}` : ''
-    const error = new Error(`[${this.constructor.name}] This should never happen${details}`)
-    Error.captureStackTrace(error, this.never)
-    return error
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -221,20 +250,9 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 
 /**
- * Defines a configurable property on an object.
- */
-function setProperty(object: object, key: PropertyKey, value: unknown) {
-  Reflect.defineProperty(object, key, {
-    configurable: true,
-    get: () => value,
-    set: v => (value = v),
-  })
-}
-
-/**
  * Ensures a property exists on an object, initializing it if it doesn't.
  */
-function ensureProperty<T extends object, K extends PropertyKey, V>(
+function ensure<T extends object, K extends PropertyKey, V>(
   object: T,
   key: K,
   getInitialValue: () => V,
@@ -303,8 +321,7 @@ function getVersioner<T>(unit: Unit<T>) {
 /**
  * Gets a sorted list of numeric version keys from a unit's versioner.
  */
-function getVersions<T>(unit: Unit<T>) {
-  const versioner = getVersioner(unit)
+function getVersions(versioner: Obj) {
   const numericKeys = Object.keys(versioner).filter(key => is.numeric(key))
   return numericKeys.map(Number).sort((v1, v2) => v1 - v2)
 }
