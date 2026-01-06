@@ -11,7 +11,7 @@ import type { Chrome } from './chrome.ts'
 export type Fn<T = any> = (...args: any[]) => T
 export type Obj = Record<string, unknown>
 export type Arr = unknown[]
-export type Versioner = Record<number, (this: any, state: any) => void>
+export type Versioner<T> = Record<number, (this: T, state: T) => void>
 export type ModelClass = new (...args: any[]) => any
 export type Model = InstanceType<ModelClass>
 export type Initial<T extends Obj | Model> = T | (() => T)
@@ -104,8 +104,8 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T extends Obj | Model = Obj>(initial?: Initial<T>, versioner?: Versioner): Promise<T>
-      <T extends Obj | Model = Obj>(name?: string, initial?: Initial<T>, versioner?: Versioner): Promise<T>
+      <T extends Obj | Model = Obj>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+      <T extends Obj | Model = Obj>(name?: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void

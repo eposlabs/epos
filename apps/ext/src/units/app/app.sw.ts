@@ -33,7 +33,7 @@ export class App extends sw.Unit {
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running, v${version} ${docsUrl}`
-    const subtitle = 'To inspect <background> process, open offscreen.html from the extension details page'
+    const subtitle = 'to inspect background processes, open offscreen.html from the extension details page'
     this.$.utils.info({ title, subtitle })
   }
 

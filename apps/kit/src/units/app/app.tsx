@@ -106,15 +106,17 @@ export class App extends gl.Unit {
     )
   }
 
-  static versioner: any = {
+  static versioner = this.defineVersioner({
     1() {
+      // @ts-ignore
       this.theme = 'light'
     },
     2() {
       this.theme = new gl.AppTheme(this)
     },
     3() {
+      // @ts-ignore
       this.v = 2
     },
-  }
+  })
 }

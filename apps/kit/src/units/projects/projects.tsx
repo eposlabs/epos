@@ -35,7 +35,7 @@ export class Projects extends gl.Unit {
     )
   }
 
-  static versioner: any = {}
+  static versioner = this.defineVersioner({})
 }
 
 // async init() {

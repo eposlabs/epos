@@ -1,4 +1,4 @@
-import type { Arr, Cls, Obj } from 'dropcap/types'
+import type { Arr, Cls, Fn, Obj } from 'dropcap/types'
 import { createLog, is } from 'dropcap/utils'
 import 'epos'
 import { customAlphabet } from 'nanoid'
@@ -12,6 +12,7 @@ export const _pendingAttachHooks_ = Symbol('pendingAttachHooks')
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
 
 export type Node<T> = Unit<T> | Obj | Arr
+export type Versioner<T> = { [version: number]: (this: T) => void }
 
 export class Unit<TRoot = unknown> {
   declare '@': string
@@ -25,11 +26,14 @@ export class Unit<TRoot = unknown> {
   declare [_ancestors_]?: Map<Cls, unknown>;
   declare [_pendingAttachHooks_]?: (() => void)[]
 
+  static defineVersioner<T extends Unit>(this: Cls<T>, versioner: Versioner<T>) {
+    return versioner
+  }
+
   constructor(parent: Unit<TRoot> | null) {
     this.id = nanoid()
     this[_parent_] = parent
-    const versioner = getVersioner(this)
-    const versions = getVersions(versioner)
+    const versions = getVersions(this)
     if (versions.length > 0) this[':version'] = versions.at(-1)!
   }
 
@@ -44,12 +48,12 @@ export class Unit<TRoot = unknown> {
     // Apply versioner
     epos.state.transaction(() => {
       const versioner = getVersioner(this)
-      const versions = getVersions(versioner)
+      const versions = getVersions(this)
       for (const version of versions) {
         if (is.number(this[':version']) && this[':version'] >= version) continue
         const versionFn = versioner[version]
         if (!is.function(versionFn)) continue
-        versionFn.call(this, this)
+        versionFn.call(this)
         this[':version'] = version
       }
     })
@@ -83,12 +87,11 @@ export class Unit<TRoot = unknown> {
 
         // Create components for methods ending with `View`
         if (is.function(descriptor.value) && key.endsWith('View')) {
-          let Component = epos.component(descriptor.value.bind(this))
-          Component.displayName = `${this.constructor.name}.${key}`
+          let View = createView(this, key, descriptor.value.bind(this))
           Reflect.defineProperty(this, key, {
             configurable: true,
-            get: () => Component,
-            set: v => (Component = v),
+            get: () => View,
+            set: v => (View = v),
           })
         }
 
@@ -161,7 +164,7 @@ export class Unit<TRoot = unknown> {
   // ---------------------------------------------------------------------------
 
   /**
-   * Gets the root unit of the current unit's tree.
+   * Get the root unit of the current unit's tree.
    * The result is cached for subsequent calls.
    */
   get $() {
@@ -174,8 +177,7 @@ export class Unit<TRoot = unknown> {
   // ---------------------------------------------------------------------------
 
   /**
-   * A wrapper around MobX's `autorun` that automatically disposes
-   * the reaction when the unit is detached.
+   * A wrapper around MobX's `autorun` that automatically disposes the reaction when the unit is detached.
    */
   autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
     const disposer = epos.libs.mobx.autorun(...args)
@@ -185,8 +187,7 @@ export class Unit<TRoot = unknown> {
   }
 
   /**
-   * A wrapper around MobX's `reaction` that automatically disposes
-   * the reaction when the unit is detached.
+   * A wrapper around MobX's `reaction` that automatically disposes the reaction when the unit is detached.
    */
   reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
     const disposer = epos.libs.mobx.reaction(...args)
@@ -196,8 +197,7 @@ export class Unit<TRoot = unknown> {
   }
 
   /**
-   * A wrapper around `setTimeout` that automatically clears the timeout
-   * when the unit is detached.
+   * A wrapper around `setTimeout` that automatically clears the timeout when the unit is detached.
    */
   setTimeout(...args: Parameters<typeof self.setTimeout>) {
     const id = self.setTimeout(...args)
@@ -207,8 +207,7 @@ export class Unit<TRoot = unknown> {
   }
 
   /**
-   * A wrapper around `setInterval` that automatically clears the interval
-   * when the unit is detached.
+   * A wrapper around `setInterval` that automatically clears the interval when the unit is detached.
    */
   setInterval(...args: Parameters<typeof self.setInterval>) {
     const id = self.setInterval(...args)
@@ -218,17 +217,17 @@ export class Unit<TRoot = unknown> {
   }
 
   /**
-   * Creates an error for an unreachable code path.
+   * Create an error for code paths that are logically unreachable.
    */
   never(message = 'This should never happen') {
     const details = message ? `: ${message}` : ''
-    const error = new Error(`[${this.constructor.name}] This should never happen${details}`)
+    const error = new Error(`[${this['@']}] This should never happen${details}`)
     Error.captureStackTrace(error, this.never)
     return error
   }
 
   /**
-   * Finds the closest ancestor unit of a given type.
+   * Find the closest ancestor unit of a given type.
    * The result is cached for subsequent calls.
    */
   closest<T extends Unit>(Ancestor: Cls<T>) {
@@ -255,7 +254,7 @@ export class Unit<TRoot = unknown> {
 // ---------------------------------------------------------------------------
 
 /**
- * Ensures a property exists on an object, initializing it if it doesn't.
+ * Ensure a property exists on an object, initialize it if it doesn't.
  */
 function ensure<T extends object, K extends PropertyKey, V>(
   object: T,
@@ -268,7 +267,7 @@ function ensure<T extends object, K extends PropertyKey, V>(
 }
 
 /**
- * Gets all prototypes of an object up to `Object.prototype`.
+ * Get all prototypes of an object up to `Object.prototype`.
  */
 function getPrototypes(object: object): object[] {
   const prototype = Reflect.getPrototypeOf(object)
@@ -277,7 +276,7 @@ function getPrototypes(object: object): object[] {
 }
 
 /**
- * Finds the root `Unit` in the hierarchy for a given unit.
+ * Find the root `Unit` in the hierarchy for a given unit.
  */
 function findRoot<T>(unit: Unit<T>) {
   let root: Unit<T> | null = null
@@ -292,7 +291,7 @@ function findRoot<T>(unit: Unit<T>) {
 }
 
 /**
- * Finds the highest unattached `Unit` in the hierarchy for a given unit.
+ * Find the highest unattached `Unit` in the hierarchy for a given unit.
  */
 function findUnattachedRoot<T>(unit: Unit<T>) {
   let unattachedRoot: Unit<T> | null = null
@@ -307,7 +306,7 @@ function findUnattachedRoot<T>(unit: Unit<T>) {
 }
 
 /**
- * Gets the parent of a node, which can be a `Unit`, an object, or an array.
+ * Get the parent of a node, which can be a `Unit`, an object, or an array.
  */
 function getParent<T>(node: Node<T>) {
   const parent: Node<T> | null = Reflect.get(node, _parent_) ?? Reflect.get(node, epos.state.PARENT) ?? null
@@ -315,7 +314,7 @@ function getParent<T>(node: Node<T>) {
 }
 
 /**
- * Gets the versioner object from a unit's constructor.
+ * Get the versioner object for a unit.
  */
 function getVersioner<T>(unit: Unit<T>) {
   const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
@@ -324,9 +323,41 @@ function getVersioner<T>(unit: Unit<T>) {
 }
 
 /**
- * Gets a sorted list of numeric version keys from a unit's versioner.
+ * Get a sorted list of numeric versions defined in unit's versioner.
  */
-function getVersions(versioner: Obj) {
+function getVersions<T>(unit: Unit<T>) {
+  const versioner = getVersioner(unit)
   const numericKeys = Object.keys(versioner).filter(key => is.numeric(key))
   return numericKeys.map(Number).sort((v1, v2) => v1 - v2)
+}
+
+/**
+ * Create view component for the unit.
+ */
+function createView<T>(unit: Unit<T>, name: string, render: Fn) {
+  const fullName = `${unit['@']}.${name}`
+
+  const View = epos.component((...args: unknown[]) => {
+    try {
+      return render(...args)
+    } catch (error) {
+      const message = is.error(error) ? error.message : String(error)
+      return epos.libs.reactJsxRuntime.jsx('div', {
+        children: `[${fullName}] ${message}`,
+        style: {
+          width: 'fit-content',
+          padding: '4px 6px 4px 4px',
+          color: '#f00',
+          border: '1px solid #f00',
+          background: 'rgba(255, 0, 0, 0.1)',
+          fontSize: 12,
+          fontWeight: 400,
+        },
+      })
+    }
+  })
+
+  View.displayName = fullName
+
+  return View
 }

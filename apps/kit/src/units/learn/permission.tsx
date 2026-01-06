@@ -7,11 +7,26 @@ export class Permission extends gl.Unit {
   }
 
   async play() {
-    await epos.engine.bus.send('Dev.testApi', this.name)
+    if (this.name === 'contextMenus') {
+      await epos.browser.contextMenus.removeAll()
+
+      epos.browser.contextMenus.create({
+        id: 'remove-all-context-menus',
+        title: 'Remove all context menus',
+        contexts: ['all'],
+      })
+
+      epos.browser.contextMenus.onClicked.addListener(async info => {
+        if (info.menuItemId === 'remove-all-context-menus') {
+          await epos.browser.contextMenus.removeAll()
+        }
+      })
+    } else {
+      await epos.engine.bus.send('Dev.testApi', this.name)
+    }
   }
 
-  ui() {
-    if (this.name === 'contextMenus') return
+  View() {
     return (
       <div className="flex flex-col">
         <button
@@ -24,9 +39,9 @@ export class Permission extends gl.Unit {
     )
   }
 
-  static versioner: any = {
+  static versioner = this.defineVersioner({
     1() {
-      delete this.granted
+      Reflect.deleteProperty(this, 'granted')
     },
-  }
+  })
 }

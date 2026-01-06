@@ -1,6 +1,6 @@
 import type { Attrs, Frame } from '../projects/project.os'
 
-export const DEFAULT_FRAME_NAME = '<frame>'
+export const DEFAULT_FRAME_NAME = '[frame]'
 
 export class ProjectEposFrame extends ex.Unit {
   private $project = this.closest(ex.Project)!

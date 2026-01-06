@@ -25,7 +25,7 @@ export class Project extends os.Unit {
   }
 
   update(info: Pick<Info, 'spec' | 'mode' | 'hash'>) {
-    // Hash changed? -> Reload <background> frame
+    // Hash changed? -> Reload Background frame
     if (this.hash !== info.hash) {
       if (!this.hasBackground()) {
         this.startBackground()
@@ -62,8 +62,8 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const title = `Started <background> process`
-    const subtitle = `Select '${this.spec.name}' from the DevTools context dropdown to switch to it`
+    const title = `<background> started`
+    const subtitle = `listed in the context dropdown as '${this.spec.name}'`
     this.info({ title, subtitle })
   }
 
@@ -76,7 +76,7 @@ export class Project extends os.Unit {
     iframe.src = this.getBackgroundUrl()
 
     // Log info
-    this.info({ title: `Restarted <background> process` })
+    this.info({ title: `Background restarted` })
   }
 
   private removeBackground() {
@@ -88,7 +88,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    this.info({ title: `Stopped <background> process` })
+    this.info({ title: `Background stopped` })
   }
 
   private hasBackground() {
@@ -160,13 +160,13 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const nameSuffix = this.getNameSuffix(name)
+    const namePrefix = this.getNamePrefix(name)
     if (exists) {
-      const title = `Reopened${nameSuffix} frame ${url}`
+      const title = `${namePrefix}frame reloaded ${url}`
       this.info({ title })
     } else {
-      const title = `Opened${nameSuffix} frame ${url}`
-      const subtitle = `Select '${this.spec.name}:${name}' from the DevTools context dropdown to switch to it`
+      const title = `${namePrefix}frame opened ${url}`
+      const subtitle = `listed in the context dropdown as '${this.spec.name}:${name}'`
       this.info({ title, subtitle })
     }
   }
@@ -186,8 +186,8 @@ export class Project extends os.Unit {
 
     // Log info
     if (noInfo) return
-    const nameSuffix = this.getNameSuffix(name)
-    this.info({ title: `Closed${nameSuffix} frame` })
+    const namePrefix = this.getNamePrefix(name)
+    this.info({ title: `${namePrefix}frame closed` })
   }
 
   private closeAllFrames() {
@@ -220,8 +220,8 @@ export class Project extends os.Unit {
     })
   }
 
-  private getNameSuffix(name: string) {
-    if (name === '<frame>') return ''
-    return ` '${name}'`
+  private getNamePrefix(name: string) {
+    if (name === '[frame]') return ''
+    return `'${name}' `
   }
 }
