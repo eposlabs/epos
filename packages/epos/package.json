@@ -29,7 +29,7 @@
     "mobx-react-lite": "^4.1.1",
     "portfinder": "^1.0.38",
     "react": "^19.2.3",
-    "ws": "^8.18.3",
+    "ws": "^8.19.0",
     "yjs": "^13.6.29"
   },
   "devDependencies": {

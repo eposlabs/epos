@@ -55,7 +55,7 @@ export class App extends gl.Unit {
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
+                <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
                   <AppLogo />
                   <div>[epos]</div>
                   <div className="text-muted-foreground ml-auto tracking-widest">v1.8</div>
