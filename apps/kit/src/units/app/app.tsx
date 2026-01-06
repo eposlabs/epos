@@ -1,3 +1,4 @@
+import { IconPlus, IconPointFilled } from '@tabler/icons-react'
 import { Separator } from '@ui/components/ui/separator'
 import {
   Sidebar,
@@ -14,7 +15,6 @@ import {
   SidebarProvider,
 } from '@ui/components/ui/sidebar'
 import { cn } from '@ui/lib/utils'
-import { IconPlus, IconPointFilled } from '@tabler/icons-react'
 import { AppLogo } from './app-logo'
 
 export class App extends gl.Unit {

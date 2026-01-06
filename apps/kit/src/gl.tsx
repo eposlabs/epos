@@ -1,6 +1,6 @@
 import './core/globals'
-import './layers/index.gl'
 import './gl.css'
+import './layers/index.gl'
 
 epos.state.register({ ...gl })
 let app = await epos.state.connect(() => new gl.App(null))

@@ -1,9 +1,9 @@
-import * as React from 'react'
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
+import * as React from 'react'
 
-import { cn } from '@ui/lib/utils'
-import { Button } from '@ui/components/ui/button'
 import { IconX } from '@tabler/icons-react'
+import { Button } from '@ui/components/ui/button'
+import { cn } from '@ui/lib/utils'
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -103,11 +103,11 @@ function SheetDescription({ className, ...props }: SheetPrimitive.Description.Pr
 
 export {
   Sheet,
-  SheetTrigger,
   SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetFooter,
-  SheetTitle,
   SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 }

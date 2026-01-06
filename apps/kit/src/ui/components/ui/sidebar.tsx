@@ -1,11 +1,11 @@
 'use client'
 
-import * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
+import * as React from 'react'
 
-import { cn } from '@ui/lib/utils'
+import { IconLayoutSidebar } from '@tabler/icons-react'
 import { Button } from '@ui/components/ui/button'
 import { Input } from '@ui/components/ui/input'
 import { Separator } from '@ui/components/ui/separator'
@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Skeleton } from '@ui/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/components/ui/tooltip'
 import { useIsMobile } from '@ui/hooks/use-mobile'
-import { IconLayoutSidebar } from '@tabler/icons-react'
+import { cn } from '@ui/lib/utils'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
