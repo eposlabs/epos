@@ -1,7 +1,7 @@
 import type { DbName, DbStoreName } from 'dropcap/idb'
-import type { Initial, ModelClass, Versioner } from './state.ex.sw'
+import type { Initial, Root, Versioner } from './state.ex.sw'
 
-export type Models = Record<string, ModelClass>
+export type Models = Record<string, Cls>
 export type Config = { allowMissingModels?: boolean }
 
 export class States extends exSw.Unit {
@@ -40,9 +40,9 @@ export class States extends exSw.Unit {
     }
   }
 
-  async connect(name: string, initial?: Initial, versioner?: Versioner) {
+  async connect<T extends Root>(name: string, initial?: Initial<T>, versioner?: Versioner): Promise<T> {
     // Already connected? -> Return existing
-    if (this.map[name]) return this.map[name]
+    if (this.map[name]) return this.map[name].root as T
 
     // Ensure `sw` is connected first
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
@@ -52,7 +52,12 @@ export class States extends exSw.Unit {
     await state.init()
     this.map[name] = state
 
-    return state
+    return state.root
+  }
+
+  local<T extends Root>(initial?: T): T {
+    const state = new exSw.State(this, null, initial)
+    return state.root
   }
 
   async disconnect(name: string) {

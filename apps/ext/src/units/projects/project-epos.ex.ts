@@ -87,7 +87,6 @@ export class ProjectEpos extends ex.Unit {
 
       // Env
       env: {
-        mode: this.env.mode,
         tabId: this.env.tabId,
         project: this.env.project,
         isPopup: this.env.isPopup,

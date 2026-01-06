@@ -70,8 +70,8 @@ export class Unit<TRoot = unknown> {
     const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
     if (stateDescriptor && stateDescriptor.get) {
       const value = stateDescriptor.get.call(this)
-      const state = epos.state.local(value, { deep: false })
-      Reflect.defineProperty(this, 'state', { get: () => state })
+      const state = epos.libs.mobx.observable.object(value, {}, { deep: false })
+      Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
     }
 
     // Prepare properties for the whole prototype chain:

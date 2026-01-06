@@ -41,12 +41,21 @@ export class Project extends gl.Unit {
     }
   }
 
+  static async new(parent: gl.Unit) {
+    const { $ } = parent
+
+    // Ask user for a directory handle
+    const [handle] = await $.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
+    if (!handle) return
+  }
+
   constructor(parent: gl.Unit, handleId: string) {
     super(parent)
     this.handleId = handleId
   }
 
   async attach() {
+    return
     this.update = this.$.utils.enqueue(this.update)
     this.state.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     await this.update()

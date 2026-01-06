@@ -6,20 +6,17 @@ export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')
 export const _attach_ = Symbol('attach')
 export const _detach_ = Symbol('detach')
-export const _versioner_ = Symbol('versioner')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStoreName, DbStoreKey]
-export type Initial = Obj | Model | (() => Obj | Model)
+export type Initial<T = Root> = T | (() => T)
+export type Root = object & { ':version'?: number }
 export type Versioner = Record<number, (state: MObject) => void>
-export type Root = { data: MObject & { ':version'?: number } }
-export type Model = InstanceType<ModelClass>
-export type ModelClass = (new (...args: unknown[]) => unknown) & { [_versioner_]?: Versioner }
 export type Parent = MNode | null
 
 // MobX node
-export type MObject = Obj & { [_parent_]?: Parent; [_meta_]?: Meta; _?: unknown; __?: unknown }
-export type MArray = Arr & { [_parent_]?: Parent; [_meta_]?: Meta; _?: unknown; __?: unknown }
+export type MObject = Obj & { [_parent_]?: Parent; [_meta_]?: Meta; _?: unknown }
+export type MArray = Arr & { [_parent_]?: Parent; [_meta_]?: Meta; _?: unknown }
 export type MNode = MObject | MArray
 
 // Yjs node
@@ -28,11 +25,7 @@ export type YArray = YjsArray<unknown> & { [_meta_]?: Meta; _?: unknown }
 export type YNode = YMap | YArray
 
 // Meta info attached to every MobX and Yjs node
-export type Meta = {
-  mNode: MNode
-  yNode: YNode
-  unwire: () => void
-}
+export type Meta = { mNode: MNode; yNode: YNode; unwire: () => void }
 
 // MobX change types
 export type MObjectSetChange = Extract<IObjectWillChange<Obj>, { type: 'add' | 'update' }>
@@ -45,18 +38,18 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
  * #### How Sync Works
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
-export class State extends exSw.Unit {
+export class State<TRoot extends Root = Root> extends exSw.Unit {
   static _meta_ = _meta_
   static _parent_ = _parent_
   static _attach_ = _attach_
   static _detach_ = _detach_
-  static _versioner_ = _versioner_
 
   name: string
+  root = {} as TRoot
   private $states = this.closest(exSw.States)!
   private doc = new this.$.libs.yjs.Doc()
-  private root: Root | null = null
-  private initial: Initial
+  private local: boolean
+  private initial: Initial<TRoot> | null = null
   private versioner: Versioner
   private connected = false
   private bus: ReturnType<gl.Bus['create']>
@@ -66,45 +59,57 @@ export class State extends exSw.Unit {
   private SAVE_DELAY = 300
 
   get id() {
-    return this.location.join('/')
-  }
-
-  get data(): Obj {
-    if (!this.root) throw this.never()
-    return this.root.data
+    return `${this.$states.dbName}/${this.$states.dbStoreName}/${this.name}`
   }
 
   get location(): Location {
     return [this.$states.dbName, this.$states.dbStoreName, this.name]
   }
 
-  constructor(parent: exSw.Unit, name: string, initial: Initial = {}, versioner: Versioner = {}) {
+  constructor(parent: exSw.Unit, name: string | null, initial?: Initial<TRoot>, versioner?: Versioner) {
     super(parent)
-    this.name = name
-    this.initial = initial
-    this.versioner = versioner
+    this.name = name ?? `local:${this.$.utils.id()}`
+    this.initial = initial ?? ({} as TRoot)
+    this.versioner = versioner ?? {}
+    this.local = name === null
     this.bus = this.$.bus.create(`State[${this.id}]`)
     this.save = this.$.utils.enqueue(this.save, this)
+    if (this.local) this.initLocal()
   }
 
   async init() {
+    if (this.local) throw this.never()
     await this.$.peer.mutex(`State.setup[${this.id}]`, () => this.setup())
     this.bus.on('connected', () => true)
   }
 
+  private initLocal() {
+    const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
+    const initialOk = this.$.utils.is.object(initial) || this.$.utils.is.array(initial)
+    if (!initialOk) throw new Error('Local state must be an object or an array')
+
+    this.root = this.attach(initial, null) as TRoot
+    this.pendingAttachHooks.forEach(attach => attach())
+    this.pendingAttachHooks = []
+    this.connected = true
+  }
+
   async disconnect() {
+    if (this.local) return
     if (!this.connected) return
     this.connected = false
-    this.doc.destroy()
+    if (this.doc) this.doc.destroy()
     this.bus.dispose()
     await this.save(true)
   }
 
   transaction(fn: () => void) {
     this.$.libs.mobx.runInAction(() => {
-      this.doc.transact(() => {
+      if (this.local) {
         fn()
-      })
+      } else {
+        this.doc.transact(() => fn())
+      }
     })
   }
 
@@ -123,17 +128,17 @@ export class State extends exSw.Unit {
       }
     })
 
-    // Load state data
+    // Load state
     if (this.$.env.is.sw) {
-      const data = await this.$.idb.get<Obj>(...this.location)
-      this.root = this.attach({ data: data ?? {} }, null) as Root
+      const root = await this.$.idb.get<Obj>(...this.location)
+      this.root = this.attach(root ?? {}, null) as TRoot
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
       if (!docAsUpdate) throw this.never()
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
-      this.root = this.attach(yRoot, null) as Root
+      this.root = this.attach(yRoot, null) as TRoot
     }
 
     // Apply missed updates
@@ -153,7 +158,7 @@ export class State extends exSw.Unit {
     // - Apply versioner
     // - Release pending attach hooks
     this.transaction(() => {
-      if (!this.root) throw this.never()
+      if (!this.$.utils.is.object(this.root)) throw this.never()
 
       // Get sorted version numbers
       const versions = Object.keys(this.versioner)
@@ -161,26 +166,30 @@ export class State extends exSw.Unit {
         .sort((v1, v2) => v1 - v2)
 
       // Empty state? -> Set initial state
-      if (Object.keys(this.root.data).length === 0) {
-        this.root.data = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-        if (versions.length > 0) this.root.data[':version'] = versions.at(-1)
+      if (Object.keys(this.root).length === 0) {
+        const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
+        if (!this.$.utils.is.object(initial)) throw new Error('Initial state must be an object')
+        Object.assign(this.root, initial)
+        if (versions.length > 0) this.root[':version'] = versions.at(-1)
       }
 
       // Non-empty state? -> Apply versioner
       else {
-        const data = this.root.data
         for (const version of versions) {
-          if (this.$.utils.is.number(data[':version']) && data[':version'] >= version) continue
+          if (this.$.utils.is.number(this.root[':version']) && this.root[':version'] >= version) continue
           const versionFn = this.versioner[version]
           if (!versionFn) throw this.never()
-          versionFn.call(data, data)
-          data[':version'] = version
+          versionFn.call(this.root, this.root)
+          this.root[':version'] = version
         }
       }
 
       // Release pending attach hooks
       this.pendingAttachHooks.forEach(attach => attach())
       this.pendingAttachHooks = []
+
+      // Free up memory
+      this.initial = null
     })
 
     // Mark as connected
@@ -320,7 +329,6 @@ export class State extends exSw.Unit {
       // Delete dev helpers
       delete mNode._
       delete yNode._
-      delete mNode.__
     }
 
     // Start node observers
@@ -405,7 +413,7 @@ export class State extends exSw.Unit {
     this.detach(change.object[change.name])
 
     // Update corresponding Yjs node
-    if (!this.applyingYjsToMobx) {
+    if (!this.local && !this.applyingYjsToMobx) {
       this.doc.transact(() => {
         const yMap = this.getYNode(change.object)
         if (!yMap) throw this.never()
@@ -422,7 +430,7 @@ export class State extends exSw.Unit {
     this.detach(change.object[change.name])
 
     // Update corresponding Yjs node
-    if (!this.applyingYjsToMobx) {
+    if (!this.local && !this.applyingYjsToMobx) {
       this.doc.transact(() => {
         const yMap = this.getYNode(change.object)!
         if (!yMap) throw this.never()
@@ -439,7 +447,7 @@ export class State extends exSw.Unit {
     this.detach(change.object[change.index])
 
     // Update corresponding Yjs node
-    if (!this.applyingYjsToMobx) {
+    if (!this.local && !this.applyingYjsToMobx) {
       this.doc.transact(() => {
         const yArray = this.getYNode(change.object)
         if (!yArray) throw this.never()
@@ -459,7 +467,7 @@ export class State extends exSw.Unit {
     }
 
     // Update corresponding Yjs node
-    if (!this.applyingYjsToMobx) {
+    if (!this.local && !this.applyingYjsToMobx) {
       this.doc.transact(() => {
         const yArray = this.getYNode(change.object)
         if (!yArray) throw this.never()
@@ -546,16 +554,18 @@ export class State extends exSw.Unit {
   // ---------------------------------------------------------------------------
 
   private async save(force = false) {
+    if (this.local) return
     if (!this.$.env.is.sw) return
     if (!this.connected && !force) return
     if (!this.root) throw this.never()
     self.clearTimeout(this.saveTimeout)
-    const data = this.$.libs.mobx.toJS(this.root.data)
-    const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.location, data))
+    const root = this.$.libs.mobx.toJS(this.root)
+    const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.location, root))
     if (error) this.log.error('Failed to save state to IndexedDB', error)
   }
 
   private saveWithDelay() {
+    if (this.local) return
     if (!this.$.env.is.sw) return
     if (!this.connected) return
     self.clearTimeout(this.saveTimeout)
@@ -606,7 +616,7 @@ export class State extends exSw.Unit {
     throw new Error(`${message}. ${tip1}. ${tip2}.`)
   }
 
-  private getModelName(Model: ModelClass) {
+  private getModelName(Model: Cls) {
     const registeredModelNames = Object.keys(this.$states.models)
     return registeredModelNames.find(name => this.$states.models[name] === Model) ?? null
   }

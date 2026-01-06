@@ -21,39 +21,55 @@ if (DEV) {
   Object.assign(self, { epos, $: app, gl })
 }
 
-// class Header extends gl.Unit {
-//   name = 'header'
-//   child = new Child(this)
-//   child2 = new Child2(this)
-//   attach() {}
+// LOCAL STATE TEST:
 
-//   static versioner = {
-//     1() {
-//       this.x = 2
-//     },
-//     2() {
-//       this.y = 3
-//     },
-//     3() {
-//       this.z = 5
-//     },
+// import { Unit } from 'epos-unit'
+
+// class Robot extends Unit<Robot> {
+//   head = new Body(this, 'round')
+
+//   get state() {
+//     return {
+//       name: 'hello',
+//       // $ and closest work because of [_parent_], but what if I need Body to be reactive?
+//       // also no attach and view processing is performed for Body here
+//       body: epos.state.local(new Body(this, 'local')),
+//       items: epos.state.local([1, 2, 3, { wer: 3 }]),
+//     }
+//   }
+
+//   View() {
+//     return (
+//       <div>
+//         <div>{this.state.name}</div>
+//         <this.state.body.View />
+//         {this.state.items.map((item, index) => (
+//           <div key={index}>Item: {JSON.stringify(item)}</div>
+//         ))}
+//       </div>
+//     )
 //   }
 // }
 
-// class Child extends gl.Unit {
-//   name = 'child'
-//   method() {
-//     console.log('method', this)
+// class Body extends Unit<Robot> {
+//   type = 'round'
+
+//   constructor(parent: Unit<Robot>, type?: string) {
+//     super(parent)
+//     if (type) this.type = type
 //   }
-//   static versioner: any = {}
+
+//   randomize() {
+//     this.type = Math.random().toString(36).substring(2, 7)
+//   }
+
+//   View() {
+//     return <div onClick={this.randomize}>Body type: {this.type}</div>
+//   }
 // }
 
-// class Child2 extends Child {
-//   method2() {
-//     console.log('method2', this)
-//   }
-// }
-
-// epos.state.register({ Header, Child, Child2 })
-// const header = await epos.state.connect('header2', () => new Header(null))
-// Object.assign(self, { epos, $: header, gl, header, Child, Header })
+// epos.state.register({ Robot, Body })
+// const robot = await epos.state.connect('robot-2', () => new Robot(null))
+// const items = await epos.state.connect('items-2', () => ({ items: [1, 2, 3] }))
+// Object.assign(self, { epos, robot, Robot, Body, items })
+// epos.render(<robot.View />)

@@ -2,6 +2,23 @@ export class Projects extends gl.Unit {
   list: gl.Project[] = []
   selectedProjectId: string | null = null
 
+  async attach() {
+    epos.installer.watch(() => this.updateProjects())
+    await this.updateProjects()
+  }
+
+  async updateProjects() {
+    console.warn('update')
+    this.list = []
+    const projectsData = await epos.installer.list()
+    for (const data of projectsData) {
+      const project = new gl.Project(this, data.id)
+      project.name = data.spec.name
+      project.spec = data.spec
+      this.list.push(project)
+    }
+  }
+
   get map() {
     return Object.fromEntries(this.list.map(project => [project.id, project]))
   }
@@ -24,31 +41,4 @@ export class Projects extends gl.Unit {
     this.list.push(project)
     this.selectedProjectId = project.id
   }
-
-  View() {
-    const selectedProject = this.selected
-    if (!selectedProject) return <div>No project selected</div>
-    return (
-      <div>
-        <selectedProject.View />
-      </div>
-    )
-  }
-
-  static versioner = this.defineVersioner({})
 }
-
-// async init() {
-//   await this.deleteOrphanedHandles()
-// }
-
-// TODO: do not remove, instead "restore" from idb
-// /** Delete handles from IDB that do not have corresponding projects. */
-// private async deleteOrphanedHandles() {
-//   // const idbHandleIds = await this.$.idb.keys('kit', 'handles')
-//   // const projectHandleIds = new Set(this.$.projects.list.map(project => project.handleId))
-//   // for (const idbHandleId of idbHandleIds) {
-//   //   if (projectHandleIds.has(idbHandleId)) continue
-//   //   await this.$.idb.delete('kit', 'handles', idbHandleId)
-//   // }
-// }

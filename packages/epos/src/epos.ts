@@ -9,16 +9,17 @@ import type * as yjs from 'yjs'
 import type { Chrome } from './chrome.ts'
 
 export type Fn<T = any> = (...args: any[]) => T
+export type Cls<T = any> = new (...args: any[]) => T
 export type Obj = Record<string, unknown>
 export type Arr = unknown[]
+export type Model<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
+export type ObjModel<T> = T extends Obj ? T : Model<T>
+export type ObjArrModel<T> = T extends Obj | Arr ? T : Model<T>
 export type Versioner<T> = Record<number, (this: T, state: T) => void>
-export type ModelClass = new (...args: any[]) => any
-export type Model = InstanceType<ModelClass>
-export type Initial<T extends Obj | Model> = T | (() => T)
-export type Attrs = Record<string, string | number>
 export type Mode = 'development' | 'production'
 export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
+export type Attrs = Record<string, string | number>
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 export type Project = { id: string; mode: Mode; spec: Spec }
@@ -104,21 +105,23 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T extends Obj | Model = Obj>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
-      <T extends Obj | Model = Obj>(name?: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+      <T = Obj>(initial?: ObjModel<T>, versioner?: Versioner<T>): Promise<T>
+      <T = Obj>(initial?: () => ObjModel<T>, versioner?: Versioner<T>): Promise<T>
+      <T = Obj>(name?: string, initial?: ObjModel<T>, versioner?: Versioner<T>): Promise<T>
+      <T = Obj>(name?: string, initial?: () => ObjModel<T>, versioner?: Versioner<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    local<T extends Obj = {}>(value?: T, opts?: { deep: boolean }): T
+    local<T = Obj>(state?: ObjArrModel<T>): T
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
     remove(name?: string): Promise<void>
-    /** Register models to be used by all states. */
-    register(models: Record<string, ModelClass>): void
+    /** Register models that can be used by all states. */
+    register(models: Record<string, Cls>): void
     PARENT: symbol
     ATTACH: symbol
     DETACH: symbol
@@ -141,7 +144,7 @@ export interface Epos {
       (key: string): Promise<void>
       (name: string, key: string): Promise<void>
     }
-    /** Get all keys from the storage. */
+    /** Get all storage keys. */
     keys(name?: string): Promise<string[]>
     /** Remove storage. Removes all keys and storage itself. */
     remove(name?: string): Promise<void>

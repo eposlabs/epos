@@ -1,4 +1,4 @@
-import type { Initial, Versioner } from '../states/state.ex.sw'
+import type { Initial, Root, Versioner } from '../states/state.ex.sw'
 import type { Models } from '../states/states.ex.sw'
 
 const DEFAULT_STATE_NAME = ':default'
@@ -12,9 +12,9 @@ export class ProjectEposState extends ex.Unit {
   ATTACH = exSw.State._attach_
   DETACH = exSw.State._detach_
 
-  async connect(initial?: Initial, versioner?: Versioner): Promise<Obj>
-  async connect(name: string, initial?: Initial, versioner?: Versioner): Promise<Obj>
-  async connect(arg0?: unknown, arg1?: unknown, arg2?: unknown): Promise<Obj> {
+  async connect<T extends Root>(initial?: Initial<T>, versioner?: Versioner): Promise<T>
+  async connect<T extends Root>(name: string, initial?: Initial<T>, versioner?: Versioner): Promise<T>
+  async connect(arg0?: unknown, arg1?: unknown, arg2?: unknown) {
     let nameArg: unknown
     let initialArg: unknown
     let versionerArg: unknown
@@ -31,8 +31,7 @@ export class ProjectEposState extends ex.Unit {
     const name = this.prepareName(nameArg, this.connect)
     const initial = this.prepareInitial(initialArg, this.connect)
     const versioner = this.prepareVersioner(versionerArg, this.connect)
-    const state = await this.$project.states.connect(name, initial, versioner)
-    return state.data
+    return await this.$project.states.connect(name, initial, versioner)
   }
 
   async disconnect(nameArg?: string) {
@@ -44,10 +43,9 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  local<T extends Obj = {}>(valueArg = {} as T, optsArg?: { deep: boolean }): T {
-    const value = this.prepareLocalStateValue(valueArg, this.local)
-    const opts = this.prepareLocalStateOpts(optsArg, this.local)
-    return this.$.libs.mobx.observable(value, {}, opts) as T
+  local<T extends Root>(stateArg?: T): T {
+    const state = this.prepareLocalState(stateArg, this.local)
+    return this.$project.states.local(state)
   }
 
   async list(filter: { connected?: boolean } = {}) {
@@ -90,11 +88,14 @@ export class ProjectEposState extends ex.Unit {
   }
 
   private prepareInitial(initial: unknown, caller: Fn) {
-    if (!this.$.utils.is.function(initial) && !this.$.utils.is.object(initial)) {
-      throw this.$epos.error(`Invalid state must be an object or a function returning an object`, caller)
+    if (this.$.utils.is.absent(initial)) return {}
+
+    const ok = this.$.utils.is.object(initial) || this.$.utils.is.function(initial)
+    if (!ok) {
+      throw this.$epos.error(`Initial state must be an object or a function returning an object`, caller)
     }
 
-    return initial as Initial
+    return initial
   }
 
   private prepareVersioner(versioner: unknown, caller: Fn) {
@@ -117,16 +118,12 @@ export class ProjectEposState extends ex.Unit {
     return versioner as Versioner
   }
 
-  private prepareLocalStateValue(value: unknown, caller: Fn) {
-    if (!this.$.utils.is.object(value)) throw this.$epos.error(`State must be an object`, caller)
-    return value
-  }
+  private prepareLocalState<T>(state: T, caller: Fn) {
+    if (this.$.utils.is.absent(state)) return {} as T
 
-  private prepareLocalStateOpts(opts: unknown, caller: Fn) {
-    if (!opts) return { deep: true }
-    if (!this.$.utils.is.object(opts)) throw this.$epos.error(`Options must be an object`, caller)
-    if (!('deep' in opts)) return { deep: true }
-    if (!this.$.utils.is.boolean(opts.deep)) throw this.$epos.error(`Option 'deep' must be a boolean`, caller)
-    return { deep: opts.deep }
+    const ok = this.$.utils.is.object(state) || this.$.utils.is.array(state)
+    if (!ok) throw this.$epos.error('Local state must be an object or an array', caller)
+
+    return state
   }
 }
