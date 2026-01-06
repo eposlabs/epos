@@ -38,7 +38,7 @@ export class Unit<TRoot = unknown> {
   }
 
   // ---------------------------------------------------------------------------
-  // ATTACH / DETACH
+  // ATTACH
   // ---------------------------------------------------------------------------
 
   /**
@@ -71,6 +71,7 @@ export class Unit<TRoot = unknown> {
     if (stateDescriptor && stateDescriptor.get) {
       const value = stateDescriptor.get.call(this)
       const state = epos.libs.mobx.observable.object(value, {}, { deep: false })
+      Reflect.defineProperty(state, '_', { get: () => epos.libs.mobx.toJS(state) })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
     }
 
@@ -138,6 +139,10 @@ export class Unit<TRoot = unknown> {
     // Mark as attached
     Reflect.defineProperty(this, _attached_, { configurable: true, get: () => true })
   }
+
+  // ---------------------------------------------------------------------------
+  // DETACH
+  // ---------------------------------------------------------------------------
 
   /**
    * Lifecycle method called when the unit is detached from the state tree.

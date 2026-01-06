@@ -344,7 +344,7 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     Reflect.defineProperty(mNode, _parent_, { configurable: true, get: () => parent })
 
     // Define dev helpers
-    Reflect.defineProperty(mNode, '_', { configurable: true, get: () => this.deproxify(mNode) })
+    Reflect.defineProperty(mNode, '_', { configurable: true, get: () => this.$.libs.mobx.toJS(mNode) })
     Reflect.defineProperty(yNode, '_', { configurable: true, get: () => yNode.toJSON() })
   }
 
@@ -619,18 +619,6 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
   private getModelName(Model: Cls) {
     const registeredModelNames = Object.keys(this.$states.models)
     return registeredModelNames.find(name => this.$states.models[name] === Model) ?? null
-  }
-
-  private deproxify(value: unknown): unknown {
-    if (this.$.utils.is.object(value)) {
-      const object: Obj = {}
-      Object.keys(value).forEach(key => (object[key] = this.deproxify(value[key])))
-      return object
-    } else if (this.$.utils.is.array(value)) {
-      return value.map(item => this.deproxify(item))
-    } else {
-      return value
-    }
   }
 
   private isSupportedValue(value: unknown) {
