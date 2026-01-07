@@ -70,9 +70,20 @@ export class Unit<TRoot = unknown> {
     const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
     if (stateDescriptor && stateDescriptor.get) {
       const value = stateDescriptor.get.call(this)
-      const state = epos.libs.mobx.observable.object(value, {}, { deep: false })
-      Reflect.defineProperty(state, '_', { get: () => epos.libs.mobx.toJS(state) })
+      const state = epos.state.local(value)
+      Reflect.defineProperty(state, epos.state.PARENT, { value: this })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
+    }
+
+    // Setup static
+    const staticDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'static')
+    if (staticDescriptor && staticDescriptor.get) {
+      let value = staticDescriptor.get.call(this)
+      Reflect.defineProperty(this, 'static', {
+        enumerable: true,
+        get: () => value,
+        set: v => (value = v),
+      })
     }
 
     // Prepare properties for the whole prototype chain:
@@ -346,6 +357,7 @@ function createView<T>(unit: Unit<T>, name: string, render: Fn) {
     try {
       return render(...args)
     } catch (error) {
+      unit.log.error(error)
       const message = is.error(error) ? error.message : String(error)
       return epos.libs.reactJsxRuntime.jsx('div', {
         children: `[${fullName}] ${message}`,

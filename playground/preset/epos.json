@@ -1,0 +1,15 @@
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "preset",
+  "assets": ["./public/logo.svg"],
+  "targets": [
+    {
+      "matches": "<popup>",
+      "load": ["./dist/app.js", "./dist/app.css"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["./dist/background.js"]
+    }
+  ]
+}

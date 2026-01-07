@@ -76,7 +76,7 @@ export class Project extends os.Unit {
     iframe.src = this.getBackgroundUrl()
 
     // Log info
-    this.info({ title: `Background restarted` })
+    this.info({ title: `<background> restarted` })
   }
 
   private removeBackground() {
@@ -88,7 +88,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    this.info({ title: `Background stopped` })
+    this.info({ title: `<background> stopped` })
   }
 
   private hasBackground() {

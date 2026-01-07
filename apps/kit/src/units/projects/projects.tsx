@@ -1,6 +1,21 @@
 export class Projects extends gl.Unit {
-  list: gl.Project[] = []
   selectedProjectId: string | null = null
+
+  get state(): { list: gl.Project[] } {
+    return { list: [] }
+  }
+
+  get static() {
+    return { data: { wer: 3 } }
+  }
+
+  get map() {
+    return Object.fromEntries(this.state.list.map(project => [project.id, project]))
+  }
+
+  get selected() {
+    return this.state.list.find(project => project.id === this.selectedProjectId) ?? null
+  }
 
   async attach() {
     epos.installer.watch(() => this.updateProjects())
@@ -8,23 +23,14 @@ export class Projects extends gl.Unit {
   }
 
   async updateProjects() {
-    console.warn('update')
-    this.list = []
+    this.state.list = []
     const projectsData = await epos.installer.list()
     for (const data of projectsData) {
       const project = new gl.Project(this, data.id)
       project.name = data.spec.name
       project.spec = data.spec
-      this.list.push(project)
+      this.state.list.push(project)
     }
-  }
-
-  get map() {
-    return Object.fromEntries(this.list.map(project => [project.id, project]))
-  }
-
-  get selected() {
-    return this.list.find(project => project.id === this.selectedProjectId) ?? null
   }
 
   async add() {
@@ -38,7 +44,13 @@ export class Projects extends gl.Unit {
 
     // Create new project and select it
     const project = new gl.Project(this, handleId)
-    this.list.push(project)
+    this.state.list.push(project)
     this.selectedProjectId = project.id
   }
+
+  static versioner = this.defineVersioner({
+    1() {
+      Reflect.deleteProperty(this, 'list')
+    },
+  })
 }

@@ -2,13 +2,16 @@ import {
   IconAlertCircle,
   IconCircleCheck,
   IconPackageExport,
+  IconPointFilled,
   IconRefresh,
   IconTrash,
 } from '@tabler/icons-react'
-import { Alert, AlertDescription, AlertTitle } from '@ui/components/ui/alert'
+import { Alert, AlertTitle } from '@ui/components/ui/alert'
 import { Button } from '@ui/components/ui/button'
 import { ButtonGroup } from '@ui/components/ui/button-group'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@ui/components/ui/item'
+import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
+import { cn } from '@ui/lib/utils'
 import type { Bundle } from 'epos'
 import type { Spec } from 'epos-spec'
 
@@ -24,16 +27,22 @@ export class Project extends gl.Unit {
   }
 
   get state(): {
-    error: Error | null
+    error: string | null
     updating: boolean
+  } {
+    return {
+      error: null,
+      updating: false,
+    }
+  }
+
+  get static(): {
     handle: FileSystemDirectoryHandle | null
     bundle: Bundle | null
     observer: FileSystemObserver | null
     updateTimer: number
   } {
     return {
-      error: null,
-      updating: false,
       handle: null,
       bundle: null,
       observer: null,
@@ -55,15 +64,16 @@ export class Project extends gl.Unit {
   }
 
   async attach() {
+    console.warn('attach')
     return
     this.update = this.$.utils.enqueue(this.update)
-    this.state.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
+    this.static.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)
     await this.update()
     this.startObserver()
   }
 
   async detach() {
-    if (this.state.observer) this.state.observer.disconnect()
+    if (this.static.observer) this.static.observer.disconnect()
     if (this.name && this.name !== 'kit') await epos.installer.remove(this.name)
   }
 
@@ -72,7 +82,7 @@ export class Project extends gl.Unit {
   }
 
   async remove() {
-    this.$.projects.list.remove(this)
+    this.$.projects.state.list.remove(this)
     await epos.installer.remove(this.id)
   }
 
@@ -97,14 +107,14 @@ export class Project extends gl.Unit {
     try {
       this.state.error = null
       this.state.updating = true
-      this.state.bundle = await this.readBundle()
-      this.spec = this.state.bundle.spec
-      if (this.name && this.name !== this.state.bundle.spec.name) await epos.installer.remove(this.name)
-      this.name = this.state.bundle.spec.name
-      await epos.installer.install(this.id, this.state.bundle)
+      this.static.bundle = await this.readBundle()
+      this.spec = this.static.bundle.spec
+      if (this.name && this.name !== this.static.bundle.spec.name) await epos.installer.remove(this.name)
+      this.name = this.static.bundle.spec.name
+      await epos.installer.install(this.id, this.static.bundle)
     } catch (e) {
       console.log(e)
-      this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
+      this.state.error = this.$.utils.is.error(e) ? String(e) : String(e)
     } finally {
       this.updatedAt = Date.now()
       this.state.updating = false
@@ -112,8 +122,8 @@ export class Project extends gl.Unit {
   }
 
   private updateWithDelay() {
-    self.clearTimeout(this.state.updateTimer)
-    this.state.updateTimer = self.setTimeout(() => this.update(), 50)
+    self.clearTimeout(this.static.updateTimer)
+    this.static.updateTimer = self.setTimeout(() => this.update(), 50)
   }
 
   private async readBundle(): Promise<Bundle> {
@@ -150,7 +160,7 @@ export class Project extends gl.Unit {
   // ---------------------------------------------------------------------------
 
   private startObserver() {
-    this.state.observer = new FileSystemObserver(records => {
+    this.static.observer = new FileSystemObserver(records => {
       if (this.state.error) {
         this.updateWithDelay()
         return
@@ -165,8 +175,8 @@ export class Project extends gl.Unit {
       }
     })
 
-    if (!this.state.handle) throw this.never()
-    this.state.observer.observe(this.state.handle, { recursive: true })
+    if (!this.static.handle) throw this.never()
+    this.static.observer.observe(this.static.handle, { recursive: true })
   }
 
   // ---------------------------------------------------------------------------
@@ -175,7 +185,7 @@ export class Project extends gl.Unit {
 
   /** Create standalone extension ZIP file out of the project. */
   async zip(asDev = false) {
-    const bundle = this.state.bundle
+    const bundle = this.static.bundle
     if (!bundle) throw new Error('Project is not loaded yet')
     const zip = new this.$.libs.Zip()
 
@@ -360,11 +370,20 @@ export class Project extends gl.Unit {
     return (
       <Alert variant="destructive">
         <IconAlertCircle />
-        <AlertTitle>{this.state.error.message}</AlertTitle>
-        {this.$.utils.is.string(this.state.error.cause) && (
-          <AlertDescription>{this.state.error.cause}</AlertDescription>
-        )}
+        <AlertTitle>{this.state.error}</AlertTitle>
+        {/* {this.$.utils.is.string(this.state.error) && <AlertDescription>{this.state.error}</AlertDescription>} */}
       </Alert>
+    )
+  }
+
+  SidebarView() {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton isActive={this.isSelected()} onClick={this.select}>
+          <IconPointFilled className={cn('text-green-500', this.state.error && 'text-red-500')} />
+          <div>{this.name ?? '<unknown>'}</div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     )
   }
 }

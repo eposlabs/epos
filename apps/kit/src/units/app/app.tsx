@@ -1,4 +1,4 @@
-import { IconPlus, IconPointFilled } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
 import { Separator } from '@ui/components/ui/separator'
 import {
   Sidebar,
@@ -14,7 +14,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from '@ui/components/ui/sidebar'
-import { cn } from '@ui/lib/utils'
 import { AppLogo } from './app-logo'
 
 export class App extends gl.Unit {
@@ -80,16 +79,8 @@ export class App extends gl.Unit {
               {/* Projects content */}
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {this.projects.list.map(project => (
-                    // Project item
-                    <SidebarMenuItem key={project.id}>
-                      <SidebarMenuButton isActive={project.isSelected()} onClick={project.select}>
-                        <IconPointFilled
-                          className={cn('text-green-500', project.state.error && 'text-red-500')}
-                        />
-                        <div>{project.name ?? '<unknown>'}</div>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                  {this.projects.state.list.map(project => (
+                    <project.SidebarView key={project.id} />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
