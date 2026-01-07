@@ -40,12 +40,19 @@
   - epos.frame.close
   - epos.frame.exists
   - epos.frame.list
-- **Asset**
-  - epos.asset.load
-  - epos.asset.unload
-  - epos.asset.url
-  - epos.asset.get
-  - epos.asset.list
+- **Assets**
+  - epos.assets.load
+  - epos.assets.unload
+  - epos.assets.url
+  - epos.assets.get
+  - epos.assets.list
+- **Projects**
+  - epos.projects.install
+  - epos.projects.remove
+  - epos.projects.enable
+  - epos.projects.disable
+  - epos.projects.watch
+  - epos.projects.list
 - **Env**
   - epos.env.tabId
   - epos.env.project

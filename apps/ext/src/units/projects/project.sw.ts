@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Sources, Updates } from 'epos'
+import type { Assets, Bundle, Mode, Sources } from 'epos'
 import type { Spec } from 'epos-spec'
 import type { Address } from './project-target.sw'
 
@@ -18,6 +18,14 @@ export type Info = {
   enabled: boolean
   hash: string | null
   hasSidePanel: boolean
+}
+
+export type Updates = {
+  mode?: Mode
+  spec?: Spec
+  sources?: Sources
+  assets?: Assets
+  enabled?: boolean
 }
 
 export class Project extends sw.Unit {

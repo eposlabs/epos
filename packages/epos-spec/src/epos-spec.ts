@@ -8,7 +8,7 @@ export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
 export type UrlMatchPattern = string // '*://*.example.com/*'
-export type Access = 'installer' | 'engine'
+export type Access = 'projects' | 'engine'
 export type Manifest = Obj
 
 export type Spec = {
@@ -103,7 +103,7 @@ const schema = {
   },
   config: {
     keys: ['access', 'preloadAssets', 'allowMissingModels'],
-    access: { default: [], variants: ['installer', 'engine'] },
+    access: { default: [], variants: ['projects', 'engine'] },
     preloadAssets: { default: true },
     allowMissingModels: { default: false },
   },

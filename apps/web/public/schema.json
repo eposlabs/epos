@@ -77,7 +77,7 @@
 
     "Access": {
       "type": "string",
-      "enum": ["installer", "engine"]
+      "enum": ["projects", "engine"]
     },
 
     "Assets": {

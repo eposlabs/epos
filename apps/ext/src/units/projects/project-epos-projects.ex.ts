@@ -1,8 +1,8 @@
-import type { Bundle, Mode, Project, Updates } from 'epos'
+import type { Bundle, Mode, Project } from 'epos'
 
 export type WatchHandler = (projects: Project[]) => void
 
-export class ProjectEposInstaller extends ex.Unit {
+export class ProjectEposProjects extends ex.Unit {
   private watchHandlers: WatchHandler[] = []
 
   constructor(parent: ex.Unit) {
@@ -30,10 +30,14 @@ export class ProjectEposInstaller extends ex.Unit {
     await this.$.bus.send<sw.Projects['remove']>('Projects.remove', id)
   }
 
-  async update(idArg: string, updatesArg: Updates) {
+  async enable(idArg: string) {
     const id = this.prepareId(idArg)
-    const updates = this.prepareUpdates(updatesArg)
-    await this.$.bus.send<sw.Projects['update']>('Projects.update', id, updates)
+    await this.$.bus.send<sw.Projects['enable']>('Projects.enable', id)
+  }
+
+  async disable(idArg: string) {
+    const id = this.prepareId(idArg)
+    await this.$.bus.send<sw.Projects['disable']>('Projects.disable', id)
   }
 
   watch(handler: WatchHandler) {
@@ -75,10 +79,5 @@ export class ProjectEposInstaller extends ex.Unit {
   private prepareId(id: unknown): string {
     if (!this.$.utils.is.string(id)) throw new Error('Project id must be a string')
     return id
-  }
-
-  private prepareUpdates(updates: unknown): Updates {
-    if (!this.$.utils.is.object(updates)) throw new Error('Updates must be an object')
-    return updates as Updates
   }
 }

@@ -21,8 +21,8 @@ declare global {
   type AsyncFn<T = any> = types.AsyncFn<T>
   type Url = string
 
-  type PartialEpos = Omit<Epos, 'installer' | 'engine'> & {
-    installer?: Epos['installer']
+  type PartialEpos = Omit<Epos, 'projects' | 'engine'> & {
+    projects?: Epos['projects']
     engine?: Epos['engine']
   }
 

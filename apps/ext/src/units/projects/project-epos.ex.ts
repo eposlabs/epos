@@ -5,15 +5,15 @@ export class ProjectEpos extends ex.Unit {
   bus = this.$.bus.create(`ProjectEpos[${this.$project.id}]`)
   state = new ex.ProjectEposState(this)
   storage = new ex.ProjectEposStorage(this)
-  asset = new ex.ProjectEposAsset(this)
+  assets = new ex.ProjectEposAssets(this)
   frame = new ex.ProjectEposFrame(this)
   env = new ex.ProjectEposEnv(this)
   libs = new ex.ProjectEposLibs(this)
-  installer = new ex.ProjectEposInstaller(this)
+  projects = new ex.ProjectEposProjects(this)
 
   async init() {
     await this.general.init()
-    await this.asset.init()
+    await this.assets.init()
     this.api = this.createApi()
   }
 
@@ -76,13 +76,13 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.frame, 'list'),
       },
 
-      // Asset
-      asset: {
-        load: this.$.utils.link(this.asset, 'load'),
-        unload: this.$.utils.link(this.asset, 'unload'),
-        url: this.$.utils.link(this.asset, 'url'),
-        get: this.$.utils.link(this.asset, 'get'),
-        list: this.$.utils.link(this.asset, 'list'),
+      // Assets
+      assets: {
+        load: this.$.utils.link(this.assets, 'load'),
+        unload: this.$.utils.link(this.assets, 'unload'),
+        url: this.$.utils.link(this.assets, 'url'),
+        get: this.$.utils.link(this.assets, 'get'),
+        list: this.$.utils.link(this.assets, 'list'),
       },
 
       // Env
@@ -105,14 +105,15 @@ export class ProjectEpos extends ex.Unit {
         yjs: this.libs.yjs,
       },
 
-      // Installer
-      ...(this.$project.spec.config.access.includes('installer') && {
-        installer: {
-          install: this.$.utils.link(this.installer, 'install'),
-          remove: this.$.utils.link(this.installer, 'remove'),
-          update: this.$.utils.link(this.installer, 'update'),
-          watch: this.$.utils.link(this.installer, 'watch'),
-          list: this.$.utils.link(this.installer, 'list'),
+      // Project
+      ...(this.$project.spec.config.access.includes('projects') && {
+        projects: {
+          install: this.$.utils.link(this.projects, 'install'),
+          remove: this.$.utils.link(this.projects, 'remove'),
+          enable: this.$.utils.link(this.projects, 'enable'),
+          disable: this.$.utils.link(this.projects, 'disable'),
+          watch: this.$.utils.link(this.projects, 'watch'),
+          list: this.$.utils.link(this.projects, 'list'),
         },
       }),
 

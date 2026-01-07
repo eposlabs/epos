@@ -1,4 +1,4 @@
-export class ProjectEposAsset extends ex.Unit {
+export class ProjectEposAssets extends ex.Unit {
   private $epos = this.closest(ex.ProjectEpos)!
   private $project = this.closest(ex.Project)!
   private files: { [path: string]: { url: string; blob: Blob } } = {}
@@ -48,7 +48,7 @@ export class ProjectEposAsset extends ex.Unit {
 
     if (!this.files[path]) {
       throw this.$epos.error(
-        `Asset must be loaded before accessing URL: '${path}'. Call epos.asset.load(path?) first.`,
+        `Asset must be loaded before accessing URL: '${path}'. Call epos.assets.load(path?) first.`,
         this.url,
       )
     }

@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Sources, Updates } from 'epos'
+import type { Assets, Bundle, Mode, Sources } from 'epos'
 import type { Address } from './project-target.sw'
 import type { Info, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -24,7 +24,8 @@ export class Projects extends sw.Unit {
 
     this.$.bus.on('Projects.install', this.install, this)
     this.$.bus.on('Projects.remove', this.remove, this)
-    this.$.bus.on('Projects.update', this.update, this)
+    this.$.bus.on('Projects.enable', this.enable, this)
+    this.$.bus.on('Projects.disable', this.disable, this)
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
@@ -59,10 +60,17 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  async update(id: string, updates: Updates) {
+  async enable(id: string) {
     const project = this.map[id]
-    if (!project) throw new Error(`Project not found: '${id}'`)
-    await project.update(updates)
+    if (!project) return
+    await project.update({ enabled: true })
+    await this.$.bus.send('Projects.changed')
+  }
+
+  async disable(id: string) {
+    const project = this.map[id]
+    if (!project) return
+    await project.update({ enabled: false })
     await this.$.bus.send('Projects.changed')
   }
 

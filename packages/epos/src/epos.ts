@@ -37,14 +37,6 @@ export type Bundle = {
   assets: Assets
 }
 
-export type Updates = {
-  mode?: Mode
-  spec?: Spec
-  sources?: Sources
-  assets?: Assets
-  enabled?: boolean
-}
-
 export type ReqInit = {
   body: RequestInit['body']
   cache: RequestInit['cache']
@@ -185,8 +177,8 @@ export interface Epos {
     list(): Promise<{ name: string | null; url: string }[]>
   }
 
-  // Asset
-  asset: {
+  // Assets
+  assets: {
     /** Load specified asset to memory. Load all assets if no path is provided. */
     load: {
       /** Load all assets. */
@@ -201,7 +193,7 @@ export interface Epos {
       /** Unload asset by path. */
       (path: string): void
     }
-    /** Get asset URL. The asset must be loaded first via `epos.asset.load`. */
+    /** Get asset URL. The asset must be loaded first via `epos.assets.load`. */
     url(path: string): string
     /** Get asset as Blob. */
     get(path: string): Promise<Blob | null>
@@ -218,6 +210,19 @@ export interface Epos {
     isBackground: boolean
   }
 
+  // Projects
+  projects: {
+    install: {
+      (id: string, url: string, mode?: Mode): Promise<void>
+      (id: string, bundle: Bundle): Promise<void>
+    }
+    remove(id: string): Promise<void>
+    enable(id: string): Promise<void>
+    disable(id: string): Promise<void>
+    watch(listener: (projects: Project[]) => void): void
+    list(): Promise<Project[]>
+  }
+
   // Libs
   libs: {
     mobx: typeof mobx
@@ -227,18 +232,6 @@ export interface Epos {
     reactDomClient: typeof reactDomClient
     reactJsxRuntime: typeof reactJsxRuntime
     yjs: typeof yjs
-  }
-
-  // Installer
-  installer: {
-    install: {
-      (id: string, url: string, mode?: Mode): Promise<void>
-      (id: string, bundle: Bundle): Promise<void>
-    }
-    remove(id: string): Promise<void>
-    update(id: string, updates: Updates): Promise<void>
-    watch(handler: (projects: Project[]) => void): void
-    list(): Promise<Project[]>
   }
 
   // Engine

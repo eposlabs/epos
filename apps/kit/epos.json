@@ -8,7 +8,7 @@
   "assets": ["public/icon.svg"],
 
   "config": {
-    "access": ["engine", "installer"],
+    "access": ["projects", "engine"],
     "allowMissingModels": true
   },
 
