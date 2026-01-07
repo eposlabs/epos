@@ -33,7 +33,7 @@ export class App extends sw.Unit {
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running, v${version} ${docsUrl}`
-    const subtitle = 'to inspect background processes, open offscreen.html from the extension details page'
+    const subtitle = `to inspect background processes, open 'epos/offscreen.html' from the extension details page`
     this.$.utils.info({ title, subtitle })
   }
 
@@ -58,7 +58,7 @@ export class App extends sw.Unit {
       {
         id: 'cs',
         matches: ['<all_urls>'],
-        js: ['/cs.js'],
+        js: ['/epos/cs.js'],
         world: 'ISOLATED',
         runAt: 'document_start',
         allFrames: true,

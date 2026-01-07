@@ -190,23 +190,23 @@ export class Project extends gl.Unit {
     const zip = new this.$.libs.Zip()
 
     const engineFiles = [
-      'cs.js',
-      'ex-mini.prod.js',
-      'ex.prod.js',
-      'os.js',
-      'sw.js',
-      'vw.css',
-      'vw.js',
-      'view.html',
-      'system.html',
-      'project.html',
-      'offscreen.html',
-      ...(asDev ? ['ex-mini.dev.js', 'ex.dev.js'] : []),
+      '/epos/cs.js',
+      '/epos/ex-mini.prod.js',
+      '/epos/ex.prod.js',
+      '/epos/os.js',
+      '/epos/sw.js',
+      '/epos/vw.css',
+      '/epos/vw.js',
+      '/epos/view.html',
+      '/epos/system.html',
+      '/epos/project.html',
+      '/epos/offscreen.html',
+      ...(asDev ? ['/epos/ex-mini.dev.js', '/epos/ex.dev.js'] : []),
     ]
 
     for (const path of engineFiles) {
-      const blob = await fetch(epos.browser.runtime.getURL(`/${path}`)).then(r => r.blob())
-      zip.file(path, blob)
+      const blob = await fetch(epos.browser.runtime.getURL(path)).then(r => r.blob())
+      zip.file(path.replace('/', ''), blob)
     }
 
     zip.file(

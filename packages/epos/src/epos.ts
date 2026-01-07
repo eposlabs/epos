@@ -24,6 +24,13 @@ export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 export type Project = { id: string; mode: Mode; spec: Spec }
 
+export type Bundle = {
+  mode: Mode
+  spec: Spec
+  sources: Sources
+  assets: Assets
+}
+
 export type ReqInit = {
   body: RequestInit['body']
   cache: RequestInit['cache']
@@ -68,13 +75,6 @@ export type Storage = {
   keys(): Promise<string[]>
   /** Remove the storage. Removes all keys and storage itself. */
   remove(): Promise<void>
-}
-
-export type Bundle = {
-  mode: Mode
-  spec: Spec
-  sources: Sources
-  assets: Assets
 }
 
 export interface Epos {

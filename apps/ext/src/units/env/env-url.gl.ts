@@ -2,19 +2,19 @@ import type { Mode } from 'epos'
 
 export class EnvUrl extends gl.Unit {
   offscreen() {
-    return '/offscreen.html'
+    return '/epos/offscreen.html'
   }
 
   system(params: { type: 'permission' }) {
-    return `/system.html?${this.toSearchParams(params)}`
+    return `/epos/system.html?${this.toSearchParams(params)}`
   }
 
   view(params: { locus: 'popup' | 'sidePanel'; tabId: number }) {
-    return `/view.html?${this.toSearchParams(params)}`
+    return `/epos/view.html?${this.toSearchParams(params)}`
   }
 
   project(params: { id: string; locus: 'popup' | 'sidePanel' | 'background'; tabId?: number; mode: Mode }) {
-    return `/project.html?${this.toSearchParams(params)}`
+    return `/epos/project.html?${this.toSearchParams(params)}`
   }
 
   private toSearchParams(params: Record<string, unknown>) {
