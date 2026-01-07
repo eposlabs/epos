@@ -7,7 +7,7 @@
   - epos.browser
   - epos.component
   - epos.render
-  - epos.element
+  - epos.container
 - **Bus**
   - epos.bus.on
   - epos.bus.off

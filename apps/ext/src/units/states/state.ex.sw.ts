@@ -11,7 +11,11 @@ export type Origin = null | 'remote'
 export type Location = [DbName, DbStoreName, DbStoreKey]
 export type Initial<T = Root> = T | (() => T)
 export type Root = object & { ':version'?: number }
-export type Versioner = Record<number, (state: MObject) => void>
+export type Model<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
+export type ObjModel<T> = T extends Obj ? T : Model<T>
+export type ObjArrModel<T> = T extends Obj | Arr ? T : Model<T>
+
+export type Versioner<T> = Record<number, (this: T, state: T) => void>
 export type Parent = MNode | null
 
 // MobX node
@@ -50,7 +54,7 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
   private initial: Initial<TRoot> | null = null
-  private versioner: Versioner
+  private versioner: Versioner<TRoot>
   private connected = false
   private bus: ReturnType<gl.Bus['create']>
   private applyingYjsToMobx = false
@@ -66,7 +70,12 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     return [this.$states.dbName, this.$states.dbStoreName, this.name]
   }
 
-  constructor(parent: exSw.Unit, name: string | null, initial?: Initial<TRoot>, versioner?: Versioner) {
+  constructor(
+    parent: exSw.Unit,
+    name: string | null,
+    initial?: Initial<TRoot>,
+    versioner?: Versioner<TRoot>,
+  ) {
     super(parent)
     this.name = name ?? `local:${this.$.utils.id()}`
     this.initial = initial ?? ({} as TRoot)

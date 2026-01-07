@@ -64,7 +64,6 @@ export class Project extends gl.Unit {
   }
 
   async attach() {
-    console.warn('attach')
     return
     this.update = this.$.utils.enqueue(this.update)
     this.static.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handleId)

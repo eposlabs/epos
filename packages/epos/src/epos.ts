@@ -10,7 +10,7 @@ import type { Chrome } from './chrome.ts'
 
 export type Fn<T = any> = (...args: any[]) => T
 export type Cls<T = any> = new (...args: any[]) => T
-export type Obj = Record<string, unknown>
+export type Obj = Record<PropertyKey, unknown>
 export type Arr = unknown[]
 export type Model<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
 export type ObjModel<T> = T extends Obj ? T : Model<T>
@@ -83,7 +83,7 @@ export interface Epos {
   browser: Chrome
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): typeof Component
-  element: HTMLDivElement
+  container: HTMLDivElement
 
   // Bus
   bus: {

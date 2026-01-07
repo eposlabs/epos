@@ -30,7 +30,7 @@ export class ProjectEpos extends ex.Unit {
       browser: this.general.browser,
       component: this.$.utils.link(this.general, 'component'),
       render: this.$.utils.link(this.general, 'render'),
-      element: this.general.element,
+      container: this.general.container,
 
       // Bus
       bus: {
