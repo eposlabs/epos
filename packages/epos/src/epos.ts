@@ -22,13 +22,27 @@ export type Assets = { [path: string]: Blob }
 export type Attrs = Record<string, string | number>
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
-export type Project = { id: string; mode: Mode; spec: Spec }
+
+export type Project = {
+  id: string
+  mode: Mode
+  spec: Spec
+  enabled: boolean
+}
 
 export type Bundle = {
   mode: Mode
   spec: Spec
   sources: Sources
   assets: Assets
+}
+
+export type Updates = {
+  mode?: Mode
+  spec?: Spec
+  sources?: Sources
+  assets?: Assets
+  enabled?: boolean
 }
 
 export type ReqInit = {
@@ -221,7 +235,8 @@ export interface Epos {
       (id: string, url: string, mode?: Mode): Promise<void>
       (id: string, bundle: Bundle): Promise<void>
     }
-    remove(name: string): Promise<void>
+    remove(id: string): Promise<void>
+    update(id: string, updates: Updates): Promise<void>
     watch(handler: (projects: Project[]) => void): void
     list(): Promise<Project[]>
   }

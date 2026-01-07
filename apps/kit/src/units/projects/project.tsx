@@ -72,6 +72,7 @@ export class Project extends gl.Unit {
   }
 
   async detach() {
+    return
     if (this.static.observer) this.static.observer.disconnect()
     if (this.name && this.name !== 'kit') await epos.installer.remove(this.name)
   }

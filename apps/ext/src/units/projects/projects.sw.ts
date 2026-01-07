@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Sources } from 'epos'
+import type { Assets, Bundle, Mode, Sources, Updates } from 'epos'
 import type { Address } from './project-target.sw'
 import type { Info, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -11,12 +11,7 @@ export class Projects extends sw.Unit {
   map: { [id: string]: sw.Project } = {}
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
-
-  /** Source code of `ex.prod.js`, `ex-mini.prod.js`, `ex.dev.js`, and `ex-mini.dev.js`. */
-  private ex = {
-    full: { dev: '', prod: '' },
-    mini: { dev: '', prod: '' },
-  }
+  private ex = { full: { dev: '', prod: '' }, mini: { dev: '', prod: '' } }
 
   get list() {
     return Object.values(this.map)
@@ -29,6 +24,7 @@ export class Projects extends sw.Unit {
 
     this.$.bus.on('Projects.install', this.install, this)
     this.$.bus.on('Projects.remove', this.remove, this)
+    this.$.bus.on('Projects.update', this.update, this)
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
@@ -56,15 +52,17 @@ export class Projects extends sw.Unit {
   }
 
   async remove(id: string) {
-    // No project? -> Do nothing
     const project = this.map[id]
     if (!project) return
-
-    // Remove project
     await project.dispose()
     delete this.map[id]
+    await this.$.bus.send('Projects.changed')
+  }
 
-    // Broadcast change
+  async update(id: string, updates: Updates) {
+    const project = this.map[id]
+    if (!project) throw new Error(`Project not found: '${id}'`)
+    await project.update(updates)
     await this.$.bus.send('Projects.changed')
   }
 

@@ -1,7 +1,5 @@
-import type { Bundle, Mode } from 'epos'
-import type { Spec } from 'epos-spec'
+import type { Bundle, Mode, Project, Updates } from 'epos'
 
-export type Project = { id: string; mode: Mode; spec: Spec }
 export type WatchHandler = (projects: Project[]) => void
 
 export class ProjectEposInstaller extends ex.Unit {
@@ -14,20 +12,28 @@ export class ProjectEposInstaller extends ex.Unit {
 
   async install(id: string, url: Url, mode?: Mode): Promise<void>
   async install(id: string, bundle: Bundle): Promise<void>
-  async install(id: string, inputArg: Url | Bundle, modeArg: Mode = 'production'): Promise<void> {
+  async install(idArg: string, inputArg: Url | Bundle, modeArg: Mode = 'production'): Promise<void> {
     if (this.$.utils.is.object(inputArg)) {
+      const id = this.prepareId(idArg)
       const bundle = this.prepareBundle(inputArg)
       await this.$.bus.send<sw.Projects['install']>('Projects.install', id, bundle)
     } else {
+      const id = this.prepareId(idArg)
       const url = this.prepareUrl(inputArg)
       const mode = this.prepareMode(modeArg)
       await this.$.bus.send<sw.Projects['install']>('Projects.install', id, url, mode)
     }
   }
 
-  async remove(nameArg: string) {
-    const name = this.prepareName(nameArg)
-    await this.$.bus.send<sw.Projects['remove']>('Projects.remove', name)
+  async remove(idArg: string) {
+    const id = this.prepareId(idArg)
+    await this.$.bus.send<sw.Projects['remove']>('Projects.remove', id)
+  }
+
+  async update(idArg: string, updatesArg: Updates) {
+    const id = this.prepareId(idArg)
+    const updates = this.prepareUpdates(updatesArg)
+    await this.$.bus.send<sw.Projects['update']>('Projects.update', id, updates)
   }
 
   watch(handler: WatchHandler) {
@@ -42,6 +48,7 @@ export class ProjectEposInstaller extends ex.Unit {
       id: info.id,
       mode: info.mode,
       spec: info.spec,
+      enabled: info.enabled,
     }))
   }
 
@@ -65,8 +72,13 @@ export class ProjectEposInstaller extends ex.Unit {
     throw new Error(`Invalid mode: '${mode}'. Expected 'production' or 'development'.`)
   }
 
-  private prepareName(name: unknown): string {
-    if (!this.$.utils.is.string(name)) throw new Error('Project name must be a string')
-    return name
+  private prepareId(id: unknown): string {
+    if (!this.$.utils.is.string(id)) throw new Error('Project id must be a string')
+    return id
+  }
+
+  private prepareUpdates(updates: unknown): Updates {
+    if (!this.$.utils.is.object(updates)) throw new Error('Updates must be an object')
+    return updates as Updates
   }
 }

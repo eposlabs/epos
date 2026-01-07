@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Sources } from 'epos'
+import type { Assets, Bundle, Mode, Sources, Updates } from 'epos'
 import type { Spec } from 'epos-spec'
 import type { Address } from './project-target.sw'
 
@@ -7,6 +7,7 @@ export type Snapshot = {
   mode: Mode
   spec: Spec
   sources: Sources
+  enabled: boolean
 }
 
 /** Data for peer contexts. */
@@ -14,27 +15,26 @@ export type Info = {
   id: string
   spec: Spec
   mode: Mode
+  enabled: boolean
   hash: string | null
   hasSidePanel: boolean
 }
 
-// TODO: throw error if spec.name is changed on update. Or maybe rename idb store (?).
-// TODO: better hash calculation, for now it only tracks resourceTexts, but what if <background>
-// is removed and hash is the same, because used texts are the same? Or `lite:` was added.
 export class Project extends sw.Unit {
   id: string
   mode: Mode
   spec: Spec
   sources: Sources
+  enabled: boolean
 
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
 
-  static async new(parent: sw.Unit, id: string, data: Bundle) {
-    const project = new Project(parent, id, data)
+  static async new(parent: sw.Unit, id: string, bundle: Bundle) {
+    const project = new Project(parent, id, bundle)
     await project.saveSnapshot()
-    await project.saveAssets(data.assets)
+    await project.saveAssets(bundle.assets)
     await project.updateNetRules()
     return project
   }
@@ -47,12 +47,17 @@ export class Project extends sw.Unit {
     return project
   }
 
-  constructor(parent: sw.Unit, id: string, data: Omit<Bundle, 'assets'>) {
+  constructor(
+    parent: sw.Unit,
+    id: string,
+    params: { mode: Mode; spec: Spec; sources: Sources; enabled?: boolean },
+  ) {
     super(parent)
     this.id = id
-    this.mode = data.mode
-    this.spec = data.spec
-    this.sources = data.sources
+    this.mode = params.mode
+    this.spec = params.spec
+    this.sources = params.sources
+    this.enabled = params.enabled ?? true
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     this.states = new exSw.States(this, this.id, ':states', { allowMissingModels: true })
   }
@@ -63,10 +68,11 @@ export class Project extends sw.Unit {
     await this.$.idb.deleteDatabase(this.id)
   }
 
-  async update(updates: Omit<Bundle, 'assets'> & { assets?: Assets }) {
-    this.mode = updates.mode
-    this.spec = updates.spec
-    this.sources = updates.sources
+  async update(updates: Updates) {
+    this.mode = updates.mode ?? this.mode
+    this.spec = updates.spec ?? this.spec
+    this.sources = updates.sources ?? this.sources
+    this.enabled = updates.enabled ?? this.enabled
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     if (updates.assets) await this.saveAssets(updates.assets)
     await this.saveSnapshot()
@@ -74,18 +80,23 @@ export class Project extends sw.Unit {
   }
 
   test(address?: Address) {
+    if (!this.enabled) return false
     return this.targets.some(target => target.test(address))
   }
 
   hasPopup() {
+    if (!this.enabled) return false
     return this.targets.some(target => target.hasPopup())
   }
 
   hasSidePanel() {
+    if (!this.enabled) return false
     return this.targets.some(target => target.hasSidePanel())
   }
 
   getCss(address?: Address) {
+    if (!this.enabled) return null
+
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -98,6 +109,8 @@ export class Project extends sw.Unit {
   }
 
   getLiteJs(address?: Address) {
+    if (!this.enabled) return null
+
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -110,6 +123,8 @@ export class Project extends sw.Unit {
   }
 
   getDefJs(address?: Address) {
+    if (!this.enabled) return null
+
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -141,12 +156,15 @@ export class Project extends sw.Unit {
       id: this.id,
       spec: this.spec,
       mode: this.mode,
+      enabled: this.enabled,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
     }
   }
 
   private async getHash(address?: Address) {
+    if (!this.enabled) return null
+
     const matchingTargets = this.targets.filter(target => target.test(address))
     if (matchingTargets.length === 0) return null
 
@@ -163,6 +181,7 @@ export class Project extends sw.Unit {
       mode: this.mode,
       spec: this.spec,
       sources: this.sources,
+      enabled: this.enabled,
     })
   }
 
