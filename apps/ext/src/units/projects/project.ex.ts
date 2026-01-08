@@ -5,7 +5,7 @@ export class Project extends ex.Unit {
   shadowCss: ProjectDef['shadowCss']
   fn: ProjectDef['fn'] | null = null
   states: exSw.States
-  bus: ReturnType<gl.Bus['create']>
+  bus: ReturnType<gl.Bus['use']>
   epos: ex.ProjectEpos
 
   constructor(parent: ex.Unit, def: ProjectDef) {
@@ -15,7 +15,7 @@ export class Project extends ex.Unit {
     this.spec = def.spec
     this.shadowCss = def.shadowCss
     this.fn = def.fn
-    this.bus = this.$.bus.create(`Project[${this.id}]`)
+    this.bus = this.$.bus.use(`Project[${this.id}]`)
     this.states = new exSw.States(this, this.id, ':states', this.getStatesConfig())
     this.epos = new ex.ProjectEpos(this)
   }

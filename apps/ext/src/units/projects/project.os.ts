@@ -8,7 +8,7 @@ export class Project extends os.Unit {
   spec: Info['spec']
   mode: Info['mode']
   hash: Info['hash']
-  bus: ReturnType<gl.Bus['create']>
+  bus: ReturnType<gl.Bus['use']>
 
   constructor(parent: os.Unit, info: Pick<Info, 'id' | 'spec' | 'mode' | 'hash'>) {
     super(parent)
@@ -16,7 +16,7 @@ export class Project extends os.Unit {
     this.spec = info.spec
     this.mode = info.mode
     this.hash = info.hash
-    this.bus = this.$.bus.create(`Project[${this.id}]`)
+    this.bus = this.$.bus.use(`Project[${this.id}]`)
     if (this.hash) this.startBackground()
 
     this.bus.on('getFrames', this.getFrames, this)
@@ -40,7 +40,7 @@ export class Project extends os.Unit {
   }
 
   dispose() {
-    this.bus.dispose()
+    this.bus.offAll()
     this.closeAllFrames()
     this.removeBackground()
   }

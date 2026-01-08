@@ -1,4 +1,3 @@
-import type { ObjArrModel, ObjModel } from 'epos'
 import type { Initial, Versioner } from '../states/state.ex.sw'
 import type { Models } from '../states/states.ex.sw'
 
@@ -13,9 +12,9 @@ export class ProjectEposState extends ex.Unit {
   ATTACH = exSw.State._attach_
   DETACH = exSw.State._detach_
 
-  async connect<T = Obj>(initial?: Initial<ObjModel<T>>, versioner?: Versioner<T>): Promise<T>
-  async connect<T = Obj>(name?: string, initial?: Initial<ObjModel<T>>, versioner?: Versioner<T>): Promise<T>
-  async connect<T = Obj>(arg0?: unknown, arg1?: unknown, arg2?: unknown) {
+  async connect(initial?: Initial, versioner?: Versioner): Promise<unknown>
+  async connect(name?: string, initial?: Initial, versioner?: Versioner): Promise<unknown>
+  async connect(arg0?: unknown, arg1?: unknown, arg2?: unknown) {
     let nameArg: unknown
     let initialArg: unknown
     let versionerArg: unknown
@@ -30,8 +29,8 @@ export class ProjectEposState extends ex.Unit {
     }
 
     const name = this.prepareName(nameArg, this.connect)
-    const initial = this.prepareInitial<T>(initialArg, this.connect)
-    const versioner = this.prepareVersioner<T>(versionerArg, this.connect)
+    const initial = this.prepareInitial(initialArg, this.connect)
+    const versioner = this.prepareVersioner(versionerArg, this.connect)
 
     return await this.$project.states.connect(name, initial, versioner)
   }
@@ -45,8 +44,8 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  local<T = Obj>(stateArg?: ObjArrModel<T>): T {
-    const state = this.prepareLocalState<T>(stateArg, this.local)
+  local(stateArg?: unknown) {
+    const state = this.prepareLocalState(stateArg, this.local)
     return this.$project.states.local(state)
   }
 
@@ -89,18 +88,18 @@ export class ProjectEposState extends ex.Unit {
     return name
   }
 
-  private prepareInitial<T>(initial: unknown, caller: Fn): Initial<ObjModel<T>> {
-    if (this.$.utils.is.absent(initial)) return {} as Initial<ObjModel<T>>
+  private prepareInitial(initial: unknown, caller: Fn): Initial {
+    if (this.$.utils.is.absent(initial)) return {}
 
     const ok = this.$.utils.is.object(initial) || this.$.utils.is.function(initial)
     if (!ok) {
       throw this.$epos.error(`Initial state must be an object or a function returning an object`, caller)
     }
 
-    return initial as Initial<ObjModel<T>>
+    return initial
   }
 
-  private prepareVersioner<T>(versioner: unknown, caller: Fn) {
+  private prepareVersioner(versioner: unknown, caller: Fn): Versioner {
     if (!this.$.utils.is.object(versioner)) throw this.$epos.error(`Versioner must be an object`, caller)
 
     const keys = Object.keys(versioner)
@@ -117,15 +116,15 @@ export class ProjectEposState extends ex.Unit {
       )
     }
 
-    return versioner as Versioner<T>
+    return versioner as Versioner
   }
 
-  private prepareLocalState<T>(state: unknown, caller: Fn): ObjArrModel<T> {
-    if (this.$.utils.is.absent(state)) return {} as ObjArrModel<T>
+  private prepareLocalState(state: unknown, caller: Fn) {
+    if (this.$.utils.is.absent(state)) return {}
 
     const ok = this.$.utils.is.object(state) || this.$.utils.is.array(state)
     if (!ok) throw this.$epos.error('Local state must be an object or an array', caller)
 
-    return state as ObjArrModel<T>
+    return state
   }
 }

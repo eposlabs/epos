@@ -4,11 +4,11 @@ export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 
 export class Bus extends gl.Unit {
-  /** Different epos-based apps have different appId. */
+  // Different epos-based apps have different appId
   appId = '' // this.$.env.is.sw ? this.$.utils.id() : '' // TODO: null
-  /** Different peers of the same app have different peerId. */
+  // Different peers of the same app have different peerId
   peerId = this.$.utils.id()
-  /** Registered actions. */
+  // Registered actions
   actions: gl.BusAction[] = []
 
   utils = new gl.BusUtils(this)
@@ -17,9 +17,10 @@ export class Bus extends gl.Unit {
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
 
-  create(namespace: string) {
+  use(namespace: string) {
     const prefix = `@${namespace} - `
     const scoped = (name: string) => `${prefix}${name}`
+
     return {
       on: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.on<T>(scoped(name), fn, thisArg),
       off: <T extends Fn>(name: string, fn?: T) => this.off<T>(scoped(name), fn),
@@ -28,7 +29,7 @@ export class Bus extends gl.Unit {
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.once<T>(scoped(name), fn, thisArg),
       setSignal: (name: string, ...args: unknown[]) => this.setSignal(scoped(name), ...args),
       waitSignal: <T>(name: string, timeout?: number) => this.waitSignal<T>(scoped(name), timeout),
-      dispose: () => {
+      offAll: () => {
         for (const action of this.actions) {
           if (!action.name.startsWith(prefix)) continue
           this.off(action.name, action.fn, action.target)

@@ -47,7 +47,7 @@ export class Project extends vw.Unit {
     else {
       const tabId = this.$projects.getTabId()
       const tab = await this.$.browser.tabs.get(tabId)
-      const projectEposBus = this.$.bus.create(`ProjectEpos[${this.id}]`)
+      const projectEposBus = this.$.bus.use(`ProjectEpos[${this.id}]`)
       await projectEposBus.send(':action', tab)
       if (this.$.env.is.vwPopup) self.close()
     }

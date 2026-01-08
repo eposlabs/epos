@@ -9,13 +9,9 @@ export const _detach_ = Symbol('detach')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStoreName, DbStoreKey]
+export type Root = unknown // object/instance for sync states, object/array/instance for local states
 export type Initial<T = Root> = T | (() => T)
-export type Root = object & { ':version'?: number }
-export type Model<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
-export type ObjModel<T> = T extends Obj ? T : Model<T>
-export type ObjArrModel<T> = T extends Obj | Arr ? T : Model<T>
-
-export type Versioner<T> = Record<number, (this: T, state: T) => void>
+export type Versioner = Record<number, (this: unknown, state: unknown) => void>
 export type Parent = MNode | null
 
 // MobX node
@@ -42,21 +38,21 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
  * #### How Sync Works
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
-export class State<TRoot extends Root = Root> extends exSw.Unit {
+export class State extends exSw.Unit {
   static _meta_ = _meta_
   static _parent_ = _parent_
   static _attach_ = _attach_
   static _detach_ = _detach_
 
   name: string
-  root = {} as TRoot
+  root = {} as Root
   private $states = this.closest(exSw.States)!
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
-  private initial: Initial<TRoot> | null = null
-  private versioner: Versioner<TRoot>
+  private initial: Initial | null = null
+  private versioner: Versioner
   private connected = false
-  private bus: ReturnType<gl.Bus['create']>
+  private bus: ReturnType<gl.Bus['use']>
   private applyingYjsToMobx = false
   private pendingAttachHooks: (() => void)[] = []
   private saveTimeout: number | undefined = undefined
@@ -70,18 +66,13 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     return [this.$states.dbName, this.$states.dbStoreName, this.name]
   }
 
-  constructor(
-    parent: exSw.Unit,
-    name: string | null,
-    initial?: Initial<TRoot>,
-    versioner?: Versioner<TRoot>,
-  ) {
+  constructor(parent: exSw.Unit, name: string | null, initial?: Initial, versioner?: Versioner) {
     super(parent)
     this.name = name ?? `local:${this.$.utils.id()}`
-    this.initial = initial ?? ({} as TRoot)
+    this.initial = initial ?? {}
     this.versioner = versioner ?? {}
     this.local = name === null
-    this.bus = this.$.bus.create(`State[${this.id}]`)
+    this.bus = this.$.bus.use(`State[${this.id}]`)
     this.save = this.$.utils.enqueue(this.save, this)
     if (this.local) this.initLocal()
   }
@@ -96,8 +87,7 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
     const initialOk = this.$.utils.is.object(initial) || this.$.utils.is.array(initial)
     if (!initialOk) throw new Error('Local state must be an object or an array')
-
-    this.root = this.attach(initial, null) as TRoot
+    this.root = this.attach(initial, null)
     this.pendingAttachHooks.forEach(attach => attach())
     this.pendingAttachHooks = []
     this.connected = true
@@ -108,7 +98,7 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     if (!this.connected) return
     this.connected = false
     if (this.doc) this.doc.destroy()
-    this.bus.dispose()
+    this.bus.offAll()
     await this.save(true)
   }
 
@@ -140,14 +130,14 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     // Load state
     if (this.$.env.is.sw) {
       const root = await this.$.idb.get<Obj>(...this.location)
-      this.root = this.attach(root ?? {}, null) as TRoot
+      this.root = this.attach(root ?? {}, null)
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
       if (!docAsUpdate) throw this.never()
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
-      this.root = this.attach(yRoot, null) as TRoot
+      this.root = this.attach(yRoot, null)
     }
 
     // Apply missed updates
@@ -178,7 +168,9 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
       if (Object.keys(this.root).length === 0) {
         const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
         if (!this.$.utils.is.object(initial)) throw new Error('Initial state must be an object')
-        Object.assign(this.root, initial)
+        this.detach(this.root) // Detach empty root to remove yRoot observer
+        this.root = this.attach(initial, null)
+        if (!this.$.utils.is.object(this.root)) throw this.never()
         if (versions.length > 0) this.root[':version'] = versions.at(-1)
       }
 
@@ -218,10 +210,10 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
     if (this.$.utils.is.object(value)) return this.attachObject(value, parent)
     if (this.$.utils.is.array(value)) return this.attachArray(value, parent)
     if (this.isSupportedValue(value)) return value
+    console.error('Unsupported value:', value)
     const type = value?.constructor.name ?? typeof value
     const message = `State does not support ${type} values`
     const tip = `Supported types: object, array, string, number, boolean, null, undefined`
-    console.error('Unsupported value:', value)
     throw new Error(`${message}. ${tip}.`)
   }
 
@@ -309,10 +301,15 @@ export class State<TRoot extends Root = Root> extends exSw.Unit {
   }
 
   private detach(target: unknown) {
-    // Not attached? -> Skip
+    // Not attached? -> Skip.
+    // All nested nodes are not attached as well in this case.
     const meta = this.getMeta(target)
     if (!meta) return
 
+    // Unwire the node
+    meta.unwire()
+
+    // Detach nested nodes
     if (this.$.utils.is.object(target)) {
       Object.keys(target).forEach(key => this.detach(target[key]))
       if (this.$.utils.is.function(target[_detach_])) target[_detach_]()

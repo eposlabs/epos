@@ -23,7 +23,6 @@ export class Project extends gl.Unit {
   }
 
   async toggle() {
-    return
     if (this.enabled) {
       await epos.projects.disable(this.id)
     } else {

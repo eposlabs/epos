@@ -1,5 +1,5 @@
 import type { DbName, DbStoreName } from 'dropcap/idb'
-import type { Initial, Root, Versioner } from './state.ex.sw'
+import type { Initial, Versioner } from './state.ex.sw'
 
 export type Models = Record<string, Cls>
 export type Config = { allowMissingModels?: boolean }
@@ -10,8 +10,9 @@ export class States extends exSw.Unit {
   dbStoreName: DbStoreName
   config: Config
   models: Models = {}
-  private bus: ReturnType<gl.Bus['create']>
+  private bus: ReturnType<gl.Bus['use']>
   private queue = new this.$.utils.Queue()
+  private autoDisconnectInterval = -1 // For `sw`
 
   get list() {
     return Object.values(this.map)
@@ -23,7 +24,7 @@ export class States extends exSw.Unit {
     this.dbName = dbName
     this.dbStoreName = dbStoreName
     this.config = config ?? { allowMissingModels: false }
-    this.bus = this.$.bus.create(`States[${dbName}/${dbStoreName}]`)
+    this.bus = this.$.bus.use(`States[${dbName}/${dbStoreName}]`)
     this.connect = this.queue.wrap(this.connect, this)
     this.disconnect = this.queue.wrap(this.disconnect, this)
 
@@ -40,9 +41,9 @@ export class States extends exSw.Unit {
     }
   }
 
-  async connect<T extends Root>(name: string, initial?: Initial<T>, versioner?: Versioner): Promise<T> {
+  async connect(name: string, initial?: Initial, versioner?: Versioner) {
     // Already connected? -> Return existing
-    if (this.map[name]) return this.map[name].root as T
+    if (this.map[name]) return this.map[name].root
 
     // Ensure `sw` is connected first
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
@@ -55,8 +56,8 @@ export class States extends exSw.Unit {
     return state.root
   }
 
-  local<T extends Root>(initial?: T): T {
-    const state = new exSw.State(this, null, initial)
+  local(value?: unknown) {
+    const state = new exSw.State(this, null, value)
     return state.root
   }
 
@@ -71,7 +72,8 @@ export class States extends exSw.Unit {
   }
 
   async dispose() {
-    this.bus.dispose()
+    this.bus.offAll()
+    self.clearInterval(this.autoDisconnectInterval)
     for (const name in this.map) await this.disconnect(name)
     await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
   }
@@ -88,16 +90,16 @@ export class States extends exSw.Unit {
   }
 
   transaction(fn: () => void) {
-    // Build transact function over all states
-    let transact = () => fn()
+    // Build transaction function over all states
+    let transaction = () => fn()
     for (const state of this.list) {
-      const previousTransact = transact
-      transact = () => state.transaction(() => previousTransact())
+      const previousTransaction = transaction
+      transaction = () => state.transaction(() => previousTransaction())
     }
 
     // Each `state.transaction` is already wrapped in a MobX action,
-    // but we still wrap to support non-state observables.
-    this.$.libs.mobx.runInAction(() => transact())
+    // but we still wrap to support non-state observables
+    this.$.libs.mobx.runInAction(() => transaction())
   }
 
   isConnected(name: string) {
@@ -110,7 +112,7 @@ export class States extends exSw.Unit {
 
   /** Automatically disconnect state if there are no `ex` connections to it. */
   private setupAutoDisconnect() {
-    self.setInterval(async () => {
+    this.autoDisconnectInterval = self.setInterval(async () => {
       for (const state of this.list) {
         const hasPeers = await state.hasPeers()
         if (!hasPeers) await this.disconnect(state.name)

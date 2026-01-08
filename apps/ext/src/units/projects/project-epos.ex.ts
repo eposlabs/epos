@@ -2,7 +2,7 @@ export class ProjectEpos extends ex.Unit {
   private $project = this.closest(ex.Project)!
   declare api: ReturnType<ProjectEpos['createApi']>
   general = new ex.ProjectEposGeneral(this)
-  bus = this.$.bus.create(`ProjectEpos[${this.$project.id}]`)
+  bus = this.$.bus.use(`ProjectEpos[${this.$project.id}]`)
   state = new ex.ProjectEposState(this)
   storage = new ex.ProjectEposStorage(this)
   assets = new ex.ProjectEposAssets(this)

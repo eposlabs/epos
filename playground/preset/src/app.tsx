@@ -8,7 +8,7 @@ const App = epos.component(() => {
         <img src={epos.assets.url('./public/logo.svg')} className="size-6" />
         <h1>Preset App</h1>
       </div>
-      <button onClick={() => state.count++} className="bg-amber-200 p-2 rounded-sm">
+      <button onClick={() => state.count++} className="bg-amber-200 p-2 rounded-sm text-black">
         Click me [{state.count}]
       </button>
     </div>
