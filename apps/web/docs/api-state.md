@@ -121,20 +121,20 @@ epos.state.transaction(() => {
 })
 ```
 
-## `epos.state.local`
+## `epos.state.create`
 
 Creates a **local-only** reactive state (no sync, no persistence).
 
 **Usage**
 
 ```ts
-epos.state.local<T extends object = {}>(state?): T
+epos.state.create<T extends object = {}>(state?): T
 ```
 
 **Example**
 
 ```js
-const ui = epos.state.local({ modalOpen: false })
+const ui = epos.state.create({ modalOpen: false })
 ui.modalOpen = true // local to this context
 ```
 

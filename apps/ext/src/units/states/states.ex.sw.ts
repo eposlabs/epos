@@ -56,7 +56,7 @@ export class States extends exSw.Unit {
     return state.root
   }
 
-  local(value?: unknown) {
+  create(value?: unknown) {
     const state = new exSw.State(this, null, value)
     return state.root
   }

@@ -44,9 +44,9 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  local(stateArg?: unknown) {
-    const state = this.prepareLocalState(stateArg, this.local)
-    return this.$project.states.local(state)
+  create(stateArg?: unknown) {
+    const state = this.prepareLocalState(stateArg, this.create)
+    return this.$project.states.create(state)
   }
 
   async list(filter: { connected?: boolean } = {}) {

@@ -121,7 +121,7 @@ export interface Epos {
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    local<T = Obj>(state?: ObjArrModel<T>): T
+    create<T = Obj>(state?: ObjArrModel<T>): T
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
@@ -156,7 +156,7 @@ export interface Epos {
     remove(name?: string): Promise<void>
     /** Get storage API for a specific storage. */
     use(name?: string): Storage
-    /** Get this list of all storages. */
+    /** Get the list of all storages. */
     list(): Promise<{ name: string | null }[]>
   }
 
@@ -173,7 +173,7 @@ export interface Epos {
     close(name?: string): Promise<void>
     /** Check if background frame with the given name exists. */
     exists(name?: string): Promise<boolean>
-    /** Get list of all open background frames. */
+    /** Get the list of all open background frames. */
     list(): Promise<{ name: string | null; url: string }[]>
   }
 

@@ -75,7 +75,7 @@ export class Unit<TRoot = unknown> {
       const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
       if (!descriptor || !descriptor.get) return
       const value = descriptor.get.call(this)
-      const state = epos.state.local(value)
+      const state = epos.state.create(value)
       Reflect.defineProperty(state, epos.state.PARENT, { value: this })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
     })()

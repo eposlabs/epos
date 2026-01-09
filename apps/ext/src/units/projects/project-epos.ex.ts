@@ -48,7 +48,7 @@ export class ProjectEpos extends ex.Unit {
         connect: this.$.utils.link(this.state, 'connect'),
         disconnect: this.$.utils.link(this.state, 'disconnect'),
         transaction: this.$.utils.link(this.state, 'transaction'),
-        local: this.$.utils.link(this.state, 'local'),
+        create: this.$.utils.link(this.state, 'create'),
         list: this.$.utils.link(this.state, 'list'),
         remove: this.$.utils.link(this.state, 'remove'),
         register: this.$.utils.link(this.state, 'register'),

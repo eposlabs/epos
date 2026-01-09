@@ -20,7 +20,7 @@
   - epos.state.connect
   - epos.state.disconnect
   - epos.state.transaction
-  - epos.state.local
+  - epos.state.create
   - epos.state.remove
   - epos.state.list
   - epos.state.register

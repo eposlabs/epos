@@ -30,7 +30,7 @@ Reactive state management with synchronization across all contexts.
 
 - [epos.state.connect](/docs/api-state#epos-state-connect)
 - [epos.state.disconnect](/docs/api-state#epos-state-disconnect)
-- [epos.state.local](/docs/api-state#epos-state-local)
+- [epos.state.create](/docs/api-state#epos-state-create)
 - [epos.state.transaction](/docs/api-state#epos-state-transaction)
 - [epos.state.destroy](/docs/api-state#epos-state-destroy)
 - [epos.state.list](/docs/api-state#epos-state-list)
