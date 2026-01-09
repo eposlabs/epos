@@ -47,7 +47,9 @@ export class App extends gl.Unit {
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <this.SidebarView />
         <Separator orientation="vertical" />
-        <SidebarInset>{/* {this.projects.selected && <this.projects.selected.View />} */}</SidebarInset>
+        <SidebarInset>
+          <this.projects.SelectedProjectView />
+        </SidebarInset>
       </SidebarProvider>
     )
   }
@@ -76,6 +78,4 @@ export class App extends gl.Unit {
       </Sidebar>
     )
   }
-
-  static versioner = this.defineVersioner({})
 }

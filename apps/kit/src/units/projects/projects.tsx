@@ -6,19 +6,23 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from '@ui/components/ui/sidebar'
+import type { Project as ProjectData } from 'epos'
 
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
   selectedProjectId: string | null = null
 
-  async attach() {
-    await this.update()
-    epos.projects.watch(this.update)
+  get selectedProject() {
+    return this.list.find(project => project.id === this.selectedProjectId) ?? null
   }
 
-  private async update() {
+  async attach() {
     const projectsData = await epos.projects.list()
+    this.refresh(projectsData)
+    epos.projects.watch(projectsData => this.refresh(projectsData))
+  }
 
+  private refresh(projectsData: ProjectData[]) {
     projectsData.forEach(projectData => {
       const project = this.list.find(project => project.id === projectData.id)
       if (project) {
@@ -30,9 +34,12 @@ export class Projects extends gl.Unit {
 
     this.list.forEach(project => {
       const exists = projectsData.find(projectData => projectData.id === project.id)
-      if (exists) return
-      this.list.remove(project)
+      if (!exists) this.list.remove(project)
     })
+
+    if (!this.selectedProjectId || !this.list.find(project => project.id === this.selectedProjectId)) {
+      this.selectedProjectId = this.list[0]?.id ?? null
+    }
   }
 
   SidebarView() {
@@ -54,12 +61,15 @@ export class Projects extends gl.Unit {
     )
   }
 
-  static versioner = this.defineVersioner({
-    1() {
-      this.list = []
-    },
-    2() {
-      this.selectedProjectId = null
-    },
-  })
+  SelectedProjectView() {
+    if (!this.selectedProject) return null
+    return <this.selectedProject.View />
+  }
+
+  get versioner() {
+    return {
+      1: () => (this.list = []),
+      2: () => (this.selectedProjectId = null),
+    }
+  }
 }

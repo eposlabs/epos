@@ -8,7 +8,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _pendingAttachHooks_ = Symbol('pendingAttachHooks')
+export const _attachQueue_ = Symbol('pendingAttachHooks')
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
 
 export type Node<T> = Unit<T> | Obj | Arr
@@ -24,7 +24,7 @@ export class Unit<TRoot = unknown> {
   declare [_attached_]?: boolean;
   declare [_disposers_]?: Set<() => void>;
   declare [_ancestors_]?: Map<Cls, unknown>;
-  declare [_pendingAttachHooks_]?: (() => void)[]
+  declare [_attachQueue_]?: (() => void)[]
 
   static defineVersioner<T extends Unit>(this: Cls<T>, versioner: Versioner<T>) {
     return versioner
@@ -33,8 +33,6 @@ export class Unit<TRoot = unknown> {
   constructor(parent: Unit<TRoot> | null) {
     this.id = nanoid()
     this[_parent_] = parent
-    const versions = getVersions(this)
-    if (versions.length > 0) this[':version'] = versions.at(-1)!
   }
 
   // ---------------------------------------------------------------------------
@@ -45,46 +43,50 @@ export class Unit<TRoot = unknown> {
    * Lifecycle method called when the unit is attached to the state tree.
    */
   [epos.state.ATTACH]() {
-    // Apply versioner
-    epos.state.transaction(() => {
-      const versioner = getVersioner(this)
-      const versions = getVersions(this)
-      for (const version of versions) {
-        if (is.number(this[':version']) && this[':version'] >= version) continue
-        const versionFn = versioner[version]
-        if (!is.function(versionFn)) continue
-        versionFn.call(this)
-        this[':version'] = version
-      }
-    })
-
     // Setup logger
     let log = createLog(this['@'])
-    Reflect.defineProperty(this, 'log', {
-      configurable: true,
-      get: () => log,
-      set: v => (log = v),
-    })
+    Reflect.defineProperty(this, 'log', { configurable: true, get: () => log, set: v => (log = v) })
+
+    // Apply versioner
+    void (() => {
+      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'versioner')
+      if (!descriptor || !descriptor.get) return
+
+      const versioner = descriptor.get.call(this)
+      if (!is.object(versioner)) return
+
+      const asc = (v1: number, v2: number) => v1 - v2
+      const versions = Object.keys(versioner).filter(is.numeric).map(Number).sort(asc)
+      if (versions.length === 0) return
+
+      epos.state.transaction(() => {
+        for (const version of versions) {
+          if (is.number(this[':version']) && this[':version'] >= version) continue
+          const versionFn = versioner[version]
+          if (!is.function(versionFn)) continue
+          versionFn.call(this)
+          this[':version'] = version
+        }
+      })
+    })()
 
     // Setup state
-    const stateDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
-    if (stateDescriptor && stateDescriptor.get) {
-      const value = stateDescriptor.get.call(this)
+    void (() => {
+      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
+      if (!descriptor || !descriptor.get) return
+      const value = descriptor.get.call(this)
       const state = epos.state.local(value)
       Reflect.defineProperty(state, epos.state.PARENT, { value: this })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
-    }
+    })()
 
     // Setup static
-    const staticDescriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'static')
-    if (staticDescriptor && staticDescriptor.get) {
-      let value = staticDescriptor.get.call(this)
-      Reflect.defineProperty(this, 'static', {
-        enumerable: true,
-        get: () => value,
-        set: v => (value = v),
-      })
-    }
+    void (() => {
+      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'static')
+      if (!descriptor || !descriptor.get) return
+      let value = descriptor.get.call(this)
+      Reflect.defineProperty(this, 'static', { enumerable: true, get: () => value, set: v => (value = v) })
+    })()
 
     // Prepare properties for the whole prototype chain:
     // - Create components for methods ending with `View`
@@ -93,18 +95,14 @@ export class Unit<TRoot = unknown> {
     for (const prototype of getPrototypes(this)) {
       const descriptors = Object.getOwnPropertyDescriptors(prototype)
       for (const [key, descriptor] of Object.entries(descriptors)) {
-        // Skip constructor and already defined properties
-        if (key === 'constructor') continue
+        // Skip reserved keys and already defined properties
+        if (['constructor', 'versioner', 'state', 'static'].includes(key)) continue
         if (this.hasOwnProperty(key)) continue
 
         // Create components for methods ending with `View`
         if (is.function(descriptor.value) && key.endsWith('View')) {
           let View = createView(this, key, descriptor.value.bind(this))
-          Reflect.defineProperty(this, key, {
-            configurable: true,
-            get: () => View,
-            set: v => (View = v),
-          })
+          Reflect.defineProperty(this, key, { configurable: true, get: () => View, set: v => (View = v) })
         }
 
         // Bind all other methods to the unit instance
@@ -130,21 +128,21 @@ export class Unit<TRoot = unknown> {
       }
     }
 
-    // Queue attach hook.
-    // Do not execute `attach` hooks immediately, but rather queue them on the highest unattached ancestor.
-    // This way `attach` hooks are called after all versioners have been applied in the entire subtree.
+    // Queue attach method.
+    // Do not execute `attach` methods immediately, but rather queue them on the highest unattached ancestor.
+    // This way `attach` methods are called after all versioners have been applied in the entire subtree.
     const attach = Reflect.get(this, 'attach')
     if (is.function(attach)) {
-      const unattachedRoot = findUnattachedRoot(this)
-      if (!unattachedRoot) throw this.never()
-      ensure(unattachedRoot, _pendingAttachHooks_, () => [])
-      unattachedRoot[_pendingAttachHooks_].push(() => attach())
+      const head = findUnattachedRoot(this)
+      if (!head) throw this.never()
+      ensure(head, _attachQueue_, () => [])
+      head[_attachQueue_].push(() => attach.call(this))
     }
 
-    // Release attach hooks
-    if (this[_pendingAttachHooks_]) {
-      this[_pendingAttachHooks_].forEach(attach => attach())
-      delete this[_pendingAttachHooks_]
+    // Release attach queue
+    if (this[_attachQueue_]) {
+      this[_attachQueue_].forEach(attach => attach())
+      delete this[_attachQueue_]
     }
 
     // Mark as attached
@@ -327,24 +325,6 @@ function findUnattachedRoot<T>(unit: Unit<T>) {
 function getParent<T>(node: Node<T>) {
   const parent: Node<T> | null = Reflect.get(node, _parent_) ?? Reflect.get(node, epos.state.PARENT) ?? null
   return parent
-}
-
-/**
- * Get the versioner object for a unit.
- */
-function getVersioner<T>(unit: Unit<T>) {
-  const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
-  if (!is.object(versioner)) return {}
-  return versioner
-}
-
-/**
- * Get a sorted list of numeric versions defined in unit's versioner.
- */
-function getVersions<T>(unit: Unit<T>) {
-  const versioner = getVersioner(unit)
-  const numericKeys = Object.keys(versioner).filter(key => is.numeric(key))
-  return numericKeys.map(Number).sort((v1, v2) => v1 - v2)
 }
 
 /**

@@ -45,7 +45,7 @@ export class State extends exSw.Unit {
   static _detach_ = _detach_
 
   name: string
-  root = {} as Root
+  root: Root = {}
   private $states = this.closest(exSw.States)!
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
@@ -54,7 +54,7 @@ export class State extends exSw.Unit {
   private connected = false
   private bus: ReturnType<gl.Bus['use']>
   private applyingYjsToMobx = false
-  private pendingAttachHooks: (() => void)[] = []
+  private attachQueue: (() => void)[] = []
   private saveTimeout: number | undefined = undefined
   private SAVE_DELAY = 300
 
@@ -88,8 +88,8 @@ export class State extends exSw.Unit {
     const initialOk = this.$.utils.is.object(initial) || this.$.utils.is.array(initial)
     if (!initialOk) throw new Error('Local state must be an object or an array')
     this.root = this.attach(initial, null)
-    this.pendingAttachHooks.forEach(attach => attach())
-    this.pendingAttachHooks = []
+    this.attachQueue.forEach(attach => attach())
+    this.attachQueue = []
     this.connected = true
   }
 
@@ -155,7 +155,7 @@ export class State extends exSw.Unit {
     // Finalize setup:
     // - Set initial state
     // - Apply versioner
-    // - Release pending attach hooks
+    // - Release attach queue
     this.transaction(() => {
       if (!this.$.utils.is.object(this.root)) throw this.never()
 
@@ -185,9 +185,9 @@ export class State extends exSw.Unit {
         }
       }
 
-      // Release pending attach hooks
-      this.pendingAttachHooks.forEach(attach => attach())
-      this.pendingAttachHooks = []
+      // Release attach queue
+      this.attachQueue.forEach(attach => attach())
+      this.attachQueue = []
 
       // Free up memory
       this.initial = null
@@ -237,8 +237,8 @@ export class State extends exSw.Unit {
     yMap.forEach((value, key) => (mObject[key] = value))
     this.applyingYjsToMobx = prevApplyingYjsToMobx
 
-    // Process attach hook
-    this.processAttachHook(mObject)
+    // Process attach
+    this.processAttach(mObject)
 
     return mObject
   }
@@ -280,8 +280,8 @@ export class State extends exSw.Unit {
     // Populate MobX node (Yjs node will be populated automatically via MobX observer)
     Object.keys(object).forEach(key => (mObject[key] = object[key]))
 
-    // Process attach hook
-    this.processAttachHook(mObject)
+    // Process attach
+    this.processAttach(mObject)
 
     return mObject
   }
@@ -354,14 +354,14 @@ export class State extends exSw.Unit {
     Reflect.defineProperty(yNode, '_', { configurable: true, get: () => yNode.toJSON() })
   }
 
-  private processAttachHook(mObject: MObject) {
+  private processAttach(mObject: MObject) {
     const attach = mObject[_attach_]
     if (!this.$.utils.is.function(attach)) return
 
     if (this.connected) {
       attach.call(mObject)
     } else {
-      this.pendingAttachHooks.push(() => attach.call(mObject))
+      this.attachQueue.push(() => attach.call(mObject))
     }
   }
 
