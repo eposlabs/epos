@@ -1,5 +1,5 @@
-export type Obj = Record<PropertyKey, unknown>
-export type Arr = unknown[]
-export type Cls<T = any> = new (...args: any[]) => T
-export type Fn<T = any> = (...args: any[]) => T
-export type AsyncFn<T = any> = (...args: any[]) => Promise<T>
+export type Obj<T = unknown> = Record<PropertyKey, T>
+export type Arr<T = unknown> = T[]
+export type Cls<T = unknown> = new (...args: any[]) => T
+export type Fn<T = unknown> = (...args: any[]) => T
+export type AsyncFn<T = unknown> = (...args: any[]) => Promise<T>

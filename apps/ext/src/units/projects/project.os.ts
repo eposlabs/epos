@@ -40,7 +40,7 @@ export class Project extends os.Unit {
   }
 
   dispose() {
-    this.bus.offAll()
+    this.bus.off()
     this.closeAllFrames()
     this.removeBackground()
   }

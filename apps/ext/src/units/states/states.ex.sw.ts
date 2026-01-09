@@ -1,10 +1,11 @@
 import type { DbName, DbStoreName } from 'dropcap/idb'
-import type { Initial, Versioner } from './state.ex.sw'
+import type { Initial, Root, Versioner } from './state.ex.sw'
 
 export type Models = Record<string, Cls>
 export type Config = { allowMissingModels?: boolean }
 
 export class States extends exSw.Unit {
+  id: string
   map: Record<string, exSw.State> = {}
   dbName: DbName
   dbStoreName: DbStoreName
@@ -13,6 +14,7 @@ export class States extends exSw.Unit {
   private bus: ReturnType<gl.Bus['use']>
   private queue = new this.$.utils.Queue()
   private autoDisconnectInterval = -1 // For `sw`
+  private static instanceIds = new Set<string>()
 
   get list() {
     return Object.values(this.map)
@@ -21,12 +23,17 @@ export class States extends exSw.Unit {
   constructor(parent: exSw.Unit, dbName: DbName, dbStoreName: DbStoreName, config?: Config) {
     super(parent)
 
+    this.id = `States[${dbName}/${dbStoreName}]`
     this.dbName = dbName
     this.dbStoreName = dbStoreName
     this.config = config ?? { allowMissingModels: false }
     this.bus = this.$.bus.use(`States[${dbName}/${dbStoreName}]`)
     this.connect = this.queue.wrap(this.connect, this)
     this.disconnect = this.queue.wrap(this.disconnect, this)
+
+    // Do not allow multiple instances for the same db store
+    if (States.instanceIds.has(this.id)) throw this.never()
+    States.instanceIds.add(this.id)
 
     // Setup `ex`
     if (this.$.env.is.ex) {
@@ -41,9 +48,9 @@ export class States extends exSw.Unit {
     }
   }
 
-  async connect(name: string, initial?: Initial, versioner?: Versioner) {
+  async connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>> {
     // Already connected? -> Return existing
-    if (this.map[name]) return this.map[name].root
+    if (this.map[name]) return this.map[name].root as Root<T>
 
     // Ensure `sw` is connected first
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
@@ -51,13 +58,8 @@ export class States extends exSw.Unit {
     // Create and initialize state
     const state = new exSw.State(this, name, initial, versioner)
     await state.init()
-    this.map[name] = state
+    this.map[name] = state as any
 
-    return state.root
-  }
-
-  create(value?: unknown) {
-    const state = new exSw.State(this, null, value)
     return state.root
   }
 
@@ -71,13 +73,6 @@ export class States extends exSw.Unit {
     delete this.map[name]
   }
 
-  async dispose() {
-    this.bus.offAll()
-    self.clearInterval(this.autoDisconnectInterval)
-    for (const name in this.map) await this.disconnect(name)
-    await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
-  }
-
   async remove(name: string) {
     if (this.$.env.is.ex) {
       await this.disconnect(name)
@@ -87,6 +82,11 @@ export class States extends exSw.Unit {
       await this.bus.send('exDisconnect', name)
       await this.$.idb.delete(this.dbName, this.dbStoreName, name)
     }
+  }
+
+  create<T>(initial?: Initial<T>) {
+    const state = new exSw.State(this, null, initial)
+    return state.root
   }
 
   transaction(fn: () => void) {
@@ -102,16 +102,25 @@ export class States extends exSw.Unit {
     this.$.libs.mobx.runInAction(() => transaction())
   }
 
-  isConnected(name: string) {
-    return name in this.map
-  }
-
   register(models: Models) {
     Object.assign(this.models, models)
   }
 
-  /** Automatically disconnect state if there are no `ex` connections to it. */
+  isConnected(name: string) {
+    return name in this.map
+  }
+
+  async dispose() {
+    this.bus.off()
+    self.clearInterval(this.autoDisconnectInterval)
+    for (const name in this.map) await this.disconnect(name)
+    await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
+    States.instanceIds.delete(this.id)
+  }
+
+  /** Automatically disconnect `sw` state if there are no `ex` connections to it. */
   private setupAutoDisconnect() {
+    if (!this.$.env.is.sw) return
     this.autoDisconnectInterval = self.setInterval(async () => {
       for (const state of this.list) {
         const hasPeers = await state.hasPeers()

@@ -5,4 +5,5 @@ export default {
   arrowParens: 'avoid',
   quoteProps: 'preserve',
   printWidth: 110,
+  experimentalTernaries: true,
 }

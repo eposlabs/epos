@@ -9,9 +9,10 @@ export const _detach_ = Symbol('detach')
 
 export type Origin = null | 'remote'
 export type Location = [DbName, DbStoreName, DbStoreKey]
-export type Root = unknown // object/instance for sync states, object/array/instance for local states
-export type Initial<T = Root> = T | (() => T)
-export type Versioner = Record<number, (this: unknown, state: unknown) => void>
+export type Root<T> = Initial<T> & { ':version'?: number }
+export type Initial<T> = T extends Obj ? T : Instance<T>
+export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
+export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
 export type Parent = MNode | null
 
 // MobX node
@@ -38,19 +39,19 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
  * #### How Sync Works
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
-export class State extends exSw.Unit {
+export class State<T = Obj> extends exSw.Unit {
   static _meta_ = _meta_
   static _parent_ = _parent_
   static _attach_ = _attach_
   static _detach_ = _detach_
 
   name: string
-  root: Root = {}
+  root: Root<T> = {} as Root<T>
   private $states = this.closest(exSw.States)!
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
-  private initial: Initial | null = null
-  private versioner: Versioner
+  private initial: Initial<T> | null = null
+  private versioner: Versioner<T>
   private connected = false
   private bus: ReturnType<gl.Bus['use']>
   private applyingYjsToMobx = false
@@ -66,10 +67,10 @@ export class State extends exSw.Unit {
     return [this.$states.dbName, this.$states.dbStoreName, this.name]
   }
 
-  constructor(parent: exSw.Unit, name: string | null, initial?: Initial, versioner?: Versioner) {
+  constructor(parent: exSw.Unit, name: string | null, initial?: Initial<T>, versioner?: Versioner<T>) {
     super(parent)
     this.name = name ?? `local:${this.$.utils.id()}`
-    this.initial = initial ?? {}
+    this.initial = initial ?? ({} as Initial<T>)
     this.versioner = versioner ?? {}
     this.local = name === null
     this.bus = this.$.bus.use(`State[${this.id}]`)
@@ -85,9 +86,8 @@ export class State extends exSw.Unit {
 
   private initLocal() {
     const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-    const initialOk = this.$.utils.is.object(initial) || this.$.utils.is.array(initial)
-    if (!initialOk) throw new Error('Local state must be an object or an array')
-    this.root = this.attach(initial, null)
+    if (!this.$.utils.is.object(initial)) throw new Error('Local state must be an object')
+    this.root = this.attach(initial, null) as Root<T>
     this.attachQueue.forEach(attach => attach())
     this.attachQueue = []
     this.connected = true
@@ -97,8 +97,8 @@ export class State extends exSw.Unit {
     if (this.local) return
     if (!this.connected) return
     this.connected = false
-    if (this.doc) this.doc.destroy()
-    this.bus.offAll()
+    this.bus.off()
+    this.doc.destroy()
     await this.save(true)
   }
 
@@ -130,14 +130,14 @@ export class State extends exSw.Unit {
     // Load state
     if (this.$.env.is.sw) {
       const root = await this.$.idb.get<Obj>(...this.location)
-      this.root = this.attach(root ?? {}, null)
+      this.root = this.attach(root ?? {}, null) as Root<T>
       this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
     } else if (this.$.env.is.ex) {
       const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
       if (!docAsUpdate) throw this.never()
       this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
       const yRoot = this.doc.getMap('root')
-      this.root = this.attach(yRoot, null)
+      this.root = this.attach(yRoot, null) as Root<T>
     }
 
     // Apply missed updates
@@ -160,16 +160,15 @@ export class State extends exSw.Unit {
       if (!this.$.utils.is.object(this.root)) throw this.never()
 
       // Get sorted version numbers
-      const versions = Object.keys(this.versioner)
-        .map(Number)
-        .sort((v1, v2) => v1 - v2)
+      const asc = (v1: number, v2: number) => v1 - v2
+      const versions = Object.keys(this.versioner).filter(this.$.utils.is.numeric).map(Number).sort(asc)
 
       // Empty state? -> Set initial state
       if (Object.keys(this.root).length === 0) {
         const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
         if (!this.$.utils.is.object(initial)) throw new Error('Initial state must be an object')
         this.detach(this.root) // Detach empty root to remove yRoot observer
-        this.root = this.attach(initial, null)
+        this.root = this.attach(initial, null) as Root<T>
         if (!this.$.utils.is.object(this.root)) throw this.never()
         if (versions.length > 0) this.root[':version'] = versions.at(-1)
       }

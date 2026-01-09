@@ -6,11 +6,11 @@ import './file-system-access'
 import './file-system-observer'
 
 declare global {
-  type Obj = types.Obj
-  type Arr = types.Arr
-  type Cls<T = any> = types.Cls<T>
-  type Fn<T = any> = types.Fn<T>
-  type AsyncFn<T = any> = types.AsyncFn<T>
+  type Obj<T = unknown> = types.Obj<T>
+  type Arr<T = unknown> = types.Arr<T>
+  type Cls<T = unknown> = types.Cls<T>
+  type Fn<T = unknown> = types.Fn<T>
+  type AsyncFn<T = unknown> = types.AsyncFn<T>
 
   const DEV: boolean
   const PROD: boolean

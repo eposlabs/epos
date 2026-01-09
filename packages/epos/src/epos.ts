@@ -8,14 +8,14 @@ import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 import type { Chrome } from './chrome.ts'
 
-export type Fn<T = any> = (...args: any[]) => T
-export type Cls<T = any> = new (...args: any[]) => T
+export type Fn = (...args: any[]) => unknown
+export type Cls = new (...args: any[]) => unknown
 export type Obj = Record<PropertyKey, unknown>
 export type Arr = unknown[]
-export type Model<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
-export type ObjModel<T> = T extends Obj ? T : Model<T>
-export type ObjArrModel<T> = T extends Obj | Arr ? T : Model<T>
-export type Versioner<T> = Record<number, (this: T, state: T) => void>
+export type Root<T> = Initial<T> & { ':version'?: number }
+export type Initial<T> = T extends Obj ? T : Instance<T>
+export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
+export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
 export type Mode = 'development' | 'production'
 export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
@@ -111,17 +111,15 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T = Obj>(initial?: ObjModel<T>, versioner?: Versioner<T>): Promise<T>
-      <T = Obj>(initial?: () => ObjModel<T>, versioner?: Versioner<T>): Promise<T>
-      <T = Obj>(name?: string, initial?: ObjModel<T>, versioner?: Versioner<T>): Promise<T>
-      <T = Obj>(name?: string, initial?: () => ObjModel<T>, versioner?: Versioner<T>): Promise<T>
+      <T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+      <T>(name?: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    create<T = Obj>(state?: ObjArrModel<T>): T
+    create<T>(initial?: Initial<T>): T
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */

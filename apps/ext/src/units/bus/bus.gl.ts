@@ -17,27 +17,6 @@ export class Bus extends gl.Unit {
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
 
-  use(namespace: string) {
-    const prefix = `@${namespace} - `
-    const scoped = (name: string) => `${prefix}${name}`
-
-    return {
-      on: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.on<T>(scoped(name), fn, thisArg),
-      off: <T extends Fn>(name: string, fn?: T) => this.off<T>(scoped(name), fn),
-      send: <T>(name: string, ...args: FnArgsOrArr<T>) => this.send<T>(scoped(name), ...args),
-      emit: <T>(name: string, ...args: FnArgsOrArr<T>) => this.emit<T>(scoped(name), ...args),
-      once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => this.once<T>(scoped(name), fn, thisArg),
-      setSignal: (name: string, ...args: unknown[]) => this.setSignal(scoped(name), ...args),
-      waitSignal: <T>(name: string, timeout?: number) => this.waitSignal<T>(scoped(name), timeout),
-      offAll: () => {
-        for (const action of this.actions) {
-          if (!action.name.startsWith(prefix)) continue
-          this.off(action.name, action.fn, action.target)
-        }
-      },
-    }
-  }
-
   on<T extends Fn = Fn>(name: string, fn: T, thisArg?: unknown, target?: Target) {
     if (!fn) return
 
@@ -60,7 +39,7 @@ export class Bus extends gl.Unit {
     this.actions.push(action)
   }
 
-  off<T extends Fn>(name: string, fn?: T | null, target?: Target) {
+  off<T extends Fn>(name?: string, fn?: T | null, target?: Target) {
     // Remove matching actions
     this.actions = this.actions.filter(action => {
       const nameMatches = action.name === name
@@ -148,6 +127,41 @@ export class Bus extends gl.Unit {
     if (timer) self.clearTimeout(timer)
 
     return result as T | null
+  }
+
+  use(namespace: string) {
+    const prefix = `@${namespace}::`
+    const prefixed = (name: string) => `${prefix}${name}`
+
+    const offAll = () => {
+      const prefixedActions = this.actions.filter(action => action.name.startsWith(prefix))
+      prefixedActions.forEach(action => this.off(action.name, action.fn, action.target))
+    }
+
+    return {
+      on: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
+        this.on<T>(prefixed(name), fn, thisArg)
+      },
+      off: <T extends Fn>(name?: string, fn?: T) => {
+        if (this.$.utils.is.undefined(name)) return offAll()
+        this.off<T>(prefixed(name), fn)
+      },
+      send: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
+        return await this.send<T>(prefixed(name), ...args)
+      },
+      emit: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
+        return await this.emit<T>(prefixed(name), ...args)
+      },
+      once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
+        this.once<T>(prefixed(name), fn, thisArg)
+      },
+      setSignal: (name: string, ...args: unknown[]) => {
+        this.setSignal(prefixed(name), ...args)
+      },
+      waitSignal: async <T>(name: string, timeout?: number) => {
+        return await this.waitSignal<T>(prefixed(name), timeout)
+      },
+    }
   }
 
   async getTabData() {

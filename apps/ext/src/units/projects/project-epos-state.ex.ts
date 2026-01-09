@@ -1,4 +1,4 @@
-import type { Initial, Versioner } from '../states/state.ex.sw'
+import type { Initial, Root, Versioner } from '../states/state.ex.sw'
 import type { Models } from '../states/states.ex.sw'
 
 const DEFAULT_STATE_NAME = ':default'
@@ -12,27 +12,14 @@ export class ProjectEposState extends ex.Unit {
   ATTACH = exSw.State._attach_
   DETACH = exSw.State._detach_
 
-  async connect(initial?: Initial, versioner?: Versioner): Promise<unknown>
-  async connect(name?: string, initial?: Initial, versioner?: Versioner): Promise<unknown>
-  async connect(arg0?: unknown, arg1?: unknown, arg2?: unknown) {
-    let nameArg: unknown
-    let initialArg: unknown
-    let versionerArg: unknown
-    if (this.$.utils.is.string(arg0)) {
-      nameArg = arg0
-      initialArg = arg1 ?? {}
-      versionerArg = arg2 ?? {}
-    } else {
-      nameArg = null
-      initialArg = arg0 ?? {}
-      versionerArg = arg1 ?? {}
-    }
-
+  async connect<T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>
+  async connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>
+  async connect<T>(...args: [Initial<T>?, Versioner<T>?] | [string, Initial<T>?, Versioner<T>?]) {
+    const [nameArg, initialArg, versionerArg] = this.$.utils.is.string(args[0]) ? args : [null, ...args]
     const name = this.prepareName(nameArg, this.connect)
-    const initial = this.prepareInitial(initialArg, this.connect)
-    const versioner = this.prepareVersioner(versionerArg, this.connect)
-
-    return await this.$project.states.connect(name, initial, versioner)
+    const initial = this.prepareInitial<T>(initialArg, this.connect)
+    const versioner = this.prepareVersioner<T>(versionerArg, this.connect)
+    return await this.$project.states.connect(name, initial as any, versioner)
   }
 
   async disconnect(nameArg?: string) {
@@ -44,8 +31,8 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  create(stateArg?: unknown) {
-    const state = this.prepareLocalState(stateArg, this.create)
+  create<T>(initialArg?: Initial<T>) {
+    const state = this.prepareInitial<T>(initialArg, this.create)
     return this.$project.states.create(state)
   }
 
@@ -71,7 +58,7 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.register(models)
   }
 
-  private prepareName(name: unknown, caller: Fn) {
+  private prepareName(name: unknown, caller: Fn): string {
     if (this.$.utils.is.absent(name)) return DEFAULT_STATE_NAME
     if (!this.$.utils.is.string(name)) throw this.$epos.error(`State name must be a string`, caller)
     if (name === '') throw this.$epos.error(`State name must be a non-empty string`, caller)
@@ -88,43 +75,14 @@ export class ProjectEposState extends ex.Unit {
     return name
   }
 
-  private prepareInitial(initial: unknown, caller: Fn): Initial {
-    if (this.$.utils.is.absent(initial)) return {}
-
-    const ok = this.$.utils.is.object(initial) || this.$.utils.is.function(initial)
-    if (!ok) {
-      throw this.$epos.error(`Initial state must be an object or a function returning an object`, caller)
-    }
-
-    return initial
+  private prepareInitial<T>(initial: unknown, caller: Fn): Initial<T> {
+    if (this.$.utils.is.absent(initial)) return {} as Initial<T>
+    if (!this.$.utils.is.object(initial)) throw this.$epos.error(`Initial state must be an object`, caller)
+    return initial as Initial<T>
   }
 
-  private prepareVersioner(versioner: unknown, caller: Fn): Versioner {
+  private prepareVersioner<T>(versioner: unknown, caller: Fn): Versioner<T> {
     if (!this.$.utils.is.object(versioner)) throw this.$epos.error(`Versioner must be an object`, caller)
-
-    const keys = Object.keys(versioner)
-    const nonNumericKey = keys.find(key => !this.$.utils.is.numeric(key))
-    if (nonNumericKey) {
-      throw this.$epos.error(`Invalid versioner: expected numeric keys, but found '${nonNumericKey}'`, caller)
-    }
-
-    const badValueKey = keys.find(key => !this.$.utils.is.function(versioner[key]))
-    if (badValueKey) {
-      throw this.$epos.error(
-        `Invalid versioner: expected all values to be functions, but found an invalid value at key: '${badValueKey}'`,
-        caller,
-      )
-    }
-
-    return versioner as Versioner
-  }
-
-  private prepareLocalState(state: unknown, caller: Fn) {
-    if (this.$.utils.is.absent(state)) return {}
-
-    const ok = this.$.utils.is.object(state) || this.$.utils.is.array(state)
-    if (!ok) throw this.$epos.error('Local state must be an object or an array', caller)
-
-    return state
+    return versioner as Versioner<T>
   }
 }

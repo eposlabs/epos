@@ -65,7 +65,7 @@ export class ProjectEposProjects extends ex.Unit {
     return bundle as Bundle
   }
 
-  private prepareUrl(url: unknown) {
+  private prepareUrl(url: unknown): string {
     if (!this.$.utils.is.string(url)) throw new Error('URL must be a string')
     if (!URL.canParse(url)) throw new Error(`Invalid URL: '${url}'`)
     return url
