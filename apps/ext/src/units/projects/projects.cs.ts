@@ -59,7 +59,7 @@ export class Projects extends cs.Unit {
         script.onload = () => URL.revokeObjectURL(url)
 
         const eposElement = self.__eposElement
-        if (!eposElement) throw new Error('<epos/> element is not found')
+        if (!eposElement) throw new Error('<epos/> element not found')
         eposElement.append(script)
       },
       [url],
@@ -79,7 +79,7 @@ export class Projects extends cs.Unit {
         link.onload = () => URL.revokeObjectURL(url)
 
         const eposElement = self.__eposElement
-        if (!eposElement) throw new Error('<epos/> element is not found')
+        if (!eposElement) throw new Error('<epos/> element not found')
         eposElement.append(link)
       },
       [url],

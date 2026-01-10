@@ -61,7 +61,7 @@
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
 - **Projects**
-  - epos.projects.add
+  - epos.projects.create
   - epos.projects.update
   - epos.projects.remove
   - epos.projects.has

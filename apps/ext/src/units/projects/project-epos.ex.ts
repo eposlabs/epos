@@ -108,7 +108,7 @@ export class ProjectEpos extends ex.Unit {
       // Project
       ...(this.$project.spec.config.access.includes('projects') && {
         projects: {
-          add: this.$.utils.link(this.projects, 'add'),
+          create: this.$.utils.link(this.projects, 'create'),
           update: this.$.utils.link(this.projects, 'update'),
           remove: this.$.utils.link(this.projects, 'remove'),
           has: this.$.utils.link(this.projects, 'has'),
@@ -126,10 +126,8 @@ export class ProjectEpos extends ex.Unit {
     }
 
     // Set prototype to see `Epos` in DevTools instead of a plain object
-    {
-      class Epos {}
-      Reflect.setPrototypeOf(epos, Epos.prototype)
-    }
+    class Epos {}
+    Reflect.setPrototypeOf(epos, Epos.prototype)
 
     return epos
   }

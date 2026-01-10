@@ -213,7 +213,7 @@ export interface Epos {
 
   // Projects
   projects: {
-    add<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T>
+    create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T>
     update(id: string, updates: Partial<ProjectSettings & ProjectBundle>): Promise<void>
     remove(id: string): Promise<void>
     has(id: string): Promise<boolean>

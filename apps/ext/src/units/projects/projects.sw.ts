@@ -25,18 +25,17 @@ export class Projects extends sw.Unit {
 
   async init() {
     const queue = new this.$.utils.Queue()
-    this.add = queue.wrap(this.add, this)
+    this.create = queue.wrap(this.create, this)
     this.update = queue.wrap(this.update, this)
     this.remove = queue.wrap(this.remove, this)
 
-    this.$.bus.on('Projects.add', this.add, this)
+    this.$.bus.on('Projects.create', this.create, this)
     this.$.bus.on('Projects.update', this.update, this)
     this.$.bus.on('Projects.remove', this.remove, this)
     this.$.bus.on('Projects.has', this.has, this)
     this.$.bus.on('Projects.get', this.get, this)
     this.$.bus.on('Projects.getAll', this.getAll, this)
     this.$.bus.on('Projects.fetch', this.fetch, this)
-
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
@@ -49,7 +48,7 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async add<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
+  async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
     if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
     this.map[project.id] = project
@@ -103,7 +102,7 @@ export class Projects extends sw.Unit {
 
   async fetch(specUrl: string): Promise<ProjectBundle> {
     // Check if URL is valid
-    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: ${specUrl}`)
+    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: "${specUrl}"`)
 
     // Fetch spec file
     const [res] = await this.$.utils.safe(fetch(specUrl))
