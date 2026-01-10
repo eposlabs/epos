@@ -1,7 +1,8 @@
-import type { Arr, Cls, Fn, Obj } from 'dropcap/types'
+import type { Arr, Cls, Obj } from 'dropcap/types'
 import { createLog, is } from 'dropcap/utils'
 import 'epos'
 import { customAlphabet } from 'nanoid'
+import type { FC } from 'react'
 
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
@@ -101,7 +102,7 @@ export class Unit<TRoot = unknown> {
 
         // Create components for methods ending with `View`
         if (is.function(descriptor.value) && key.endsWith('View')) {
-          let View = createView(this, key, descriptor.value.bind(this))
+          let View = createView(this, key, descriptor.value.bind(this) as FC<unknown>)
           Reflect.defineProperty(this, key, { configurable: true, get: () => View, set: v => (View = v) })
         }
 
@@ -330,12 +331,12 @@ function getParent<T>(node: Node<T>) {
 /**
  * Create view component for the unit.
  */
-function createView<T>(unit: Unit<T>, name: string, render: Fn) {
+function createView<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
   const fullName = `${unit['@']}.${name}`
 
-  const View = epos.component((...args: unknown[]) => {
+  const View = epos.component((props: unknown) => {
     try {
-      return render(...args)
+      return render(props)
     } catch (error) {
       unit.log.error(error)
       const message = is.error(error) ? error.message : String(error)

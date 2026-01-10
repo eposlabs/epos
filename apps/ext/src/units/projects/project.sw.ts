@@ -46,7 +46,7 @@ export class Project extends sw.Unit {
   }
 
   static async restore(parent: sw.Unit, id: string) {
-    const snapshot = await parent.$.idb.get<ProjectSnapshot>(id, ':snapshot', ':default')
+    const snapshot = await parent.$.idb.get<ProjectSnapshot>(id, ':project', 'snapshot')
     if (!snapshot) return null
     const project = new Project(parent, snapshot)
     await project.updateNetRules()
@@ -193,7 +193,7 @@ export class Project extends sw.Unit {
   }
 
   private async saveSnapshot() {
-    await this.$.idb.set<ProjectSnapshot>(this.id, ':snapshot', ':default', {
+    await this.$.idb.set<ProjectSnapshot>(this.id, ':project', 'snapshot', {
       id: this.id,
       mode: this.mode,
       enabled: this.enabled,

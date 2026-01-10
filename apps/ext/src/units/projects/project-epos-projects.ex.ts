@@ -8,7 +8,7 @@ export class ProjectEposProjects extends ex.Unit {
     this.$.bus.on('Projects.changed', () => this.handlers.forEach(fn => fn()))
   }
 
-  async add<T extends string>(params: Partial<{ id: T } & ProjectSettings> & ProjectBundle): Promise<T> {
+  async add<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
     const id = await this.$.bus.send<sw.Projects['add']>('Projects.add', params)
     if (!id) throw this.never()
     return id as T

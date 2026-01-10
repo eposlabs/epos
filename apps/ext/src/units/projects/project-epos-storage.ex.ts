@@ -4,9 +4,9 @@ export class ProjectEposStorage extends ex.Unit {
   private $project = this.closest(ex.Project)!
   static DEFAULT_NAME = DEFAULT_NAME
 
-  async get<T = unknown>(key: string): Promise<T | null>
-  async get<T = unknown>(name: string, key: string): Promise<T | null>
-  async get<T = unknown>(...args: unknown[]) {
+  async get<T>(key: string): Promise<T | null>
+  async get<T>(name: string, key: string): Promise<T | null>
+  async get<T>(...args: unknown[]) {
     const [name, key] =
       args.length === 1 ? [DEFAULT_NAME, args[0] as string] : [args[0] as string, args[1] as string]
     this.validateName(name)
@@ -46,7 +46,7 @@ export class ProjectEposStorage extends ex.Unit {
   use(name: string = DEFAULT_NAME) {
     this.validateName(name)
     return {
-      get: <T = unknown>(key: string) => this.get<T>(name, key),
+      get: <T>(key: string) => this.get<T>(name, key),
       set: (key: string, value: unknown) => this.set(name, key, value),
       delete: (key: string) => this.delete(name, key),
       keys: () => this.keys(name),
@@ -61,7 +61,7 @@ export class ProjectEposStorage extends ex.Unit {
 
   private validateName(name: string) {
     if (name.startsWith(':') && name !== DEFAULT_NAME) {
-      throw new Error('Storage name cannot start with ":"')
+      throw new Error(`Storage name cannot start with ":"`)
     }
   }
 }

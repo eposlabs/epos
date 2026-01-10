@@ -106,7 +106,7 @@ export class Bus extends gl.Unit {
     void this.send(name, value)
   }
 
-  async waitSignal<T = unknown>(name: string, timeout?: number) {
+  async waitSignal<T>(name: string, timeout?: number) {
     name = `signal[${name}]`
 
     // Setup listener

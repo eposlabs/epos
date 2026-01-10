@@ -35,24 +35,17 @@
   - epos.storage.remove
   - epos.storage.use
   - epos.storage.list
-- **Frame**
-  - epos.frame.open
-  - epos.frame.close
-  - epos.frame.exists
-  - epos.frame.list
+- **Frames**
+  - epos.frames.create
+  - epos.frames.remove
+  - epos.frames.has
+  - epos.frames.list
 - **Assets**
   - epos.assets.load
   - epos.assets.unload
   - epos.assets.url
   - epos.assets.get
   - epos.assets.list
-- **Projects**
-  - epos.projects.install
-  - epos.projects.remove
-  - epos.projects.enable
-  - epos.projects.disable
-  - epos.projects.watch
-  - epos.projects.list
 - **Env**
   - epos.env.tabId
   - epos.env.project
@@ -67,3 +60,12 @@
   - epos.libs.reactDomClient
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
+- **Projects**
+  - epos.projects.add
+  - epos.projects.update
+  - epos.projects.remove
+  - epos.projects.has
+  - epos.projects.get
+  - epos.projects.list
+  - epos.projects.watch
+  - epos.projects.fetch

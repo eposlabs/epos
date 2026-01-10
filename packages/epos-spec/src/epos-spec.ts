@@ -92,7 +92,7 @@ const schema = {
     'permissions',
     'manifest',
   ],
-  name: { min: 2, max: 50, regex: /^[a-z0-9][a-z0-9-]*[a-z0-9]$/ },
+  name: { min: 2, max: 20 },
   title: { min: 2, max: 45 },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
@@ -136,7 +136,7 @@ export function parseSpec(json: string): Spec {
 
   const keys = [...schema.keys, ...schema.target.keys]
   const badKey = Object.keys(spec).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown spec key: '${badKey}'`)
+  if (badKey) throw new Error(`Unknown spec key: "${badKey}"`)
 
   return {
     name: parseName(spec),
@@ -158,11 +158,10 @@ function parseName(spec: Obj) {
   if (!('name' in spec)) throw new Error(`'name' field is required`)
 
   const name = spec.name
-  const { min, max, regex } = schema.name
+  const { min, max } = schema.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
   if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
-  if (!regex.test(name)) throw new Error(`'name' must match ${regex}`)
 
   return name
 }
@@ -194,7 +193,7 @@ function parseVersion(spec: Obj): string {
 
   const version = spec.version
   if (!is.string(version)) throw new Error(`'version' must be a string`)
-  if (!schema.version.regex.test(version)) throw new Error(`'version' must be in format X.Y.Z or X.Y or X`)
+  if (!schema.version.regex.test(version)) throw new Error(`'version' must be in format V.V.V, or V.V, or V`)
 
   return version
 }
@@ -217,7 +216,7 @@ function parsePopup(spec: Obj) {
 
   const { keys, width, height } = schema.popup
   const badKey = Object.keys(popup).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown 'popup' key: '${badKey}'`)
+  if (badKey) throw new Error(`Unknown 'popup' key: "${badKey}"`)
 
   popup.width ??= width.default
   if (!is.integer(popup.width)) throw new Error(`'popup.width' must be an integer`)
@@ -238,7 +237,7 @@ function parseAction(spec: Obj): Action | null {
   if (action === true) return true
 
   if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
-  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: '${JSON.stringify(action)}'`)
+  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: "${JSON.stringify(action)}"`)
 
   return action
 }
@@ -248,12 +247,12 @@ function parseConfig(spec: Obj): Config {
   if (!is.object(config)) throw new Error(`'config' must be an object`)
 
   const badKey = Object.keys(config).find(key => !schema.config.keys.includes(key))
-  if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
+  if (badKey) throw new Error(`Unknown 'config' key: "${badKey}"`)
 
   const access = config.access ?? schema.config.access.default
   if (!isArrayOfStrings(access)) throw new Error(`'config.access' must be an array of strings`)
   const badAccess = access.find(value => !schema.config.access.variants.includes(value))
-  if (badAccess) throw new Error(`Unknown 'config.access' value: '${badAccess}'`)
+  if (badAccess) throw new Error(`Unknown 'config.access' value: "${badAccess}"`)
 
   const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets.default
   if (!is.boolean(preloadAssets)) throw new Error(`'config.preloadAssets' must be a boolean`)
@@ -299,7 +298,7 @@ function parseTarget(target: unknown): Target {
 
   const { keys } = schema.target
   const badKey = Object.keys(target).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown target key: '${badKey}'`)
+  if (badKey) throw new Error(`Unknown target key: "${badKey}"`)
 
   return {
     matches: parseMatches(target),
@@ -313,7 +312,7 @@ function parseMatches(target: Obj): Match[] {
 }
 
 function parseMatch(match: unknown): Match | Match[] {
-  if (!is.string(match)) throw new Error(`Invalid match pattern: '${JSON.stringify(match)}'`)
+  if (!is.string(match)) throw new Error(`Invalid match pattern: "${JSON.stringify(match)}"`)
 
   if (match === '<popup>') return { context: 'locus', value: 'popup' }
   if (match === '<sidePanel>') return { context: 'locus', value: 'sidePanel' }
@@ -331,7 +330,7 @@ function parseMatch(match: unknown): Match | Match[] {
 
   // Ensure pattern url has a path: `*://example.com` -> `*://example.com/`
   const href = pattern.replaceAll('*', 'wildcard--')
-  if (!URL.canParse(href)) throw new Error(`Invalid match pattern: '${match}'`)
+  if (!URL.canParse(href)) throw new Error(`Invalid match pattern: "${match}"`)
   const url = new URL(href)
   if (url.pathname === '') url.pathname = '/'
   pattern = url.href.replaceAll('wildcard--', '*')
@@ -344,7 +343,7 @@ function parseMatch(match: unknown): Match | Match[] {
 
 function parseMatchPattern(pattern: string): MatchPattern {
   const matcher = matchPattern(pattern)
-  if (!matcher.valid) throw new Error(`Invalid match pattern: '${pattern}'`)
+  if (!matcher.valid) throw new Error(`Invalid match pattern: "${pattern}"`)
   return pattern
 }
 
@@ -357,13 +356,13 @@ function parseResources(target: Obj) {
 function parseResource(loadEntry: string): Resource {
   const isJs = loadEntry.toLowerCase().endsWith('.js')
   const isCss = loadEntry.toLowerCase().endsWith('.css')
-  if (!isJs && !isCss) throw new Error(`Invalid 'load' file, must be JS or CSS: '${loadEntry}'`)
+  if (!isJs && !isCss) throw new Error(`Invalid 'load' file, must be JS or CSS: "${loadEntry}"`)
 
   if (loadEntry.startsWith('lite:')) {
-    if (!isJs) throw new Error(`'lite:' resources must be JS files: '${loadEntry}'`)
+    if (!isJs) throw new Error(`'lite:' resources must be JS files: "${loadEntry}"`)
     return { path: parsePath(loadEntry.replace('lite:', '')), type: 'lite-js' }
   } else if (loadEntry.startsWith('shadow:')) {
-    if (!isCss) throw new Error(`'shadow:' resources must be CSS files: '${loadEntry}'`)
+    if (!isCss) throw new Error(`'shadow:' resources must be CSS files: "${loadEntry}"`)
     return { path: parsePath(loadEntry.replace('shadow:', '')), type: 'shadow-css' }
   } else {
     return { path: parsePath(loadEntry), type: isJs ? 'js' : 'css' }
@@ -375,7 +374,7 @@ function parsePermissions(spec: Obj): Permissions {
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
   const badPermission = permissions.find(value => !schema.permissions.includes(value))
-  if (badPermission) throw new Error(`Unknown permission: '${badPermission}'`)
+  if (badPermission) throw new Error(`Unknown permission: "${badPermission}"`)
 
   const mandatoryPermissions = new Set<string>()
   const optionalPermissions = new Set<string>()
@@ -389,7 +388,7 @@ function parsePermissions(spec: Obj): Permissions {
 
   for (const permission of mandatoryPermissions) {
     if (optionalPermissions.has(permission)) {
-      throw new Error(`Permission cannot be both mandatory and optional: '${permission}'`)
+      throw new Error(`Permission cannot be both mandatory and optional: "${permission}"`)
     }
   }
 
@@ -434,7 +433,7 @@ function parsePath(path: string) {
     .filter(path => path && path !== '.')
     .join('/')
 
-  if (normalizedPath.startsWith('..')) throw new Error(`External paths are not allowed: '${path}'`)
+  if (normalizedPath.startsWith('..')) throw new Error(`External paths are not allowed: "${path}"`)
 
   return normalizedPath
 }

@@ -1,4 +1,4 @@
-export function unique<T = unknown>(items: T[], keyFn?: (item: T) => unknown) {
+export function unique<T>(items: T[], keyFn?: (item: T) => unknown) {
   if (!keyFn) return [...new Set(items)]
 
   const seen = new Set()

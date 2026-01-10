@@ -24,7 +24,7 @@ export class Idb {
   }
 
   /** Get a value from the store. */
-  async get<T = unknown>(dbName: DbName, storeName: DbStoreName, key: DbStoreKey) {
+  async get<T>(dbName: DbName, storeName: DbStoreName, key: DbStoreKey) {
     // DB does not exist? -> Return null
     const exists = await this.exists(dbName)
     if (!exists) return null
@@ -62,7 +62,7 @@ export class Idb {
   }
 
   /** Set a value in the store. */
-  async set<T = unknown>(dbName: DbName, storeName: DbStoreName, key: DbStoreKey, value: T) {
+  async set<T>(dbName: DbName, storeName: DbStoreName, key: DbStoreKey, value: T) {
     // Ensure store for the DB
     const db = await this.ensureStore(dbName, storeName)
 

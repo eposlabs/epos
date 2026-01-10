@@ -49,7 +49,7 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async add<T extends string>(params: Partial<{ id: T } & ProjectSettings> & ProjectBundle): Promise<T> {
+  async add<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
     if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
     this.map[project.id] = project

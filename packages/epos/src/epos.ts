@@ -26,16 +26,15 @@ export type ProjectSpec = Spec
 export type ProjectMode = 'development' | 'production'
 export type ProjectSources = { [path: string]: string }
 export type ProjectAssets = { [path: string]: Blob }
-export type ProjectQuery = { sources?: boolean; assets?: boolean }
 export type ProjectBundle = { spec: ProjectSpec; sources: ProjectSources; assets: ProjectAssets }
 export type ProjectSettings = { mode: ProjectMode; enabled: boolean }
+export type ProjectQuery = { sources?: boolean; assets?: boolean }
 export type ProjectBase = { id: string; mode: ProjectMode; enabled: boolean; spec: ProjectSpec }
-
 export type Project<TQuery = {}> = ProjectBase &
   (TQuery extends { sources: true } ? { sources: ProjectSources } : {}) &
   (TQuery extends { assets: true } ? { assets: ProjectAssets } : {})
 
-export type ReqInit = {
+export type FetchRequestInit = {
   body: RequestInit['body']
   cache: RequestInit['cache']
   credentials: RequestInit['credentials']
@@ -50,7 +49,7 @@ export type ReqInit = {
   referrerPolicy: RequestInit['referrerPolicy']
 }
 
-export type Res = {
+export type FetchResponse = {
   ok: Response['ok']
   url: Response['url']
   type: Response['type']
@@ -68,41 +67,30 @@ export type Res = {
   }
 }
 
-export type Storage = {
-  /** Get value from the storage. */
-  get<T = unknown>(key: string): Promise<T | null>
-  /** Set value in the storage. */
-  set(key: string, value: unknown): Promise<void>
-  /** Delete key from the storage. */
-  delete(key: string): Promise<void>
-  /** Get all keys from the storage. */
-  keys(): Promise<string[]>
-  /** Remove the storage. Removes all keys and storage itself. */
-  remove(): Promise<void>
-}
-
 export interface Epos {
   // General
-  fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
+  fetch: (url: string | URL, init?: FetchRequestInit) => Promise<FetchResponse>
   browser: Chrome
   render(node: react.ReactNode, container?: reactDomClient.Container): void
-  component<T>(Component: react.FC<T>): typeof Component
+  component<T>(Component: react.FC<T>): react.FC<T>
   container: HTMLDivElement
 
   // Bus
   bus: {
-    /** Listen for an event. */
+    /** Register event listener. */
     on<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
     /** Remove event listener. */
     off<T extends Fn>(name: string, callback?: T): void
-    /** Listen for an event once. */
+    /** Register one-time event listener. */
     once<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
-    /** Send an event to all remote listeners (local listeners are ignored). */
-    send<T = unknown>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
-    /** Emit event locally (calls local listeners only). */
-    emit<T = unknown>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+    /** Send event to all remote listeners (local listeners ignored). */
+    send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+    /** Call local listeners (remote listeners ignored). */
+    emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+    /** Set signal with optional value. */
     setSignal(name: string, value?: unknown): void
-    waitSignal<T = unknown>(name: string, timeout?: number): Promise<T | null>
+    /** Wait for signal to be set. */
+    waitSignal<T>(name: string, timeout?: number): Promise<T | null>
   }
 
   // State
@@ -114,11 +102,11 @@ export interface Epos {
     }
     /** Disconnect state. */
     disconnect(name?: string): void
-    /** Run any state changes in a batch. */
+    /** Run state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
     create<T>(initial?: StateInitial<T>): T
-    /** Get the list of all state names. */
+    /** Get list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
     remove(name?: string): Promise<void>
@@ -131,27 +119,38 @@ export interface Epos {
 
   // Storage
   storage: {
-    /** Get value from the storage. */
+    /** Get value from storage. */
     get: {
-      <T = unknown>(key: string): Promise<T | null>
-      <T = unknown>(name: string, key: string): Promise<T | null>
+      <T>(key: string): Promise<T | null>
+      <T>(name: string, key: string): Promise<T | null>
     }
-    /** Set value in the storage. */
+    /** Set value in storage. */
     set: {
-      <T = unknown>(key: string, value: T): Promise<void>
-      <T = unknown>(name: string, key: string, value: T): Promise<void>
+      <T>(key: string, value: T): Promise<void>
+      <T>(name: string, key: string, value: T): Promise<void>
     }
-    /** Delete key from the storage. */
+    /** Delete key from storage. */
     delete: {
       (key: string): Promise<void>
       (name: string, key: string): Promise<void>
     }
     /** Get all storage keys. */
     keys(name?: string): Promise<string[]>
-    /** Remove storage. Removes all keys and storage itself. */
+    /** Remove storage. */
     remove(name?: string): Promise<void>
-    /** Get storage API for a specific storage. */
-    use(name?: string): Storage
+    /** Get storage API for specific storage. */
+    use(name?: string): {
+      /** Get value from storage. */
+      get<T>(key: string): Promise<T | null>
+      /** Set value in storage. */
+      set(key: string, value: unknown): Promise<void>
+      /** Delete key from storage. */
+      delete(key: string): Promise<void>
+      /** Get all keys from storage. */
+      keys(): Promise<string[]>
+      /** Remove storage. */
+      remove(): Promise<void>
+    }
     /** Get list of all storage names. */
     list(): Promise<string[]>
   }
@@ -162,9 +161,9 @@ export interface Epos {
     create(url: string, attrs?: FrameAttrs): Promise<string>
     /** Remove background frame. */
     remove(id?: string): Promise<void>
-    /** Check if background frame with the given id exists. */
+    /** Check if background frame with given id exists. */
     has(id?: string): Promise<boolean>
-    /** Get the list of all open background frames. */
+    /** Get list of all open background frames. */
     list(): Promise<{ id: string; url: string }[]>
   }
 
@@ -177,14 +176,14 @@ export interface Epos {
       /** Load asset by path. */
       (path: string): Promise<void>
     }
-    /** Unload either all assets from the memory or a specific asset by its path. */
+    /** Unload all assets from memory or unload specific asset by path. */
     unload: {
       /** Unload all assets. */
       (): void
       /** Unload asset by path. */
       (path: string): void
     }
-    /** Get asset URL. The asset must be loaded first via `epos.assets.load`. */
+    /** Get asset URL. Asset must be loaded first via `epos.assets.load`. */
     url(path: string): string
     /** Get asset as Blob. */
     get(path: string): Promise<Blob | null>
@@ -201,18 +200,6 @@ export interface Epos {
     isBackground: boolean
   }
 
-  // Projects
-  projects: {
-    add<T extends string>(params: Partial<{ id: T } & ProjectSettings> & ProjectBundle): Promise<T>
-    update(id: string, updates: Partial<ProjectSettings & ProjectBundle>): Promise<void>
-    remove(id: string): Promise<void>
-    has(id: string): Promise<boolean>
-    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
-    list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
-    watch(listener: () => void): void
-    fetch(url: string): Promise<ProjectBundle>
-  }
-
   // Libs
   libs: {
     mobx: typeof mobx
@@ -222,6 +209,18 @@ export interface Epos {
     reactDomClient: typeof reactDomClient
     reactJsxRuntime: typeof reactJsxRuntime
     yjs: typeof yjs
+  }
+
+  // Projects
+  projects: {
+    add<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T>
+    update(id: string, updates: Partial<ProjectSettings & ProjectBundle>): Promise<void>
+    remove(id: string): Promise<void>
+    has(id: string): Promise<boolean>
+    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
+    list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
+    watch(listener: () => void): void
+    fetch(url: string): Promise<ProjectBundle>
   }
 
   // Engine

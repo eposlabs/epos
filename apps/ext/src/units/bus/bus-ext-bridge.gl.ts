@@ -20,7 +20,7 @@ export class BusExtBridge extends gl.Unit {
     }
   }
 
-  async send<T = unknown>(name: string, ...args: unknown[]) {
+  async send<T>(name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
     const [result, error] = await this.$.utils.safe(() => this.$.browser.runtime.sendMessage(req))
     if (error && this.isIgnoredError(error)) return null
