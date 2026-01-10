@@ -4,13 +4,13 @@ import { Label } from '@ui/components/ui/label'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 import { Switch } from '@ui/components/ui/switch'
 import { cn } from '@ui/lib/utils'
-import { type Project as Data } from 'epos'
+import { type Project as ProjectData } from 'epos'
 
 export class Project extends gl.Unit {
   fs = new gl.ProjectFs(this)
-  mode: Data['mode']
-  spec: Data['spec']
-  enabled: Data['enabled']
+  mode: ProjectData['mode']
+  spec: ProjectData['spec']
+  enabled: ProjectData['enabled']
   handle: { id: string; name: string } | null = null
 
   get static(): {
@@ -29,12 +29,12 @@ export class Project extends gl.Unit {
     return this.$projects.selectedProjectId === this.id
   }
 
-  constructor(parent: gl.Unit, data: Data) {
+  constructor(parent: gl.Unit, params: ProjectData) {
     super(parent)
-    this.id = data.id
-    this.mode = data.mode
-    this.spec = data.spec
-    this.enabled = data.enabled
+    this.id = params.id
+    this.mode = params.mode
+    this.spec = params.spec
+    this.enabled = params.enabled
   }
 
   async connectDir() {
@@ -54,7 +54,7 @@ export class Project extends gl.Unit {
     }
   }
 
-  update(updates: Omit<Data, 'id'>) {
+  update(updates: Omit<ProjectData, 'id'>) {
     this.mode = updates.mode
     this.spec = updates.spec
     this.enabled = updates.enabled
@@ -86,7 +86,9 @@ export class Project extends gl.Unit {
     return (
       <div className="p-4">
         <div className="flex justify-between items-center">
-          <div>Project {this.spec.name}</div>
+          <div>
+            Project {this.spec.name} [{this.mode}]
+          </div>
           <Label className="flex items-center space-x-2">
             <div>Enabled</div>
             <Switch checked={this.enabled} size="default" onCheckedChange={() => this.toggle()} />

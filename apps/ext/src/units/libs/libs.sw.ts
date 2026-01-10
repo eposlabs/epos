@@ -1,6 +1,6 @@
 import { matchPattern } from 'browser-extension-url-match'
 import { idb } from 'dropcap/idb'
-import { parseSpec } from 'epos-spec'
+import { parseSpecJson } from 'epos-spec'
 import { compressToBase64 } from 'lz-string'
 import * as mobx from 'mobx'
 import stripJsonComments from 'strip-json-comments'
@@ -12,7 +12,7 @@ export class Libs extends sw.Unit {
   lzString = { compressToBase64 }
   matchPattern = matchPattern
   mobx = mobx
-  parseSpec = parseSpec
+  eposSpec = { parseJson: parseSpecJson }
   stripJsonComments = stripJsonComments
   terser = { minify }
   yjs = yjs

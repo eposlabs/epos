@@ -1,28 +1,28 @@
-import type { Info } from './project.sw'
+import type { ProjectInfo } from './project.sw'
 
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
-  id: Info['id']
-  dev: Info['dev']
-  spec: Info['spec']
-  hash: Info['hash']
-  hasSidePanel: Info['hasSidePanel']
+  id: ProjectInfo['id']
+  mode: ProjectInfo['mode']
+  spec: ProjectInfo['spec']
+  hash: ProjectInfo['hash']
+  hasSidePanel: ProjectInfo['hasSidePanel']
   private visited = false
 
-  constructor(parent: vw.Unit, info: Info) {
+  constructor(parent: vw.Unit, params: ProjectInfo) {
     super(parent)
-    this.id = info.id
-    this.dev = info.dev
-    this.spec = info.spec
-    this.hash = info.hash
-    this.hasSidePanel = info.hasSidePanel
+    this.id = params.id
+    this.mode = params.mode
+    this.spec = params.spec
+    this.hash = params.hash
+    this.hasSidePanel = params.hasSidePanel
   }
 
-  update(info: Omit<Info, 'id'>) {
-    this.dev = info.dev
-    this.spec = info.spec
-    this.hash = info.hash
-    this.hasSidePanel = info.hasSidePanel
+  update(updates: Omit<ProjectInfo, 'id'>) {
+    this.mode = updates.mode
+    this.spec = updates.spec
+    this.hash = updates.hash
+    this.hasSidePanel = updates.hasSidePanel
   }
 
   get label() {
@@ -57,7 +57,7 @@ export class Project extends vw.Unit {
     if (!this.visited) return 'about:blank'
     return this.$.env.url.project({
       id: this.id,
-      dev: this.dev,
+      mode: this.mode,
       locus: this.getLocus(),
       tabId: this.$projects.getTabId(),
     })

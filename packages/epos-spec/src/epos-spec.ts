@@ -128,10 +128,15 @@ const schema = {
   ],
 }
 
-export function parseSpec(json: string): Spec {
+export function parseSpecJson(json: string): Spec {
+  if (!is.string(json)) throw new Error(`Failed to parse JSON: input is not a string`)
   json = stripJsonComments(json)
   const [spec, error] = safeSync(() => JSON.parse(json))
   if (error) throw new Error(`Failed to parse JSON: ${error.message}`)
+  return parseSpecObject(spec)
+}
+
+export function parseSpecObject(spec: Obj): Spec {
   if (!is.object(spec)) throw new Error(`Epos spec must be an object`)
 
   const keys = [...schema.keys, ...schema.target.keys]
@@ -437,5 +442,3 @@ function parsePath(path: string) {
 
   return normalizedPath
 }
-
-export default parseSpec

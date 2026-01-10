@@ -1,5 +1,3 @@
-import type { Mode } from 'epos'
-
 export class App extends sw.Unit {
   browser = chrome
   utils = new sw.Utils(this)
@@ -38,12 +36,14 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.install = async (id: string, url: Url, mode?: Mode) => {
+    self.install = async (url: Url) => {
+      const id = url.split('/').at(-2)
+      if (!id) throw this.never()
       const bundle = await this.projects.fetch(url)
       if (this.projects.has(id)) {
-        await this.projects.update(id, { mode, ...bundle })
+        await this.projects.update(id, { mode: 'development', ...bundle })
       } else {
-        await this.projects.add({ id, mode, ...bundle })
+        await this.projects.create({ id, mode: 'development', ...bundle })
       }
     }
 
