@@ -1,11 +1,17 @@
-import type { Assets, Bundle, Mode, Sources } from 'epos'
+import type {
+  Project,
+  ProjectAssets,
+  ProjectBundle,
+  ProjectQuery,
+  ProjectSettings,
+  ProjectSources,
+} from 'epos'
 import type { Address } from './project-target.sw'
-import type { Info, Snapshot } from './project.sw'
+import type { ProjectInfo, ProjectSnapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
-export type InfoMap = { [projectId: string]: Info }
-export type HashMap = { [projectId: string]: string | null }
+export type ProjectInfoMap = { [projectId: string]: ProjectInfo }
 
 export class Projects extends sw.Unit {
   map: { [id: string]: sw.Project } = {}
@@ -19,13 +25,18 @@ export class Projects extends sw.Unit {
 
   async init() {
     const queue = new this.$.utils.Queue()
-    this.install = queue.wrap(this.install, this)
+    this.add = queue.wrap(this.add, this)
+    this.update = queue.wrap(this.update, this)
     this.remove = queue.wrap(this.remove, this)
 
-    this.$.bus.on('Projects.install', this.install, this)
+    this.$.bus.on('Projects.add', this.add, this)
+    this.$.bus.on('Projects.update', this.update, this)
     this.$.bus.on('Projects.remove', this.remove, this)
-    this.$.bus.on('Projects.enable', this.enable, this)
-    this.$.bus.on('Projects.disable', this.disable, this)
+    this.$.bus.on('Projects.has', this.has, this)
+    this.$.bus.on('Projects.get', this.get, this)
+    this.$.bus.on('Projects.getAll', this.getAll, this)
+    this.$.bus.on('Projects.fetch', this.fetch, this)
+
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
@@ -38,17 +49,18 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async install(id: string, input: Url | Bundle, mode: Mode = 'production') {
-    let bundle: Bundle
-    if (this.$.utils.is.object(input)) {
-      bundle = input
-    } else if (URL.canParse(input)) {
-      bundle = await this.fetchBundle(input, mode)
-    } else {
-      throw new Error(`Invalid URL: ${input}`)
-    }
+  async add<T extends string>(params: Partial<{ id: T } & ProjectSettings> & ProjectBundle): Promise<T> {
+    if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
+    const project = await sw.Project.new(this, params)
+    this.map[project.id] = project
+    await this.$.bus.send('Projects.changed')
+    return project.id as T
+  }
 
-    await this.upsert(id, bundle)
+  async update(id: string, updates: Partial<ProjectSettings & ProjectBundle>) {
+    const project = this.map[id]
+    if (!project) throw new Error(`Project with id "${id}" does not exist`)
+    await project.update(updates)
     await this.$.bus.send('Projects.changed')
   }
 
@@ -60,18 +72,77 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  async enable(id: string) {
-    const project = this.map[id]
-    if (!project) return
-    await project.update({ enabled: true })
-    await this.$.bus.send('Projects.changed')
+  has(id: string) {
+    return !!this.map[id]
   }
 
-  async disable(id: string) {
+  async get<T extends ProjectQuery>(id: string, query?: T) {
     const project = this.map[id]
-    if (!project) return
-    await project.update({ enabled: false })
-    await this.$.bus.send('Projects.changed')
+    if (!project) return null
+
+    return {
+      id: project.id,
+      mode: project.mode,
+      enabled: project.enabled,
+      spec: project.spec,
+      ...(query?.sources && { sources: project.sources }),
+      ...(query?.assets && { assets: await project.getAssets() }),
+    } as Project<T>
+  }
+
+  async getAll<T extends ProjectQuery>(query?: T) {
+    const projects: Project<T>[] = []
+    for (const id in this.map) {
+      const project = await this.get(id, query)
+      if (!project) throw this.never()
+      projects.push(project)
+    }
+
+    return projects
+  }
+
+  async fetch(specUrl: string): Promise<ProjectBundle> {
+    // Check if URL is valid
+    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: ${specUrl}`)
+
+    // Fetch spec file
+    const [res] = await this.$.utils.safe(fetch(specUrl))
+    if (!res) throw new Error(`Failed to fetch ${specUrl}`)
+
+    // Read spec file
+    const [json] = await this.$.utils.safe(res.text())
+    if (!json) throw new Error(`Failed to read ${specUrl}`)
+
+    // Parse spec file
+    const spec = this.$.libs.parseSpec(json)
+
+    // Fetch sources
+    const sources: ProjectSources = {}
+    for (const target of spec.targets) {
+      for (const resource of target.resources) {
+        const url = new URL(resource.path, specUrl).href
+        if (resource.type === 'lite-js') resource.path = `min:${resource.path}`
+        if (resource.path in sources) continue
+        const [res] = await this.$.utils.safe(fetch(url))
+        if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
+        const [text] = await this.$.utils.safe(res.text())
+        if (!text) throw new Error(`Failed to fetch: ${url}`)
+        sources[resource.path] = resource.type === 'lite-js' ? await this.minifyJs(text) : text.trim()
+      }
+    }
+
+    // Fetch assets
+    const assets: ProjectAssets = {}
+    for (const path of spec.assets) {
+      const url = new URL(path, specUrl).href
+      const [res] = await this.$.utils.safe(fetch(url))
+      if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
+      const [blob] = await this.$.utils.safe(res.blob())
+      if (!blob) throw new Error(`Failed to fetch: ${url}`)
+      assets[path] = blob
+    }
+
+    return { spec, sources, assets }
   }
 
   hasPopup() {
@@ -123,7 +194,7 @@ export class Projects extends sw.Unit {
   }
 
   async getInfoMap(address?: Address) {
-    const infoMap: InfoMap = {}
+    const infoMap: ProjectInfoMap = {}
 
     for (const project of this.list) {
       const info = await project.getInfo(address)
@@ -131,14 +202,6 @@ export class Projects extends sw.Unit {
     }
 
     return infoMap
-  }
-
-  private async upsert(id: string, bundle: Bundle) {
-    if (this.map[id]) {
-      this.map[id].update(bundle)
-    } else {
-      this.map[id] = await sw.Project.new(this, id, bundle)
-    }
   }
 
   private async handleActionClick(tab: chrome.tabs.Tab) {
@@ -209,7 +272,7 @@ export class Projects extends sw.Unit {
 
     // ---- from files
     // TODO: support id instead of name
-    const [snapshot] = await this.$.utils.safe<Snapshot & { id: string }>(
+    const [snapshot] = await this.$.utils.safe<ProjectSnapshot>(
       fetch('/project.json').then(res => res.json()),
     )
     if (!snapshot) return
@@ -221,14 +284,22 @@ export class Projects extends sw.Unit {
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
     // Load assets
-    const assets: Assets = {}
+    const assets: ProjectAssets = {}
     for (const path of snapshot.spec.assets) {
       const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
       if (!blob) continue
       assets[path] = blob
     }
 
-    await this.upsert(name, { ...snapshot, assets })
+    // private async upsert(id: string, bundle: Bundle, dev = false) {
+    //   if (this.map[id]) {
+    //     this.map[id].update(bundle)
+    //   } else {
+    //     this.map[id] = await sw.Project.new(this, id, { ...bundle, dev })
+    //   }
+    // }
+
+    // await this.upsert(name, { ...snapshot, assets })
   }
 
   private async disableCsp() {
@@ -314,50 +385,6 @@ export class Projects extends sw.Unit {
         this.cspProtectedOrigins.add(origin)
       }
     })
-  }
-
-  private async fetchBundle(specUrl: string, mode: Mode = 'production'): Promise<Bundle> {
-    // Check if URL is valid
-    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: ${specUrl}`)
-
-    // Fetch spec file
-    const [res] = await this.$.utils.safe(fetch(specUrl))
-    if (!res) throw new Error(`Failed to fetch ${specUrl}`)
-
-    // Read spec file
-    const [json] = await this.$.utils.safe(res.text())
-    if (!json) throw new Error(`Failed to read ${specUrl}`)
-
-    // Parse spec file
-    const spec = this.$.libs.parseSpec(json)
-
-    // Fetch sources
-    const sources: Sources = {}
-    for (const target of spec.targets) {
-      for (const resource of target.resources) {
-        const url = new URL(resource.path, specUrl).href
-        if (resource.type === 'lite-js') resource.path = `min:${resource.path}`
-        if (resource.path in sources) continue
-        const [res] = await this.$.utils.safe(fetch(url))
-        if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
-        const [text] = await this.$.utils.safe(res.text())
-        if (!text) throw new Error(`Failed to fetch: ${url}`)
-        sources[resource.path] = resource.type === 'lite-js' ? await this.minifyJs(text) : text.trim()
-      }
-    }
-
-    // Fetch assets
-    const assets: Assets = {}
-    for (const path of spec.assets) {
-      const url = new URL(path, specUrl).href
-      const [res] = await this.$.utils.safe(fetch(url))
-      if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
-      const [blob] = await this.$.utils.safe(res.blob())
-      if (!blob) throw new Error(`Failed to fetch: ${url}`)
-      assets[path] = blob
-    }
-
-    return { mode, spec, sources, assets }
   }
 
   private compareSemver(semver1: string, semver2: string) {

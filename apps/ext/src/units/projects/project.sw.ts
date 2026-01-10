@@ -1,73 +1,70 @@
-import type { Assets, Bundle, Mode, Sources } from 'epos'
-import type { Spec } from 'epos-spec'
+import type {
+  ProjectAssets,
+  ProjectBundle,
+  ProjectMode,
+  ProjectSettings,
+  ProjectSources,
+  ProjectSpec,
+} from 'epos'
 import type { Address } from './project-target.sw'
 
-/** Data saved to IndexedDB. */
-export type Snapshot = {
-  mode: Mode
-  spec: Spec
-  sources: Sources
-  enabled: boolean
-}
-
-/** Data for peer contexts. */
-export type Info = {
+// Data saved to IndexedDB
+export type ProjectSnapshot = {
   id: string
-  spec: Spec
-  mode: Mode
+  mode: ProjectMode
   enabled: boolean
-  hash: string | null
-  hasSidePanel: boolean
+  spec: ProjectSpec
+  sources: ProjectSources
 }
 
-export type Updates = {
-  mode?: Mode
-  spec?: Spec
-  sources?: Sources
-  assets?: Assets
-  enabled?: boolean
+// Data for peer contexts
+export type ProjectInfo = {
+  id: string
+  mode: ProjectMode
+  enabled: boolean
+  spec: ProjectSpec
+  hash: string | null // If project has no matching resources, hash is null
+  hasSidePanel: boolean
 }
 
 export class Project extends sw.Unit {
   id: string
-  mode: Mode
-  spec: Spec
-  sources: Sources
+  mode: ProjectMode
   enabled: boolean
-
+  spec: ProjectSpec
+  sources: ProjectSources
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
 
-  static async new(parent: sw.Unit, id: string, bundle: Bundle) {
-    const project = new Project(parent, id, bundle)
+  static async new(parent: sw.Unit, params: { id?: string } & ProjectBundle & Partial<ProjectSettings>) {
+    const project = new Project(parent, params)
     await project.saveSnapshot()
-    await project.saveAssets(bundle.assets)
+    await project.saveAssets(params.assets)
     await project.updateNetRules()
     return project
   }
 
   static async restore(parent: sw.Unit, id: string) {
-    const snapshot = await parent.$.idb.get<Snapshot>(id, ':project', ':default')
+    const snapshot = await parent.$.idb.get<ProjectSnapshot>(id, ':snapshot', ':default')
     if (!snapshot) return null
-    const project = new Project(parent, id, snapshot)
+    const project = new Project(parent, snapshot)
     await project.updateNetRules()
     return project
   }
 
   constructor(
     parent: sw.Unit,
-    id: string,
-    params: { mode: Mode; spec: Spec; sources: Sources; enabled?: boolean },
+    params: { id?: string } & Omit<ProjectBundle, 'assets'> & Partial<ProjectSettings>,
   ) {
     super(parent)
-    this.id = id
-    this.mode = params.mode
+    this.id = params.id ?? this.$.utils.id()
     this.spec = params.spec
     this.sources = params.sources
+    this.mode = params.mode ?? 'production'
     this.enabled = params.enabled ?? true
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.states = new exSw.States(this, this.id, ':states', { allowMissingModels: true })
+    this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
   }
 
   async dispose() {
@@ -76,11 +73,11 @@ export class Project extends sw.Unit {
     await this.$.idb.deleteDatabase(this.id)
   }
 
-  async update(updates: Updates) {
+  async update(updates: Partial<ProjectSettings & ProjectBundle>) {
     this.mode = updates.mode ?? this.mode
+    this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec
     this.sources = updates.sources ?? this.sources
-    this.enabled = updates.enabled ?? this.enabled
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     if (updates.assets) await this.saveAssets(updates.assets)
     await this.saveSnapshot()
@@ -159,15 +156,26 @@ export class Project extends sw.Unit {
     ].join('\n')
   }
 
-  async getInfo(address?: Address): Promise<Info> {
+  async getInfo(address?: Address): Promise<ProjectInfo> {
     return {
       id: this.id,
-      spec: this.spec,
       mode: this.mode,
       enabled: this.enabled,
+      spec: this.spec,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
     }
+  }
+
+  async getAssets() {
+    const assets: ProjectAssets = {}
+    for (const path of this.spec.assets) {
+      const blob = await this.$.idb.get<Blob>(this.id, ':assets', path)
+      if (!blob) throw new Error(`Asset not found: "${path}"`)
+      assets[path] = blob
+    }
+
+    return assets
   }
 
   private async getHash(address?: Address) {
@@ -185,15 +193,16 @@ export class Project extends sw.Unit {
   }
 
   private async saveSnapshot() {
-    await this.$.idb.set<Snapshot>(this.id, ':project', ':default', {
+    await this.$.idb.set<ProjectSnapshot>(this.id, ':snapshot', ':default', {
+      id: this.id,
       mode: this.mode,
+      enabled: this.enabled,
       spec: this.spec,
       sources: this.sources,
-      enabled: this.enabled,
     })
   }
 
-  private async saveAssets(assets: Assets) {
+  private async saveAssets(assets: ProjectAssets) {
     const paths1 = await this.$.idb.keys(this.id, ':assets')
     const paths2 = Object.keys(assets)
 
@@ -225,13 +234,15 @@ export class Project extends sw.Unit {
       const liteJs = resources.map(resource => this.sources[resource.path]).join('\n')
       if (!liteJs) continue
 
-      // Compress and split lite JS into chunks (fit browser's cookie size limits)
+      // Compress and split lite JS into chunks (fit browser's cookie size limit)
       const liteJsCompressed = this.$.libs.lzString.compressToBase64(liteJs)
       const chunks = this.splitToChunks(liteJsCompressed, 3900)
 
       // Pass the chunks via `Set-Cookie` headers
       for (const match of target.matches) {
-        if (match.context === 'locus') continue
+        const isTopOrFrame = match.context === 'top' || match.context === 'frame'
+        if (!isTopOrFrame) continue
+
         for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
           const ruleId = await this.$.net.addRule({
             condition: {
@@ -250,6 +261,7 @@ export class Project extends sw.Unit {
               ],
             },
           })
+
           this.netRuleIds.add(ruleId)
         }
       }
@@ -267,11 +279,13 @@ export class Project extends sw.Unit {
     let regex = pattern
       // Escape special regex characters except `*`
       .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-      // Replace `*` with `.*`
+      // Replace all `*` with `.*`
       .replaceAll('*', '.*')
 
     // Make subdomain optional for patterns like `...//*.example.com/...`
-    if (regex.includes('//.*\\.')) regex = regex.replace('//.*\\.', '//(.*\\.)?')
+    if (regex.includes('//.*\\.')) {
+      regex = regex.replace('//.*\\.', '//(.*\\.)?')
+    }
 
     return `^${regex}$`
   }

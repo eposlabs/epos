@@ -3,13 +3,15 @@ import './gl.css'
 import './layers/index.gl'
 
 epos.state.register({ ...gl })
-let app = await epos.state.connect(() => new gl.App(null))
+let app = await epos.state.connect(new gl.App(null))
 
 // Migrate old state
 if (!app['@']) {
   await epos.state.remove()
-  app = await epos.state.connect(() => new gl.App(null))
+  app = await epos.state.connect(new gl.App(null))
 }
+
+// TODO: use await app.init()
 
 if (location.pathname === '/@kit') {
   epos.render(<app.View />)

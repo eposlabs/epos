@@ -7,21 +7,21 @@ export class ProjectEposGeneral extends ex.Unit {
   fetch = this.$.utils.link(this.$.tools.fetcher, 'fetch')
   container = this.createProjectContainer()
 
-  component<T>(Component: FC<T>) {
+  component<T>(Component: FC<T>): FC<T> {
     return this.$.libs.mobxReactLite.observer(Component)
   }
 
-  async init() {
+  async init(): Promise<void> {
     this.browser = await this.$.tools.browser.create(this.$project.id)
   }
 
-  render(children: ReactNode, container?: Container) {
+  render(children: ReactNode, container?: Container): void {
     container ??= this.getReactRoot()
     const root = this.$.libs.reactDomClient.createRoot(container)
     root.render(this.$.libs.reactJsxRuntime.jsx(this.$.libs.react.StrictMode, { children }))
   }
 
-  private getReactRoot() {
+  private getReactRoot(): Element {
     if (this.$project.shadowCss) {
       if (!this.container.shadowRoot) throw this.never()
       const root = this.container.shadowRoot.querySelector('[data-root]')
@@ -34,7 +34,7 @@ export class ProjectEposGeneral extends ex.Unit {
     }
   }
 
-  private createProjectContainer() {
+  private createProjectContainer(): HTMLDivElement {
     // Get <epos> element
     const eposElement = document.querySelector('epos')
     if (!eposElement) throw this.never()

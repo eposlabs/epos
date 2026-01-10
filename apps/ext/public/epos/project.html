@@ -10,9 +10,10 @@
     </style>
     <script type="module">
       const { searchParams } = new URL(location.href)
-      const isDev = searchParams.get('env') === 'development'
+      const dev = searchParams.get('dev')
+      if (!dev) throw new Error(`Missing 'dev' param`)
       const script = document.createElement('script')
-      script.src = isDev ? '/epos/ex.dev.js' : '/epos/ex.prod.js'
+      script.src = dev === 'true' ? '/epos/ex.dev.js' : '/epos/ex.prod.js'
       document.head.append(script)
     </script>
   </head>

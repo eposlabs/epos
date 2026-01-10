@@ -3,8 +3,8 @@ import type { Info } from './project.sw'
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
   id: Info['id']
+  dev: Info['dev']
   spec: Info['spec']
-  mode: Info['mode']
   hash: Info['hash']
   hasSidePanel: Info['hasSidePanel']
   private visited = false
@@ -12,15 +12,15 @@ export class Project extends vw.Unit {
   constructor(parent: vw.Unit, info: Info) {
     super(parent)
     this.id = info.id
+    this.dev = info.dev
     this.spec = info.spec
-    this.mode = info.mode
     this.hash = info.hash
     this.hasSidePanel = info.hasSidePanel
   }
 
   update(info: Omit<Info, 'id'>) {
+    this.dev = info.dev
     this.spec = info.spec
-    this.mode = info.mode
     this.hash = info.hash
     this.hasSidePanel = info.hasSidePanel
   }
@@ -57,9 +57,9 @@ export class Project extends vw.Unit {
     if (!this.visited) return 'about:blank'
     return this.$.env.url.project({
       id: this.id,
+      dev: this.dev,
       locus: this.getLocus(),
       tabId: this.$projects.getTabId(),
-      mode: this.mode,
     })
   }
 

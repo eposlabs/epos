@@ -1,47 +1,47 @@
-import type { Info } from './project.sw'
+import type { ProjectInfo } from './project.sw'
 
 export type Attrs = Record<string, string | number>
-export type Frame = { name: string; url: string }
+export type Frame = { id: string; url: string }
 
 export class Project extends os.Unit {
-  id: Info['id']
-  spec: Info['spec']
-  mode: Info['mode']
-  hash: Info['hash']
+  id: ProjectInfo['id']
+  mode: ProjectInfo['mode']
+  spec: ProjectInfo['spec']
+  hash: ProjectInfo['hash']
   bus: ReturnType<gl.Bus['use']>
 
-  constructor(parent: os.Unit, info: Pick<Info, 'id' | 'spec' | 'mode' | 'hash'>) {
+  constructor(parent: os.Unit, params: Pick<ProjectInfo, 'id' | 'mode' | 'spec' | 'hash'>) {
     super(parent)
-    this.id = info.id
-    this.spec = info.spec
-    this.mode = info.mode
-    this.hash = info.hash
+    this.id = params.id
+    this.mode = params.mode
+    this.spec = params.spec
+    this.hash = params.hash
     this.bus = this.$.bus.use(`Project[${this.id}]`)
-    if (this.hash) this.startBackground()
+    if (this.hash) this.createBackground()
 
     this.bus.on('getFrames', this.getFrames, this)
-    this.bus.on('openFrame', this.openFrame, this)
-    this.bus.on('closeFrame', this.closeFrame, this)
+    this.bus.on('createFrame', this.createFrame, this)
+    this.bus.on('removeFrame', this.removeFrame, this)
   }
 
-  update(info: Pick<Info, 'spec' | 'mode' | 'hash'>) {
+  update(updates: Pick<ProjectInfo, 'mode' | 'spec' | 'hash'>) {
     // Hash changed? -> Reload Background frame
-    if (this.hash !== info.hash) {
+    if (this.hash !== updates.hash) {
       if (!this.hasBackground()) {
-        this.startBackground()
+        this.createBackground()
       } else {
-        this.restartBackground()
+        this.reloadBackground()
       }
     }
 
-    this.spec = info.spec
-    this.mode = info.mode
-    this.hash = info.hash
+    this.mode = updates.mode
+    this.spec = updates.spec
+    this.hash = updates.hash
   }
 
   dispose() {
     this.bus.off()
-    this.closeAllFrames()
+    this.removeAllFrames()
     this.removeBackground()
   }
 
@@ -49,11 +49,11 @@ export class Project extends os.Unit {
   // BACKGROUND MANAGEMENT
   // ---------------------------------------------------------------------------
 
-  private startBackground() {
+  private createBackground() {
     // Already exists? -> Ignore
     if (this.hasBackground()) return
 
-    // Create iframe
+    // Create background iframe
     const iframe = document.createElement('iframe')
     iframe.name = this.spec.name
     iframe.setAttribute('data-type', 'background')
@@ -67,8 +67,8 @@ export class Project extends os.Unit {
     this.info({ title, subtitle })
   }
 
-  private restartBackground() {
-    // No iframe? -> Ignore
+  private reloadBackground() {
+    // No background iframe? -> Ignore
     const iframe = this.getBackground()
     if (!iframe) return
 
@@ -80,7 +80,7 @@ export class Project extends os.Unit {
   }
 
   private removeBackground() {
-    // No iframe? -> Ignore
+    // No background iframe? -> Ignore
     const iframe = this.getBackground()
     if (!iframe) return
 
@@ -113,16 +113,14 @@ export class Project extends os.Unit {
     const iframes = [...document.querySelectorAll<HTMLIFrameElement>(selector)]
 
     return iframes.map(iframe => {
-      const name = iframe.getAttribute('data-frame-name')
-      if (!name) throw this.never()
-      return { name, url: iframe.src }
+      const frameId = iframe.getAttribute('data-frame-id')
+      if (!frameId) throw this.never()
+      return { id: frameId, url: iframe.src }
     })
   }
 
-  private async openFrame(name: string, url: string, attrs?: Attrs) {
-    // Frame already exists? -> Close it
-    const exists = this.hasFrame(name)
-    if (exists) this.closeFrame(name, true)
+  private async createFrame(url: string, attrs: Attrs = {}) {
+    const id = this.generateFrameId(url)
 
     // Remove `X-Frame-Options` header for the iframe's url
     const ruleId = await this.$.bus.send<sw.Net['addRule']>('Net.addRule', {
@@ -140,10 +138,10 @@ export class Project extends os.Unit {
 
     // Prepare iframe attributes
     attrs = {
-      'name': `${this.spec.name}:${name}`,
+      'name': `${this.spec.name}:${id}`,
       'data-type': 'frame',
       'data-project-id': this.id,
-      'data-frame-name': name,
+      'data-frame-id': id,
       'data-net-rule-id': ruleId,
       'src': url,
       ...attrs,
@@ -160,20 +158,16 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const namePrefix = this.getNamePrefix(name)
-    if (exists) {
-      const title = `${namePrefix}frame reloaded ${url}`
-      this.info({ title })
-    } else {
-      const title = `${namePrefix}frame opened ${url}`
-      const subtitle = `listed in the context dropdown as '${this.spec.name}:${name}'`
-      this.info({ title, subtitle })
-    }
+    const title = `Frame created: '${id}' ${url}`
+    const subtitle = `Listed in the context dropdown as '${this.spec.name}:${id}'`
+    this.info({ title, subtitle })
+
+    return id
   }
 
-  private closeFrame(name: string, noInfo = false) {
+  private removeFrame(id: string) {
     // No iframe? -> Ignore
-    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-name="${name}"]`
+    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-id="${id}"]`
     const iframe = document.querySelector<HTMLIFrameElement>(selector)
     if (!iframe) return
 
@@ -185,25 +179,29 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    if (noInfo) return
-    const namePrefix = this.getNamePrefix(name)
-    this.info({ title: `${namePrefix}frame closed` })
+    const title = `Frame removed: '${id}'`
+    this.info({ title })
   }
 
-  private closeAllFrames() {
+  private removeAllFrames() {
     const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
     const iframes = document.querySelectorAll<HTMLIFrameElement>(selector)
 
     for (const iframe of iframes) {
-      const name = iframe.getAttribute('data-frame-name')
-      if (!name) throw this.never()
-      this.closeFrame(name)
+      const frameId = iframe.getAttribute('data-frame-id')
+      if (!frameId) throw this.never()
+      this.removeFrame(frameId)
     }
   }
 
-  private hasFrame(name: string) {
-    const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-name="${name}"]`
-    return !!document.querySelector<HTMLIFrameElement>(selector)
+  private generateFrameId(url: string): string {
+    if (url) return this.$.utils.id()
+    // const frames = this.getFrames()
+    // while (true) {
+    //   const domain = new URL(url).host.split('.').at(-2)
+    //   const exists = this.hasFrame(domain!)
+    // }
+    return this.$.utils.id()
   }
 
   // ---------------------------------------------------------------------------
@@ -218,10 +216,5 @@ export class Project extends os.Unit {
       label: this.spec.name,
       timestamp: true,
     })
-  }
-
-  private getNamePrefix(name: string) {
-    if (name === '[frame]') return ''
-    return `'${name}' `
   }
 }

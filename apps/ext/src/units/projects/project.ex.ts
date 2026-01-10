@@ -16,7 +16,7 @@ export class Project extends ex.Unit {
     this.shadowCss = def.shadowCss
     this.fn = def.fn
     this.bus = this.$.bus.use(`Project[${this.id}]`)
-    this.states = new exSw.States(this, this.id, ':states', this.getStatesConfig())
+    this.states = new exSw.States(this, this.id, ':state', this.getStatesConfig())
     this.epos = new ex.ProjectEpos(this)
   }
 

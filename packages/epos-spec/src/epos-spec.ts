@@ -361,12 +361,12 @@ function parseResource(loadEntry: string): Resource {
 
   if (loadEntry.startsWith('lite:')) {
     if (!isJs) throw new Error(`'lite:' resources must be JS files: '${loadEntry}'`)
-    return { path: loadEntry.replace('lite:', ''), type: 'lite-js' }
+    return { path: parsePath(loadEntry.replace('lite:', '')), type: 'lite-js' }
   } else if (loadEntry.startsWith('shadow:')) {
     if (!isCss) throw new Error(`'shadow:' resources must be CSS files: '${loadEntry}'`)
-    return { path: loadEntry.replace('shadow:', ''), type: 'shadow-css' }
+    return { path: parsePath(loadEntry.replace('shadow:', '')), type: 'shadow-css' }
   } else {
-    return { path: loadEntry, type: isJs ? 'js' : 'css' }
+    return { path: parsePath(loadEntry), type: isJs ? 'js' : 'css' }
   }
 }
 

@@ -6,7 +6,6 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from '@ui/components/ui/sidebar'
-import type { Project as ProjectData } from 'epos'
 
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
@@ -17,12 +16,13 @@ export class Projects extends gl.Unit {
   }
 
   async attach() {
-    const projectsData = await epos.projects.list()
-    this.refresh(projectsData)
-    epos.projects.watch(projectsData => this.refresh(projectsData))
+    await this.refresh()
+    epos.projects.watch(() => this.refresh())
   }
 
-  private refresh(projectsData: ProjectData[]) {
+  private async refresh() {
+    const projectsData = await epos.projects.list()
+
     projectsData.forEach(projectData => {
       const project = this.list.find(project => project.id === projectData.id)
       if (project) {

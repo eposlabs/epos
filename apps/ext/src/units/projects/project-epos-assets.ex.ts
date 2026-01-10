@@ -8,58 +8,57 @@ export class ProjectEposAssets extends ex.Unit {
     this.paths = await this.$.idb.keys(this.$project.id, ':assets')
   }
 
-  async load(pathArg?: unknown) {
+  async load(path?: string) {
     // No path provided? -> Load all assets
-    if (this.$.utils.is.undefined(pathArg)) {
+    if (this.$.utils.is.undefined(path)) {
       await Promise.all(this.paths.map(path => this.load(path)))
       return
     }
 
     // Already loaded? -> Skip
-    const path = this.preparePath(pathArg, this.load)
-    if (this.files[path]) return
+    const normalizedPath = this.normalizePath(path, this.load)
+    if (this.files[normalizedPath]) return
 
     // Read the asset from IndexedDB
-    const blob = await this.get(path)
+    const blob = await this.get(normalizedPath)
     if (!blob) return
 
     // Store in memory
-    this.files[path] = { url: URL.createObjectURL(blob), blob }
+    this.files[normalizedPath] = { url: URL.createObjectURL(blob), blob }
   }
 
-  unload(pathArg?: string) {
+  unload(path?: string) {
     // No path provided? -> Unload all assets
-    if (this.$.utils.is.undefined(pathArg)) {
+    if (this.$.utils.is.undefined(path)) {
       Object.keys(this.files).forEach(path => this.unload(path))
       return
     }
 
     // Asset not loaded? -> Skip
-    const path = this.preparePath(pathArg, this.unload)
-    if (!this.files[path]) return
+    const normalizedPath = this.normalizePath(path, this.unload)
+    if (!this.files[normalizedPath]) return
 
     // Revoke URL and remove from memory
-    URL.revokeObjectURL(this.files[path].url)
-    delete this.files[path]
+    URL.revokeObjectURL(this.files[normalizedPath].url)
+    delete this.files[normalizedPath]
   }
 
-  url(pathArg: unknown) {
-    const path = this.preparePath(pathArg, this.url)
-
-    if (!this.files[path]) {
-      throw this.$epos.error(
-        `Asset must be loaded before accessing URL: '${path}'. Call epos.assets.load(path?) first.`,
-        this.url,
-      )
+  url(path: string) {
+    const normalizedPath = this.normalizePath(path, this.url)
+    if (!this.files[normalizedPath]) {
+      const message = `Asset not loaded: "${path}"`
+      const tip1 = `Call epos.assets.load("${path}") first`
+      const tip2 = `Or call epos.assets.load() to load all assets`
+      throw this.$epos.error(`${message}. ${tip1}. ${tip2}`, this.url)
     }
 
-    return this.files[path].url
+    return this.files[normalizedPath].url
   }
 
-  async get(pathArg: unknown) {
-    const path = this.preparePath(pathArg, this.get)
-    if (this.files[path]) return this.files[path].blob
-    return await this.$.idb.get<Blob>(this.$project.id, ':assets', path)
+  async get(path: string) {
+    const normalizedPath = this.normalizePath(path, this.get)
+    if (this.files[normalizedPath]) return this.files[normalizedPath].blob
+    return await this.$.idb.get<Blob>(this.$project.id, ':assets', normalizedPath)
   }
 
   list(filter: { loaded?: boolean } = {}) {
@@ -75,27 +74,22 @@ export class ProjectEposAssets extends ex.Unit {
   }
 
   /**
-   * preparePath('a/c') -> 'a/c'
-   * preparePath('a/c/') -> 'a/c'
-   * preparePath('/a/c/') -> 'a/c'
-   * preparePath('./a/c') -> 'a/c'
-   * preparePath('a/./c') -> 'a/c'
+   * normalizePath('a/c') -> 'a/c'
+   * normalizePath('a/c/') -> 'a/c'
+   * normalizePath('/a/c/') -> 'a/c'
+   * normalizePath('./a/c') -> 'a/c'
+   * normalizePath('a/./c') -> 'a/c'
    */
-  private preparePath(path: unknown, caller: Fn) {
-    if (!this.$.utils.is.string(path)) {
-      throw this.$epos.error(`Asset path must be a string`, caller)
-    }
-
+  private normalizePath(path: string, caller: Fn) {
     const normalizedPath = path
       .split('/')
       .filter(part => part !== '' && part !== '.')
       .join('/')
 
     if (!this.paths.includes(normalizedPath)) {
-      throw this.$epos.error(
-        `Asset not found: '${path}'. Ensure it is listed in epos.json 'assets' field.`,
-        caller,
-      )
+      const message = `Asset not found: "${path}"`
+      const tip = `Ensure it is listed in epos.json "assets" field`
+      throw this.$epos.error(`${message}. ${tip}.`, caller)
     }
 
     return normalizedPath

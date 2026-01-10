@@ -1,9 +1,9 @@
-import type { InfoMap } from './projects.sw'
+import type { ProjectInfoMap } from './projects.sw'
 
 export type OnData = (data: WatcherData) => void
 
 export type WatcherData = {
-  infoMap: InfoMap
+  infoMap: ProjectInfoMap
   addedProjectIds: string[]
   removedProjectIds: string[]
   retainedProjectIds: string[]
@@ -12,7 +12,7 @@ export type WatcherData = {
 
 export class ProjectsWatcher extends exOsVw.Unit {
   private onData: OnData
-  private infoMap: InfoMap = {}
+  private infoMap: ProjectInfoMap = {}
 
   constructor(parent: exOsVw.Unit, onData: OnData) {
     super(parent)

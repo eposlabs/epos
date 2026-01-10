@@ -6,7 +6,7 @@ export class ProjectEpos extends ex.Unit {
   state = new ex.ProjectEposState(this)
   storage = new ex.ProjectEposStorage(this)
   assets = new ex.ProjectEposAssets(this)
-  frame = new ex.ProjectEposFrame(this)
+  frames = new ex.ProjectEposFrames(this)
   env = new ex.ProjectEposEnv(this)
   libs = new ex.ProjectEposLibs(this)
   projects = new ex.ProjectEposProjects(this)
@@ -68,12 +68,12 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.storage, 'list'),
       },
 
-      // Frame
-      frame: {
-        open: this.$.utils.link(this.frame, 'open'),
-        close: this.$.utils.link(this.frame, 'close'),
-        exists: this.$.utils.link(this.frame, 'exists'),
-        list: this.$.utils.link(this.frame, 'list'),
+      // Frames
+      frames: {
+        create: this.$.utils.link(this.frames, 'create'),
+        remove: this.$.utils.link(this.frames, 'remove'),
+        has: this.$.utils.link(this.frames, 'has'),
+        list: this.$.utils.link(this.frames, 'list'),
       },
 
       // Assets
@@ -108,12 +108,14 @@ export class ProjectEpos extends ex.Unit {
       // Project
       ...(this.$project.spec.config.access.includes('projects') && {
         projects: {
-          install: this.$.utils.link(this.projects, 'install'),
+          add: this.$.utils.link(this.projects, 'add'),
+          update: this.$.utils.link(this.projects, 'update'),
           remove: this.$.utils.link(this.projects, 'remove'),
-          enable: this.$.utils.link(this.projects, 'enable'),
-          disable: this.$.utils.link(this.projects, 'disable'),
-          watch: this.$.utils.link(this.projects, 'watch'),
+          has: this.$.utils.link(this.projects, 'has'),
+          get: this.$.utils.link(this.projects, 'get'),
           list: this.$.utils.link(this.projects, 'list'),
+          watch: this.$.utils.link(this.projects, 'watch'),
+          fetch: this.$.utils.link(this.projects, 'fetch'),
         },
       }),
 

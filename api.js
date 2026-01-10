@@ -1,4 +1,4 @@
-void (() => {
+void (async () => {
   epos.fetch()
   epos.browser()
   epos.component()
@@ -47,6 +47,82 @@ void (() => {
   epos.projects.install(projectId, url, dev_)
   epos.projects.install(projectId, { spec, sources, assets }, dev_) // if mode is not provided, existing mode is used
 
+  epos.projects.install(abc, url, { mode: 'development', enabled: true })
+  epos.projects.install(projectId, url)
+  epos.projects.install(projectId, bundle, { mode: 'development', enabled: false })
+  // epos.projects.fetch(url) => bundle
+  // epos.projects.upsert(projectId, { ...bundle, mode, enabled })
+
+  epos.projects.add(url | bundle, params) // => projectId
+  epos.projects.update(id, url | bundle, params)
+
+  epos.projects.fetch(url) // => { spec, sources, assets }
+  // const bundle = epos.projects.fetch(url)
+  epos.projects.add({ spec, sources, assets, mode$, enabled$ })
+  epos.projects.update(id, bundle)
+  epos.projects.update(id, { spec, sources, assets, mode$, enabled$ })
+
+  Bundle = { spec, sources, assets }
+  Params = { mode, enabled }
+  // fetch() => Bundle
+  // add(Bundle & Partial <Params>)
+  // update(id, Partial < Bundle > & Partial < Params >)
+
+  $.projects.fetch
+  $.projects.add(id_, bundle)
+  $.projects.update(id, bundle & params)
+
+  // projetcs.install(id?, urlOrBundle)
+  projects.add(id_, bundle) // if id exists, then what? error
+  projects.update(id, bundle)
+
+  // // install = upsert
+  // add(bundle)
+  // add(id, bundle)
+  // add(...args: [string] | [string, string]) {
+  //   const [id, bundle] = args.length === 1 ? [this.generateId(), args[0]] : args
+  // }
+
+  // install(id, bundleOrUrl) {
+  //   const bundle = $.projects.fetch(url)
+  //   if ($.projects.has(id)) {
+  //     $.projects.update(id, bundle)
+  //   } else {
+  //     $.projects.add(id, bundle)
+  //   }
+  // }
+
+  const bundle = await epos.projects.fetch(url)
+  const projectId = await epos.projects.add({ ...bundle, mode: 'development', enabled: true })
+  this.projectIds.push(new Project(projectId))
+
+  const bundle = await epos.projects.fetch(url)
+  epos.projects.update(projectId, bundle)
+
+  epos.projects.upsert(id, { spec, sources, assets, mode$, enabled$ })
+
+  // install(id, url)
+
+  projects.install(url, { mode: 'development' }) // => projectId
+  projects.install(bundle, params) // => projectId
+  projects.install(projectId, url, params)
+  projects.install(projectId, bundle, params)
+  projects.update(projectId, bundle & params)
+  params = { mode, enabled }
+
+  // ALTERNATIVE:
+  // const projectId = await projects.install(url | bundle)
+  projects.update(projectId, url)
+  projects.update(projectId, bundle & params)
+
+  epos.projects.install('x', bundle, { mode: 'development', enabled: true })
+  epos.projects.install('x', 'https://epos.dev/@/x/epos.json', true)
+  epos.projects.install('x', 'https://epos.dev/@/x/epos.json', true)
+  epos.projects.install('x', url)
+  epos.projects.install('x', bundle)
+  epos.projects.update('x', { env: 'development', enabled: false, sources, assets, spec })
+  epos.projects.update('x', { mode: 'development' })
+
   // TODO: how to detect (url, mode) vs (projectId, url) ?
   // project.dev = true | false
   // project.spec
@@ -72,7 +148,15 @@ const id = await epos.frames.open('https://wer.com')
 // x2:example
 
 const projectId = await epos.projects.add('https://wer.com', 'development')
-const projectId = await epos.projects.add({ spec, sources, assets, mode })
+const projectId = await epos.projects.install({
+  id: 'a',
+  spec,
+  sources,
+  assets,
+})
+
+const bundle = await epos.projects.fetch('https://wer.com')
+await epos.projects.add({ id: 'x', mode: 'development', ...bundle })
 
 await epos.projects.update(projectId, 'https://wer.com')
 epos.projects.update(projectId, 'https://wer.com/epos.json', 'development')

@@ -62,11 +62,7 @@ export class Project extends gl.Unit {
 
   async toggle() {
     if (this.spec.name === 'kit') return
-    if (this.enabled) {
-      await epos.projects.disable(this.id)
-    } else {
-      await epos.projects.enable(this.id)
-    }
+    await epos.projects.update(this.id, { enabled: !this.enabled })
   }
 
   select() {

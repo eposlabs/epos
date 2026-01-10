@@ -1,4 +1,4 @@
-import type { Mode } from 'epos'
+import type { ProjectMode } from 'epos'
 
 export class EnvUrl extends gl.Unit {
   offscreen() {
@@ -13,7 +13,12 @@ export class EnvUrl extends gl.Unit {
     return `/epos/view.html?${this.toSearchParams(params)}`
   }
 
-  project(params: { id: string; locus: 'popup' | 'sidePanel' | 'background'; tabId?: number; mode: Mode }) {
+  project(params: {
+    id: string
+    locus: 'popup' | 'sidePanel' | 'background'
+    tabId?: number
+    mode: ProjectMode
+  }) {
     return `/epos/project.html?${this.toSearchParams(params)}`
   }
 

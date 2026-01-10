@@ -38,8 +38,18 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.install = (id: string, url: Url, mode?: Mode) => this.projects.install(id, url, mode)
-    self.remove = (id: string) => this.projects.remove(id)
+    self.install = async (id: string, url: Url, mode?: Mode) => {
+      const bundle = await this.projects.fetch(url)
+      if (this.projects.has(id)) {
+        await this.projects.update(id, { mode, ...bundle })
+      } else {
+        await this.projects.add({ id, mode, ...bundle })
+      }
+    }
+
+    self.remove = async (id: string) => {
+      await this.projects.remove(id)
+    }
   }
 
   private async setupContentScript() {

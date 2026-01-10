@@ -12,30 +12,28 @@ export type Fn = (...args: any[]) => unknown
 export type Cls = new (...args: any[]) => unknown
 export type Obj = Record<PropertyKey, unknown>
 export type Arr = unknown[]
-export type Root<T> = Initial<T> & { ':version'?: number }
-export type Initial<T> = T extends Obj ? T : Instance<T>
 export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
-export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
-export type Mode = 'development' | 'production'
-export type Sources = { [path: string]: string }
-export type Assets = { [path: string]: Blob }
-export type Attrs = Record<string, string | number>
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 
-export type Project = {
-  id: string
-  mode: Mode
-  spec: Spec
-  enabled: boolean
-}
+export type FrameAttrs = Record<string, string | number>
 
-export type Bundle = {
-  mode: Mode
-  spec: Spec
-  sources: Sources
-  assets: Assets
-}
+export type StateRoot<T> = StateInitial<T> & { ':version'?: number }
+export type StateInitial<T> = T extends Obj ? T : Instance<T>
+export type StateVersioner<T> = Record<number, (this: StateRoot<T>, state: StateRoot<T>) => void>
+
+export type ProjectSpec = Spec
+export type ProjectMode = 'development' | 'production'
+export type ProjectSources = { [path: string]: string }
+export type ProjectAssets = { [path: string]: Blob }
+export type ProjectQuery = { sources?: boolean; assets?: boolean }
+export type ProjectBundle = { spec: ProjectSpec; sources: ProjectSources; assets: ProjectAssets }
+export type ProjectSettings = { mode: ProjectMode; enabled: boolean }
+export type ProjectBase = { id: string; mode: ProjectMode; enabled: boolean; spec: ProjectSpec }
+
+export type Project<TQuery = {}> = ProjectBase &
+  (TQuery extends { sources: true } ? { sources: ProjectSources } : {}) &
+  (TQuery extends { assets: true } ? { assets: ProjectAssets } : {})
 
 export type ReqInit = {
   body: RequestInit['body']
@@ -111,15 +109,15 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
-      <T>(name?: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+      <T>(initial?: StateInitial<T>, versioner?: StateVersioner<T>): Promise<T>
+      <T>(name?: string, initial?: StateInitial<T>, versioner?: StateVersioner<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
     /** Run any state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    create<T>(initial?: Initial<T>): T
+    create<T>(initial?: StateInitial<T>): T
     /** Get the list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
@@ -154,25 +152,20 @@ export interface Epos {
     remove(name?: string): Promise<void>
     /** Get storage API for a specific storage. */
     use(name?: string): Storage
-    /** Get the list of all storages. */
-    list(): Promise<{ name: string | null }[]>
+    /** Get list of all storage names. */
+    list(): Promise<string[]>
   }
 
-  // Frame
-  frame: {
+  // Frames
+  frames: {
     /** Open background frame. */
-    open: {
-      (url: string): Promise<void>
-      (url: string, attrs: Attrs): Promise<void>
-      (name: string, url: string): Promise<void>
-      (name: string, url: string, attrs: Attrs): Promise<void>
-    }
-    /** Close background frame. */
-    close(name?: string): Promise<void>
-    /** Check if background frame with the given name exists. */
-    exists(name?: string): Promise<boolean>
+    create(url: string, attrs?: FrameAttrs): Promise<string>
+    /** Remove background frame. */
+    remove(id?: string): Promise<void>
+    /** Check if background frame with the given id exists. */
+    has(id?: string): Promise<boolean>
     /** Get the list of all open background frames. */
-    list(): Promise<{ name: string | null; url: string }[]>
+    list(): Promise<{ id: string; url: string }[]>
   }
 
   // Assets
@@ -202,7 +195,7 @@ export interface Epos {
   // Env
   env: {
     tabId: number
-    project: { id: string; mode: Mode; spec: Spec }
+    project: { id: string; mode: ProjectMode; spec: ProjectSpec }
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean
@@ -210,15 +203,14 @@ export interface Epos {
 
   // Projects
   projects: {
-    install: {
-      (id: string, url: string, mode?: Mode): Promise<void>
-      (id: string, bundle: Bundle): Promise<void>
-    }
+    add<T extends string>(params: Partial<{ id: T } & ProjectSettings> & ProjectBundle): Promise<T>
+    update(id: string, updates: Partial<ProjectSettings & ProjectBundle>): Promise<void>
     remove(id: string): Promise<void>
-    enable(id: string): Promise<void>
-    disable(id: string): Promise<void>
-    watch(listener: (projects: Project[]) => void): void
-    list(): Promise<Project[]>
+    has(id: string): Promise<boolean>
+    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
+    list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
+    watch(listener: () => void): void
+    fetch(url: string): Promise<ProjectBundle>
   }
 
   // Libs
