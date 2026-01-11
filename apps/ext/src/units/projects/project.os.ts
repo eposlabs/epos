@@ -25,12 +25,14 @@ export class Project extends os.Unit {
   }
 
   update(updates: Pick<ProjectInfo, 'mode' | 'spec' | 'hash'>) {
-    // Hash changed? -> Reload Background frame
+    // Hash changed? -> Update background
     if (this.hash !== updates.hash) {
-      if (!this.hasBackground()) {
-        this.createBackground()
-      } else {
+      if (!updates.hash) {
+        this.removeBackground()
+      } else if (this.hasBackground()) {
         this.reloadBackground()
+      } else {
+        this.createBackground()
       }
     }
 
@@ -63,7 +65,7 @@ export class Project extends os.Unit {
 
     // Log info
     const title = `<background> started`
-    const subtitle = `listed in the context dropdown as '${this.spec.name}'`
+    const subtitle = `Listed in the context dropdown as "${this.spec.name}"`
     this.info({ title, subtitle })
   }
 
@@ -76,7 +78,8 @@ export class Project extends os.Unit {
     iframe.src = this.getBackgroundUrl()
 
     // Log info
-    this.info({ title: `<background> restarted` })
+    const title = `<background> restarted`
+    this.info({ title })
   }
 
   private removeBackground() {
@@ -88,7 +91,8 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    this.info({ title: `<background> stopped` })
+    const title = `<background> stopped`
+    this.info({ title })
   }
 
   private hasBackground() {
@@ -158,8 +162,8 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const title = `Frame created: '${id}' ${url}`
-    const subtitle = `Listed in the context dropdown as '${this.spec.name}:${id}'`
+    const title = `Frame created: "${id}" ${url}`
+    const subtitle = `Listed in the context dropdown as "${this.spec.name}:${id}"`
     this.info({ title, subtitle })
 
     return id
@@ -179,7 +183,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    const title = `Frame removed: '${id}'`
+    const title = `Frame removed: "${id}" ${iframe.src}`
     this.info({ title })
   }
 
@@ -195,13 +199,19 @@ export class Project extends os.Unit {
   }
 
   private generateFrameId(url: string): string {
-    if (url) return this.$.utils.id()
-    // const frames = this.getFrames()
-    // while (true) {
-    //   const domain = new URL(url).host.split('.').at(-2)
-    //   const exists = this.hasFrame(domain!)
-    // }
-    return this.$.utils.id()
+    let id: string
+    let index = 1
+    const frames = this.getFrames()
+    const hostnameParts = new URL(url).hostname.split('.')
+    const domain = hostnameParts.length === 1 ? hostnameParts[0] : hostnameParts.at(-2)
+    if (!domain) throw this.never()
+
+    while (true) {
+      id = `${domain}${index > 1 ? `-${index}` : ''}`
+      const exists = frames.find(frame => frame.id === id)
+      if (!exists) return id
+      index += 1
+    }
   }
 
   // ---------------------------------------------------------------------------

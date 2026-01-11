@@ -233,4 +233,4 @@ declare global {
 
 const _epos = epos
 export { _epos as epos }
-export default _epos
+export default epos

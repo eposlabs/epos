@@ -13,6 +13,10 @@ declare global {
   // App instance for `ex`, dev-only
   var $epos: any
 
+  // Global methods for `sw`
+  var install: any
+  var remove: any
+
   type Obj<T = unknown> = types.Obj<T>
   type Arr<T = unknown> = types.Arr<T>
   type Cls<T = unknown> = types.Cls<T>
@@ -33,25 +37,17 @@ declare global {
     fn: (epos: PartialEpos) => void
   }
 
-  interface ImportMetaEnv {
-    readonly REBUNDLE_PORT: number
-  }
-
   interface Node {
     epos?: boolean
   }
 
+  // Global variables injected to pages and frames
   interface Window {
-    // Global variables injected to pages and frames
     __eposIsTop?: boolean
     __eposTabId?: number | null
     __eposElement?: Element
     __eposTabBusToken?: string | null
     __eposProjectDefs?: ProjectDef[]
     __eposOriginalGlobals?: Record<string, unknown>
-
-    // Global methods for `sw`
-    install: any
-    remove: any
   }
 }

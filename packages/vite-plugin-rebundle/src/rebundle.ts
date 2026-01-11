@@ -1,3 +1,4 @@
+/// <reference types="rolldown-vite/client" />
 import chalk from 'chalk'
 import { is } from 'dropcap/utils'
 import { filesize } from 'filesize'
@@ -8,6 +9,12 @@ import { rolldown, type InputOptions, type OutputOptions } from 'rolldown'
 import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import { WebSocketServer } from 'ws'
+
+declare global {
+  interface ImportMetaEnv {
+    readonly REBUNDLE_PORT: number
+  }
+}
 
 export type RolldownOptions = {
   input?: InputOptions
