@@ -6,8 +6,8 @@
   "manifest_version": 3,
   "action": { "default_title": "epos" },
   "icons": { "128": "/icon.png" },
-  "background": { "type": "module", "service_worker": "/epos/sw.js" },
-  "sandbox": { "pages": ["/epos/project.html"] },
+  "background": { "type": "module", "service_worker": "/sw.js" },
+  "sandbox": { "pages": ["/project.html"] },
   "web_accessible_resources": [{ "matches": ["<all_urls>"], "resources": ["*"] }],
   "host_permissions": ["<all_urls>"],
   "permissions": [

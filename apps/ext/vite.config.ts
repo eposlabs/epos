@@ -72,8 +72,8 @@ export default defineConfig(async ({ mode }) => {
         },
         output: {
           sourcemap: false,
-          entryFileNames: 'epos/[name].js',
-          assetFileNames: 'epos/[name].[ext]',
+          entryFileNames: '[name].js',
+          assetFileNames: '[name].[ext]',
         },
         experimental: {
           strictExecutionOrder: true,

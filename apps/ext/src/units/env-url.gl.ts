@@ -2,15 +2,15 @@ import type { ProjectMode } from 'epos'
 
 export class EnvUrl extends gl.Unit {
   offscreen() {
-    return '/epos/offscreen.html'
+    return '/offscreen.html'
   }
 
   system(params: { type: 'permission' }) {
-    return `/epos/system.html?${this.toSearchParams(params)}`
+    return `/system.html?${this.toSearchParams(params)}`
   }
 
   view(params: { locus: 'popup' | 'sidePanel'; tabId: number }) {
-    return `/epos/view.html?${this.toSearchParams(params)}`
+    return `/view.html?${this.toSearchParams(params)}`
   }
 
   project(params: {
@@ -19,7 +19,7 @@ export class EnvUrl extends gl.Unit {
     tabId?: number
     mode: ProjectMode
   }) {
-    return `/epos/project.html?${this.toSearchParams(params)}`
+    return `/project.html?${this.toSearchParams(params)}`
   }
 
   private toSearchParams(params: Record<string, unknown>) {

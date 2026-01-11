@@ -37,7 +37,7 @@ export function info(params: {
     style({}),
 
     // Timestamp
-    style({ 'color': 'gray' }),
+    style({ 'color': '#9ca3af' }),
 
     // Second row (subtitle)
     style({
@@ -48,7 +48,7 @@ export function info(params: {
         'padding-left': '8px',
         'padding-top': '3px',
         'padding-bottom': '2px',
-        'color': 'gray',
+        'color': '#9ca3af',
       }),
     }),
   )

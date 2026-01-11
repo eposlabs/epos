@@ -57,20 +57,20 @@ export class ProjectTarget extends sw.Unit {
     if (!isExtensionPage) return false
 
     // For `view.html` page, match by locus in the URL params
-    if (pathname === '/epos/view.html') {
+    if (pathname === '/view.html') {
       const urlLocus = searchParams.get('locus')
       return match.value === urlLocus
     }
 
     // For `project.html` page, match by locus and, optionally, by project id in the URL params
-    if (pathname === '/epos/project.html') {
+    if (pathname === '/project.html') {
       const urlLocus = searchParams.get('locus')
       const urlProjectId = searchParams.get('id')
       return match.value === urlLocus && (!urlProjectId || urlProjectId === this.$project.id)
     }
 
     // For `offscreen.html` page, match only `<background>` pattern
-    if (pathname === '/epos/offscreen.html') {
+    if (pathname === '/offscreen.html') {
       return match.value === 'background'
     }
 

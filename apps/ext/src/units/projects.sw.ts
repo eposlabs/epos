@@ -250,14 +250,14 @@ export class Projects extends sw.Unit {
 
   private async loadEx() {
     // Development versions are absent for standalone projects
-    const [exFullDev] = await this.$.utils.safe(fetch('/epos/ex.dev.js').then(res => res.text()))
-    const [exMiniDev] = await this.$.utils.safe(fetch('/epos/ex-mini.dev.js').then(res => res.text()))
+    const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(res => res.text()))
+    const [exMiniDev] = await this.$.utils.safe(fetch('/ex-mini.dev.js').then(res => res.text()))
     this.ex.full.dev = exFullDev ?? ''
     this.ex.mini.dev = exMiniDev ?? ''
 
     // Production versions are always present
-    this.ex.full.prod = await fetch('/epos/ex.prod.js').then(res => res.text())
-    this.ex.mini.prod = await fetch('/epos/ex-mini.prod.js').then(res => res.text())
+    this.ex.full.prod = await fetch('/ex.prod.js').then(res => res.text())
+    this.ex.mini.prod = await fetch('/ex-mini.prod.js').then(res => res.text())
   }
 
   private async loadProjects() {

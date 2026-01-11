@@ -190,18 +190,18 @@
 //     const zip = new this.$.libs.Zip()
 
 //     const engineFiles = [
-//       '/epos/cs.js',
-//       '/epos/ex-mini.prod.js',
-//       '/epos/ex.prod.js',
-//       '/epos/os.js',
-//       '/epos/sw.js',
-//       '/epos/vw.css',
-//       '/epos/vw.js',
-//       '/epos/view.html',
-//       '/epos/system.html',
-//       '/epos/project.html',
-//       '/epos/offscreen.html',
-//       ...(asDev ? ['/epos/ex-mini.dev.js', '/epos/ex.dev.js'] : []),
+//       '/cs.js',
+//       '/ex-mini.prod.js',
+//       '/ex.prod.js',
+//       '/os.js',
+//       '/sw.js',
+//       '/vw.css',
+//       '/vw.js',
+//       '/view.html',
+//       '/system.html',
+//       '/project.html',
+//       '/offscreen.html',
+//       ...(asDev ? ['/ex-mini.dev.js', '/ex.dev.js'] : []),
 //     ]
 
 //     for (const path of engineFiles) {

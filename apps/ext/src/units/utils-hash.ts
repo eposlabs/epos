@@ -9,13 +9,11 @@ export async function hash(value: unknown) {
 }
 
 async function stringify(value: unknown): Promise<string> {
-  if (value === null) return 'null'
-
-  const type = typeof value
-  if (type === 'undefined') return 'undefined'
-  if (type === 'boolean') return `boolean:${value}`
-  if (type === 'number') return `number:${value}`
-  if (type === 'string') return `string:${value}`
+  if (is.null(value)) return 'null'
+  if (is.undefined(value)) return 'undefined'
+  if (is.boolean(value)) return `boolean:${value}`
+  if (is.number(value)) return `number:${value}`
+  if (is.string(value)) return `string:${value}`
 
   if (is.array(value)) {
     const items = await Promise.all(value.map(item => stringify(item)))
@@ -35,12 +33,12 @@ async function stringify(value: unknown): Promise<string> {
     return `blob-sha256:${blobHashHex}`
   }
 
-  throw new Error(`Unsupported value type: ${type}`)
+  throw new Error(`Unsupported value type: ${typeof value}`)
 }
 
 function arrayBufferToHex(buffer: ArrayBuffer) {
-  const bytes = new Uint8Array(buffer)
   let hex = ''
+  const bytes = new Uint8Array(buffer)
   for (const byte of bytes) hex += byte.toString(16).padStart(2, '0')
   return hex
 }
