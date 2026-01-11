@@ -10,7 +10,7 @@ export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
 export const _attachQueue_ = Symbol('pendingAttachHooks')
-const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10)
 
 export type Node<T> = Unit<T> | Obj | Arr
 export type Versioner<T> = { [version: number]: (this: T) => void }
@@ -77,7 +77,7 @@ export class Unit<TRoot = unknown> {
       if (!descriptor || !descriptor.get) return
       const value = descriptor.get.call(this)
       const state = epos.state.create(value)
-      Reflect.defineProperty(state, epos.state.PARENT, { value: this })
+      Reflect.defineProperty(state, epos.state.PARENT, { configurable: true, value: this })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
     })()
 

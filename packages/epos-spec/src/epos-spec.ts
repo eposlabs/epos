@@ -163,8 +163,9 @@ function parseName(spec: Obj) {
   if (!('name' in spec)) throw new Error(`'name' field is required`)
 
   const name = spec.name
-  const { min, max } = schema.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
+
+  const { min, max } = schema.name
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
   if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
 

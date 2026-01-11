@@ -17,7 +17,7 @@
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "nanoid": "^5.1.6",
-    "preact": "^10.28.1",
+    "preact": "^10.28.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "strip-json-comments": "^5.0.3",
@@ -27,12 +27,12 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
     "@tailwindcss/vite": "^4.1.18",
-    "@types/chrome": "^0.1.32",
-    "@types/react": "^19.2.7",
+    "@types/chrome": "^0.1.33",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "paralayer": "^1.13.0",
-    "rolldown-vite": "^7.3.0",
+    "rolldown-vite": "^7.3.1",
     "tailwindcss": "^4.1.18",
     "vite-plugin-rebundle": "^1.24.0"
   }

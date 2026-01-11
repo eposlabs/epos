@@ -2,6 +2,7 @@ import type {
   Project,
   ProjectAssets,
   ProjectBundle,
+  ProjectMode,
   ProjectQuery,
   ProjectSettings,
   ProjectSources,
@@ -17,7 +18,11 @@ export class Projects extends sw.Unit {
   map: { [id: string]: sw.Project } = {}
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
-  private ex = { full: { dev: '', prod: '' }, mini: { dev: '', prod: '' } }
+
+  private ex = {
+    full: { dev: '', prod: '' },
+    mini: { dev: '', prod: '' },
+  }
 
   get list() {
     return Object.values(this.map)
@@ -29,12 +34,12 @@ export class Projects extends sw.Unit {
     this.update = queue.wrap(this.update, this)
     this.remove = queue.wrap(this.remove, this)
 
-    this.$.bus.on('Projects.create', this.create, this)
-    this.$.bus.on('Projects.update', this.update, this)
-    this.$.bus.on('Projects.remove', this.remove, this)
     this.$.bus.on('Projects.has', this.has, this)
     this.$.bus.on('Projects.get', this.get, this)
     this.$.bus.on('Projects.getAll', this.getAll, this)
+    this.$.bus.on('Projects.create', this.create, this)
+    this.$.bus.on('Projects.update', this.update, this)
+    this.$.bus.on('Projects.remove', this.remove, this)
     this.$.bus.on('Projects.fetch', this.fetch, this)
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
@@ -48,7 +53,25 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
+  async install(url: string, mode: ProjectMode = 'development') {
+    const urlHash = await this.$.utils.hash(url)
+    const projectId = urlHash.slice(0, 10)
+    const bundle = await this.fetch(url)
+
+    if (this.has(projectId)) {
+      await this.update(projectId, { ...bundle, mode })
+    } else {
+      await this.create({ id: projectId, ...bundle, mode })
+    }
+  }
+
+  private has(id: string) {
+    return !!this.map[id]
+  }
+
+  private async create<T extends string>(
+    params: { id?: T } & Partial<ProjectSettings> & ProjectBundle,
+  ): Promise<T> {
     if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
     this.map[project.id] = project
@@ -56,7 +79,7 @@ export class Projects extends sw.Unit {
     return project.id as T
   }
 
-  async update(id: string, updates: Partial<ProjectSettings & ProjectBundle>) {
+  private async update(id: string, updates: Partial<ProjectSettings & ProjectBundle>) {
     const project = this.map[id]
     if (!project) throw new Error(`Project with id "${id}" does not exist`)
     await project.update(updates)
@@ -71,11 +94,7 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  has(id: string) {
-    return !!this.map[id]
-  }
-
-  async get<T extends ProjectQuery>(id: string, query?: T) {
+  private async get<T extends ProjectQuery>(id: string, query?: T) {
     const project = this.map[id]
     if (!project) return null
 
@@ -89,7 +108,7 @@ export class Projects extends sw.Unit {
     } as Project<T>
   }
 
-  async getAll<T extends ProjectQuery>(query?: T) {
+  private async getAll<T extends ProjectQuery>(query?: T) {
     const projects: Project<T>[] = []
     for (const id in this.map) {
       const project = await this.get(id, query)
@@ -100,7 +119,7 @@ export class Projects extends sw.Unit {
     return projects
   }
 
-  async fetch(specUrl: string): Promise<ProjectBundle> {
+  private async fetch(specUrl: string): Promise<ProjectBundle> {
     // Check if URL is valid
     if (!URL.parse(specUrl)) throw new Error(`Invalid URL: "${specUrl}"`)
 
@@ -144,15 +163,7 @@ export class Projects extends sw.Unit {
     return { spec, sources, assets }
   }
 
-  hasPopup() {
-    return this.list.some(project => project.hasPopup())
-  }
-
-  hasSidePanel() {
-    return this.list.some(project => project.hasSidePanel())
-  }
-
-  getJs(address?: Address, params: { tabId?: number | null; tabBusToken?: string | null } = {}) {
+  private getJs(address?: Address, params: { tabId?: number | null; tabBusToken?: string | null } = {}) {
     const projects = this.list.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
@@ -180,19 +191,19 @@ export class Projects extends sw.Unit {
     ].join('\n')
   }
 
-  getCss(address?: Address) {
+  private getCss(address?: Address) {
     const cssList = this.list.map(project => project.getCss(address)).filter(this.$.utils.is.present)
     if (cssList.length === 0) return null
     return cssList.join('\n').trim()
   }
 
-  getLiteJs(address?: Address) {
+  private getLiteJs(address?: Address) {
     const liteJsList = this.list.map(project => project.getLiteJs(address)).filter(this.$.utils.is.present)
     if (liteJsList.length === 0) return null
     return liteJsList.join(';\n').trim()
   }
 
-  async getInfoMap(address?: Address) {
+  private async getInfoMap(address?: Address) {
     const infoMap: ProjectInfoMap = {}
 
     for (const project of this.list) {
@@ -207,13 +218,13 @@ export class Projects extends sw.Unit {
     if (!tab.id) return
 
     // Has popup? -> Open popup
-    if (this.hasPopup()) {
+    if (this.list.some(project => project.hasPopup())) {
       await this.$.tools.medium.openPopup(tab.id)
       return
     }
 
     // Has side panel? -> Toggle side panel
-    if (this.hasSidePanel()) {
+    if (this.list.some(project => project.hasSidePanel())) {
       await this.$.tools.medium.toggleSidePanel(tab.id)
       return
     }
@@ -247,6 +258,10 @@ export class Projects extends sw.Unit {
       }
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // TASKS
+  // ---------------------------------------------------------------------------
 
   private async loadEx() {
     // Development versions are absent for standalone projects
@@ -282,13 +297,13 @@ export class Projects extends sw.Unit {
     // // Already latest version? -> Skip
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
-    // Load assets
-    const assets: ProjectAssets = {}
-    for (const path of snapshot.spec.assets) {
-      const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
-      if (!blob) continue
-      assets[path] = blob
-    }
+    // // Load assets
+    // const assets: ProjectAssets = {}
+    // for (const path of snapshot.spec.assets) {
+    //   const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
+    //   if (!blob) continue
+    //   assets[path] = blob
+    // }
 
     // private async upsert(id: string, bundle: Bundle, dev = false) {
     //   if (this.map[id]) {
@@ -385,6 +400,10 @@ export class Projects extends sw.Unit {
       }
     })
   }
+
+  // ---------------------------------------------------------------------------
+  // HELPERS
+  // ---------------------------------------------------------------------------
 
   private compareSemver(semver1: string, semver2: string) {
     const parts1 = semver1.split('.').map(Number)

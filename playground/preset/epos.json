@@ -1,6 +1,6 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "preset",
+  "name": "Epos Template",
   "assets": ["./public/logo.svg"],
   "targets": [
     {

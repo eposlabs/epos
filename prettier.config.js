@@ -1,5 +1,5 @@
 export default {
-  plugins: ['prettier-plugin-tailwindcss', 'prettier-plugin-organize-imports'],
+  plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss'],
   semi: false,
   singleQuote: true,
   arrowParens: 'avoid',

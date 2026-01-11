@@ -6,8 +6,8 @@ import { rebundle } from 'vite-plugin-rebundle'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
-    tailwindcss(),
     epos(),
+    tailwindcss(),
     rebundle({
       output: {
         minify: mode !== 'development',

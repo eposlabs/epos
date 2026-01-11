@@ -1,9 +1,8 @@
 {
   "$schema": "https://epos.dev/schema.json",
 
-  "name": "kit",
+  "name": "[epos]",
   "version": "1.8",
-  "title": "[epos]",
   "description": "Build browser extensions.",
   "assets": ["public/icon.svg"],
 

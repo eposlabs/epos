@@ -1,14 +1,13 @@
-import 'epos'
 import './app.css'
 
 const App = epos.component(() => {
   return (
-    <div className="p-4 flex flex-col gap-4">
-      <div className="flex gap-2 items-center">
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex items-center gap-2">
         <img src={epos.assets.url('./public/logo.svg')} className="size-6" />
         <h1>Preset App</h1>
       </div>
-      <button onClick={() => state.count++} className="bg-amber-200 p-2 rounded-sm text-black">
+      <button onClick={() => state.count++} className="rounded-sm bg-amber-200 p-2 text-black">
         Click me [{state.count}]
       </button>
     </div>

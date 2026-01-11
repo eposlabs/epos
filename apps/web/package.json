@@ -10,8 +10,8 @@
     "deploy": "npm run build && netlify deploy --dir apps/web/dist --site 0a55e18d-3914-4207-84ca-6cc2869ea828 --prod"
   },
   "devDependencies": {
-    "netlify-cli": "^23.13.0",
-    "rolldown-vite": "^7.3.0",
+    "netlify-cli": "^23.13.3",
+    "rolldown-vite": "^7.3.1",
     "vitepress": "^2.0.0-alpha.12"
   },
   "overrides": {

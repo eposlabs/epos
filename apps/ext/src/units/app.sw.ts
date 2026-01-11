@@ -36,20 +36,8 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.install = async (url: Url) => {
-      const id = url.split('/').at(-2)
-      if (!id) throw this.never()
-      const bundle = await this.projects.fetch(url)
-      if (this.projects.has(id)) {
-        await this.projects.update(id, { mode: 'development', ...bundle })
-      } else {
-        await this.projects.create({ id, mode: 'development', ...bundle })
-      }
-    }
-
-    self.remove = async (id: string) => {
-      await this.projects.remove(id)
-    }
+    self.install = (url: Url) => this.projects.install(url)
+    self.remove = (id: string) => this.projects.remove(id)
   }
 
   private async setupContentScript() {

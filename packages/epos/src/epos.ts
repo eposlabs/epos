@@ -26,8 +26,8 @@ export type ProjectSpec = Spec
 export type ProjectMode = 'development' | 'production'
 export type ProjectSources = { [path: string]: string }
 export type ProjectAssets = { [path: string]: Blob }
-export type ProjectBundle = { spec: ProjectSpec; sources: ProjectSources; assets: ProjectAssets }
 export type ProjectSettings = { mode: ProjectMode; enabled: boolean }
+export type ProjectBundle = { spec: ProjectSpec; sources: ProjectSources; assets: ProjectAssets }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
 export type ProjectBase = { id: string; mode: ProjectMode; enabled: boolean; spec: ProjectSpec }
 export type Project<TQuery = {}> = ProjectBase &

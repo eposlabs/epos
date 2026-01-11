@@ -1,5 +1,5 @@
-import type { Initial, Root, Versioner } from '../states/state.ex.sw'
-import type { Models } from '../states/states.ex.sw'
+import type { Initial, Root, Versioner } from './state.ex.sw'
+import type { Models } from './states.ex.sw'
 
 const DEFAULT_NAME = ':state'
 

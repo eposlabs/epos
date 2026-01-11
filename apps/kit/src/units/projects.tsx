@@ -6,7 +6,9 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from '@ui/components/ui/sidebar'
+import { parseSpecObject } from 'epos-spec'
 
+// TODO: add projects.orderIds for sorting
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
   selectedProjectId: string | null = null
@@ -18,6 +20,17 @@ export class Projects extends gl.Unit {
   async attach() {
     await this.refresh()
     epos.projects.watch(() => this.refresh())
+  }
+
+  async createEmptyProject() {
+    const projectId = await epos.projects.create({
+      spec: parseSpecObject({ name: 'New Project' }),
+      enabled: true,
+      sources: {},
+      assets: {},
+    })
+
+    this.selectedProjectId = projectId
   }
 
   private async refresh() {
@@ -37,8 +50,8 @@ export class Projects extends gl.Unit {
       if (!exists) this.list.remove(project)
     })
 
-    if (!this.selectedProjectId || !this.list.find(project => project.id === this.selectedProjectId)) {
-      this.selectedProjectId = this.list[0]?.id ?? null
+    if (!this.list.find(project => project.id === this.selectedProjectId)) {
+      this.selectedProjectId = null
     }
   }
 
@@ -46,12 +59,11 @@ export class Projects extends gl.Unit {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <SidebarGroupAction title="Add Project">
+        <SidebarGroupAction title="Add Project" onClick={() => this.createEmptyProject()}>
           <IconPlus /> <span className="sr-only">Add Project</span>
         </SidebarGroupAction>
-
         <SidebarGroupContent>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {this.list.map(project => (
               <project.SidebarView key={project.id} />
             ))}
