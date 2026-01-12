@@ -86,6 +86,7 @@ export class Projects extends vw.Unit {
     const cn = this.$.utils.cn
     const selectedProject = this.list.find(project => project.id === this.selectedProjectId)
     const dropdownProjects = this.list
+      .filter(project => project.enabled)
       .filter(project => project.hash || project.spec.action)
       .sort((project1, project2) => project1.label.localeCompare(project2.label))
     const hasSidePanelButton = this.$.env.is.vwPopup && this.list.some(project => project.hasSidePanel)

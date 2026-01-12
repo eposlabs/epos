@@ -20,8 +20,8 @@ export class ProjectFs extends gl.Unit {
     if (!name) throw this.never()
 
     // Get dir handle
-    if (!this.$project.static.handle) throw this.never()
-    let dirHandle = this.$project.static.handle
+    if (!this.$project.inert.rootDirHandle) throw this.never()
+    let dirHandle = this.$project.inert.rootDirHandle
     for (const dir of dirs) {
       const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
       if (!nextDirHandle) throw new Error(`File not found: ${path}`)

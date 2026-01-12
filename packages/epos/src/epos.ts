@@ -32,6 +32,7 @@ export type Bundle = { spec: Spec; sources: Sources; assets: Assets }
 export type ProjectSettings = { mode: Mode; enabled: boolean }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
 export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec }
+// :
 export type Project<T = {}> = ProjectBase &
   (T extends { sources: true } ? { sources: Sources } : {}) &
   (T extends { assets: true } ? { assets: Assets } : {})
@@ -51,7 +52,7 @@ export type ReqInit = {
   referrer: RequestInit['referrer']
   referrerPolicy: RequestInit['referrerPolicy']
 }
-// _
+// :
 export type Res = {
   ok: Response['ok']
   url: Response['url']

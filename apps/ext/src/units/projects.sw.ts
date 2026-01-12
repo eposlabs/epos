@@ -220,7 +220,7 @@ export class Projects extends sw.Unit {
     }
 
     // Several actions? -> Open popup
-    const projectsWithAction = this.list.filter(project => project.spec.action)
+    const projectsWithAction = this.list.filter(project => project.enabled && project.spec.action)
     if (projectsWithAction.length > 1) {
       await this.$.tools.medium.openPopup(tab.id)
       return
@@ -238,7 +238,7 @@ export class Projects extends sw.Unit {
       }
     }
 
-    // Has kit package? -> Open @kit page
+    // Has `kit` package? -> Open `@kit` page
     if (this.map.kit) {
       const kitTab = (await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' }))[0]
       if (kitTab) {

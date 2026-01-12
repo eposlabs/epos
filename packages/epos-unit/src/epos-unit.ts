@@ -50,10 +50,7 @@ export class Unit<TRoot = unknown> {
 
     // Apply versioner
     void (() => {
-      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'versioner')
-      if (!descriptor || !descriptor.get) return
-
-      const versioner = descriptor.get.call(this)
+      const versioner: unknown = Reflect.get(this.constructor, 'versioner')
       if (!is.object(versioner)) return
 
       const asc = (v1: number, v2: number) => v1 - v2
@@ -81,12 +78,15 @@ export class Unit<TRoot = unknown> {
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
     })()
 
-    // Setup static
+    // Setup inert
     void (() => {
-      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'static')
+      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'inert')
       if (!descriptor || !descriptor.get) return
       let value = descriptor.get.call(this)
-      Reflect.defineProperty(this, 'static', { enumerable: true, get: () => value, set: v => (value = v) })
+      if (!is.object(value)) return
+      value = epos.libs.mobx.observable.object(value, {}, { deep: false })
+      Reflect.defineProperty(value, '_', { configurable: true, get: () => epos.libs.mobx.toJS(value) })
+      Reflect.defineProperty(this, 'inert', { enumerable: true, get: () => value })
     })()
 
     // Prepare properties for the whole prototype chain:
@@ -96,8 +96,8 @@ export class Unit<TRoot = unknown> {
     for (const prototype of getPrototypes(this)) {
       const descriptors = Object.getOwnPropertyDescriptors(prototype)
       for (const [key, descriptor] of Object.entries(descriptors)) {
-        // Skip reserved keys and already defined properties
-        if (['constructor', 'versioner', 'state', 'static'].includes(key)) continue
+        // Skip constructor and already defined properties
+        if (key === 'constructor') continue
         if (this.hasOwnProperty(key)) continue
 
         // Create components for methods ending with `View`

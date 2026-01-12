@@ -1,10 +1,11 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "Epos Template",
+  "name": "preset",
+  "title": "Preset Project",
   "assets": ["./public/logo.svg"],
   "targets": [
     {
-      "matches": "<popup>",
+      "matches": ["<popup>", "https://epos.dev/@preset"],
       "load": ["./dist/app.js", "./dist/app.css"]
     },
     {

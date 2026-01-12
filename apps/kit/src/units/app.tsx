@@ -9,7 +9,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from '@ui/components/ui/sidebar'
-import { AppLogo } from './app-logo'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -19,9 +18,17 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
 
+  // ---------------------------------------------------------------------------
+  // LIFECYCLE
+  // ---------------------------------------------------------------------------
+
   async attach() {
     await this.ensureSinglePinnedTab()
   }
+
+  // ---------------------------------------------------------------------------
+  // TASKS
+  // ---------------------------------------------------------------------------
 
   private async ensureSinglePinnedTab() {
     let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
@@ -42,12 +49,16 @@ export class App extends gl.Unit {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // VIEW
+  // ---------------------------------------------------------------------------
+
   View() {
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <this.SidebarView />
         <Separator orientation="vertical" />
-        <SidebarInset>
+        <SidebarInset className="overflow-auto">
           <this.projects.SelectedProjectView />
         </SidebarInset>
       </SidebarProvider>
@@ -61,9 +72,9 @@ export class App extends gl.Unit {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
-                <AppLogo />
+                <this.LogoView />
                 <div>[epos]</div>
-                <div className="text-muted-foreground ml-auto tracking-widest">v1.8</div>
+                <div className="ml-auto tracking-widest text-muted-foreground">v1.8</div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -76,6 +87,22 @@ export class App extends gl.Unit {
           <this.projects.SidebarView />
         </SidebarContent>
       </Sidebar>
+    )
+  }
+
+  LogoView() {
+    return (
+      <svg className="text-brand" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="128" height="128" rx="64" fill="currentColor" />
+        <path
+          d="M74.8675 29.7121L64.6329 38.5719L59.159 35.9408L43.5694 52.2261L62.3624 73.2293L68.0828 69.4925L72.6646 76.7304L57.2828 86.523L30 54.2192L60.1817 23L74.8675 29.7121Z"
+          fill="black"
+        />
+        <path
+          d="M57.3196 99.2464L67.2903 90.3614L72.5999 92.9886L87.7091 76.7401L69.4961 55.7861L63.9235 59.5336L59.4433 52.2484L74.4838 42.391L101.027 74.744L71.6739 106L57.3196 99.2464Z"
+          fill="black"
+        />
+      </svg>
     )
   }
 }

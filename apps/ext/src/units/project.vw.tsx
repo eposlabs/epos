@@ -4,6 +4,7 @@ export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
   id: ProjectInfo['id']
   mode: ProjectInfo['mode']
+  enabled: ProjectInfo['enabled']
   spec: ProjectInfo['spec']
   hash: ProjectInfo['hash']
   hasSidePanel: ProjectInfo['hasSidePanel']
@@ -13,6 +14,7 @@ export class Project extends vw.Unit {
     super(parent)
     this.id = params.id
     this.mode = params.mode
+    this.enabled = params.enabled
     this.spec = params.spec
     this.hash = params.hash
     this.hasSidePanel = params.hasSidePanel
@@ -20,6 +22,7 @@ export class Project extends vw.Unit {
 
   update(updates: Omit<ProjectInfo, 'id'>) {
     this.mode = updates.mode
+    this.enabled = updates.enabled
     this.spec = updates.spec
     this.hash = updates.hash
     this.hasSidePanel = updates.hasSidePanel

@@ -16,14 +16,22 @@ export class Projects extends gl.Unit {
     return this.list.find(project => project.id === this.selectedProjectId) ?? null
   }
 
+  // ---------------------------------------------------------------------------
+  // LIFECYCLE
+  // ---------------------------------------------------------------------------
+
   async attach() {
-    await this.refreshProjects()
     epos.projects.watch(() => this.refreshProjects())
+    await this.refreshProjects()
   }
+
+  // ---------------------------------------------------------------------------
+  // GENERAL
+  // ---------------------------------------------------------------------------
 
   async createEmptyProject() {
     this.selectedProjectId = await epos.projects.create({
-      spec: this.$.libs.parseSpecObject({ name: 'New Project' }),
+      spec: this.$.libs.parseSpecObject({ name: 'new-project', title: 'New Project' }),
       sources: {},
       assets: {},
       mode: 'development',
@@ -57,6 +65,10 @@ export class Projects extends gl.Unit {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // VIEW
+  // ---------------------------------------------------------------------------
+
   SidebarView() {
     return (
       <SidebarGroup>
@@ -80,10 +92,16 @@ export class Projects extends gl.Unit {
     return <this.selectedProject.View />
   }
 
-  get versioner() {
-    return {
-      1: () => (this.list = []),
-      2: () => (this.selectedProjectId = null),
-    }
-  }
+  // ---------------------------------------------------------------------------
+  // VERSIONER
+  // ---------------------------------------------------------------------------
+
+  static versioner = this.defineVersioner({
+    1() {
+      this.list = []
+    },
+    2() {
+      this.selectedProjectId = null
+    },
+  })
 }
