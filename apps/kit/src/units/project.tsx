@@ -4,11 +4,11 @@ import { Label } from '@ui/components/ui/label'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 import { Switch } from '@ui/components/ui/switch'
 import { cn } from '@ui/lib/utils'
-import type { ProjectMode, ProjectSpec } from 'epos'
+import type { Bundle, Mode, ProjectBase, Spec } from 'epos'
 
 export class Project extends gl.Unit {
-  mode: ProjectMode
-  spec: ProjectSpec
+  mode: Mode
+  spec: Spec
   enabled: boolean
   handle: { id: string; name: string } | null = null
   fs = new gl.ProjectFs(this)
@@ -36,10 +36,12 @@ export class Project extends gl.Unit {
     return this.$projects.selectedProjectId === this.id
   }
 
-  constructor(parent: gl.Unit, spec: ProjectSpec) {
+  constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
-    this.mode = 'development'
-    this.enabled = true
+    this.id = params.id
+    this.mode = params.mode
+    this.spec = params.spec
+    this.enabled = params.enabled
   }
 
   async connectDir() {
@@ -157,7 +159,7 @@ export class Project extends gl.Unit {
   }
 
   // Build a bundle by reading spec, sources and assets from the connected directory
-  private async readBundle(): Promise<ProjectBundle> {
+  private async readBundle() {
     const [specHandle] = await this.$.utils.safe(() => this.fs.getFileHandle('epos.json'))
     if (!specHandle) throw new Error('epos.json not found')
 
@@ -169,7 +171,7 @@ export class Project extends gl.Unit {
 
     const [specObj, objError] = this.$.utils.safeSync(() => JSON.parse(specJson))
     if (objError) throw new Error('Failed to parse epos.json', { cause: String(objError) })
-    const spec = this.$.libs.eposSpec.parseObject(specObj)
+    const spec = this.$.libs.parseSpecObject(specObj)
 
     const assets: Record<string, Blob> = {}
     for (const path of spec.assets) {
@@ -184,7 +186,8 @@ export class Project extends gl.Unit {
       }
     }
 
-    return { spec, sources, assets }
+    const bundle: Bundle = { spec, sources, assets }
+    return bundle
   }
 
   SidebarView() {

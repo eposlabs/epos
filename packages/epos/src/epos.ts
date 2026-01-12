@@ -8,6 +8,7 @@ import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 import type { Chrome } from './chrome.ts'
 
+// Common types
 export type Fn = (...args: any[]) => unknown
 export type Cls = new (...args: any[]) => unknown
 export type Obj = Record<PropertyKey, unknown>
@@ -15,26 +16,28 @@ export type Arr = unknown[]
 export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
+export type Attrs = Record<string, string | number>
 
-export type FrameAttrs = Record<string, string | number>
+// State types
+export type Root<T> = Initial<T> & { ':version'?: number }
+export type Initial<T> = T extends Obj ? T : Instance<T>
+export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
 
-export type StateRoot<T> = StateInitial<T> & { ':version'?: number }
-export type StateInitial<T> = T extends Obj ? T : Instance<T>
-export type StateVersioner<T> = Record<number, (this: StateRoot<T>, state: StateRoot<T>) => void>
-
-export type ProjectSpec = Spec
-export type ProjectMode = 'development' | 'production'
-export type ProjectSources = { [path: string]: string }
-export type ProjectAssets = { [path: string]: Blob }
-export type ProjectSettings = { mode: ProjectMode; enabled: boolean }
-export type ProjectBundle = { spec: ProjectSpec; sources: ProjectSources; assets: ProjectAssets }
+// Project types
+export type { Spec }
+export type Mode = 'development' | 'production'
+export type Sources = { [path: string]: string }
+export type Assets = { [path: string]: Blob }
+export type Bundle = { spec: Spec; sources: Sources; assets: Assets }
+export type ProjectSettings = { mode: Mode; enabled: boolean }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
-export type ProjectBase = { id: string; mode: ProjectMode; enabled: boolean; spec: ProjectSpec }
-export type Project<TQuery = {}> = ProjectBase &
-  (TQuery extends { sources: true } ? { sources: ProjectSources } : {}) &
-  (TQuery extends { assets: true } ? { assets: ProjectAssets } : {})
+export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec }
+export type Project<T = {}> = ProjectBase &
+  (T extends { sources: true } ? { sources: Sources } : {}) &
+  (T extends { assets: true } ? { assets: Assets } : {})
 
-export type FetchRequestInit = {
+// Fetch types
+export type ReqInit = {
   body: RequestInit['body']
   cache: RequestInit['cache']
   credentials: RequestInit['credentials']
@@ -48,8 +51,8 @@ export type FetchRequestInit = {
   referrer: RequestInit['referrer']
   referrerPolicy: RequestInit['referrerPolicy']
 }
-
-export type FetchResponse = {
+// _
+export type Res = {
   ok: Response['ok']
   url: Response['url']
   type: Response['type']
@@ -69,7 +72,7 @@ export type FetchResponse = {
 
 export interface Epos {
   // General
-  fetch: (url: string | URL, init?: FetchRequestInit) => Promise<FetchResponse>
+  fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
   browser: Chrome
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): react.FC<T>
@@ -97,15 +100,15 @@ export interface Epos {
   state: {
     /** Connect state. */
     connect: {
-      <T>(initial?: StateInitial<T>, versioner?: StateVersioner<T>): Promise<T>
-      <T>(name?: string, initial?: StateInitial<T>, versioner?: StateVersioner<T>): Promise<T>
+      <T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+      <T>(name?: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
     }
     /** Disconnect state. */
     disconnect(name?: string): void
     /** Run state changes in a batch. */
     transaction: (fn: () => void) => void
     /** Create local state (no sync). */
-    create<T>(initial?: StateInitial<T>): T
+    create<T>(initial?: Initial<T>): T
     /** Get list of all state names. */
     list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
     /** Remove state and all its data. */
@@ -158,7 +161,7 @@ export interface Epos {
   // Frames
   frames: {
     /** Open background frame. */
-    create(url: string, attrs?: FrameAttrs): Promise<string>
+    create(url: string, attrs?: Attrs): Promise<string>
     /** Remove background frame. */
     remove(id?: string): Promise<void>
     /** Check if background frame with given id exists. */
@@ -194,7 +197,7 @@ export interface Epos {
   // Env
   env: {
     tabId: number
-    project: { id: string; mode: ProjectMode; spec: ProjectSpec }
+    project: { id: string; mode: Mode; spec: Spec }
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean
@@ -213,14 +216,14 @@ export interface Epos {
 
   // Projects
   projects: {
-    create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T>
-    update(id: string, updates: Partial<ProjectSettings & ProjectBundle>): Promise<void>
+    create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T>
+    update(id: string, updates: Partial<ProjectSettings & Bundle>): Promise<void>
     remove(id: string): Promise<void>
     has(id: string): Promise<boolean>
     get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
     list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
     watch(listener: () => void): void
-    fetch(url: string): Promise<ProjectBundle>
+    fetch(url: string): Promise<Bundle>
   }
 
   // Engine
@@ -233,4 +236,5 @@ declare global {
 
 const _epos = epos
 export { _epos as epos }
+
 export default epos

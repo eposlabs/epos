@@ -12,7 +12,7 @@ export class Libs extends sw.Unit {
   lzString = { compressToBase64 }
   matchPattern = matchPattern
   mobx = mobx
-  eposSpec = { parseJson: parseSpecJson }
+  parseSpecJson = parseSpecJson
   stripJsonComments = stripJsonComments
   terser = { minify }
   yjs = yjs

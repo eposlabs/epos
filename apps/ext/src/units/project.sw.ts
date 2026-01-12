@@ -1,43 +1,36 @@
-import type {
-  ProjectAssets,
-  ProjectBundle,
-  ProjectMode,
-  ProjectSettings,
-  ProjectSources,
-  ProjectSpec,
-} from 'epos'
+import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
 import type { Address } from './project-target.sw'
 
 // Data saved to IndexedDB
 export type ProjectSnapshot = {
   id: string
-  mode: ProjectMode
+  mode: Mode
   enabled: boolean
-  spec: ProjectSpec
-  sources: ProjectSources
+  spec: Spec
+  sources: Sources
 }
 
 // Data for peer contexts
 export type ProjectInfo = {
   id: string
-  mode: ProjectMode
+  mode: Mode
   enabled: boolean
-  spec: ProjectSpec
+  spec: Spec
   hash: string | null // If project has no matching resources, hash is null
   hasSidePanel: boolean
 }
 
 export class Project extends sw.Unit {
   id: string
-  mode: ProjectMode
+  mode: Mode
   enabled: boolean
-  spec: ProjectSpec
-  sources: ProjectSources
+  spec: Spec
+  sources: Sources
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
 
-  static async new(parent: sw.Unit, params: { id?: string } & ProjectBundle & Partial<ProjectSettings>) {
+  static async new(parent: sw.Unit, params: { id?: string } & Partial<ProjectSettings> & Bundle) {
     const project = new Project(parent, params)
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
@@ -53,10 +46,7 @@ export class Project extends sw.Unit {
     return project
   }
 
-  constructor(
-    parent: sw.Unit,
-    params: { id?: string } & Omit<ProjectBundle, 'assets'> & Partial<ProjectSettings>,
-  ) {
+  constructor(parent: sw.Unit, params: { id?: string } & Partial<ProjectSettings> & Omit<Bundle, 'assets'>) {
     super(parent)
     this.id = params.id ?? this.$.utils.id()
     this.spec = params.spec
@@ -73,7 +63,7 @@ export class Project extends sw.Unit {
     await this.$.idb.deleteDatabase(this.id)
   }
 
-  async update(updates: Partial<ProjectSettings & ProjectBundle>) {
+  async update(updates: Partial<ProjectSettings & Bundle>) {
     this.mode = updates.mode ?? this.mode
     this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec
@@ -168,7 +158,7 @@ export class Project extends sw.Unit {
   }
 
   async getAssets() {
-    const assets: ProjectAssets = {}
+    const assets: Assets = {}
     for (const path of this.spec.assets) {
       const blob = await this.$.idb.get<Blob>(this.id, ':assets', path)
       if (!blob) throw new Error(`Asset not found: "${path}"`)
@@ -202,7 +192,7 @@ export class Project extends sw.Unit {
     })
   }
 
-  private async saveAssets(assets: ProjectAssets) {
+  private async saveAssets(assets: Assets) {
     const paths1 = await this.$.idb.keys(this.id, ':assets')
     const paths2 = Object.keys(assets)
 

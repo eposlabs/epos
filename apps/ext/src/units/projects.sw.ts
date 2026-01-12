@@ -1,12 +1,4 @@
-import type {
-  Project,
-  ProjectAssets,
-  ProjectBundle,
-  ProjectMode,
-  ProjectQuery,
-  ProjectSettings,
-  ProjectSources,
-} from 'epos'
+import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources } from 'epos'
 import type { Address } from './project-target.sw'
 import type { ProjectInfo, ProjectSnapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -53,7 +45,7 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async install(url: string, mode: ProjectMode = 'development') {
+  async install(url: string, mode: Mode = 'development') {
     const urlHash = await this.$.utils.hash(url)
     const projectId = urlHash.slice(0, 10)
     const bundle = await this.fetch(url)
@@ -69,9 +61,7 @@ export class Projects extends sw.Unit {
     return !!this.map[id]
   }
 
-  private async create<T extends string>(
-    params: { id?: T } & Partial<ProjectSettings> & ProjectBundle,
-  ): Promise<T> {
+  private async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
     if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
     this.map[project.id] = project
@@ -79,7 +69,7 @@ export class Projects extends sw.Unit {
     return project.id as T
   }
 
-  private async update(id: string, updates: Partial<ProjectSettings & ProjectBundle>) {
+  private async update(id: string, updates: Partial<ProjectSettings & Bundle>) {
     const project = this.map[id]
     if (!project) throw new Error(`Project with id "${id}" does not exist`)
     await project.update(updates)
@@ -119,7 +109,7 @@ export class Projects extends sw.Unit {
     return projects
   }
 
-  private async fetch(specUrl: string): Promise<ProjectBundle> {
+  private async fetch(specUrl: string): Promise<Bundle> {
     // Check if URL is valid
     if (!URL.parse(specUrl)) throw new Error(`Invalid URL: "${specUrl}"`)
 
@@ -132,10 +122,10 @@ export class Projects extends sw.Unit {
     if (!json) throw new Error(`Failed to read ${specUrl}`)
 
     // Parse spec file
-    const spec = this.$.libs.eposSpec.parseJson(json)
+    const spec = this.$.libs.parseSpecJson(json)
 
     // Fetch sources
-    const sources: ProjectSources = {}
+    const sources: Sources = {}
     for (const target of spec.targets) {
       for (const resource of target.resources) {
         const url = new URL(resource.path, specUrl).href
@@ -150,7 +140,7 @@ export class Projects extends sw.Unit {
     }
 
     // Fetch assets
-    const assets: ProjectAssets = {}
+    const assets: Assets = {}
     for (const path of spec.assets) {
       const url = new URL(path, specUrl).href
       const [res] = await this.$.utils.safe(fetch(url))
@@ -298,7 +288,7 @@ export class Projects extends sw.Unit {
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
     // // Load assets
-    // const assets: ProjectAssets = {}
+    // const assets: Assets = {}
     // for (const path of snapshot.spec.assets) {
     //   const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
     //   if (!blob) continue

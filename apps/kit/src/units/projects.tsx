@@ -6,7 +6,6 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from '@ui/components/ui/sidebar'
-import { parseSpecObject } from 'epos-spec'
 
 // TODO: add projects.orderIds for sorting
 export class Projects extends gl.Unit {
@@ -18,24 +17,25 @@ export class Projects extends gl.Unit {
   }
 
   async attach() {
-    await this.refresh()
-    epos.projects.watch(() => this.refresh())
+    await this.refreshProjects()
+    epos.projects.watch(() => this.refreshProjects())
   }
 
   async createEmptyProject() {
-    const projectId = await epos.projects.create({
-      spec: parseSpecObject({ name: 'New Project' }),
-      enabled: true,
+    this.selectedProjectId = await epos.projects.create({
+      spec: this.$.libs.parseSpecObject({ name: 'New Project' }),
       sources: {},
       assets: {},
+      mode: 'development',
+      enabled: true,
     })
-
-    this.selectedProjectId = projectId
   }
 
-  private async refresh() {
+  private async refreshProjects() {
+    // Fetch projects from epos
     const projectsData = await epos.projects.list()
 
+    // Update existing projects and add new ones
     projectsData.forEach(projectData => {
       const project = this.list.find(project => project.id === projectData.id)
       if (project) {
@@ -45,11 +45,13 @@ export class Projects extends gl.Unit {
       }
     })
 
+    // Remove deleted projects
     this.list.forEach(project => {
       const exists = projectsData.find(projectData => projectData.id === project.id)
       if (!exists) this.list.remove(project)
     })
 
+    // Deselect project if it was removed
     if (!this.list.find(project => project.id === this.selectedProjectId)) {
       this.selectedProjectId = null
     }

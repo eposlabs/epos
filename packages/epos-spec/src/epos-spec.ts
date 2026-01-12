@@ -92,7 +92,7 @@ const schema = {
     'permissions',
     'manifest',
   ],
-  name: { min: 2, max: 20 },
+  name: { min: 2, max: 20, regex: /^[a-z][a-z0-9-]*[a-z0-9]$/ },
   title: { min: 2, max: 45 },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
@@ -165,9 +165,12 @@ function parseName(spec: Obj) {
   const name = spec.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
 
-  const { min, max } = schema.name
+  const { min, max, regex } = schema.name
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
   if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
+  if (name.toLowerCase() !== name) throw new Error(`'name' must be lowercase`)
+  if (!/[a-z]/.test(name[0]!)) throw new Error(`'name' must start with a letter`)
+  if (!regex.test(name)) throw new Error(`'name' must match regex: ${regex}`)
 
   return name
 }

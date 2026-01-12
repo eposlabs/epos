@@ -1,6 +1,6 @@
 /// <reference types="rolldown-vite/client" />
 import type * as types from 'dropcap/types'
-import type { Epos, ProjectMode, ProjectSpec } from 'epos'
+import type { Epos, Mode, Spec } from 'epos'
 
 declare global {
   var DEV: boolean
@@ -31,8 +31,8 @@ declare global {
 
   type ProjectDef = {
     id: string
-    mode: ProjectMode
-    spec: ProjectSpec
+    mode: Mode
+    spec: Spec
     shadowCss: string
     fn: (epos: PartialEpos) => void
   }

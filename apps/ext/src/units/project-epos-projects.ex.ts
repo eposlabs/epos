@@ -1,4 +1,4 @@
-import type { Project, ProjectBundle, ProjectQuery, ProjectSettings } from 'epos'
+import type { Bundle, Project, ProjectQuery, ProjectSettings } from 'epos'
 
 export class ProjectEposProjects extends ex.Unit {
   private handlers: (() => void)[] = []
@@ -8,13 +8,13 @@ export class ProjectEposProjects extends ex.Unit {
     this.$.bus.on('Projects.changed', () => this.handlers.forEach(fn => fn()))
   }
 
-  async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & ProjectBundle): Promise<T> {
+  async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
     const id = await this.$.bus.send<sw.Projects['create']>('Projects.create', params)
     if (!id) throw this.never()
     return id as T
   }
 
-  async update(id: string, updates: Partial<ProjectSettings & ProjectBundle>) {
+  async update(id: string, updates: Partial<ProjectSettings & Bundle>) {
     await this.$.bus.send<sw.Projects['update']>('Projects.update', id, updates)
   }
 
