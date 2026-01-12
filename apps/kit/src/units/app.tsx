@@ -82,7 +82,6 @@ export class App extends gl.Unit {
             <Separator />
           </div>
         </SidebarHeader>
-
         <SidebarContent>
           <this.projects.SidebarView />
         </SidebarContent>

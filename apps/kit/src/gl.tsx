@@ -11,8 +11,6 @@ if (!app['@']) {
   app = await epos.state.connect(new gl.App(null))
 }
 
-// TODO: use await app.init()
-
 if (location.pathname === '/@kit') {
   epos.render(<app.View />)
 } else if (location.pathname === '/@learn') {

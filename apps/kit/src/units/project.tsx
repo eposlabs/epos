@@ -2,29 +2,28 @@ import { IconPointFilled } from '@tabler/icons-react'
 import { Button } from '@ui/components/ui/button'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@ui/components/ui/item'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
+import { Spinner } from '@ui/components/ui/spinner'
 import { cn } from '@ui/lib/utils'
 import type { Assets, Bundle, Mode, ProjectBase, Sources, Spec } from 'epos'
 
-// TODO: instead of handleid, use this.id (?)
 export class Project extends gl.Unit {
   mode: Mode
   spec: Spec
   enabled: boolean
-  dir: { handleId: string; name: string } | null = null
-  fs = new gl.ProjectFs(this)
 
   get state() {
     return {
-      error: null as { message: string; details: string | null } | null,
+      ready: false,
       updating: false,
+      error: null as { message: string; details: string | null } | null,
     }
   }
 
   get inert() {
     return {
       rootDirHandle: null as FileSystemDirectoryHandle | null,
-      rootDirObserver: null as FileSystemObserver | null,
-      updateTimer: -1,
+      observers: [] as FileSystemObserver[],
+      updateFromDirTimer: -1,
     }
   }
 
@@ -41,31 +40,19 @@ export class Project extends gl.Unit {
   }
 
   async attach() {
-    if (this.dir) {
-      const rootDirHandle = await this.$.idb.get<FileSystemDirectoryHandle>(
-        'kit',
-        'handles',
-        this.dir.handleId,
-      )
-      if (!rootDirHandle) {
-        this.dir = null
-      } else {
-        this.inert.rootDirHandle = rootDirHandle
-      }
-    }
+    const rootDirHandle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
+    if (rootDirHandle) this.setRootDirHandle(rootDirHandle)
+    this.state.ready = true
+  }
 
-    this.updateFromFs()
+  async setRootDirHandle(dirHandle: FileSystemDirectoryHandle) {
+    this.inert.rootDirHandle = dirHandle
+    await this.updateFromDir()
     this.startObserver()
-    // if (this.handle) {
-    //   this.inert.handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.handle.id)
-    //   if (this.inert.handle) {
-    //     this.startObserver()
-    //     await this.updateFromFs()
-    //   }
-    // }
   }
 
   async detach() {
+    await this.$.idb.delete('kit', 'handles', this.id)
     this.stopObserver()
   }
 
@@ -107,50 +94,34 @@ export class Project extends gl.Unit {
   }
 
   async remove() {
-    this.stopObserver()
     await epos.projects.remove(this.id)
   }
 
   async connectDir() {
     const [rootDirHandle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
     if (!rootDirHandle) return
-
-    const rootDirHandleId = this.$.libs.nanoid()
-    await this.$.idb.set('kit', 'handles', rootDirHandleId, rootDirHandle)
-    this.dir = { handleId: rootDirHandleId, name: rootDirHandle.name }
-    this.inert.rootDirHandle = rootDirHandle
-
-    this.startObserver()
-    await this.updateFromFs()
+    await this.$.idb.set('kit', 'handles', this.id, rootDirHandle)
+    this.setRootDirHandle(rootDirHandle)
   }
 
-  async startObserver() {
+  private async startObserver() {
     if (!this.inert.rootDirHandle) return
-    if (this.inert.rootDirObserver) return
+    if (this.inert.observers.length > 0) return
 
-    this.inert.rootDirObserver = new FileSystemObserver(records => {
-      if (this.state.error) {
-        this.updateWithDelay()
-        return
-      }
+    for (const path of this.usedPaths) {
+      const handle = await this.getFileHandle(path)
+      const observer = new FileSystemObserver(() => this.updateFromDirWithDelay())
+      observer.observe(handle)
+      this.inert.observers.push(observer)
+    }
 
-      for (const record of records) {
-        const path = record.relativePathComponents.join('/')
-        if (this.usedPaths.includes(path)) {
-          this.updateFromFs()
-          // this.updateWithDelay()
-          return
-        }
-      }
-    })
-
-    this.inert.rootDirObserver.observe(this.inert.rootDirHandle, { recursive: true })
+    console.log(this.usedPaths)
   }
 
-  async stopObserver() {
-    if (!this.inert.rootDirObserver) return
-    this.inert.rootDirObserver.disconnect()
-    this.inert.rootDirObserver = null
+  private stopObserver() {
+    if (this.inert.observers.length === 0) return
+    for (const observer of this.inert.observers) observer.disconnect()
+    this.inert.observers = []
   }
 
   // ---------------------------------------------------------------------------
@@ -163,19 +134,17 @@ export class Project extends gl.Unit {
     this.enabled = updates.enabled
   }
 
-  async updateFromFs() {
+  async updateFromDir() {
     try {
       this.state.error = null
       this.state.updating = true
-
       const bundle = await this.readBundle()
-      this.spec = bundle.spec
-
       await epos.projects.update(this.id, bundle)
     } catch (e) {
+      const error = this.$.utils.is.error(e) ? e : new Error(String(e))
       this.state.error = {
-        message: this.$.utils.is.error(e) ? String(e.message ?? e) : String(e),
-        details: this.$.utils.is.error(e) && e.cause ? String(e.cause) : null,
+        message: error.message,
+        details: error.cause ? String(error.cause) : null,
       }
     } finally {
       this.state.updating = false
@@ -183,7 +152,7 @@ export class Project extends gl.Unit {
   }
 
   private async readBundle() {
-    const [specHandle] = await this.$.utils.safe(() => this.fs.getFileHandle('epos.json'))
+    const [specHandle] = await this.$.utils.safe(() => this.getFileHandle('epos.json'))
     if (!specHandle) throw new Error('epos.json not found')
 
     const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
@@ -197,19 +166,51 @@ export class Project extends gl.Unit {
 
     const assets: Assets = {}
     for (const path of spec.assets) {
-      assets[path] = await this.fs.readFile(path)
+      assets[path] = await this.readFile(path)
     }
 
     const sources: Sources = {}
     for (const target of spec.targets) {
       for (const resource of target.resources) {
         if (sources[resource.path]) continue
-        sources[resource.path] = await this.fs.readFileAsText(resource.path)
+        sources[resource.path] = await this.readFileAsText(resource.path)
       }
     }
 
     const bundle: Bundle = { spec, sources, assets }
     return bundle
+  }
+
+  private async readFile(path: string) {
+    const handle = await this.getFileHandle(path)
+    return await handle.getFile()
+  }
+
+  private async readFileAsText(path: string) {
+    const file = await this.readFile(path)
+    return await file.text()
+  }
+
+  private async getFileHandle(path: string) {
+    const parts = path.split('/')
+    const dirs = parts.slice(0, -1)
+    const name = parts.at(-1)
+    if (!name) throw this.never()
+
+    // Get dir handle
+    if (!this.inert.rootDirHandle) throw this.never()
+    let dirHandle = this.inert.rootDirHandle
+    for (const dir of dirs) {
+      const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
+      if (!nextDirHandle) throw new Error(`File not found: ${path}`)
+      dirHandle = nextDirHandle
+    }
+
+    // Get file handle
+    const [fileHandle] = await this.$.utils.safe(dirHandle.getFileHandle(name))
+    if (!fileHandle) throw new Error(`File not found: ${path}`)
+
+    return fileHandle
   }
 
   // ---------------------------------------------------------------------------
@@ -243,9 +244,9 @@ export class Project extends gl.Unit {
   //   self.clearTimeout(this.inert.updateTimer)
   // }
 
-  private updateWithDelay() {
-    self.clearTimeout(this.inert.updateTimer)
-    this.inert.updateTimer = self.setTimeout(() => this.updateFromFs(), 50)
+  private updateFromDirWithDelay() {
+    self.clearTimeout(this.inert.updateFromDirTimer)
+    this.inert.updateFromDirTimer = self.setTimeout(() => this.updateFromDir())
   }
 
   // ---------------------------------------------------------------------------
@@ -253,10 +254,19 @@ export class Project extends gl.Unit {
   // ---------------------------------------------------------------------------
 
   View() {
+    if (!this.state.ready) return <this.LoadingView />
     return (
       <div className="flex gap-4 p-4">
         <this.DataView />
         <this.ActionsView />
+      </div>
+    )
+  }
+
+  LoadingView() {
+    return (
+      <div className="flex size-full items-center justify-center">
+        <Spinner />
       </div>
     )
   }
@@ -300,7 +310,9 @@ export class Project extends gl.Unit {
         <Item variant="outline">
           <ItemContent>
             <ItemTitle>Directory</ItemTitle>
-            <ItemDescription>{this.dir ? `./${this.dir.name}` : 'not connected'}</ItemDescription>
+            <ItemDescription>
+              {this.inert.rootDirHandle ? `./${this.inert.rootDirHandle.name}` : 'not connected'}
+            </ItemDescription>
           </ItemContent>
         </Item>
 
@@ -358,14 +370,13 @@ export class Project extends gl.Unit {
 
   static versioner = this.defineVersioner({
     1(this: any) {
-      this.fs = new gl.ProjectFs(this)
+      this.fs = {}
       this.handleId = null
     },
     2(this: any) {
       delete this.handleId
       this.handle = null
     },
-    3() {},
     4(this: any) {
       delete this.handle
       this.rootDirHandle = null

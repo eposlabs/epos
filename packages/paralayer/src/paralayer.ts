@@ -84,7 +84,7 @@ export class Paralayer extends Unit {
       await this.queue.add(() => this.build())
     }
 
-    // File added/changed? -> Reset its content and rebuild
+    // File added / changed? -> Reset its content and rebuild
     if (event === 'add' || event === 'change') {
       this.files[path] = null
       await this.queue.add(() => this.build())
