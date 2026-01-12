@@ -86,7 +86,7 @@ export class State<T = Obj> extends exSw.Unit {
 
   private initLocal() {
     const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-    if (!this.$.utils.is.object(initial)) throw new Error('Local state must be an object')
+    if (!this.$.utils.is.object(initial)) throw new Error('State must be an object')
     this.root = this.attach(initial, null) as Root<T>
     this.attachQueue.forEach(attach => attach())
     this.attachQueue = []
@@ -208,7 +208,7 @@ export class State<T = Obj> extends exSw.Unit {
     if (value instanceof this.$.libs.yjs.Array) return this.attachYArray(value, parent)
     if (this.$.utils.is.object(value)) return this.attachObject(value, parent)
     if (this.$.utils.is.array(value)) return this.attachArray(value, parent)
-    if (this.isSupportedValue(value)) return value
+    if (this.local || this.isSupportedValue(value)) return value
     console.error('Unsupported value:', value)
     const type = value?.constructor.name ?? typeof value
     const message = `State does not support ${type} values`
@@ -264,6 +264,12 @@ export class State<T = Obj> extends exSw.Unit {
     const ModelByTag = tag ? this.getModelByName(tag) : null
     const ModelByInstance = this.getModelByInstance(object)
     const Model = ModelByTag ?? ModelByInstance
+
+    // Make non-model class instances observable for local state
+    if (this.local) {
+      const isClassInstance = object.constructor !== Object
+      if (!Model && isClassInstance) return this.$.libs.mobx.makeAutoObservable(object)
+    }
 
     // Create empty MobX and Yjs nodes
     const mObject: MObject = this.$.libs.mobx.observable.object({}, {}, { deep: false })

@@ -95,7 +95,10 @@ export class Projects extends vw.Unit {
 
     return (
       <div
-        className={cn('flex flex-col font-mono text-xs', this.$.env.is.vwSidePanel && 'h-screen w-screen')}
+        className={cn(
+          'flex flex-col font-[system-ui] text-[13px]',
+          this.$.env.is.vwSidePanel && 'h-screen w-screen',
+        )}
       >
         {/* Header */}
         {hasHeader && (
@@ -120,7 +123,7 @@ export class Projects extends vw.Unit {
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  className="size-3.5"
+                  className="relative top-px size-3.5"
                 >
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path d="M6 9l6 6l6 -6" />

@@ -72,7 +72,8 @@ export class Unit<TRoot = unknown> {
     void (() => {
       const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
       if (!descriptor || !descriptor.get) return
-      const value = descriptor.get.call(this)
+      const value: unknown = descriptor.get.call(this)
+      if (!is.object(value)) throw new Error(`'state' getter return an object`)
       const state = epos.state.create(value)
       Reflect.defineProperty(state, epos.state.PARENT, { configurable: true, value: this })
       Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
@@ -82,10 +83,8 @@ export class Unit<TRoot = unknown> {
     void (() => {
       const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'inert')
       if (!descriptor || !descriptor.get) return
-      let value = descriptor.get.call(this)
-      if (!is.object(value)) return
-      value = epos.libs.mobx.observable.object(value, {}, { deep: false })
-      Reflect.defineProperty(value, '_', { configurable: true, get: () => epos.libs.mobx.toJS(value) })
+      const value: unknown = descriptor.get.call(this)
+      if (!is.object(value)) throw new Error(`'inert' getter return an object`)
       Reflect.defineProperty(this, 'inert', { enumerable: true, get: () => value })
     })()
 

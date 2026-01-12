@@ -171,13 +171,12 @@ export class Project extends sw.Unit {
   private async getHash(address?: Address) {
     if (!this.enabled) return null
 
-    const matchingTargets = this.targets.filter(target => target.test(address))
-    if (matchingTargets.length === 0) return null
+    const targets = this.targets.filter(target => target.test(address))
+    if (targets.length === 0) return null
 
-    const matchingResources = matchingTargets.flatMap(target => target.resources)
-    const matchingResourcePaths = this.$.utils.unique(matchingResources.map(resource => resource.path))
-    const matchingResourceTexts = matchingResourcePaths.map(path => this.sources[path])
-    const hash = await this.$.utils.hash([this.mode, this.spec.assets, matchingResourceTexts])
+    const resources = targets.flatMap(target => target.resources)
+    const resourcesData = resources.map(resource => [resource.type, this.sources[resource.path]])
+    const hash = await this.$.utils.hash([this.mode, this.spec.assets, resourcesData])
 
     return hash
   }

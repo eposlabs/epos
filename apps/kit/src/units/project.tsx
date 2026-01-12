@@ -15,21 +15,11 @@ export class Project extends gl.Unit {
     return {
       ready: false,
       updating: false,
-      error: null as { message: string; details: string | null } | null,
-    }
-  }
-
-  get inert() {
-    return {
-      rootDirHandle: null as FileSystemDirectoryHandle | null,
+      error: null as Error | null,
       observers: [] as FileSystemObserver[],
-      updateFromDirTimer: -1,
+      rootDirHandle: null as FileSystemDirectoryHandle | null,
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // LIFECYCLE
-  // ---------------------------------------------------------------------------
 
   constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
@@ -45,20 +35,10 @@ export class Project extends gl.Unit {
     this.state.ready = true
   }
 
-  async setRootDirHandle(dirHandle: FileSystemDirectoryHandle) {
-    this.inert.rootDirHandle = dirHandle
-    await this.updateFromDir()
-    this.startObserver()
-  }
-
   async detach() {
     await this.$.idb.delete('kit', 'handles', this.id)
     this.stopObserver()
   }
-
-  // ---------------------------------------------------------------------------
-  // PROPS
-  // ---------------------------------------------------------------------------
 
   private get $projects() {
     return this.closest(gl.Projects)!
@@ -76,9 +56,11 @@ export class Project extends gl.Unit {
     ]
   }
 
-  // ---------------------------------------------------------------------------
-  // ACTIONS
-  // ---------------------------------------------------------------------------
+  update(updates: Omit<ProjectBase, 'id'>) {
+    this.mode = updates.mode
+    this.spec = updates.spec
+    this.enabled = updates.enabled
+  }
 
   select() {
     this.$projects.selectedProjectId = this.id
@@ -104,48 +86,44 @@ export class Project extends gl.Unit {
     this.setRootDirHandle(rootDirHandle)
   }
 
+  private async setRootDirHandle(dirHandle: FileSystemDirectoryHandle) {
+    this.state.rootDirHandle = dirHandle
+    await this.hydrate()
+    this.startObserver()
+  }
+
   private async startObserver() {
-    if (!this.inert.rootDirHandle) return
-    if (this.inert.observers.length > 0) return
+    if (!this.state.rootDirHandle) return
+    if (this.state.observers.length > 0) return
+
+    let hydrateTimer = -1
 
     for (const path of this.usedPaths) {
       const handle = await this.getFileHandle(path)
-      const observer = new FileSystemObserver(() => this.updateFromDirWithDelay())
-      observer.observe(handle)
-      this.inert.observers.push(observer)
-    }
+      const observer = new FileSystemObserver(() => {
+        self.clearTimeout(hydrateTimer)
+        hydrateTimer = self.setTimeout(() => this.hydrate())
+      })
 
-    console.log(this.usedPaths)
+      observer.observe(handle)
+      this.state.observers.push(observer)
+    }
   }
 
   private stopObserver() {
-    if (this.inert.observers.length === 0) return
-    for (const observer of this.inert.observers) observer.disconnect()
-    this.inert.observers = []
+    if (this.state.observers.length === 0) return
+    for (const observer of this.state.observers) observer.disconnect()
+    this.state.observers = []
   }
 
-  // ---------------------------------------------------------------------------
-  // GENERAL
-  // ---------------------------------------------------------------------------
-
-  update(updates: Omit<ProjectBase, 'id'>) {
-    this.mode = updates.mode
-    this.spec = updates.spec
-    this.enabled = updates.enabled
-  }
-
-  async updateFromDir() {
+  private async hydrate() {
     try {
       this.state.error = null
       this.state.updating = true
       const bundle = await this.readBundle()
       await epos.projects.update(this.id, bundle)
     } catch (e) {
-      const error = this.$.utils.is.error(e) ? e : new Error(String(e))
-      this.state.error = {
-        message: error.message,
-        details: error.cause ? String(error.cause) : null,
-      }
+      this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
     } finally {
       this.state.updating = false
     }
@@ -198,8 +176,8 @@ export class Project extends gl.Unit {
     if (!name) throw this.never()
 
     // Get dir handle
-    if (!this.inert.rootDirHandle) throw this.never()
-    let dirHandle = this.inert.rootDirHandle
+    if (!this.state.rootDirHandle) throw this.never()
+    let dirHandle = this.state.rootDirHandle
     for (const dir of dirs) {
       const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
       if (!nextDirHandle) throw new Error(`File not found: ${path}`)
@@ -211,42 +189,6 @@ export class Project extends gl.Unit {
     if (!fileHandle) throw new Error(`File not found: ${path}`)
 
     return fileHandle
-  }
-
-  // ---------------------------------------------------------------------------
-  // TODO
-  // ---------------------------------------------------------------------------
-
-  // private _startObserver() {
-  //   this.inert.observer = new FileSystemObserver(records => {
-  //     if (this.state.error) {
-  //       this.updateWithDelay()
-  //       return
-  //     }
-
-  //     for (const record of records) {
-  //       const path = record.relativePathComponents.join('/')
-  //       if (this.usedPaths.includes(path)) {
-  //         this.updateWithDelay()
-  //         return
-  //       }
-  //     }
-  //   })
-
-  //   this.inert.observer.observe(this.inert.handle, { recursive: true })
-  // }
-
-  // private _stopRootDirObserver() {
-  //   if (this.inert.observer) {
-  //     this.inert.observer.disconnect()
-  //     this.inert.observer = null
-  //   }
-  //   self.clearTimeout(this.inert.updateTimer)
-  // }
-
-  private updateFromDirWithDelay() {
-    self.clearTimeout(this.inert.updateFromDirTimer)
-    this.inert.updateFromDirTimer = self.setTimeout(() => this.updateFromDir())
   }
 
   // ---------------------------------------------------------------------------
@@ -301,8 +243,8 @@ export class Project extends gl.Unit {
           <ItemContent>
             <ItemTitle>Error</ItemTitle>
             <ItemDescription>{this.state.error ? this.state.error.message : '—'}</ItemDescription>
-            {this.state.error?.details && (
-              <div className="text-muted-foreground">{this.state.error.details}</div>
+            {!!this.state.error?.cause && (
+              <div className="text-muted-foreground">{String(this.state.error.cause)}</div>
             )}
           </ItemContent>
         </Item>
@@ -311,8 +253,15 @@ export class Project extends gl.Unit {
           <ItemContent>
             <ItemTitle>Directory</ItemTitle>
             <ItemDescription>
-              {this.inert.rootDirHandle ? `./${this.inert.rootDirHandle.name}` : 'not connected'}
+              {this.state.rootDirHandle ? `./${this.state.rootDirHandle.name}` : 'not connected'}
             </ItemDescription>
+          </ItemContent>
+        </Item>
+
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>Observers</ItemTitle>
+            <pre className="text-muted-foreground">{this.state.observers.length}</pre>
           </ItemContent>
         </Item>
 
@@ -356,7 +305,11 @@ export class Project extends gl.Unit {
       <SidebarMenuItem>
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
           <IconPointFilled
-            className={cn('text-green-500', false && 'text-red-500', !this.enabled && 'text-gray-500')}
+            className={cn(
+              'text-green-500',
+              this.state.error && 'text-red-500',
+              !this.enabled && 'text-gray-500',
+            )}
           />
           <div className="truncate">{this.spec.name}</div>
         </SidebarMenuButton>
