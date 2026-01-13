@@ -112,7 +112,7 @@ export class States extends exSw.Unit {
 
   async dispose() {
     this.bus.off()
-    self.clearInterval(this.autoDisconnectInterval)
+    clearInterval(this.autoDisconnectInterval)
     for (const name in this.dict) await this.disconnect(name)
     await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
     States.instanceIds.delete(this.id)
@@ -121,7 +121,7 @@ export class States extends exSw.Unit {
   /** Automatically disconnect `sw` state if there are no `ex` connections to it. */
   private setupAutoDisconnect() {
     if (!this.$.env.is.sw) return
-    this.autoDisconnectInterval = self.setInterval(async () => {
+    this.autoDisconnectInterval = setInterval(async () => {
       for (const state of this.list) {
         const hasPeers = await state.hasPeers()
         if (!hasPeers) await this.disconnect(state.name)

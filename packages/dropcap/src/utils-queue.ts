@@ -1,4 +1,4 @@
-import type { AsyncFn } from '../types/types'
+import type { AsyncFn } from './types'
 import { safe } from './utils-safe'
 
 export type TaskFn<T> = () => Promise<T>

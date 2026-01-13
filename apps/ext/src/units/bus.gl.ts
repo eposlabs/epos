@@ -117,14 +117,14 @@ export class Bus extends gl.Unit {
     // Setup timer if timeout is specified
     const timer$ = Promise.withResolvers<null>()
     let timer: number | null = null
-    if (timeout) timer = self.setTimeout(() => timer$.resolve(null), timeout)
+    if (timeout) timer = setTimeout(() => timer$.resolve(null), timeout)
 
     // Wait for the signal or timer
     const result = await this.utils.pick([this.send(name), listener$.promise, timer$.promise])
 
     // Cleanup
     this.off(name, listener)
-    if (timer) self.clearTimeout(timer)
+    if (timer) clearTimeout(timer)
 
     return result as T | null
   }

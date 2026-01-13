@@ -92,7 +92,7 @@ export class BusSerializer extends gl.Unit {
         if ($.env.is.sw) {
           const blobId = $.utils.id()
           blobs.set(blobId, value)
-          self.setTimeout(() => blobs.delete(blobId), 60_000)
+          setTimeout(() => blobs.delete(blobId), 60_000)
           return { [REF]: 'blobId', id: blobId } satisfies BlobIdRef
         } else {
           const url = $bus.utils.createTempObjectUrl(value)

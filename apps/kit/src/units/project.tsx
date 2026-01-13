@@ -80,7 +80,7 @@ export class Project extends gl.Unit {
   }
 
   async connectDir() {
-    const [rootDirHandle] = await this.$.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
+    const [rootDirHandle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
     if (!rootDirHandle) return
     await this.$.idb.set('kit', 'handles', this.id, rootDirHandle)
     this.setRootDirHandle(rootDirHandle)
@@ -107,8 +107,8 @@ export class Project extends gl.Unit {
     for (const path of this.usedPaths) {
       const handle = await this.getFileHandle(path)
       const observer = new FileSystemObserver(() => {
-        self.clearTimeout(hydrateTimer)
-        hydrateTimer = self.setTimeout(() => this.hydrate())
+        clearTimeout(hydrateTimer)
+        hydrateTimer = setTimeout(() => this.hydrate())
       })
 
       observer.observe(handle)

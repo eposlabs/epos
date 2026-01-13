@@ -10,7 +10,7 @@ export class BusUtils extends gl.Unit {
 
   createTempObjectUrl(blob: Blob) {
     const objectUrl = URL.createObjectURL(blob)
-    self.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
     return objectUrl
   }
 

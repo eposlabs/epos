@@ -148,13 +148,13 @@ export class BusPageBridge extends gl.Unit {
     this.removedContextListeners.add(onRemovedContext)
 
     // Wait limit reached? -> Resolve with null
-    const timeout = self.setTimeout(() => result$.resolve(null), 10_000)
+    const timeout = setTimeout(() => result$.resolve(null), 10_000)
 
     // Wait for the result
     const result = await result$.promise
 
     // Cleanup
-    self.clearTimeout(timeout)
+    clearTimeout(timeout)
     self.removeEventListener('message', onMessage)
     this.removedContextListeners.delete(onRemovedContext)
 

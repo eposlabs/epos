@@ -56,7 +56,7 @@ export class State<T = Obj> extends exSw.Unit {
   private bus: ReturnType<gl.Bus['use']>
   private applyingYjsToMobx = false
   private attachQueue: (() => void)[] = []
-  private saveTimeout: number | undefined = undefined
+  private saveTimeout = -1
   private SAVE_DELAY = 300
 
   get id() {
@@ -569,7 +569,7 @@ export class State<T = Obj> extends exSw.Unit {
     if (!this.$.env.is.sw) return
     if (!this.connected && !force) return
     if (!this.root) throw this.never()
-    self.clearTimeout(this.saveTimeout)
+    clearTimeout(this.saveTimeout)
     const root = this.$.libs.mobx.toJS(this.root)
     const [_, error] = await this.$.utils.safe(this.$.idb.set(...this.location, root))
     if (error) this.log.error('Failed to save state to IndexedDB', error)
@@ -579,8 +579,8 @@ export class State<T = Obj> extends exSw.Unit {
     if (this.local) return
     if (!this.$.env.is.sw) return
     if (!this.connected) return
-    self.clearTimeout(this.saveTimeout)
-    this.saveTimeout = self.setTimeout(() => this.save(), this.SAVE_DELAY)
+    clearTimeout(this.saveTimeout)
+    this.saveTimeout = setTimeout(() => this.save(), this.SAVE_DELAY)
   }
 
   // ---------------------------------------------------------------------------

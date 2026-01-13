@@ -54,7 +54,7 @@ class _Project_ extends gl.Unit {
     const { $ } = parent
 
     // Ask user for a directory handle
-    const [handle] = await $.utils.safe(() => self.showDirectoryPicker({ mode: 'read' }))
+    const [handle] = await $.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
     if (!handle) return
   }
 
@@ -122,8 +122,8 @@ class _Project_ extends gl.Unit {
   }
 
   private updateWithDelay() {
-    self.clearTimeout(this.static.updateTimer)
-    this.static.updateTimer = self.setTimeout(() => this.update(), 50)
+    clearTimeout(this.static.updateTimer)
+    this.static.updateTimer = setTimeout(() => this.update(), 50)
   }
 
   private async readBundle(): Promise<Bundle> {

@@ -4,6 +4,12 @@ import 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 
+declare global {
+  interface ErrorConstructor {
+    captureStackTrace(targetObject: object, constructorOpt?: Function): void
+  }
+}
+
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
@@ -213,20 +219,20 @@ export class Unit<TRoot = unknown> {
   /**
    * A wrapper around `setTimeout` that automatically clears the timeout when the unit is detached.
    */
-  setTimeout(...args: Parameters<typeof self.setTimeout>) {
-    const id = self.setTimeout(...args)
+  setTimeout(...args: Parameters<typeof setTimeout>) {
+    const id = setTimeout(...args)
     ensure(this, _disposers_, () => new Set())
-    this[_disposers_].add(() => self.clearTimeout(id))
+    this[_disposers_].add(() => clearTimeout(id))
     return id
   }
 
   /**
    * A wrapper around `setInterval` that automatically clears the interval when the unit is detached.
    */
-  setInterval(...args: Parameters<typeof self.setInterval>) {
-    const id = self.setInterval(...args)
+  setInterval(...args: Parameters<typeof setInterval>) {
+    const id = setInterval(...args)
     ensure(this, _disposers_, () => new Set())
-    this[_disposers_].add(() => self.clearInterval(id))
+    this[_disposers_].add(() => clearInterval(id))
     return id
   }
 

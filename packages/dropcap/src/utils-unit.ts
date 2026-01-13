@@ -1,4 +1,4 @@
-import type { Cls } from '../types/types'
+import type { Cls } from './types'
 import { createLog } from './utils-create-log'
 
 export class Unit<TRoot = unknown> {

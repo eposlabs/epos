@@ -1,4 +1,4 @@
-import type { Fn } from '../types/types'
+import type { Fn } from './types'
 import { colorHash } from './utils-color-hash'
 
 export type Log = Fn<void> & { warn: Fn<void>; error: Fn<void> }

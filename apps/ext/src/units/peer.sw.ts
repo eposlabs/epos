@@ -29,7 +29,7 @@ export class Peer extends sw.Unit {
       })
 
       // Peer has disconnected? -> Resolve
-      const pingInterval = self.setInterval(async () => {
+      const pingInterval = setInterval(async () => {
         const connected = await this.ping(peerId)
         if (connected) return
         done$.resolve()
@@ -40,7 +40,7 @@ export class Peer extends sw.Unit {
 
       // Cleanup
       this.$.bus.off(`Peer.end[${name}][${peerId}]`)
-      self.clearInterval(pingInterval)
+      clearInterval(pingInterval)
     })
   }
 

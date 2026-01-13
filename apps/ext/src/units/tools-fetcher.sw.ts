@@ -47,7 +47,7 @@ export class ToolsFetcher extends sw.Unit {
     this.responses[id] = res
 
     // Set auto-delete timer
-    self.setTimeout(() => delete this.responses[id], this.$.utils.time('15m'))
+    setTimeout(() => delete this.responses[id], this.$.utils.time('15m'))
 
     return {
       id: id,

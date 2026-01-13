@@ -18,7 +18,7 @@
     "epos": "*",
     "epos-spec": "*",
     "epos-unit": "*",
-    "jszip": "^3.10.1",
+    "fflate": "^0.8.2",
     "shadcn": "^3.6.3",
     "strip-json-comments": "^5.0.3",
     "tailwind-merge": "^3.4.0",

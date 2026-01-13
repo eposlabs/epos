@@ -12,9 +12,9 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    "./idb": "./dist/idb/idb.js",
-    "./utils": "./dist/utils/utils.js",
-    "./types": "./dist/types/types.js"
+    "./idb": "./dist/idb.js",
+    "./utils": "./dist/utils.js",
+    "./types": "./dist/types.js"
   },
   "files": [
     "dist"

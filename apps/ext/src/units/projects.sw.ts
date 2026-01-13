@@ -377,7 +377,7 @@ export class Projects extends sw.Unit {
       // First attempt to fix CSP? -> Unregister all service workers to drop cached headers (x.com)
       if (!this.cspFixTabIds.has(tabId)) {
         this.cspFixTabIds.add(tabId)
-        self.setTimeout(() => this.cspFixTabIds.delete(tabId), 10_000)
+        setTimeout(() => this.cspFixTabIds.delete(tabId), 10_000)
         await this.$.browser.scripting.executeScript({
           target: { tabId },
           world: 'MAIN',
