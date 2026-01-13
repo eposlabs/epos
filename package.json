@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260113.1",
-    "lightningcss": "^1.30.2",
     "npm-check-updates": "^19.3.1",
     "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.3.0",

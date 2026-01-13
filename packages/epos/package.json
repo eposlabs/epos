@@ -20,11 +20,11 @@
     "dist"
   ],
   "dependencies": {
-    "@parcel/watcher": "^2.5.1",
+    "@parcel/watcher": "^2.5.4",
     "@types/chrome": "^0.1.33",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
-    "epos-spec": "^1.5.0",
+    "epos-spec": "^1.6.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "portfinder": "^1.0.38",
