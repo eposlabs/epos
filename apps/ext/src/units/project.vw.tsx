@@ -9,6 +9,10 @@ export class Project extends vw.Unit {
   hasSidePanel: Entry['hasSidePanel']
   private visited = false
 
+  get label() {
+    return this.$.utils.slugify(this.spec.alias ?? this.spec.name)
+  }
+
   constructor(parent: vw.Unit, params: Entry) {
     super(parent)
     this.id = params.id
@@ -23,10 +27,6 @@ export class Project extends vw.Unit {
     this.spec = updates.spec
     this.hash = updates.hash
     this.hasSidePanel = updates.hasSidePanel
-  }
-
-  get label() {
-    return this.spec.title ?? this.spec.name
   }
 
   async processAction() {
@@ -88,7 +88,7 @@ export class Project extends vw.Unit {
     return (
       <iframe
         key={this.hash}
-        name={this.spec.name}
+        name={this.label}
         data-project-id={this.id}
         src={this.getSrc()}
         style={this.getStyle()}

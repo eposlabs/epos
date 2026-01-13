@@ -87,7 +87,7 @@ export class Projects extends vw.Unit {
     const selectedProject = this.list.find(project => project.id === this.selectedProjectId)
     const dropdownProjects = this.list
       .filter(project => project.hash || project.spec.action)
-      .sort((project1, project2) => project1.label.localeCompare(project2.label))
+      .sort((project1, project2) => project1.spec.name.localeCompare(project2.spec.name))
     const hasSidePanelButton = this.$.env.is.vwPopup && this.list.some(project => project.hasSidePanel)
     const hasHeader = dropdownProjects.length > 1 || hasSidePanelButton
     const hasContent = this.list.some(project => project.hash)
@@ -103,7 +103,7 @@ export class Projects extends vw.Unit {
         {hasHeader && (
           <div className="flex h-8 shrink-0 items-center justify-between bg-black text-white">
             {/* Single project title */}
-            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.label}</div>}
+            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.spec.name}</div>}
 
             {/* Dropdown */}
             {dropdownProjects.length > 1 && (
@@ -113,7 +113,7 @@ export class Projects extends vw.Unit {
                   this.$.env.is.vwSidePanel && 'pl-3',
                 )}
               >
-                <div className="text-nowrap">{selectedProject?.label ?? 'SELECT ACTION'}</div>
+                <div className="text-nowrap">{selectedProject?.spec.name ?? 'SELECT ACTION'}</div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -139,7 +139,7 @@ export class Projects extends vw.Unit {
                   )}
                   {dropdownProjects.map(project => (
                     <option key={project.id} value={project.id}>
-                      {project.label}
+                      {project.spec.name}
                     </option>
                   ))}
                 </select>

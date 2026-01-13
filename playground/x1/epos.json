@@ -1,8 +1,8 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "x1",
+  "name": "Test Project [x1]",
+  "alias": "x1",
   "version": "0.0.1",
-  "title": "Test Project [x1]",
   "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
   "assets": ["x1.css"],

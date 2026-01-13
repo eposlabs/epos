@@ -1,10 +1,10 @@
 import { colorHash, enqueue, is, link, Queue, safe, safeSync, unique } from 'dropcap/utils'
-import { get } from './utils-get'
-import { hash } from './utils-hash'
-import { id } from './utils-id'
-import { info } from './utils-info'
-import { normalizeUrl } from './utils-normalize-url'
-import { time } from './utils-time'
+import { get } from './utils-get.js'
+import { hash } from './utils-hash.js'
+import { id } from './utils-id.js'
+import { info } from './utils-info.js'
+import { normalizeUrl } from './utils-normalize-url.js'
+import { time } from './utils-time.js'
 
 export class Utils extends sw.Unit {
   colorHash = colorHash

@@ -163,7 +163,14 @@ export class Project extends sw.Unit {
 
     const resources = targets.flatMap(target => target.resources)
     const resourcesData = resources.map(resource => [resource.type, this.sources[resource.path]])
-    const hash = await this.$.utils.hash([this.mode, this.spec.assets, resourcesData])
+
+    const hash = await this.$.utils.hash([
+      this.mode,
+      this.spec.name,
+      this.spec.alias,
+      this.spec.assets,
+      resourcesData,
+    ])
 
     return hash
   }

@@ -255,10 +255,10 @@ class _Project_ extends gl.Unit {
 
     const manifest = {
       ...engineManifest,
-      name: bundle.spec.title ?? bundle.spec.name,
+      name: bundle.spec.name,
       version: bundle.spec.version,
       description: bundle.spec.description ?? '',
-      action: { default_title: bundle.spec.title ?? bundle.spec.name },
+      action: { default_title: bundle.spec.name },
       host_permissions: [...matchPatterns],
       // ...(bundle.spec.manifest ?? {}),
     }

@@ -10,6 +10,10 @@ export class Project extends os.Unit {
   hash: Entry['hash']
   bus: ReturnType<gl.Bus['use']>
 
+  private get label() {
+    return this.$.utils.slugify(this.spec.alias ?? this.spec.name)
+  }
+
   constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'mode' | 'spec' | 'hash'>) {
     super(parent)
     this.id = params.id
@@ -25,9 +29,16 @@ export class Project extends os.Unit {
   }
 
   update(updates: Pick<Entry, 'mode' | 'spec' | 'hash'>) {
+    const hash1 = this.hash
+    const hash2 = updates.hash
+
+    this.mode = updates.mode
+    this.spec = updates.spec
+    this.hash = updates.hash
+
     // Hash changed? -> Update background
-    if (this.hash !== updates.hash) {
-      if (!updates.hash) {
+    if (hash1 !== hash2) {
+      if (!hash2) {
         this.removeBackground()
       } else if (this.hasBackground()) {
         this.reloadBackground()
@@ -35,10 +46,6 @@ export class Project extends os.Unit {
         this.createBackground()
       }
     }
-
-    this.mode = updates.mode
-    this.spec = updates.spec
-    this.hash = updates.hash
   }
 
   dispose() {
@@ -57,7 +64,7 @@ export class Project extends os.Unit {
 
     // Create background iframe
     const iframe = document.createElement('iframe')
-    iframe.name = this.spec.name
+    iframe.name = this.label
     iframe.setAttribute('data-type', 'background')
     iframe.setAttribute('data-project-id', this.id)
     iframe.src = this.getBackgroundUrl()
@@ -65,7 +72,7 @@ export class Project extends os.Unit {
 
     // Log info
     const title = `<background> started`
-    const subtitle = `Listed in the context dropdown as "${this.spec.name}"`
+    const subtitle = `Listed in the context dropdown as "${this.label}"`
     this.info({ title, subtitle })
   }
 
@@ -142,7 +149,7 @@ export class Project extends os.Unit {
 
     // Prepare iframe attributes
     attrs = {
-      'name': `${this.spec.name}:${id}`,
+      'name': `${this.label}:${id}`,
       'data-type': 'frame',
       'data-project-id': this.id,
       'data-frame-id': id,
@@ -163,7 +170,7 @@ export class Project extends os.Unit {
 
     // Log info
     const title = `Frame created: "${id}" ${url}`
-    const subtitle = `Listed in the context dropdown as "${this.spec.name}:${id}"`
+    const subtitle = `Listed in the context dropdown as "${this.label}:${id}"`
     this.info({ title, subtitle })
 
     return id
@@ -223,7 +230,7 @@ export class Project extends os.Unit {
     this.$.utils.info({
       ...params,
       color: this.$.utils.colorHash(this.id),
-      label: this.spec.name,
+      label: this.label,
       timestamp: true,
     })
   }

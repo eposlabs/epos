@@ -7,10 +7,10 @@
   "properties": {
     "$schema": { "type": "string" },
     "name": { "$ref": "#/definitions/Name" },
+    "alias": { "$ref": "#/definitions/Alias" },
     "version": { "$ref": "#/definitions/Version" },
-    "icon": { "$ref": "#/definitions/Icon" },
-    "title": { "$ref": "#/definitions/Title" },
     "description": { "$ref": "#/definitions/Description" },
+    "icon": { "$ref": "#/definitions/Icon" },
     "action": { "$ref": "#/definitions/Action" },
     "popup": { "$ref": "#/definitions/Popup" },
     "config": { "$ref": "#/definitions/Config" },
@@ -31,23 +31,24 @@
       "maxLength": 45
     },
 
+    "Alias": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 45
+    },
+
     "Version": {
       "type": "string",
       "pattern": "^(?:\\d{1,5}\\.){0,3}\\d{1,5}$"
     },
 
-    "Icon": {
-      "type": "string"
-    },
-
-    "Title": {
-      "type": "string",
-      "maxLength": 45
-    },
-
     "Description": {
       "type": "string",
       "maxLength": 132
+    },
+
+    "Icon": {
+      "type": "string"
     },
 
     "Action": {

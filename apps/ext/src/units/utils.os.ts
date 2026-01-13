@@ -1,8 +1,9 @@
 import { colorHash, is, safe } from 'dropcap/utils'
-import { id } from './utils-id'
-import { info } from './utils-info'
-import { time } from './utils-time'
-import { without } from './utils-without'
+import { id } from './utils-id.js'
+import { info } from './utils-info.js'
+import { slugify } from './utils-slugify.js'
+import { time } from './utils-time.js'
+import { without } from './utils-without.js'
 
 export class Utils extends os.Unit {
   init() {
@@ -15,6 +16,7 @@ export class Utils extends os.Unit {
   info = info
   is = is
   safe = safe
+  slugify = slugify
   time = time
   without = without
 }

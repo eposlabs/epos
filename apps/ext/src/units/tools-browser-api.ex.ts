@@ -1,4 +1,4 @@
-import type { PermissionResult } from './tools-browser.sm'
+import type { PermissionResult } from './tools-browser.sm.js'
 
 export const _id_ = Symbol('id')
 

@@ -6,18 +6,18 @@ export type Action = true | string
 export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
-export type UrlMatchPattern = string // '*://*.example.com/*'
+export type UrlMatchPattern = string // e.g. `*://*.example.com/*`
 export type Access = 'projects' | 'engine'
 export type Manifest = Obj
 
 export type Spec = {
   name: string
-  icon: string | null
-  title: string | null
+  alias: string | null
   version: string
   description: string | null
-  popup: Popup
+  icon: string | null
   action: Action | null
+  popup: Popup
   config: Config
   assets: Path[]
   targets: Target[]
@@ -79,10 +79,10 @@ const schema = {
   keys: [
     '$schema',
     'name',
+    'alias',
     'version',
-    'icon',
-    'title',
     'description',
+    'icon',
     'action',
     'popup',
     'config',
@@ -91,8 +91,8 @@ const schema = {
     'permissions',
     'manifest',
   ],
-  name: { min: 2, max: 20, regex: /^[a-z][a-z0-9-]*[a-z0-9]$/ },
-  title: { min: 2, max: 45 },
+  name: { min: 2, max: 45 },
+  alias: { min: 2, max: 45 },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
   popup: {
@@ -144,12 +144,12 @@ export function parseSpecObject(spec: Obj): Spec {
 
   return {
     name: parseName(spec),
-    icon: parseIcon(spec),
-    title: parseTitle(spec),
+    alias: parseAlias(spec),
     version: parseVersion(spec),
     description: parseDescription(spec),
-    popup: parsePopup(spec),
+    icon: parseIcon(spec),
     action: parseAction(spec),
+    popup: parsePopup(spec),
     config: parseConfig(spec),
     assets: parseAssets(spec),
     targets: parseTargets(spec),
@@ -164,36 +164,24 @@ function parseName(spec: Obj) {
   const name = spec.name
   if (!is.string(name)) throw new Error(`'name' must be a string`)
 
-  const { min, max, regex } = schema.name
+  const { min, max } = schema.name
   if (name.length < min) throw new Error(`'name' must be at least ${min} characters`)
   if (name.length > max) throw new Error(`'name' must be at most ${max} characters`)
-  if (name.toLowerCase() !== name) throw new Error(`'name' must be lowercase`)
-  if (!/[a-z]/.test(name[0]!)) throw new Error(`'name' must start with a letter`)
-  if (!regex.test(name)) throw new Error(`'name' must match regex: ${regex}`)
 
   return name
 }
 
-function parseIcon(spec: Obj) {
-  if (!('icon' in spec)) return null
+function parseAlias(spec: Obj): string | null {
+  if (!('alias' in spec)) return null
 
-  const icon = spec.icon
-  if (!is.string(icon)) throw new Error(`'icon' must be a string`)
+  const alias = spec.alias
+  if (!is.string(alias)) throw new Error(`'alias' must be a string`)
 
-  return parsePath(icon)
-}
+  const { min, max } = schema.alias
+  if (alias.length < min) throw new Error(`'alias' must be at least ${min} characters`)
+  if (alias.length > max) throw new Error(`'alias' must be at most ${max} characters`)
 
-function parseTitle(spec: Obj): string | null {
-  if (!('title' in spec)) return null
-
-  const title = spec.title
-  if (!is.string(title)) throw new Error(`'title' must be a string`)
-
-  const { min, max } = schema.title
-  if (title.length < min) throw new Error(`'title' must be at least ${min} characters`)
-  if (title.length > max) throw new Error(`'title' must be at most ${max} characters`)
-
-  return title
+  return alias
 }
 
 function parseVersion(spec: Obj): string {
@@ -218,6 +206,26 @@ function parseDescription(spec: Obj): string | null {
   return description
 }
 
+function parseIcon(spec: Obj) {
+  if (!('icon' in spec)) return null
+
+  const icon = spec.icon
+  if (!is.string(icon)) throw new Error(`'icon' must be a string`)
+
+  return parsePath(icon)
+}
+
+function parseAction(spec: Obj): Action | null {
+  const action = spec.action ?? null
+  if (action === null) return null
+  if (action === true) return true
+
+  if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
+  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: "${JSON.stringify(action)}"`)
+
+  return action
+}
+
 function parsePopup(spec: Obj) {
   const popup = structuredClone(spec.popup ?? {})
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
@@ -237,17 +245,6 @@ function parsePopup(spec: Obj) {
   if (popup.height > height.max) throw new Error(`'popup.height' must be ≤ ${height.max}`)
 
   return popup as Popup
-}
-
-function parseAction(spec: Obj): Action | null {
-  const action = spec.action ?? null
-  if (action === null) return null
-  if (action === true) return true
-
-  if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
-  if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: "${JSON.stringify(action)}"`)
-
-  return action
 }
 
 function parseConfig(spec: Obj): Config {

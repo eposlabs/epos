@@ -1,6 +1,6 @@
 import { enqueue, is, link, Queue, safe, safeSync } from 'dropcap/utils'
-import { id } from './utils-id'
-import { time } from './utils-time'
+import { id } from './utils-id.js'
+import { time } from './utils-time.js'
 
 export class Utils extends ex.Unit {
   enqueue = enqueue
