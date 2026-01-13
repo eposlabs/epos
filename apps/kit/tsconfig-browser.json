@@ -1,10 +1,4 @@
 {
-  "extends": "../../tsconfig-browser.json",
-  "include": ["src"],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@ui/*": ["src/ui/*"]
-    }
-  }
+  "extends": ["../../tsconfig-browser.json", "./tsconfig-paths.json"],
+  "include": ["src"]
 }

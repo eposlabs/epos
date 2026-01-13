@@ -1,23 +1,27 @@
 import { IconPointFilled } from '@tabler/icons-react'
 import { Button } from '@ui/components/ui/button'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@ui/components/ui/item'
+import { Separator } from '@ui/components/ui/separator.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 import { Spinner } from '@ui/components/ui/spinner'
 import { cn } from '@ui/lib/utils'
-import type { Assets, Bundle, Mode, ProjectBase, Sources, Spec } from 'epos'
+import type { Assets, Mode, ProjectBase, Sources, Spec } from 'epos'
 
 export class Project extends gl.Unit {
   mode: Mode
   spec: Spec
   enabled: boolean
+  specText: string | null = null
+  assetsInfo: Record<string, { size: number }> = {}
+  sourcesInfo: Record<string, { size: number }> = {}
 
   get state() {
     return {
       ready: false,
       updating: false,
       error: null as Error | null,
+      handle: null as FileSystemDirectoryHandle | null,
       observers: [] as FileSystemObserver[],
-      rootDirHandle: null as FileSystemDirectoryHandle | null,
     }
   }
 
@@ -30,14 +34,14 @@ export class Project extends gl.Unit {
   }
 
   async attach() {
-    const rootDirHandle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
-    if (rootDirHandle) this.setRootDirHandle(rootDirHandle)
+    this.hydrate = this.$.utils.enqueue(this.hydrate)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
+    if (handle) await this.setHandle(handle)
     this.state.ready = true
   }
 
   async detach() {
-    await this.$.idb.delete('kit', 'handles', this.id)
-    this.stopObserver()
+    await this.setHandle(null)
   }
 
   private get $projects() {
@@ -48,12 +52,10 @@ export class Project extends gl.Unit {
     return this.$projects.selectedProjectId === this.id
   }
 
-  get usedPaths() {
-    return [
-      'epos.json',
-      ...this.spec.assets,
-      ...this.spec.targets.flatMap(target => target.resources.map(resource => resource.path)),
-    ]
+  get paths() {
+    const assetPaths = this.spec.assets
+    const resourcePaths = this.spec.targets.flatMap(target => target.resources.map(resource => resource.path))
+    return ['epos.json', ...assetPaths, ...resourcePaths]
   }
 
   update(updates: Omit<ProjectBase, 'id'>) {
@@ -80,35 +82,41 @@ export class Project extends gl.Unit {
   }
 
   async connectDir() {
-    const [rootDirHandle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
-    if (!rootDirHandle) return
-    await this.$.idb.set('kit', 'handles', this.id, rootDirHandle)
-    this.setRootDirHandle(rootDirHandle)
+    const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
+    if (!handle) return
+    await this.setHandle(handle)
   }
 
-  async disconnect() {
-    await this.$.idb.delete('kit', 'handles', this.id)
-    this.state.rootDirHandle = null
-    this.stopObserver()
+  async disconnectDir() {
+    await this.setHandle(null)
   }
 
-  private async setRootDirHandle(dirHandle: FileSystemDirectoryHandle) {
-    this.state.rootDirHandle = dirHandle
-    await this.hydrate()
-    this.startObserver()
+  private async setHandle(handle: FileSystemDirectoryHandle | null) {
+    if (handle) {
+      await this.$.idb.set('kit', 'handles', this.id, handle)
+      this.state.handle = handle
+      await this.hydrate()
+      this.observe()
+    } else {
+      await this.$.idb.delete('kit', 'handles', this.id)
+      this.state.handle = null
+      this.unobserve()
+    }
   }
 
-  private async startObserver() {
-    if (!this.state.rootDirHandle) return
+  private async observe() {
+    if (!this.state.handle) return
     if (this.state.observers.length > 0) return
 
-    let hydrateTimer = -1
+    // Use micro delay to batch multiple changes
+    let timer = -1
 
-    for (const path of this.usedPaths) {
+    for (const path of this.paths) {
       const handle = await this.getFileHandle(path)
+
       const observer = new FileSystemObserver(() => {
-        clearTimeout(hydrateTimer)
-        hydrateTimer = setTimeout(() => this.hydrate())
+        clearTimeout(timer)
+        timer = setTimeout(() => this.hydrate())
       })
 
       observer.observe(handle)
@@ -116,7 +124,7 @@ export class Project extends gl.Unit {
     }
   }
 
-  private stopObserver() {
+  private unobserve() {
     if (this.state.observers.length === 0) return
     for (const observer of this.state.observers) observer.disconnect()
     this.state.observers = []
@@ -126,43 +134,42 @@ export class Project extends gl.Unit {
     try {
       this.state.error = null
       this.state.updating = true
-      const bundle = await this.readBundle()
-      await epos.projects.update(this.id, bundle)
+
+      // Read epos.json
+      const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
+      if (readError) throw new Error('Failed to read epos.json', { cause: readError })
+      this.specText = specText
+
+      // Parse epos.json
+      const [spec, parseError] = this.$.utils.safeSync(() => this.$.libs.parseSpecJson(specText))
+      if (parseError) throw new Error('Failed to parse epos.json', { cause: parseError })
+
+      // Read assets
+      const assets: Assets = {}
+      for (const path of spec.assets) {
+        const file = await this.readFile(path)
+        assets[path] = file
+        this.assetsInfo[path] = { size: file.size }
+      }
+
+      // Read sources
+      const sources: Sources = {}
+      for (const target of spec.targets) {
+        for (const resource of target.resources) {
+          if (sources[resource.path]) continue
+          const file = await this.readFileAsText(resource.path)
+          sources[resource.path] = file
+          this.sourcesInfo[resource.path] = { size: file.length }
+        }
+      }
+
+      // Update project
+      await epos.projects.update(this.id, { spec, sources, assets })
     } catch (e) {
       this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
     } finally {
       this.state.updating = false
     }
-  }
-
-  private async readBundle() {
-    const [specHandle] = await this.$.utils.safe(() => this.getFileHandle('epos.json'))
-    if (!specHandle) throw new Error('epos.json not found')
-
-    const [specFile, fileError] = await this.$.utils.safe(() => specHandle.getFile())
-    if (fileError) throw new Error('Failed to read epos.json', { cause: String(fileError) })
-
-    const [specJson, jsonError] = await this.$.utils.safe(() => specFile.text())
-    if (jsonError) throw new Error('Failed to read epos.json', { cause: String(jsonError) })
-
-    const [spec, specError] = this.$.utils.safeSync(() => this.$.libs.parseSpecJson(specJson))
-    if (specError) throw new Error('Failed to parse epos.json', { cause: String(specError) })
-
-    const assets: Assets = {}
-    for (const path of spec.assets) {
-      assets[path] = await this.readFile(path)
-    }
-
-    const sources: Sources = {}
-    for (const target of spec.targets) {
-      for (const resource of target.resources) {
-        if (sources[resource.path]) continue
-        sources[resource.path] = await this.readFileAsText(resource.path)
-      }
-    }
-
-    const bundle: Bundle = { spec, sources, assets }
-    return bundle
   }
 
   private async readFile(path: string) {
@@ -182,24 +189,20 @@ export class Project extends gl.Unit {
     if (!name) throw this.never()
 
     // Get dir handle
-    if (!this.state.rootDirHandle) throw this.never()
-    let dirHandle = this.state.rootDirHandle
+    if (!this.state.handle) throw new Error('Project directory is not connected')
+    let dirHandle = this.state.handle
     for (const dir of dirs) {
-      const [nextDirHandle] = await this.$.utils.safe(dirHandle.getDirectoryHandle(dir))
+      const [nextDirHandle] = await this.$.utils.safe(() => dirHandle.getDirectoryHandle(dir))
       if (!nextDirHandle) throw new Error(`File not found: ${path}`)
       dirHandle = nextDirHandle
     }
 
     // Get file handle
-    const [fileHandle] = await this.$.utils.safe(dirHandle.getFileHandle(name))
+    const [fileHandle] = await this.$.utils.safe(() => dirHandle.getFileHandle(name))
     if (!fileHandle) throw new Error(`File not found: ${path}`)
 
     return fileHandle
   }
-
-  // ---------------------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------------------
 
   View() {
     if (!this.state.ready) return <this.LoadingView />
@@ -259,7 +262,7 @@ export class Project extends gl.Unit {
           <ItemContent>
             <ItemTitle>Directory</ItemTitle>
             <ItemDescription>
-              {this.state.rootDirHandle ? `./${this.state.rootDirHandle.name}` : 'not connected'}
+              {this.state.handle ? `./${this.state.handle.name}` : 'not connected'}
             </ItemDescription>
           </ItemContent>
         </Item>
@@ -273,8 +276,72 @@ export class Project extends gl.Unit {
 
         <Item variant="outline">
           <ItemContent>
-            <ItemTitle>Spec</ItemTitle>
-            <pre className="text-muted-foreground">{JSON.stringify(this.spec, null, 2)}</pre>
+            <ItemTitle>Assets</ItemTitle>
+            <div className="space-y-1">
+              {this.spec.assets.length === 0 && <div className="text-muted-foreground">—</div>}
+              {this.spec.assets.map(path => (
+                <div key={path} className="flex justify-between">
+                  <div>{path}</div>
+                  <div className="text-muted-foreground">
+                    {this.assetsInfo[path] ? `${(this.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
+                  </div>
+                </div>
+              ))}
+
+              <Separator className="my-2 opacity-50" />
+
+              <div className="flex justify-between">
+                <div>Total:</div>
+                <div className="text-muted-foreground">
+                  {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
+                    2,
+                  )}{' '}
+                  KB
+                </div>
+              </div>
+            </div>
+          </ItemContent>
+        </Item>
+
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>Sources</ItemTitle>
+            <div className="space-y-1">
+              {this.spec.targets.flatMap(t => t.resources).length === 0 && (
+                <div className="text-muted-foreground">—</div>
+              )}
+              {this.spec.targets
+                .flatMap(t => t.resources)
+                .map(resource => (
+                  <div key={resource.path} className="flex justify-between">
+                    <div>{resource.path}</div>
+                    <div className="text-muted-foreground">
+                      {this.sourcesInfo[resource.path]
+                        ? `${(this.sourcesInfo[resource.path]!.size / 1024).toFixed(2)} KB`
+                        : '—'}
+                    </div>
+                  </div>
+                ))}
+
+              <Separator className="my-2 opacity-50" />
+
+              <div className="flex justify-between">
+                <div>Total:</div>
+                <div className="text-muted-foreground">
+                  {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
+                    2,
+                  )}{' '}
+                  KB
+                </div>
+              </div>
+            </div>
+          </ItemContent>
+        </Item>
+
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>epos.json</ItemTitle>
+            <pre className="text-muted-foreground">{this.specText ?? '—'}</pre>
           </ItemContent>
         </Item>
       </div>
@@ -293,13 +360,13 @@ export class Project extends gl.Unit {
         <Button variant="outline" size="sm" onClick={this.connectDir}>
           Connect dir
         </Button>
-        <Button variant="outline" size="sm" onClick={this.disconnect}>
+        <Button variant="outline" size="sm" onClick={this.disconnectDir}>
           Disconnect dir
         </Button>
-        <Button variant="outline" size="sm" onClick={this.startObserver}>
+        <Button variant="outline" size="sm" onClick={this.observe}>
           Start observer
         </Button>
-        <Button variant="outline" size="sm" onClick={this.stopObserver}>
+        <Button variant="outline" size="sm" onClick={this.unobserve}>
           Stop observer
         </Button>
         <Button variant="outline" size="sm" onClick={() => this.remove()}>
@@ -326,10 +393,6 @@ export class Project extends gl.Unit {
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
-
   static versioner = this.defineVersioner({
     1(this: any) {
       this.fs = {}
@@ -341,7 +404,16 @@ export class Project extends gl.Unit {
     },
     4(this: any) {
       delete this.handle
-      this.rootDirHandle = null
+      this.handle = null
+    },
+    6() {
+      this.specText = null
+    },
+    7() {
+      this.assetsInfo = {}
+    },
+    8() {
+      this.sourcesInfo = {}
     },
   })
 }
