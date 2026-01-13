@@ -6,7 +6,7 @@ export type Config = { allowMissingModels?: boolean }
 
 export class States extends exSw.Unit {
   id: string
-  map: Record<string, exSw.State> = {}
+  dict: Record<string, exSw.State> = {}
   dbName: DbName
   dbStoreName: DbStoreName
   config: Config
@@ -17,7 +17,7 @@ export class States extends exSw.Unit {
   private static instanceIds = new Set<string>()
 
   get list() {
-    return Object.values(this.map)
+    return Object.values(this.dict)
   }
 
   constructor(parent: exSw.Unit, dbName: DbName, dbStoreName: DbStoreName, config?: Config) {
@@ -50,7 +50,7 @@ export class States extends exSw.Unit {
 
   async connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>> {
     // Already connected? -> Return existing
-    if (this.map[name]) return this.map[name].root as Root<T>
+    if (this.dict[name]) return this.dict[name].root as Root<T>
 
     // Ensure `sw` is connected first
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
@@ -58,19 +58,19 @@ export class States extends exSw.Unit {
     // Create and initialize state
     const state = new exSw.State(this, name, initial, versioner)
     await state.init()
-    this.map[name] = state as any
+    this.dict[name] = state as any
 
     return state.root
   }
 
   async disconnect(name: string) {
     // Not connected? -> Ignore
-    const state = this.map[name]
+    const state = this.dict[name]
     if (!state) return
 
     // Disconnect and remove
     await state.disconnect()
-    delete this.map[name]
+    delete this.dict[name]
   }
 
   async remove(name: string) {
@@ -107,13 +107,13 @@ export class States extends exSw.Unit {
   }
 
   isConnected(name: string) {
-    return name in this.map
+    return name in this.dict
   }
 
   async dispose() {
     this.bus.off()
     self.clearInterval(this.autoDisconnectInterval)
-    for (const name in this.map) await this.disconnect(name)
+    for (const name in this.dict) await this.disconnect(name)
     await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
     States.instanceIds.delete(this.id)
   }

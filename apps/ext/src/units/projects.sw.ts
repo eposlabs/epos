@@ -1,13 +1,13 @@
 import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources } from 'epos'
 import type { Address } from './project-target.sw'
-import type { ProjectInfo, ProjectSnapshot } from './project.sw'
+import type { Entry, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
-export type ProjectInfoMap = { [projectId: string]: ProjectInfo }
+export type Entries = { [projectId: string]: Entry }
 
 export class Projects extends sw.Unit {
-  map: { [id: string]: sw.Project } = {}
+  dict: { [id: string]: sw.Project } = {}
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
 
@@ -17,7 +17,11 @@ export class Projects extends sw.Unit {
   }
 
   get list() {
-    return Object.values(this.map)
+    return Object.values(this.dict)
+  }
+
+  get listEnabled() {
+    return this.list.filter(project => project.enabled)
   }
 
   async init() {
@@ -36,7 +40,7 @@ export class Projects extends sw.Unit {
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
     this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('Projects.getInfoMap', this.getInfoMap, this)
+    this.$.bus.on('Projects.getEntries', this.getEntries, this)
 
     await this.loadEx()
     await this.loadProjects()
@@ -58,34 +62,34 @@ export class Projects extends sw.Unit {
   }
 
   private has(id: string) {
-    return !!this.map[id]
+    return !!this.dict[id]
   }
 
   private async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
-    if (params.id && this.map[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
+    if (params.id && this.dict[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
-    this.map[project.id] = project
+    this.dict[project.id] = project
     await this.$.bus.send('Projects.changed')
     return project.id as T
   }
 
   private async update(id: string, updates: Partial<ProjectSettings & Bundle>) {
-    const project = this.map[id]
+    const project = this.dict[id]
     if (!project) throw new Error(`Project with id "${id}" does not exist`)
     await project.update(updates)
     await this.$.bus.send('Projects.changed')
   }
 
   async remove(id: string) {
-    const project = this.map[id]
+    const project = this.dict[id]
     if (!project) return
     await project.dispose()
-    delete this.map[id]
+    delete this.dict[id]
     await this.$.bus.send('Projects.changed')
   }
 
   private async get<T extends ProjectQuery>(id: string, query?: T) {
-    const project = this.map[id]
+    const project = this.dict[id]
     if (!project) return null
 
     return {
@@ -100,7 +104,7 @@ export class Projects extends sw.Unit {
 
   private async getAll<T extends ProjectQuery>(query?: T) {
     const projects: Project<T>[] = []
-    for (const id in this.map) {
+    for (const id in this.dict) {
       const project = await this.get(id, query)
       if (!project) throw this.never()
       projects.push(project)
@@ -154,7 +158,7 @@ export class Projects extends sw.Unit {
   }
 
   private getJs(address?: Address, params: { tabId?: number | null; tabBusToken?: string | null } = {}) {
-    const projects = this.list.filter(project => project.test(address))
+    const projects = this.listEnabled.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
 
@@ -182,45 +186,47 @@ export class Projects extends sw.Unit {
   }
 
   private getCss(address?: Address) {
-    const cssList = this.list.map(project => project.getCss(address)).filter(this.$.utils.is.present)
+    const cssList = this.listEnabled.map(project => project.getCss(address)).filter(this.$.utils.is.present)
     if (cssList.length === 0) return null
     return cssList.join('\n').trim()
   }
 
   private getLiteJs(address?: Address) {
-    const liteJsList = this.list.map(project => project.getLiteJs(address)).filter(this.$.utils.is.present)
+    const liteJsList = this.listEnabled
+      .map(project => project.getLiteJs(address))
+      .filter(this.$.utils.is.present)
     if (liteJsList.length === 0) return null
     return liteJsList.join(';\n').trim()
   }
 
-  private async getInfoMap(address?: Address) {
-    const infoMap: ProjectInfoMap = {}
+  private async getEntries(address?: Address) {
+    const entries: Entries = {}
 
-    for (const project of this.list) {
-      const info = await project.getInfo(address)
-      infoMap[info.id] = info
+    for (const project of this.listEnabled) {
+      const entry = await project.getEntry(address)
+      entries[entry.id] = entry
     }
 
-    return infoMap
+    return entries
   }
 
   private async handleActionClick(tab: chrome.tabs.Tab) {
     if (!tab.id) return
 
     // Has popup? -> Open popup
-    if (this.list.some(project => project.hasPopup())) {
+    if (this.listEnabled.some(project => project.hasPopup())) {
       await this.$.tools.medium.openPopup(tab.id)
       return
     }
 
     // Has side panel? -> Toggle side panel
-    if (this.list.some(project => project.hasSidePanel())) {
+    if (this.listEnabled.some(project => project.hasSidePanel())) {
       await this.$.tools.medium.toggleSidePanel(tab.id)
       return
     }
 
     // Several actions? -> Open popup
-    const projectsWithAction = this.list.filter(project => project.enabled && project.spec.action)
+    const projectsWithAction = this.listEnabled.filter(project => project.spec.action)
     if (projectsWithAction.length > 1) {
       await this.$.tools.medium.openPopup(tab.id)
       return
@@ -239,7 +245,7 @@ export class Projects extends sw.Unit {
     }
 
     // Has `kit` package? -> Open `@kit` page
-    if (this.map.kit) {
+    if (this.dict.kit) {
       const kitTab = (await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' }))[0]
       if (kitTab) {
         await this.$.browser.tabs.update(kitTab.id, { active: true })
@@ -271,18 +277,16 @@ export class Projects extends sw.Unit {
     for (const id of ids) {
       const project = await sw.Project.restore(this, id)
       if (!project) continue
-      this.map[id] = project
+      this.dict[id] = project
     }
 
     // ---- from files
     // TODO: support id instead of name
-    const [snapshot] = await this.$.utils.safe<ProjectSnapshot>(
-      fetch('/project.json').then(res => res.json()),
-    )
+    const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
     if (!snapshot) return
 
     const name = snapshot.spec.name
-    const project = this.map[name]
+    const project = this.dict[name]
 
     // // Already latest version? -> Skip
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
@@ -296,10 +300,10 @@ export class Projects extends sw.Unit {
     // }
 
     // private async upsert(id: string, bundle: Bundle, dev = false) {
-    //   if (this.map[id]) {
-    //     this.map[id].update(bundle)
+    //   if (this.dict[id]) {
+    //     this.dict[id].update(bundle)
     //   } else {
-    //     this.map[id] = await sw.Project.new(this, id, { ...bundle, dev })
+    //     this.dict[id] = await sw.Project.new(this, id, { ...bundle, dev })
     //   }
     // }
 

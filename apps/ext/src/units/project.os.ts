@@ -1,16 +1,16 @@
-import type { ProjectInfo } from './project.sw'
+import type { Entry } from './project.sw'
 
 export type Attrs = Record<string, string | number>
 export type Frame = { id: string; url: string }
 
 export class Project extends os.Unit {
-  id: ProjectInfo['id']
-  mode: ProjectInfo['mode']
-  spec: ProjectInfo['spec']
-  hash: ProjectInfo['hash']
+  id: Entry['id']
+  mode: Entry['mode']
+  spec: Entry['spec']
+  hash: Entry['hash']
   bus: ReturnType<gl.Bus['use']>
 
-  constructor(parent: os.Unit, params: Pick<ProjectInfo, 'id' | 'mode' | 'spec' | 'hash'>) {
+  constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'mode' | 'spec' | 'hash'>) {
     super(parent)
     this.id = params.id
     this.mode = params.mode
@@ -24,7 +24,7 @@ export class Project extends os.Unit {
     this.bus.on('removeFrame', this.removeFrame, this)
   }
 
-  update(updates: Pick<ProjectInfo, 'mode' | 'spec' | 'hash'>) {
+  update(updates: Pick<Entry, 'mode' | 'spec' | 'hash'>) {
     // Hash changed? -> Update background
     if (this.hash !== updates.hash) {
       if (!updates.hash) {

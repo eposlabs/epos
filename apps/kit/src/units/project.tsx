@@ -86,6 +86,12 @@ export class Project extends gl.Unit {
     this.setRootDirHandle(rootDirHandle)
   }
 
+  async disconnect() {
+    await this.$.idb.delete('kit', 'handles', this.id)
+    this.state.rootDirHandle = null
+    this.stopObserver()
+  }
+
   private async setRootDirHandle(dirHandle: FileSystemDirectoryHandle) {
     this.state.rootDirHandle = dirHandle
     await this.hydrate()
@@ -286,6 +292,9 @@ export class Project extends gl.Unit {
         </Button>
         <Button variant="outline" size="sm" onClick={this.connectDir}>
           Connect dir
+        </Button>
+        <Button variant="outline" size="sm" onClick={this.disconnect}>
+          Disconnect dir
         </Button>
         <Button variant="outline" size="sm" onClick={this.startObserver}>
           Start observer

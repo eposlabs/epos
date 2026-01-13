@@ -1,28 +1,25 @@
-import type { ProjectInfo } from './project.sw'
+import type { Entry } from './project.sw'
 
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
-  id: ProjectInfo['id']
-  mode: ProjectInfo['mode']
-  enabled: ProjectInfo['enabled']
-  spec: ProjectInfo['spec']
-  hash: ProjectInfo['hash']
-  hasSidePanel: ProjectInfo['hasSidePanel']
+  id: Entry['id']
+  mode: Entry['mode']
+  spec: Entry['spec']
+  hash: Entry['hash']
+  hasSidePanel: Entry['hasSidePanel']
   private visited = false
 
-  constructor(parent: vw.Unit, params: ProjectInfo) {
+  constructor(parent: vw.Unit, params: Entry) {
     super(parent)
     this.id = params.id
     this.mode = params.mode
-    this.enabled = params.enabled
     this.spec = params.spec
     this.hash = params.hash
     this.hasSidePanel = params.hasSidePanel
   }
 
-  update(updates: Omit<ProjectInfo, 'id'>) {
+  update(updates: Omit<Entry, 'id'>) {
     this.mode = updates.mode
-    this.enabled = updates.enabled
     this.spec = updates.spec
     this.hash = updates.hash
     this.hasSidePanel = updates.hasSidePanel

@@ -1,12 +1,12 @@
 import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends vw.Unit {
-  map: { [id: string]: vw.Project } = {}
+  dict: { [id: string]: vw.Project } = {}
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
   selectedProjectId = localStorage.getItem('Projects.selectedProjectId')
 
   get list() {
-    return Object.values(this.map)
+    return Object.values(this.dict)
   }
 
   async init() {
@@ -22,25 +22,25 @@ export class Projects extends vw.Unit {
   private onWatcherData(data: WatcherData) {
     // Add projects
     for (const projectId of data.addedProjectIds) {
-      const info = data.infoMap[projectId]
-      if (!info) throw this.never()
-      this.map[projectId] = new vw.Project(this, info)
+      const entry = data.entries[projectId]
+      if (!entry) throw this.never()
+      this.dict[projectId] = new vw.Project(this, entry)
     }
 
     // Remove projects
     for (const projectId of data.removedProjectIds) {
-      const project = this.map[projectId]
+      const project = this.dict[projectId]
       if (!project) throw this.never()
-      delete this.map[projectId]
+      delete this.dict[projectId]
     }
 
     // Update retained projects
     for (const projectId of data.retainedProjectIds) {
-      const project = this.map[projectId]
+      const project = this.dict[projectId]
       if (!project) throw this.never()
-      const info = data.infoMap[projectId]
-      if (!info) throw this.never()
-      project.update(info)
+      const entry = data.entries[projectId]
+      if (!entry) throw this.never()
+      project.update(entry)
     }
 
     // No projects to show? -> Close the page
@@ -59,7 +59,7 @@ export class Projects extends vw.Unit {
   }
 
   private async selectProject(id: string) {
-    const project = this.map[id]
+    const project = this.dict[id]
     if (!project) return
 
     if (project.hash) {
@@ -86,7 +86,6 @@ export class Projects extends vw.Unit {
     const cn = this.$.utils.cn
     const selectedProject = this.list.find(project => project.id === this.selectedProjectId)
     const dropdownProjects = this.list
-      .filter(project => project.enabled)
       .filter(project => project.hash || project.spec.action)
       .sort((project1, project2) => project1.label.localeCompare(project2.label))
     const hasSidePanelButton = this.$.env.is.vwPopup && this.list.some(project => project.hasSidePanel)

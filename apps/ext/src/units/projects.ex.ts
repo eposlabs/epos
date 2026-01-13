@@ -1,7 +1,7 @@
 import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends ex.Unit {
-  map: { [id: string]: ex.Project } = {}
+  dict: { [id: string]: ex.Project } = {}
   tabId = this.getTabId()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
 
@@ -58,7 +58,7 @@ export class Projects extends ex.Unit {
     // Create and start projects
     for (const projectDef of projectDefs) {
       const project = new ex.Project(this, projectDef)
-      this.map[project.id] = project
+      this.dict[project.id] = project
       await project.init()
     }
   }

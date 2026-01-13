@@ -18,24 +18,17 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
 
-  // ---------------------------------------------------------------------------
-  // LIFECYCLE
-  // ---------------------------------------------------------------------------
-
   async attach() {
     await this.ensureSinglePinnedTab()
   }
-
-  // ---------------------------------------------------------------------------
-  // TASKS
-  // ---------------------------------------------------------------------------
 
   private async ensureSinglePinnedTab() {
     let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
     tabs = tabs.filter(tab => tab.url && new URL(tab.url).pathname === '/@kit')
 
     if (tabs.length === 1) {
-      const tab = tabs[0]!
+      const tab = tabs[0]
+      if (!tab) throw this.never()
       if (tab.pinned) return
       await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
@@ -48,10 +41,6 @@ export class App extends gl.Unit {
       }
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------------------
 
   View() {
     return (

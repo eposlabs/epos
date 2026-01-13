@@ -2,7 +2,7 @@ import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
 import type { Address } from './project-target.sw'
 
 // Data saved to IndexedDB
-export type ProjectSnapshot = {
+export type Snapshot = {
   id: string
   mode: Mode
   enabled: boolean
@@ -10,13 +10,12 @@ export type ProjectSnapshot = {
   sources: Sources
 }
 
-// Data for peer contexts
-export type ProjectInfo = {
+// Lightweight data sent to peers
+export type Entry = {
   id: string
   mode: Mode
-  enabled: boolean
   spec: Spec
-  hash: string | null // If project has no matching resources, hash is null
+  hash: string | null // null if project has no matching resources for the given address
   hasSidePanel: boolean
 }
 
@@ -39,7 +38,7 @@ export class Project extends sw.Unit {
   }
 
   static async restore(parent: sw.Unit, id: string) {
-    const snapshot = await parent.$.idb.get<ProjectSnapshot>(id, ':project', 'snapshot')
+    const snapshot = await parent.$.idb.get<Snapshot>(id, ':project', 'snapshot')
     if (!snapshot) return null
     const project = new Project(parent, snapshot)
     await project.updateNetRules()
@@ -75,23 +74,18 @@ export class Project extends sw.Unit {
   }
 
   test(address?: Address) {
-    if (!this.enabled) return false
     return this.targets.some(target => target.test(address))
   }
 
   hasPopup() {
-    if (!this.enabled) return false
     return this.targets.some(target => target.hasPopup())
   }
 
   hasSidePanel() {
-    if (!this.enabled) return false
     return this.targets.some(target => target.hasSidePanel())
   }
 
   getCss(address?: Address) {
-    if (!this.enabled) return null
-
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -104,8 +98,6 @@ export class Project extends sw.Unit {
   }
 
   getLiteJs(address?: Address) {
-    if (!this.enabled) return null
-
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -118,8 +110,6 @@ export class Project extends sw.Unit {
   }
 
   getDefJs(address?: Address) {
-    if (!this.enabled) return null
-
     // Get all matching resources
     const matchingTargets = this.targets.filter(target => target.test(address))
     const matchingResources = matchingTargets.flatMap(target => target.resources)
@@ -146,11 +136,10 @@ export class Project extends sw.Unit {
     ].join('\n')
   }
 
-  async getInfo(address?: Address): Promise<ProjectInfo> {
+  async getEntry(address?: Address): Promise<Entry> {
     return {
       id: this.id,
       mode: this.mode,
-      enabled: this.enabled,
       spec: this.spec,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
@@ -169,8 +158,6 @@ export class Project extends sw.Unit {
   }
 
   private async getHash(address?: Address) {
-    if (!this.enabled) return null
-
     const targets = this.targets.filter(target => target.test(address))
     if (targets.length === 0) return null
 
@@ -182,7 +169,7 @@ export class Project extends sw.Unit {
   }
 
   private async saveSnapshot() {
-    await this.$.idb.set<ProjectSnapshot>(this.id, ':project', 'snapshot', {
+    await this.$.idb.set<Snapshot>(this.id, ':project', 'snapshot', {
       id: this.id,
       mode: this.mode,
       enabled: this.enabled,

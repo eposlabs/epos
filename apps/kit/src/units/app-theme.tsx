@@ -1,26 +1,20 @@
 export class AppTheme extends gl.Unit {
   value: 'light' | 'dark' = this.getSystemTheme()
 
-  // ---------------------------------------------------------------------------
-  // LIFECYCLE
-  // ---------------------------------------------------------------------------
+  get state() {
+    return {
+      systemThemeWatcher: window.matchMedia('(prefers-color-scheme: dark)'),
+    }
+  }
 
   attach() {
-    this.syncWithSystemTheme()
+    this.value = this.getSystemTheme()
+    this.state.systemThemeWatcher.addEventListener('change', this.onSystemThemeChange)
     this.setDocumentElementClass()
   }
 
   detach() {
-    window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.onSystemThemeChange)
-  }
-
-  // ---------------------------------------------------------------------------
-  // TASKS
-  // ---------------------------------------------------------------------------
-
-  private syncWithSystemTheme() {
-    this.value = this.getSystemTheme()
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', this.onSystemThemeChange)
+    this.state.systemThemeWatcher.removeEventListener('change', this.onSystemThemeChange)
   }
 
   private setDocumentElementClass() {
@@ -31,12 +25,8 @@ export class AppTheme extends gl.Unit {
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // GENERAL
-  // ---------------------------------------------------------------------------
-
   private getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    return this.state.systemThemeWatcher.matches ? 'dark' : 'light'
   }
 
   private onSystemThemeChange() {
