@@ -34,7 +34,7 @@
     "paralayer": "^1.14.0",
     "tailwindcss": "^4.1.18",
     "vite": "npm:rolldown-vite@7.3.1",
-    "vite-plugin-rebundle": "^1.25.0"
+    "vite-plugin-rebundle": "^1.26.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.3.1"

@@ -1,6 +1,6 @@
 {
   "name": "epos-spec",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",
-    "dropcap": "^1.9.0",
+    "dropcap": "^1.10.0",
     "strip-json-comments": "^5.0.3"
   }
 }
