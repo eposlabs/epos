@@ -15,7 +15,7 @@ export type Entry = {
   id: string
   mode: Mode
   spec: Spec
-  hash: string | null // null if project has no matching resources for the given address
+  hash: string | null // `null` if project has no matching resources for the given address
   hasSidePanel: boolean
 }
 
@@ -167,7 +167,7 @@ export class Project extends sw.Unit {
     const hash = await this.$.utils.hash([
       this.mode,
       this.spec.name,
-      this.spec.alias,
+      this.spec.slug,
       this.spec.assets,
       resourcesData,
     ])

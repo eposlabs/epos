@@ -22,17 +22,15 @@ export class Projects extends gl.Unit {
   }
 
   async createEmptyProject() {
-    let name = 'new-project'
-    let title = 'New Project'
+    let name = 'New Project'
     let index = 1
     while (this.list.find(project => project.spec.name === name)) {
       index += 1
-      name = `new-project-${index}`
-      title = `New Project ${index}`
+      name = `New Project ${index}`
     }
 
     this.selectedProjectId = await epos.projects.create({
-      spec: this.$.libs.parseSpecObject({ name, title }),
+      spec: this.$.libs.parseSpecObject({ name }),
       sources: {},
       assets: {},
       mode: 'development',
@@ -45,7 +43,7 @@ export class Projects extends gl.Unit {
     let projectsData = await epos.projects.list()
 
     // Exclude `kit` project
-    projectsData = projectsData.filter(projectData => projectData.spec.name !== 'kit')
+    projectsData = projectsData.filter(projectData => projectData.spec.slug !== 'kit')
 
     // Update existing projects and add new ones
     projectsData.forEach(projectData => {

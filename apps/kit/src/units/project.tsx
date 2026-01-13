@@ -382,7 +382,7 @@ export class Project extends gl.Unit {
               !this.enabled && 'text-gray-500',
             )}
           />
-          <div className="truncate">{this.spec.alias ?? this.spec.name}</div>
+          <div className="truncate">{this.spec.name}</div>
         </SidebarMenuButton>
       </SidebarMenuItem>
     )

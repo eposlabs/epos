@@ -7,7 +7,7 @@
   "properties": {
     "$schema": { "type": "string" },
     "name": { "$ref": "#/definitions/Name" },
-    "alias": { "$ref": "#/definitions/Alias" },
+    "slug": { "$ref": "#/definitions/Slug" },
     "version": { "$ref": "#/definitions/Version" },
     "description": { "$ref": "#/definitions/Description" },
     "icon": { "$ref": "#/definitions/Icon" },
@@ -31,10 +31,11 @@
       "maxLength": 45
     },
 
-    "Alias": {
+    "Slug": {
       "type": "string",
       "minLength": 2,
-      "maxLength": 45
+      "maxLength": 45,
+      "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
     },
 
     "Version": {

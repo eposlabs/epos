@@ -43,7 +43,6 @@ export class ProjectEposGeneral extends ex.Unit {
     const container = document.createElement('div')
     container.epos = true
     container.setAttribute('data-project-name', this.$project.spec.name)
-    if (this.$project.spec.alias) container.setAttribute('data-project-alias', this.$project.spec.alias)
     container.setAttribute('data-project-id', this.$project.id)
     eposElement.append(container)
 

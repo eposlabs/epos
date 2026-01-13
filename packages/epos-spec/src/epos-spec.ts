@@ -12,7 +12,7 @@ export type Manifest = Obj
 
 export type Spec = {
   name: string
-  alias: string | null
+  slug: string
   version: string
   description: string | null
   icon: string | null
@@ -79,7 +79,7 @@ const schema = {
   keys: [
     '$schema',
     'name',
-    'alias',
+    'slug',
     'version',
     'description',
     'icon',
@@ -92,7 +92,7 @@ const schema = {
     'manifest',
   ],
   name: { min: 2, max: 45 },
-  alias: { min: 2, max: 45 },
+  slug: { min: 2, max: 45, regex: /^[a-z][a-z0-9-]*[a-z0-9]$/ },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
   popup: {
@@ -144,7 +144,7 @@ export function parseSpecObject(spec: Obj): Spec {
 
   return {
     name: parseName(spec),
-    alias: parseAlias(spec),
+    slug: parseSlug(spec),
     version: parseVersion(spec),
     description: parseDescription(spec),
     icon: parseIcon(spec),
@@ -171,17 +171,20 @@ function parseName(spec: Obj) {
   return name
 }
 
-function parseAlias(spec: Obj): string | null {
-  if (!('alias' in spec)) return null
+function parseSlug(spec: Obj) {
+  if (!('slug' in spec)) return slugify(parseName(spec))
 
-  const alias = spec.alias
-  if (!is.string(alias)) throw new Error(`'alias' must be a string`)
+  const slug = spec.slug
+  if (!is.string(slug)) throw new Error(`'slug' must be a string`)
 
-  const { min, max } = schema.alias
-  if (alias.length < min) throw new Error(`'alias' must be at least ${min} characters`)
-  if (alias.length > max) throw new Error(`'alias' must be at most ${max} characters`)
+  const { min, max, regex } = schema.slug
+  if (slug.length < min) throw new Error(`'slug' must be at least ${min} characters`)
+  if (slug.length > max) throw new Error(`'slug' must be at most ${max} characters`)
+  if (slug.toLowerCase() !== slug) throw new Error(`'slug' must be lowercase`)
+  if (!/[a-z]/.test(slug[0]!)) throw new Error(`'slug' must start with a letter`)
+  if (!regex.test(slug)) throw new Error(`'slug' must match regex: ${regex}`)
 
-  return alias
+  return slug
 }
 
 function parseVersion(spec: Obj): string {
@@ -441,4 +444,14 @@ function parsePath(path: string) {
   if (normalizedPath.startsWith('..')) throw new Error(`External paths are not allowed: "${path}"`)
 
   return normalizedPath
+}
+
+function slugify(text: string) {
+  return text
+    .toString() // Ensure it's a string
+    .toLowerCase() // Convert to lowercase
+    .trim() // Remove whitespace from both ends
+    .replace(/[^a-z0-9\s-]/g, '') // Remove all non-alphanumeric characters (except spaces and dashes)
+    .replace(/[\s-]+/g, '-') // Replace spaces and multiple dashes with a single dash
+    .replace(/^-+|-+$/g, '') // Remove leading and trailing dashes
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "Preset Project",
-  "alias": "preset",
+  "name": "Preset",
+  "slug": "preset",
   "assets": ["./public/logo.svg"],
   "targets": [
     {
