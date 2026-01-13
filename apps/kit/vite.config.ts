@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
 import { resolve } from 'node:path'
 import { paralayer } from 'paralayer'
-import { defineConfig } from 'rolldown-vite'
+import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {

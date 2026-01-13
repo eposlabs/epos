@@ -1,5 +1,5 @@
-import type { AsyncFn } from './types'
-import { Queue, is } from './utils'
+import type { AsyncFn } from './types.js'
+import { Queue, is } from './utils.js'
 
 export const _dispose_ = Symbol('dispose')
 

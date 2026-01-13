@@ -1,6 +1,6 @@
-/// <reference types="rolldown-vite/client" />
 import type * as types from 'dropcap/types'
 import type { Epos, Mode, Spec } from 'epos'
+import 'vite/client'
 
 declare global {
   var DEV: boolean

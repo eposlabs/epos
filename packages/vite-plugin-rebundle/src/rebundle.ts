@@ -1,12 +1,10 @@
-/// <reference types="rolldown-vite/client" />
 import chalk from 'chalk'
 import { is } from 'dropcap/utils'
 import { filesize } from 'filesize'
 import { rm, stat } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { getPort } from 'portfinder'
-import { rolldown, type InputOptions, type OutputOptions } from 'rolldown'
-import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
+import { rolldown, type InputOptions, type OutputBundle, type OutputOptions } from 'rolldown'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import { WebSocketServer } from 'ws'
 
@@ -85,7 +83,7 @@ export class RebundleVite {
     }
   }
 
-  private onGenerateBundle = async (_options: NormalizedOutputOptions, bundle: OutputBundle) => {
+  private onGenerateBundle = (_: any, bundle: OutputBundle) => {
     for (const chunk of this.getChunks(bundle)) {
       const originalFileName = chunk.fileName
 
@@ -101,7 +99,7 @@ export class RebundleVite {
     }
   }
 
-  private onWriteBundle = async (_output: NormalizedOutputOptions, bundle: OutputBundle) => {
+  private onWriteBundle = async (_: any, bundle: OutputBundle) => {
     // Get modified entry chunks
     const modifiedEntryChunks = this.getEntryChunks(bundle).filter(chunk => {
       const usedPaths = [chunk.fileName, ...chunk.imports]

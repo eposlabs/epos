@@ -1,4 +1,4 @@
-import { is } from './utils-is'
+import { is } from './utils-is.js'
 
 export function link<T, M extends keyof T>(target: T, method: M): T[M] {
   if (!is.function(target[method])) throw new Error(`Property '${String(method)}' is not a function`)

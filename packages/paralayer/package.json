@@ -10,9 +10,9 @@
     "vite-plugin"
   ],
   "scripts": {
-    "dev": "tsup src --dts --format esm --out-dir dist --clean --watch",
-    "build": "tsup src --dts --format esm --out-dir dist --clean",
-    "lint": "tsc --noEmit",
+    "dev": "rimraf dist && tsgo --watch",
+    "build": "rimraf dist && tsgo && chmod +x dist/bin.js",
+    "lint": "tsgo --noEmit",
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "bin": {

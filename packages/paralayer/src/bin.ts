@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import minimist from 'minimist'
-import { paralayer } from './paralayer.ts'
+import { paralayer } from './paralayer.js'
 
 const argv = minimist(process.argv.slice(2), {
   string: ['defaultLayerName'],

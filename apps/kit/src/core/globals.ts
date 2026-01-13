@@ -1,17 +1,11 @@
-/// <reference types="rolldown-vite/client" />
-import * as types from 'dropcap/types'
+import 'dropcap/types-global'
 import 'epos'
 import { Unit } from 'epos-unit'
-import './file-system-access'
+import 'vite/client'
+import 'wicg-file-system-access'
 import './file-system-observer'
 
 declare global {
-  type Obj<T = unknown> = types.Obj<T>
-  type Arr<T = unknown> = types.Arr<T>
-  type Cls<T = unknown> = types.Cls<T>
-  type Fn<T = unknown> = types.Fn<T>
-  type AsyncFn<T = unknown> = types.AsyncFn<T>
-
   const DEV: boolean
   const PROD: boolean
 

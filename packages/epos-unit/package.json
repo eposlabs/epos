@@ -7,9 +7,9 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "tsup --config ../../tsup.config.ts --watch",
-    "build": "tsup --config ../../tsup.config.ts",
-    "lint": "tsc --noEmit",
+    "dev": "rimraf dist && tsgo --watch",
+    "build": "rimraf dist && tsgo",
+    "lint": "tsgo --noEmit",
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
