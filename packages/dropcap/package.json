@@ -1,6 +1,6 @@
 {
   "name": "dropcap",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -12,9 +12,9 @@
     "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
   },
   "exports": {
-    ".": "./dist/dropcap.js",
     "./idb": "./dist/idb.js",
-    "./utils": "./dist/utils.js"
+    "./utils": "./dist/utils.js",
+    "./globals": "./dist/globals.js"
   },
   "files": [
     "dist"

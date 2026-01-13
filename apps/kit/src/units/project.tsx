@@ -307,21 +307,16 @@ export class Project extends gl.Unit {
           <ItemContent>
             <ItemTitle>Sources</ItemTitle>
             <div className="space-y-1">
-              {this.spec.targets.flatMap(t => t.resources).length === 0 && (
-                <div className="text-muted-foreground">—</div>
-              )}
-              {this.spec.targets
-                .flatMap(t => t.resources)
-                .map(resource => (
-                  <div key={resource.path} className="flex justify-between">
-                    <div>{resource.path}</div>
-                    <div className="text-muted-foreground">
-                      {this.sourcesInfo[resource.path]
-                        ? `${(this.sourcesInfo[resource.path]!.size / 1024).toFixed(2)} KB`
-                        : '—'}
-                    </div>
+              {Object.keys(this.sourcesInfo).length === 0 && <div className="text-muted-foreground">—</div>}
+
+              {Object.keys(this.sourcesInfo).map(path => (
+                <div key={path} className="flex justify-between">
+                  <div>{path}</div>
+                  <div className="text-muted-foreground">
+                    {this.sourcesInfo[path] ? `${(this.sourcesInfo[path]!.size / 1024).toFixed(2)} KB` : '—'}
                   </div>
-                ))}
+                </div>
+              ))}
 
               <Separator className="my-2 opacity-50" />
 

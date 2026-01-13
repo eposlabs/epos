@@ -1,4 +1,4 @@
-/// <reference types="chrome"/>
+/// <reference types="chrome" preserve="true" />
 import { type Spec } from 'epos-spec'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'

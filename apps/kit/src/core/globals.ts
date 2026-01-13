@@ -1,7 +1,7 @@
 /// <reference types="epos" />
-/// <reference types="dropcap" />
 /// <reference types="vite/client" />
-/// <reference types="wicg-file-system-access" />
+/// <reference types="dropcap/globals" />
+/// <reference types="wicg-file-system-access"/>
 import { Unit } from 'epos-unit'
 import './file-system-observer'
 

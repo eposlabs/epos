@@ -1,13 +1,7 @@
-/// <reference types="epos"/>
+/// <reference types="epos" />
 import { createLog, is, type Arr, type Cls, type Obj } from 'dropcap/utils'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
-
-declare global {
-  interface ErrorConstructor {
-    captureStackTrace(targetObject: object, constructorOpt?: Function): void
-  }
-}
 
 export const _root_ = Symbol('root')
 export const _parent_ = Symbol('parent')

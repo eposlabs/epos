@@ -1,5 +1,5 @@
-/// <reference types="dropcap" />
 /// <reference types="vite/client" />
+/// <reference types="dropcap/globals"/>
 import type { Epos, Mode, Spec } from 'epos'
 
 declare global {
