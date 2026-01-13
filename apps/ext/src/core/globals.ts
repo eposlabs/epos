@@ -1,6 +1,6 @@
-import type * as types from 'dropcap/types'
+/// <reference types="dropcap" />
+/// <reference types="vite/client" />
 import type { Epos, Mode, Spec } from 'epos'
-import 'vite/client'
 
 declare global {
   var DEV: boolean
@@ -17,11 +17,6 @@ declare global {
   var install: any
   var remove: any
 
-  type Obj<T = unknown> = types.Obj<T>
-  type Arr<T = unknown> = types.Arr<T>
-  type Cls<T = unknown> = types.Cls<T>
-  type Fn<T = unknown> = types.Fn<T>
-  type AsyncFn<T = unknown> = types.AsyncFn<T>
   type Url = string
 
   type PartialEpos = Omit<Epos, 'projects' | 'engine'> & {

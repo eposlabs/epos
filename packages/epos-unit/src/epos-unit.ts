@@ -1,6 +1,5 @@
-import type { Arr, Cls, Obj } from 'dropcap/types'
-import { createLog, is } from 'dropcap/utils'
-import 'epos'
+/// <reference types="epos"/>
+import { createLog, is, type Arr, type Cls, type Obj } from 'dropcap/utils'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 

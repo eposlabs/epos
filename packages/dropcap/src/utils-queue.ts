@@ -1,5 +1,5 @@
-import type { AsyncFn } from './types.js'
 import { safe } from './utils-safe.js'
+import type { AsyncFn } from './utils-types.js'
 
 export type TaskFn<T> = () => Promise<T>
 export type Task<T = any> = { fn: TaskFn<T>; result$: PromiseWithResolvers<T> }

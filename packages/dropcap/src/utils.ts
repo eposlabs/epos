@@ -6,10 +6,11 @@ import { is } from './utils-is.js'
 import { link } from './utils-link.js'
 import { Queue } from './utils-queue.js'
 import { safe, safeSync } from './utils-safe.js'
+import type { Arr, AsyncFn, Cls, Fn, Obj } from './utils-types.js'
 import { unique } from './utils-unique.js'
 import { Unit } from './utils-unit.js'
 import { wait } from './utils-wait.js'
 
-export type { Log }
+export type { Arr, AsyncFn, Cls, Fn, Log, Obj }
 
 export { colorHash, createLog, enqueue, ensureArray, is, link, Queue, safe, safeSync, unique, Unit, wait }

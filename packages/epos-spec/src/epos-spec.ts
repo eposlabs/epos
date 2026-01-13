@@ -1,6 +1,5 @@
 import { matchPattern } from 'browser-extension-url-match'
-import type { Obj } from 'dropcap/types'
-import { ensureArray, is, safeSync, unique } from 'dropcap/utils'
+import { ensureArray, is, safeSync, unique, type Obj } from 'dropcap/utils'
 import stripJsonComments from 'strip-json-comments'
 
 export type Action = true | string

@@ -1,8 +1,8 @@
-import 'dropcap/types-global'
-import 'epos'
+/// <reference types="epos" />
+/// <reference types="dropcap" />
+/// <reference types="vite/client" />
+/// <reference types="wicg-file-system-access" />
 import { Unit } from 'epos-unit'
-import 'vite/client'
-import 'wicg-file-system-access'
 import './file-system-observer'
 
 declare global {
