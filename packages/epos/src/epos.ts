@@ -32,6 +32,9 @@ export type Bundle = { spec: Spec; sources: Sources; assets: Assets }
 export type ProjectSettings = { mode: Mode; enabled: boolean }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
 export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec }
+export type ProjectFull = ProjectBase & { sources: Sources; assets: Assets }
+export type ProjectWithSources = ProjectBase & { sources: Sources }
+export type ProjectWithAssets = ProjectBase & { assets: Assets }
 // :
 export type Project<T = {}> = ProjectBase &
   (T extends { sources: true } ? { sources: Sources } : {}) &

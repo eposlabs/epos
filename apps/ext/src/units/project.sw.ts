@@ -157,6 +157,77 @@ export class Project extends sw.Unit {
     return assets
   }
 
+  async export(includeExDev = false) {
+    const fetchBlob = (path: string) => fetch(this.$.browser.runtime.getURL(path)).then(res => res.blob())
+    const jsonBlob = (data: unknown) => new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+
+    const project = {
+      env: asDev ? 'development' : 'production',
+      spec: project.spec,
+      sources: project.sources,
+    }
+
+    // Add icon
+    const icon = project.spec.icon
+      ? project.assets[project.spec.icon]
+      : await fetch(epos.browser.runtime.getURL('/icon.png')).then(res => res.blob())
+
+    if (!icon) throw this.never()
+    files['icon.png'] = icon
+    const matchPatterns = new Set<string>()
+    for (const target of project.spec.targets) {
+      for (const match of target.matches) {
+        if (match.context === 'locus') continue
+        matchPatterns.add(match.value)
+      }
+    }
+    if (matchPatterns.has('<all_urls>')) {
+      matchPatterns.clear()
+      matchPatterns.add('<all_urls>')
+    }
+    const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(res => res.text())
+    const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
+    const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
+    if (error) throw error
+    const manifest = {
+      ...engineManifest,
+      name: project.spec.name,
+      version: project.spec.version,
+      description: project.spec.description ?? '',
+      action: { default_title: project.spec.name },
+      host_permissions: [...matchPatterns],
+      // ...(bundle.spec.manifest ?? {}),
+    }
+
+    const assets = await this.getAssets()
+
+    const files = {
+      'project.json': jsonBlob(project),
+      'manifest.json': jsonBlob(manifest),
+      'icon.png': icon,
+
+      // Assets
+      ...Object.fromEntries(Object.entries(assets).map(([path, blob]) => [`assets/${path}`, blob])),
+
+      // Engine files
+      'cs.js': await fetchBlob('/cs.js'),
+      'os.js': await fetchBlob('/os.js'),
+      'sw.js': await fetchBlob('/sw.js'),
+      'vw.css': await fetchBlob('/vw.css'),
+      'vw.js': await fetchBlob('/vw.js'),
+      'ex.prod.js': await fetchBlob('/ex.prod.js'),
+      'ex-mini.prod.js': await fetchBlob('/ex-mini.prod.js'),
+      'view.html': await fetchBlob('/view.html'),
+      'system.html': await fetchBlob('/system.html'),
+      'project.html': await fetchBlob('/project.html'),
+      'offscreen.html': await fetchBlob('/offscreen.html'),
+      ...(includeExDev && {
+        'ex.dev.js': await fetchBlob('/ex.dev.js'),
+        'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
+      }),
+    }
+  }
+
   private async getHash(address?: Address) {
     const targets = this.targets.filter(target => target.test(address))
     if (targets.length === 0) return null
@@ -164,13 +235,7 @@ export class Project extends sw.Unit {
     const resources = targets.flatMap(target => target.resources)
     const resourcesData = resources.map(resource => [resource.type, this.sources[resource.path]])
 
-    const hash = await this.$.utils.hash([
-      this.mode,
-      this.spec.name,
-      this.spec.slug,
-      this.spec.assets,
-      resourcesData,
-    ])
+    const hash = await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, resourcesData])
 
     return hash
   }

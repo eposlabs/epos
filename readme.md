@@ -64,6 +64,7 @@
   - epos.projects.create
   - epos.projects.update
   - epos.projects.remove
+  - epos.projects.export
   - epos.projects.has
   - epos.projects.get
   - epos.projects.list

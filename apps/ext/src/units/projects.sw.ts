@@ -30,12 +30,13 @@ export class Projects extends sw.Unit {
     this.update = queue.wrap(this.update, this)
     this.remove = queue.wrap(this.remove, this)
 
-    this.$.bus.on('Projects.has', this.has, this)
-    this.$.bus.on('Projects.get', this.get, this)
     this.$.bus.on('Projects.getAll', this.getAll, this)
     this.$.bus.on('Projects.create', this.create, this)
     this.$.bus.on('Projects.update', this.update, this)
     this.$.bus.on('Projects.remove', this.remove, this)
+    this.$.bus.on('Projects.export', this.export, this)
+    this.$.bus.on('Projects.has', this.has, this)
+    this.$.bus.on('Projects.get', this.get, this)
     this.$.bus.on('Projects.fetch', this.fetch, this)
     this.$.bus.on('Projects.getJs', this.getJs, this)
     this.$.bus.on('Projects.getCss', this.getCss, this)
@@ -61,10 +62,6 @@ export class Projects extends sw.Unit {
     }
   }
 
-  private has(id: string) {
-    return !!this.dict[id]
-  }
-
   private async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
     if (params.id && this.dict[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
@@ -86,6 +83,16 @@ export class Projects extends sw.Unit {
     await project.dispose()
     delete this.dict[id]
     await this.$.bus.send('Projects.changed')
+  }
+
+  async export(id: string) {
+    const project = this.dict[id]
+    if (!project) return null
+    return await project.export()
+  }
+
+  private has(id: string) {
+    return !!this.dict[id]
   }
 
   private async get<T extends ProjectQuery>(id: string, query?: T) {

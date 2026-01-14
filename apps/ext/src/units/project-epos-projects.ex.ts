@@ -22,6 +22,10 @@ export class ProjectEposProjects extends ex.Unit {
     await this.$.bus.send<sw.Projects['remove']>('Projects.remove', id)
   }
 
+  async export(id: string, includeExDev = false) {
+    return await this.$.bus.send<sw.Projects['export']>('Projects.export', id, includeExDev)
+  }
+
   async has(id: string) {
     const has = await this.$.bus.send<sw.Projects['has']>('Projects.has', id)
     if (!this.$.utils.is.boolean(has)) throw this.never()

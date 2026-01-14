@@ -1,10 +1,10 @@
 import { parseSpecJson, parseSpecObject } from 'epos-spec'
-import * as fflate from 'fflate'
+import { zip } from 'fflate'
 import { nanoid } from 'nanoid'
 import stripJsonComments from 'strip-json-comments'
 
 export class Libs extends gl.Unit {
-  declare fflate: typeof fflate
+  declare fflate: { zip: typeof zip }
   declare nanoid: typeof nanoid
   declare parseSpecJson: typeof parseSpecJson
   declare parseSpecObject: typeof parseSpecObject
@@ -12,9 +12,9 @@ export class Libs extends gl.Unit {
 }
 
 Object.assign(Libs.prototype, {
+  fflate: { zip },
   nanoid,
   parseSpecJson,
   parseSpecObject,
   stripJsonComments,
-  fflate,
 })

@@ -14,6 +14,7 @@ export class Project extends gl.Unit {
   specText: string | null = null
   assetsInfo: Record<string, { size: number }> = {}
   sourcesInfo: Record<string, { size: number }> = {}
+  exporter = new gl.ProjectExporter(this)
 
   get state() {
     return {
@@ -346,6 +347,9 @@ export class Project extends gl.Unit {
   ActionsView() {
     return (
       <div className="flex flex-col items-start gap-2">
+        <Button variant="outline" size="sm" onClick={this.exporter.export}>
+          Export
+        </Button>
         <Button variant="outline" size="sm" onClick={this.toggleEnabled}>
           Toggle enabled
         </Button>
@@ -409,6 +413,9 @@ export class Project extends gl.Unit {
     },
     8() {
       this.sourcesInfo = {}
+    },
+    9() {
+      this.exporter = new gl.ProjectExporter(this)
     },
   })
 }
