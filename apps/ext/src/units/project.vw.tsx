@@ -73,10 +73,6 @@ export class Project extends vw.Unit {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------------------
-
   View = () => {
     if (!this.hash) return null
     const selected = this.$projects.selectedProjectId === this.id

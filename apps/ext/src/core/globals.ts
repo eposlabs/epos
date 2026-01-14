@@ -6,6 +6,7 @@ declare global {
   var DEV: boolean
   var PROD: boolean
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
+  var require: any
 
   // App instance for `cs`, `os`, `sw` and `vw`
   var $: any
@@ -44,5 +45,9 @@ declare global {
     __eposTabBusToken?: string | null
     __eposProjectDefs?: ProjectDef[]
     __eposOriginalGlobals?: Record<string, unknown>
+  }
+
+  interface ErrorConstructor {
+    captureStackTrace(targetObject: object, constructorOpt?: Function): void
   }
 }

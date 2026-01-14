@@ -67,10 +67,6 @@ export class Projects extends gl.Unit {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------------------
-
   SidebarView() {
     return (
       <SidebarGroup>
@@ -93,10 +89,6 @@ export class Projects extends gl.Unit {
     if (!this.selectedProject) return null
     return <this.selectedProject.View />
   }
-
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
 
   static versioner = this.defineVersioner({
     1() {

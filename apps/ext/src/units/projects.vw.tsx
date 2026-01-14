@@ -78,10 +78,6 @@ export class Projects extends vw.Unit {
     self.close()
   }
 
-  // ---------------------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------------------
-
   View = () => {
     const cn = this.$.utils.cn
     const selectedProject = this.list.find(project => project.id === this.selectedProjectId)

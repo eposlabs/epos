@@ -44,12 +44,10 @@ export class App extends gl.Unit {
 
   View() {
     return (
-      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '21rem' } as React.CSSProperties}>
         <this.SidebarView />
         <Separator orientation="vertical" />
-        <SidebarInset className="overflow-auto">
-          <this.projects.SelectedProjectView />
-        </SidebarInset>
+        <this.ContentView />
       </SidebarProvider>
     )
   }
@@ -75,6 +73,14 @@ export class App extends gl.Unit {
           <this.projects.SidebarView />
         </SidebarContent>
       </Sidebar>
+    )
+  }
+
+  ContentView() {
+    return (
+      <SidebarInset className="overflow-auto">
+        <this.projects.SelectedProjectView />
+      </SidebarInset>
     )
   }
 

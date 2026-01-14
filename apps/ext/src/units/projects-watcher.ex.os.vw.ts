@@ -37,7 +37,7 @@ export class ProjectsWatcher extends exOsVw.Unit {
     const addedProjectIds = ids2.filter(id => !e1[id])
     const removedProjectIds = ids1.filter(id => !e2[id])
     const retainedProjectIds = ids1.filter(id => e2[id])
-    const reloadedProjectIds = ids1.filter(id => e2[id] && e1[id]!.hash !== e2[id].hash)
+    const reloadedProjectIds = ids1.filter(id => e1[id] && e2[id] && e1[id].hash !== e2[id].hash)
 
     this.onData({
       entries,

@@ -185,7 +185,8 @@ export class Paralayer extends Unit {
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)
         const relativePath = relative(this.options.output, path)
-        return `import { ${[...names, ...types].join(', ')} } from '${relativePath}'`
+        const relativePathAsJs = relativePath.replace(/(.ts|.tsx|.jsx)$/, '.js')
+        return `import { ${[...names, ...types].join(', ')} } from '${relativePathAsJs}'`
       })
       .filter(Boolean)
 
@@ -226,10 +227,10 @@ export class Paralayer extends Unit {
         if (layer1.length !== layer2.length) return layer2.length - layer1.length
         return layer1.localeCompare(layer2)
       })
-      .map(layer => `import './layer.${layer}.ts'`)
+      .map(layer => `import './layer.${layer}.js'`)
 
     if (this.options.globalLayerName && topLayer !== this.options.globalLayerName) {
-      imports.unshift(`import './layer.${this.options.globalLayerName}.ts'`)
+      imports.unshift(`import './layer.${this.options.globalLayerName}.js'`)
     }
 
     return [...imports].join('\n')

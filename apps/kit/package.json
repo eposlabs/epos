@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite build --mode development",
     "build": "vite build --mode production",
-    "lint": "tsc --noEmit",
+    "lint": "tsgo --build --noEmit",
     "ui": "node scripts/ui.ts"
   },
   "dependencies": {
