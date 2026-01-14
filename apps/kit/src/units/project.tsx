@@ -253,18 +253,14 @@ export class Project extends gl.Unit {
           <ItemContent>
             <ItemTitle>Error</ItemTitle>
             <ItemDescription>{this.state.error ? this.state.error.message : '—'}</ItemDescription>
-            {!!this.state.error?.cause && (
-              <div className="text-muted-foreground">{String(this.state.error.cause)}</div>
-            )}
+            {!!this.state.error?.cause && <div className="text-muted-foreground">{String(this.state.error.cause)}</div>}
           </ItemContent>
         </Item>
 
         <Item variant="outline">
           <ItemContent>
             <ItemTitle>Directory</ItemTitle>
-            <ItemDescription>
-              {this.state.handle ? `./${this.state.handle.name}` : 'not connected'}
-            </ItemDescription>
+            <ItemDescription>{this.state.handle ? `./${this.state.handle.name}` : 'not connected'}</ItemDescription>
           </ItemContent>
         </Item>
 
@@ -294,10 +290,7 @@ export class Project extends gl.Unit {
               <div className="flex justify-between">
                 <div>Total:</div>
                 <div className="text-muted-foreground">
-                  {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
-                    2,
-                  )}{' '}
-                  KB
+                  {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
                 </div>
               </div>
             </div>
@@ -324,10 +317,7 @@ export class Project extends gl.Unit {
               <div className="flex justify-between">
                 <div>Total:</div>
                 <div className="text-muted-foreground">
-                  {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
-                    2,
-                  )}{' '}
-                  KB
+                  {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
                 </div>
               </div>
             </div>
@@ -380,11 +370,7 @@ export class Project extends gl.Unit {
       <SidebarMenuItem>
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
           <IconPointFilled
-            className={cn(
-              'text-green-500',
-              this.state.error && 'text-red-500',
-              !this.enabled && 'text-gray-500',
-            )}
+            className={cn('text-green-500', this.state.error && 'text-red-500', !this.enabled && 'text-gray-500')}
           />
           <div className="truncate">{this.spec.name}</div>
         </SidebarMenuButton>

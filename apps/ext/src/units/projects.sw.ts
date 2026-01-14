@@ -199,9 +199,7 @@ export class Projects extends sw.Unit {
   }
 
   private getLiteJs(address?: Address) {
-    const liteJsList = this.listEnabled
-      .map(project => project.getLiteJs(address))
-      .filter(this.$.utils.is.present)
+    const liteJsList = this.listEnabled.map(project => project.getLiteJs(address)).filter(this.$.utils.is.present)
     if (liteJsList.length === 0) return null
     return liteJsList.join(';\n').trim()
   }

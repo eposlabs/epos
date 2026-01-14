@@ -100,10 +100,7 @@
     },
 
     "Matches": {
-      "oneOf": [
-        { "$ref": "#/definitions/Match" },
-        { "type": "array", "items": { "$ref": "#/definitions/Match" } }
-      ]
+      "oneOf": [{ "$ref": "#/definitions/Match" }, { "type": "array", "items": { "$ref": "#/definitions/Match" } }]
     },
 
     "Match": {

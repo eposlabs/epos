@@ -66,10 +66,7 @@ export class Bus extends gl.Unit {
     let result: unknown
 
     if (this.$.env.is.sw || this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {
-      result = await this.utils.pick([
-        this.extBridge.send(name, ...args),
-        this.executeProxyActions(name, ...args),
-      ])
+      result = await this.utils.pick([this.extBridge.send(name, ...args), this.executeProxyActions(name, ...args)])
     } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
       result = await this.pageBridge.sendToTop(name, ...args)
     }

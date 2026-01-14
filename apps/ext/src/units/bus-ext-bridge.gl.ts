@@ -173,9 +173,6 @@ export class BusExtBridge extends gl.Unit {
 
   private isIgnoredError(e: unknown): boolean {
     if (!(e instanceof Error)) return false
-    return (
-      e.message.includes('Receiving end does not exist.') ||
-      e.message.includes('Extension context invalidated.')
-    )
+    return e.message.includes('Receiving end does not exist.') || e.message.includes('Extension context invalidated.')
   }
 }

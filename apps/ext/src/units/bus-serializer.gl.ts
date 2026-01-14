@@ -9,16 +9,7 @@ export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
 export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
 export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
 export type UndefinedRef = { [REF]: 'undefined' }
-
-export type Ref =
-  | BlobIdRef
-  | BlobUrlRef
-  | DateRef
-  | ErrorRef
-  | Uint16Ref
-  | Uint32Ref
-  | Uint8Ref
-  | UndefinedRef
+export type Ref = BlobIdRef | BlobUrlRef | DateRef | ErrorRef | Uint16Ref | Uint32Ref | Uint8Ref | UndefinedRef
 
 export type Storage = Map<StorageKey, unknown>
 export type StorageKey = string

@@ -7,8 +7,7 @@ export class ProjectEposStorage extends ex.Unit {
   async get<T>(key: string): Promise<T | null>
   async get<T>(name: string, key: string): Promise<T | null>
   async get<T>(...args: unknown[]) {
-    const [name, key] =
-      args.length === 1 ? [DEFAULT_NAME, args[0] as string] : [args[0] as string, args[1] as string]
+    const [name, key] = args.length === 1 ? [DEFAULT_NAME, args[0] as string] : [args[0] as string, args[1] as string]
     this.validateName(name)
     return await this.$.idb.get<T>(this.$project.id, name, key)
   }
@@ -27,8 +26,7 @@ export class ProjectEposStorage extends ex.Unit {
   async delete(key: string): Promise<void>
   async delete(name: string, key: string): Promise<void>
   async delete(...args: unknown[]) {
-    const [name, key] =
-      args.length === 1 ? [DEFAULT_NAME, args[0] as string] : [args[0] as string, args[1] as string]
+    const [name, key] = args.length === 1 ? [DEFAULT_NAME, args[0] as string] : [args[0] as string, args[1] as string]
     this.validateName(name)
     await this.$.idb.delete(this.$project.id, name, key)
   }

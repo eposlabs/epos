@@ -1,8 +1,6 @@
 import { is } from './utils-is.js'
 
-export async function safe<T>(
-  effect: (() => T | Promise<T>) | Promise<T>,
-): Promise<[T, null] | [null, Error]> {
+export async function safe<T>(effect: (() => T | Promise<T>) | Promise<T>): Promise<[T, null] | [null, Error]> {
   try {
     const result = is.function(effect) ? await effect() : await effect
     return [result, null]

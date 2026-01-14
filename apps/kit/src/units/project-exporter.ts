@@ -93,9 +93,7 @@ export class ProjectExporter extends gl.Unit {
       matchPatterns.add('<all_urls>')
     }
 
-    const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(res =>
-      res.text(),
-    )
+    const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(res => res.text())
     const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
     const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
     if (error) throw error

@@ -21,14 +21,7 @@ function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function ItemSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
-  return (
-    <Separator
-      data-slot="item-separator"
-      orientation="horizontal"
-      className={cn('my-2', className)}
-      {...props}
-    />
-  )
+  return <Separator data-slot="item-separator" orientation="horizontal" className={cn('my-2', className)} {...props} />
 }
 
 const itemVariants = cva(
@@ -126,10 +119,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="item-title"
-      className={cn(
-        'line-clamp-1 flex w-fit items-center gap-2 text-xs font-medium underline-offset-4',
-        className,
-      )}
+      className={cn('line-clamp-1 flex w-fit items-center gap-2 text-xs font-medium underline-offset-4', className)}
       {...props}
     />
   )
