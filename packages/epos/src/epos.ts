@@ -63,15 +63,10 @@ export type Res = {
   status: Response['status']
   statusText: Response['statusText']
   redirected: Response['redirected']
+  headers: Response['headers']
   text: Response['text']
   json: Response['json']
   blob: Response['blob']
-  headers: {
-    get: Response['headers']['get']
-    has: Response['headers']['has']
-    /** Get all header keys. */
-    keys: () => string[]
-  }
 }
 
 export interface Epos {

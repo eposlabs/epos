@@ -1,4 +1,4 @@
-import type { ReqInit, ResData } from './tools-fetcher.sw'
+import type { ReqInit } from './tools-fetcher.sw'
 
 export type Res = {
   ok: Response['ok']
@@ -7,59 +7,44 @@ export type Res = {
   status: Response['status']
   statusText: Response['statusText']
   redirected: Response['redirected']
+  headers: Response['headers']
   text: Response['text']
   json: Response['json']
   blob: Response['blob']
-  headers: {
-    get: Response['headers']['get']
-    has: Response['headers']['has']
-    keys: () => string[]
-  }
 }
 
 export class ToolsFetcher extends ex.Unit {
-  async fetch(url: string | URL, init?: ReqInit) {
-    url = String(url)
-    const resDataOrError = await this.$.bus.send<ResData | Error>('ToolsFetcher.fetch', url, init)
-    if (!resDataOrError) throw this.never()
+  async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
+    const res = await this.$.bus.send<sw.ToolsFetcher['fetch']>('ToolsFetcher.fetch', String(url), init)
+    if (!res) throw this.never()
+    if (this.$.utils.is.error(res)) throw res
 
-    // Error? -> Throw
-    if (this.$.utils.is.error(resDataOrError)) throw resDataOrError
-
-    // Data? -> Build Response-like object
-    const resData = resDataOrError
-    const res: Res = {
-      ok: resData.ok,
-      url: resData.url,
-      type: resData.type,
-      status: resData.status,
-      statusText: resData.statusText,
-      redirected: resData.redirected,
+    return {
+      ok: res.ok,
+      url: res.url,
+      type: res.type,
+      status: res.status,
+      statusText: res.statusText,
+      redirected: res.redirected,
+      headers: new Headers(res.headers),
       text: async () => {
-        const result = await this.$.bus.send<string>('ToolsFetcher.readAsText', resData.id)
-        if (this.$.utils.is.absent(result)) throw this.never()
-        if (this.$.utils.is.error(result)) throw result
-        return result
+        const text = await this.$.bus.send<sw.ToolsFetcher['readAsText']>('ToolsFetcher.readAsText', res.id)
+        if (this.$.utils.is.absent(text)) throw this.never()
+        if (this.$.utils.is.error(text)) throw text
+        return text
       },
       json: async () => {
-        const result = await this.$.bus.send<unknown>('ToolsFetcher.readAsJson', resData.id)
-        if (this.$.utils.is.absent(result)) throw this.never()
-        if (this.$.utils.is.error(result)) throw result
-        return result
+        const json = await this.$.bus.send<sw.ToolsFetcher['readAsJson']>('ToolsFetcher.readAsJson', res.id)
+        if (this.$.utils.is.absent(json)) throw this.never()
+        if (this.$.utils.is.error(json)) throw json
+        return json
       },
       blob: async () => {
-        const result = await this.$.bus.send<Blob>('ToolsFetcher.readAsBlob', resData.id)
-        if (this.$.utils.is.absent(result)) throw this.never()
-        if (this.$.utils.is.error(result)) throw result
-        return result
-      },
-      headers: {
-        get: (key: string) => resData.headers[key.toLowerCase()] ?? null,
-        has: (key: string) => key.toLowerCase() in resData.headers,
-        keys: () => Object.keys(resData.headers),
+        const blob = await this.$.bus.send<sw.ToolsFetcher['readAsBlob']>('ToolsFetcher.readAsBlob', res.id)
+        if (this.$.utils.is.absent(blob)) throw this.never()
+        if (this.$.utils.is.error(blob)) throw res
+        return blob
       },
     }
-
-    return res
   }
 }
