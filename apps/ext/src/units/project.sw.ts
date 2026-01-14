@@ -1,6 +1,16 @@
 import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
 import type { Address } from './project-target.sw'
 
+export const ENGINE_MANDATORY_PERMISSIONS = [
+  'alarms',
+  'declarativeNetRequest',
+  'offscreen',
+  'scripting',
+  'tabs',
+  'unlimitedStorage',
+  'webNavigation',
+]
+
 // Data saved to IndexedDB
 export type Snapshot = {
   id: string
@@ -28,6 +38,7 @@ export class Project extends sw.Unit {
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
+  static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
   static async new(parent: sw.Unit, params: { id?: string } & Partial<ProjectSettings> & Bundle) {
     const project = new Project(parent, params)
@@ -157,52 +168,72 @@ export class Project extends sw.Unit {
     return assets
   }
 
-  async export(includeExDev = false) {
-    const fetchBlob = (path: string) => fetch(this.$.browser.runtime.getURL(path)).then(res => res.blob())
+  async export(mode: Mode = 'production'): Promise<Record<string, Blob>> {
+    const fetchBlob = (path: string) => fetch(path).then(res => res.blob())
     const jsonBlob = (data: unknown) => new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
 
-    const project = {
-      env: asDev ? 'development' : 'production',
-      spec: project.spec,
-      sources: project.sources,
+    // Prepare project snapshot
+    const snapshot: Snapshot = {
+      id: this.id,
+      mode: mode,
+      enabled: true,
+      spec: this.spec,
+      sources: this.sources,
     }
 
-    // Add icon
-    const icon = project.spec.icon
-      ? project.assets[project.spec.icon]
-      : await fetch(epos.browser.runtime.getURL('/icon.png')).then(res => res.blob())
+    // Get project assets
+    const assets = await this.getAssets()
 
-    if (!icon) throw this.never()
-    files['icon.png'] = icon
+    // Prepare project icon
+    const iconFromAssets = this.spec.icon ? assets[this.spec.icon] : null
+    const icon = iconFromAssets ? await this.prepareIcon(iconFromAssets) : await fetchBlob('/icon.png')
+
+    // Extract match patterns from targets
     const matchPatterns = new Set<string>()
-    for (const target of project.spec.targets) {
+    for (const target of this.spec.targets) {
       for (const match of target.matches) {
         if (match.context === 'locus') continue
         matchPatterns.add(match.value)
       }
     }
+
+    // Match patterns include `<all_urls>`? ->  Keep `<all_urls>` only
     if (matchPatterns.has('<all_urls>')) {
       matchPatterns.clear()
       matchPatterns.add('<all_urls>')
     }
-    const engineManifestText = await fetch(epos.browser.runtime.getURL('/manifest.json')).then(res => res.text())
+
+    // Prepare mandatory permissions
+    const mandatoryPermissions = [...ENGINE_MANDATORY_PERMISSIONS]
+    if (this.hasSidePanel()) mandatoryPermissions.push('sidePanel')
+
+    // Read engine's manifest.json
+    const engineManifestText = await fetch('/manifest.json').then(res => res.text())
     const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
-    const [engineManifest, error] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
-    if (error) throw error
+    const [engineManifest] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
+    if (!engineManifest) throw this.never()
+
+    // Generate manifest object
     const manifest = {
       ...engineManifest,
-      name: project.spec.name,
-      version: project.spec.version,
-      description: project.spec.description ?? '',
-      action: { default_title: project.spec.name },
+      name: this.spec.name,
+      version: this.spec.version,
+      description: this.spec.description ?? '',
+      action: { default_title: this.spec.name },
       host_permissions: [...matchPatterns],
-      // ...(bundle.spec.manifest ?? {}),
+      permissions: [...mandatoryPermissions, ...this.spec.permissions.mandatory],
+      optional_permissions: this.spec.permissions.optional,
     }
 
-    const assets = await this.getAssets()
+    // Override with spec's manifest if provided
+    if (this.spec.manifest) {
+      const permissions = this.$.utils.is.array(this.spec.manifest.permissions) ? this.spec.manifest.permissions : []
+      const allPermissions = this.$.utils.unique([...mandatoryPermissions, ...permissions])
+      Object.assign(manifest, this.spec.manifest, { permissions: allPermissions })
+    }
 
-    const files = {
-      'project.json': jsonBlob(project),
+    return {
+      'project.json': jsonBlob(snapshot),
       'manifest.json': jsonBlob(manifest),
       'icon.png': icon,
 
@@ -213,15 +244,15 @@ export class Project extends sw.Unit {
       'cs.js': await fetchBlob('/cs.js'),
       'os.js': await fetchBlob('/os.js'),
       'sw.js': await fetchBlob('/sw.js'),
-      'vw.css': await fetchBlob('/vw.css'),
       'vw.js': await fetchBlob('/vw.js'),
+      'vw.css': await fetchBlob('/vw.css'),
       'ex.prod.js': await fetchBlob('/ex.prod.js'),
       'ex-mini.prod.js': await fetchBlob('/ex-mini.prod.js'),
       'view.html': await fetchBlob('/view.html'),
       'system.html': await fetchBlob('/system.html'),
       'project.html': await fetchBlob('/project.html'),
       'offscreen.html': await fetchBlob('/offscreen.html'),
-      ...(includeExDev && {
+      ...(mode === 'development' && {
         'ex.dev.js': await fetchBlob('/ex.dev.js'),
         'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       }),
@@ -231,13 +262,9 @@ export class Project extends sw.Unit {
   private async getHash(address?: Address) {
     const targets = this.targets.filter(target => target.test(address))
     if (targets.length === 0) return null
-
     const resources = targets.flatMap(target => target.resources)
     const resourcesData = resources.map(resource => [resource.type, this.sources[resource.path]])
-
-    const hash = await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, resourcesData])
-
-    return hash
+    return await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, resourcesData])
   }
 
   private async saveSnapshot() {
@@ -342,5 +369,26 @@ export class Project extends sw.Unit {
     const chunks = []
     for (let i = 0; i < text.length; i += chunkSize) chunks.push(text.slice(i, i + chunkSize))
     return chunks
+  }
+
+  private async prepareIcon(blob: Blob, { size = 128, type = 'image/png' } = {}) {
+    const image = await createImageBitmap(blob)
+    const canvas = new OffscreenCanvas(size, size)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw this.never()
+    ctx.clearRect(0, 0, size, size)
+
+    // Calculate resulting width and height
+    const ratio = image.width / image.height
+    const width = ratio > 1 ? size : size * ratio
+    const height = ratio > 1 ? size / ratio : size
+
+    // Draw as `object-fit: contain`
+    const offsetX = (size - width) / 2
+    const offsetY = (size - height) / 2
+    ctx.drawImage(image, offsetX, offsetY, width, height)
+
+    // Convert to png blob
+    return await canvas.convertToBlob({ type })
   }
 }

@@ -111,6 +111,7 @@ export class ProjectEpos extends ex.Unit {
           create: this.$.utils.link(this.projects, 'create'),
           update: this.$.utils.link(this.projects, 'update'),
           remove: this.$.utils.link(this.projects, 'remove'),
+          export: this.$.utils.link(this.projects, 'export'),
           has: this.$.utils.link(this.projects, 'has'),
           get: this.$.utils.link(this.projects, 'get'),
           list: this.$.utils.link(this.projects, 'list'),

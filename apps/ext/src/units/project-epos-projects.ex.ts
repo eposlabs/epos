@@ -1,4 +1,4 @@
-import type { Bundle, Project, ProjectQuery, ProjectSettings } from 'epos'
+import type { Bundle, Mode, Project, ProjectQuery, ProjectSettings } from 'epos'
 
 export class ProjectEposProjects extends ex.Unit {
   private handlers: (() => void)[] = []
@@ -22,8 +22,10 @@ export class ProjectEposProjects extends ex.Unit {
     await this.$.bus.send<sw.Projects['remove']>('Projects.remove', id)
   }
 
-  async export(id: string, includeExDev = false) {
-    return await this.$.bus.send<sw.Projects['export']>('Projects.export', id, includeExDev)
+  async export(id: string, mode: Mode = 'production') {
+    const files = await this.$.bus.send<sw.Projects['export']>('Projects.export', id, mode)
+    if (!files) throw this.never()
+    return files
   }
 
   async has(id: string) {

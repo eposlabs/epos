@@ -85,10 +85,10 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  async export(id: string) {
+  async export(id: string, mode: Mode = 'production') {
     const project = this.dict[id]
     if (!project) return null
-    return await project.export()
+    return await project.export(mode)
   }
 
   private has(id: string) {
@@ -277,42 +277,38 @@ export class Projects extends sw.Unit {
   }
 
   private async loadProjects() {
-    // From idb
+    // Restore projects from IndexedDB if any
     const ids = await this.$.idb.listDatabases()
+    this.log('ids', ids)
     for (const id of ids) {
       const project = await sw.Project.restore(this, id)
       if (!project) continue
       this.dict[id] = project
     }
 
-    // ---- from files
-    // TODO: support id instead of name
     const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
+    this.log('snapshot', snapshot)
     if (!snapshot) return
 
-    const name = snapshot.spec.name
-    const project = this.dict[name]
-
-    // // Already latest version? -> Skip
+    // Already at the latest version? -> Skip
+    const project = this.dict[snapshot.id]
+    this.log('project version:', project ? project.spec.version : '—')
+    this.log('snapshot version:', snapshot.spec.version)
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
-    // // Load assets
-    // const assets: Assets = {}
-    // for (const path of snapshot.spec.assets) {
-    //   const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(r => r.blob()))
-    //   if (!blob) continue
-    //   assets[path] = blob
-    // }
+    // Fetch assets
+    const assets: Assets = {}
+    for (const path of snapshot.spec.assets) {
+      const [blob] = await this.$.utils.safe(fetch(`/assets/${path}`).then(res => res.blob()))
+      if (!blob) continue
+      assets[path] = blob
+    }
 
-    // private async upsert(id: string, bundle: Bundle, dev = false) {
-    //   if (this.dict[id]) {
-    //     this.dict[id].update(bundle)
-    //   } else {
-    //     this.dict[id] = await sw.Project.new(this, id, { ...bundle, dev })
-    //   }
-    // }
-
-    // await this.upsert(name, { ...snapshot, assets })
+    if (this.has(snapshot.id)) {
+      await this.update(snapshot.id, { ...snapshot, assets })
+    } else {
+      await this.create({ ...snapshot, assets })
+    }
   }
 
   private async disableCsp() {

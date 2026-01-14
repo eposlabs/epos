@@ -1,4 +1,4 @@
-/// <reference types="chrome" preserve="true" />
+import 'chrome'
 import { type Spec } from 'epos-spec'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
@@ -223,6 +223,7 @@ export interface Epos {
     create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T>
     update(id: string, updates: Partial<ProjectSettings & Bundle>): Promise<void>
     remove(id: string): Promise<void>
+    export(id: string, mode?: Mode): Promise<Record<string, Blob>>
     has(id: string): Promise<boolean>
     get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
     list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
