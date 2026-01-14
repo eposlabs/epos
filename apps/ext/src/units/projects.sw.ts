@@ -260,10 +260,6 @@ export class Projects extends sw.Unit {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // TASKS
-  // ---------------------------------------------------------------------------
-
   private async loadEx() {
     // Development versions are absent for standalone projects
     const [exFullDev] = await this.$.utils.safe(fetch('/ex.dev.js').then(res => res.text()))
@@ -279,21 +275,18 @@ export class Projects extends sw.Unit {
   private async loadProjects() {
     // Restore projects from IndexedDB if any
     const ids = await this.$.idb.listDatabases()
-    this.log('ids', ids)
     for (const id of ids) {
       const project = await sw.Project.restore(this, id)
       if (!project) continue
       this.dict[id] = project
     }
 
+    // Read project's snapshot from `project.json`
     const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
-    this.log('snapshot', snapshot)
     if (!snapshot) return
 
     // Already at the latest version? -> Skip
     const project = this.dict[snapshot.id]
-    this.log('project version:', project ? project.spec.version : '—')
-    this.log('snapshot version:', snapshot.spec.version)
     if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
 
     // Fetch assets
@@ -304,6 +297,7 @@ export class Projects extends sw.Unit {
       assets[path] = blob
     }
 
+    // Create or update project from the snapshot
     if (this.has(snapshot.id)) {
       await this.update(snapshot.id, { ...snapshot, assets })
     } else {
@@ -395,10 +389,6 @@ export class Projects extends sw.Unit {
       }
     })
   }
-
-  // ---------------------------------------------------------------------------
-  // HELPERS
-  // ---------------------------------------------------------------------------
 
   private compareSemver(semver1: string, semver2: string) {
     const parts1 = semver1.split('.').map(Number)

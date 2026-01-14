@@ -50,7 +50,6 @@ export class Project extends os.Unit {
     this.removeBackground()
   }
 
-  // ---------------------------------------------------------------------------
   // BACKGROUND MANAGEMENT
   // ---------------------------------------------------------------------------
 
@@ -111,8 +110,7 @@ export class Project extends os.Unit {
     return this.$.env.url.project({ id: this.id, locus: 'background', mode: this.mode })
   }
 
-  // ---------------------------------------------------------------------------
-  // FRAMES MANAGEMENT
+  // FRAME MANAGEMENT
   // ---------------------------------------------------------------------------
 
   private getFrames(): Frame[] {
@@ -217,7 +215,6 @@ export class Project extends os.Unit {
     }
   }
 
-  // ---------------------------------------------------------------------------
   // HELPERS
   // ---------------------------------------------------------------------------
 

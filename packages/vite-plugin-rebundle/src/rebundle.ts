@@ -154,10 +154,6 @@ export class RebundleVite {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // HELPERS
-  // ---------------------------------------------------------------------------
-
   private get dist() {
     if (!this.config) throw 'never'
     return this.config.build.outDir

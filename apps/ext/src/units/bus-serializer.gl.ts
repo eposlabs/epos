@@ -35,8 +35,7 @@ export class BusSerializer extends gl.Unit {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // SANITIZE
+  // SERIALIZE
   // ---------------------------------------------------------------------------
 
   sanitize(data: unknown) {
@@ -68,8 +67,7 @@ export class BusSerializer extends gl.Unit {
     return this.populate(JSON.parse(json), storage)
   }
 
-  // ---------------------------------------------------------------------------
-  // SERIALIZE
+  // SANITIZE
   // ---------------------------------------------------------------------------
 
   serialize(data: unknown) {
@@ -125,7 +123,6 @@ export class BusSerializer extends gl.Unit {
     })
   }
 
-  // ---------------------------------------------------------------------------
   // DESERIALIZE
   // ---------------------------------------------------------------------------
 
@@ -205,8 +202,7 @@ export class BusSerializer extends gl.Unit {
     return this.populate(data, storage)
   }
 
-  // ---------------------------------------------------------------------------
-  // MISC
+  // HELPERS
   // ---------------------------------------------------------------------------
 
   async blobIdToObjectUrl(blobId: string) {

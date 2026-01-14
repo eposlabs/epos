@@ -1,4 +1,5 @@
 import { enqueue, is, link, Queue, safe, safeSync, wait } from 'dropcap/utils'
+import { zip } from './utils-zip.js'
 
 export class Utils extends gl.Unit {
   declare enqueue: typeof enqueue
@@ -8,6 +9,7 @@ export class Utils extends gl.Unit {
   declare safe: typeof safe
   declare safeSync: typeof safeSync
   declare wait: typeof wait
+  declare zip: typeof zip
 }
 
 Object.assign(Utils.prototype, {
@@ -18,4 +20,5 @@ Object.assign(Utils.prototype, {
   safe,
   safeSync,
   wait,
+  zip,
 })

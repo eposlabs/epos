@@ -21,11 +21,7 @@ export class Learn extends gl.Unit {
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // VERSIONER
-  // ---------------------------------------------------------------------------
-
-  static versioner = {
+  static versioner = this.defineVersioner({
     1(this: Learn) {
       this.permissions = []
     },
@@ -54,5 +50,5 @@ export class Learn extends gl.Unit {
         new gl.Permission(this, 'storage'),
       ]
     },
-  }
+  })
 }

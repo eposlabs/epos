@@ -14,7 +14,6 @@ export class Project extends gl.Unit {
   specText: string | null = null
   assetsInfo: Record<string, { size: number }> = {}
   sourcesInfo: Record<string, { size: number }> = {}
-  exporter = new gl.ProjectExporter(this)
 
   get state() {
     return {
@@ -205,6 +204,15 @@ export class Project extends gl.Unit {
     return fileHandle
   }
 
+  private async export() {
+    const files = await epos.projects.export(this.id, 'production')
+    const zip = await this.$.utils.zip(files)
+    const url = URL.createObjectURL(zip)
+    const filename = `${this.spec.slug}-${this.spec.version}.zip`
+    await epos.browser.downloads.download({ url, filename })
+    URL.revokeObjectURL(url)
+  }
+
   View() {
     if (!this.state.ready) return <this.LoadingView />
     return (
@@ -337,7 +345,7 @@ export class Project extends gl.Unit {
   ActionsView() {
     return (
       <div className="flex flex-col items-start gap-2">
-        <Button variant="outline" size="sm" onClick={this.exporter.export}>
+        <Button variant="outline" size="sm" onClick={this.export}>
           Export
         </Button>
         <Button variant="outline" size="sm" onClick={this.toggleEnabled}>
@@ -400,8 +408,11 @@ export class Project extends gl.Unit {
     8() {
       this.sourcesInfo = {}
     },
-    9() {
-      this.exporter = new gl.ProjectExporter(this)
+    9(this: any) {
+      this.exporter = {}
+    },
+    10(this: any) {
+      delete this.exporter
     },
   })
 }

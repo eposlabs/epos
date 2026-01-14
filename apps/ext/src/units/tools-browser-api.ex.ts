@@ -51,7 +51,6 @@ export class ToolsBrowserApi extends ex.Unit {
     return value
   }
 
-  // ---------------------------------------------------------------------------
   // MANAGE LISTENERS
   // ---------------------------------------------------------------------------
 
@@ -97,7 +96,6 @@ export class ToolsBrowserApi extends ex.Unit {
     return `${apiPath.join('.')}[`
   }
 
-  // ---------------------------------------------------------------------------
   // CALL METHOD
   // ---------------------------------------------------------------------------
 
@@ -126,8 +124,7 @@ export class ToolsBrowserApi extends ex.Unit {
     return this.$.bus.send('ToolsBrowser.callMethod', apiPath, methodName, ...args)
   }
 
-  // ---------------------------------------------------------------------------
-  // BROWSER API OVERWRITES
+  // BROWSER API OVERRIDES
   // ---------------------------------------------------------------------------
 
   private 'runtime.getURL'(path: string) {
