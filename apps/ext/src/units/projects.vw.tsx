@@ -90,18 +90,21 @@ export class Projects extends vw.Unit {
 
     return (
       <div
-        className={cn('flex flex-col font-[system-ui] text-[13px]', this.$.env.is.vwSidePanel && 'h-screen w-screen')}
+        className={cn(
+          'flex flex-col font-[system-ui] text-[12px] font-medium',
+          this.$.env.is.vwSidePanel && 'h-screen w-screen',
+        )}
       >
         {/* Header */}
         {hasHeader && (
-          <div className="flex h-8 shrink-0 items-center justify-between bg-black text-white">
-            {/* Single project title */}
-            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.spec.name}</div>}
+          <div className="flex h-7 shrink-0 items-center justify-between bg-black text-white">
+            {/* Single project name */}
+            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.spec.name} ▾▾▾▾</div>}
 
             {/* Dropdown */}
             {dropdownProjects.length > 1 && (
               <div
-                className={cn('relative flex h-full items-center gap-1.5 px-2.5', this.$.env.is.vwSidePanel && 'pl-3')}
+                className={cn('relative flex h-full items-center gap-1 px-2.5', this.$.env.is.vwSidePanel && 'pl-3')}
               >
                 <div className="text-nowrap">{selectedProject?.spec.name ?? 'SELECT ACTION'}</div>
                 <svg
@@ -109,10 +112,10 @@ export class Projects extends vw.Unit {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="3"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  className="relative top-px size-3.5"
+                  className="relative top-px size-3"
                 >
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path d="M6 9l6 6l6 -6" />

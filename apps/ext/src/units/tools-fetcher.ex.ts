@@ -15,7 +15,8 @@ export type Res = {
 
 export class ToolsFetcher extends ex.Unit {
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
-    const res = await this.$.bus.send<sw.ToolsFetcher['fetch']>('ToolsFetcher.fetch', String(url), init)
+    const href = new URL(String(url), location.href).href
+    const res = await this.$.bus.send<sw.ToolsFetcher['fetch']>('ToolsFetcher.fetch', href, init)
     if (!res) throw this.never()
     if (this.$.utils.is.error(res)) throw res
 

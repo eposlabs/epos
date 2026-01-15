@@ -29,10 +29,10 @@ export class ToolsFetcher extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('ToolsFetcher.fetch', this.fetch)
-    this.$.bus.on('ToolsFetcher.readAsText', this.readAsText)
-    this.$.bus.on('ToolsFetcher.readAsJson', this.readAsJson)
-    this.$.bus.on('ToolsFetcher.readAsBlob', this.readAsBlob)
+    this.$.bus.on('ToolsFetcher.fetch', this.fetch, this)
+    this.$.bus.on('ToolsFetcher.readAsText', this.readAsText, this)
+    this.$.bus.on('ToolsFetcher.readAsJson', this.readAsJson, this)
+    this.$.bus.on('ToolsFetcher.readAsBlob', this.readAsBlob, this)
   }
 
   async fetch(url: string | URL, init?: ReqInit): Promise<ResData | Error> {

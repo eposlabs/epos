@@ -1,6 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "x2",
+  "name": "Test Project X2",
+  "slug": "x2",
   "version": "0.0.2",
   "action": "https://epos.dev/@x2",
   "matches": ["<sidePanel>", "<popup>"],

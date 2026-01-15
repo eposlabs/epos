@@ -98,7 +98,7 @@ const schema = {
   popup: {
     keys: ['width', 'height'],
     width: { min: 150, max: 800, default: 380 },
-    height: { min: 150, max: 600 - 8 * 4, default: 600 - 8 * 4 },
+    height: { min: 150, max: 600 - 7 * 4, default: 600 - 7 * 4 },
   },
   config: {
     keys: ['access', 'preloadAssets', 'allowMissingModels'],

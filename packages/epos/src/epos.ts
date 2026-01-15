@@ -195,7 +195,8 @@ export interface Epos {
 
   // Env
   env: {
-    tabId: number
+    /** `tabId` is `null` for `<background>` and iframes. */
+    tabId: number | null
     project: { id: string; mode: Mode; spec: Spec }
     isPopup: boolean
     isSidePanel: boolean
