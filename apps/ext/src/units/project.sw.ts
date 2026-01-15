@@ -104,7 +104,7 @@ export class Project extends sw.Unit {
 
     // Extract and prepare CSS
     const cssResources = matchingResources.filter(resource => resource.type === 'css')
-    const cssPaths = this.$.utils.unique(cssResources.map(resource => resource.path))
+    const cssPaths = cssResources.map(resource => resource.path)
     return cssPaths.map(path => this.sources[path]).join('\n')
   }
 
@@ -116,7 +116,7 @@ export class Project extends sw.Unit {
 
     // Extract and prepare lite JS
     const liteJsResources = matchingResources.filter(resource => resource.type === 'lite-js')
-    const liteJsPaths = this.$.utils.unique(liteJsResources.map(resource => resource.path))
+    const liteJsPaths = liteJsResources.map(resource => resource.path)
     return liteJsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
   }
 
@@ -128,12 +128,12 @@ export class Project extends sw.Unit {
 
     // Extract and prepare shadow CSS
     const shadowCssResources = matchingResources.filter(resource => resource.type === 'shadow-css')
-    const shadowCssPaths = this.$.utils.unique(shadowCssResources.map(resource => resource.path))
+    const shadowCssPaths = shadowCssResources.map(resource => resource.path)
     const shadowCss = shadowCssPaths.map(path => this.sources[path]).join('\n')
 
     // Extract and prepare JS
     const jsResources = matchingResources.filter(resource => resource.type === 'js')
-    const jsPaths = this.$.utils.unique(jsResources.map(resource => resource.path))
+    const jsPaths = jsResources.map(resource => resource.path)
     const js = jsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
 
     return [
@@ -312,8 +312,9 @@ export class Project extends sw.Unit {
       // Get target's lite JS code
       const target = this.targets[targetIndex]
       if (!target) throw this.never()
-      const resources = target.resources.filter(resource => resource.type === 'lite-js')
-      const liteJs = resources.map(resource => this.sources[resource.path]).join('\n')
+      const liteJsResources = target.resources.filter(resource => resource.type === 'lite-js')
+      const liteJsPaths = liteJsResources.map(resource => resource.path)
+      const liteJs = liteJsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
       if (!liteJs) continue
 
       // Compress and split lite JS into chunks (fit browser's cookie size limit)

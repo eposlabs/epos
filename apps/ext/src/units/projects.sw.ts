@@ -220,20 +220,20 @@ export class Projects extends sw.Unit {
 
     // Has popup? -> Open popup
     if (this.listEnabled.some(project => project.hasPopup())) {
-      await this.$.tools.medium.openPopup(tab.id)
+      await this.$.medium.openPopup(tab.id)
       return
     }
 
     // Has side panel? -> Toggle side panel
     if (this.listEnabled.some(project => project.hasSidePanel())) {
-      await this.$.tools.medium.toggleSidePanel(tab.id)
+      await this.$.medium.toggleSidePanel(tab.id)
       return
     }
 
     // Several actions? -> Open popup
     const projectsWithAction = this.listEnabled.filter(project => project.spec.action)
     if (projectsWithAction.length > 1) {
-      await this.$.tools.medium.openPopup(tab.id)
+      await this.$.medium.openPopup(tab.id)
       return
     }
 
@@ -245,7 +245,7 @@ export class Projects extends sw.Unit {
         const projectEposBus = this.$.bus.use(`ProjectEpos[${project.id}]`)
         await projectEposBus.send(':action', tab)
       } else if (this.$.utils.is.string(project.spec.action)) {
-        await this.$.tools.medium.openTab(project.spec.action)
+        await this.$.medium.openTab(project.spec.action)
       }
     }
 

@@ -7,11 +7,13 @@ export class App extends sw.Unit {
 
   alive = new sw.Alive(this)
   dev = new gl.Dev(this)
+  ext = new sw.Ext(this)
+  fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
+  medium = new swVw.Medium(this)
   net = new sw.Net(this)
   peer = new sw.Peer(this)
   projects = new sw.Projects(this)
-  tools = new sw.Tools(this)
 
   async init() {
     self.$ = this

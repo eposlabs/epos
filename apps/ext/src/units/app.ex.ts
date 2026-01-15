@@ -6,10 +6,11 @@ export class App extends ex.Unit {
   bus = new gl.Bus(this)
 
   dev = new gl.Dev(this)
+  ext = new ex.Ext(this)
+  fetcher = new ex.Fetcher(this)
   idb = new ex.Idb(this)
   peer = new exOs.Peer(this)
   projects = new ex.Projects(this)
-  tools = new ex.Tools(this)
 
   async init() {
     if (this.$.env.is.dev) self.$epos = this

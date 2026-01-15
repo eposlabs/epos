@@ -1,14 +1,14 @@
-export class ToolsMedium extends swVw.Unit {
+export class Medium extends swVw.Unit {
   constructor(parent: swVw.Unit) {
     super(parent)
 
     if (this.$.env.is.vwPopup) {
-      this.$.bus.on('ToolsMedium.isPopupOpen', () => true)
-      this.$.bus.on('ToolsMedium.closePopup', () => self.close())
+      this.$.bus.on('Medium.isPopupOpen', () => true)
+      this.$.bus.on('Medium.closePopup', () => self.close())
     } else if (this.$.env.is.vwSidePanel) {
       const tabId = Number(this.$.env.params.tabId)
       if (!tabId) throw this.never()
-      this.$.bus.on(`ToolsMedium.isSidePanelOpen[${tabId}]`, () => true)
+      this.$.bus.on(`Medium.isSidePanelOpen[${tabId}]`, () => true)
     }
   }
 
@@ -42,7 +42,7 @@ export class ToolsMedium extends swVw.Unit {
     if (this.$.env.is.vwPopup) {
       self.close()
     } else {
-      await this.$.bus.send('ToolsMedium.closePopup')
+      await this.$.bus.send('Medium.closePopup')
     }
   }
 
@@ -61,7 +61,7 @@ export class ToolsMedium extends swVw.Unit {
   }
 
   async toggleSidePanel(tabId: number) {
-    const wasOpenPromise = this.$.bus.send(`ToolsMedium.isSidePanelOpen[${tabId}]`)
+    const wasOpenPromise = this.$.bus.send(`Medium.isSidePanelOpen[${tabId}]`)
     await this.openSidePanel(tabId)
     const wasOpen = await wasOpenPromise
     if (wasOpen) await this.closeSidePanel(tabId)

@@ -1,11 +1,11 @@
-import type { PermissionResult } from './tools-browser.sm.js'
+import type { PermissionResult } from './ext.sm.js'
 
 export const _id_ = Symbol('id')
 
 export type Root = typeof chrome
 export type Callback = Fn & { [_id_]?: string }
 
-export class ToolsBrowserApi extends ex.Unit {
+export class ExtApi extends ex.Unit {
   root!: Root
 
   // @ts-ignore
@@ -23,7 +23,7 @@ export class ToolsBrowserApi extends ex.Unit {
   }
 
   private async createRoot() {
-    const tree = await this.$.bus.send<Obj>('ToolsBrowser.getApiTree')
+    const tree = await this.$.bus.send<Obj>('Ext.getApiTree')
     return this.build(tree) as Root
   }
 
@@ -62,8 +62,8 @@ export class ToolsBrowserApi extends ex.Unit {
     if (this.listenerIds.has(listenerId)) return
 
     this.listenerIds.add(listenerId)
-    this.$.bus.on(`ToolsBrowser.listener[${listenerId}]`, cb)
-    void this.$.bus.send('ToolsBrowser.registerListener', this.$.peer.id, listenerId, apiPath)
+    this.$.bus.on(`Ext.listener[${listenerId}]`, cb)
+    void this.$.bus.send('Ext.registerListener', this.$.peer.id, listenerId, apiPath)
   }
 
   private hasListener(apiPath: string[], cb: Callback) {
@@ -83,9 +83,9 @@ export class ToolsBrowserApi extends ex.Unit {
     const listenerId = this.buildListenerId(apiPath, cb)
     if (!this.listenerIds.has(listenerId)) return
 
-    this.$.bus.off(`ToolsBrowser.listener[${listenerId}]`)
+    this.$.bus.off(`Ext.listener[${listenerId}]`)
     this.listenerIds.delete(listenerId)
-    void this.$.bus.send('ToolsBrowser.unregisterListener', listenerId)
+    void this.$.bus.send('Ext.unregisterListener', listenerId)
   }
 
   private buildListenerId(apiPath: string[], cb: Callback) {
@@ -114,14 +114,14 @@ export class ToolsBrowserApi extends ex.Unit {
     }
     // else if (getter === 'declarativeNetRequest.updateSessionRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('ToolsBrowser.updateSessionRules', options)
+    //   return this.$.bus.send('Ext.updateSessionRules', options)
     // } else if (getter === 'declarativeNetRequest.updateDynamicRules') {
     //   const options = args[0] as UpdateRuleOptions
-    //   return this.$.bus.send('ToolsBrowser.updateDynamicRules', options)
+    //   return this.$.bus.send('Ext.updateDynamicRules', options)
     // }
 
     // Call method via `sw`
-    return this.$.bus.send('ToolsBrowser.callMethod', apiPath, methodName, ...args)
+    return this.$.bus.send('Ext.callMethod', apiPath, methodName, ...args)
   }
 
   // BROWSER API OVERRIDES
@@ -153,11 +153,11 @@ export class ToolsBrowserApi extends ex.Unit {
     await this.$.bus.waitSignal('App.ready[system:permission]')
 
     // Request permissions
-    const request = this.$.bus.send<PermissionResult>('ToolsBrowser.requestPermissions', opts)
+    const request = this.$.bus.send<PermissionResult>('Ext.requestPermissions', opts)
     const [result, error] = await this.$.utils.safe(request)
 
     // Close permission tab
-    await this.$.bus.send('ToolsBrowser.closePermissionTab')
+    await this.$.bus.send('Ext.closePermissionTab')
 
     // Error? -> Throw
     if (error) throw error

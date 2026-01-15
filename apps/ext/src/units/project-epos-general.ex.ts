@@ -4,7 +4,7 @@ import type { Container } from 'react-dom/client'
 export class ProjectEposGeneral extends ex.Unit {
   private $project = this.closest(ex.Project)!
   declare browser: typeof chrome
-  fetch = this.$.utils.link(this.$.tools.fetcher, 'fetch')
+  fetch = this.$.utils.link(this.$.fetcher, 'fetch')
   container = this.createProjectContainer()
 
   component<T>(Component: FC<T>): FC<T> {
@@ -12,7 +12,7 @@ export class ProjectEposGeneral extends ex.Unit {
   }
 
   async init(): Promise<void> {
-    this.browser = await this.$.tools.browser.create(this.$project.id)
+    this.browser = await this.$.ext.create(this.$project.id)
   }
 
   render(children: ReactNode, container?: Container): void {

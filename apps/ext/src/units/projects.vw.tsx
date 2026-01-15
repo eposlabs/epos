@@ -74,7 +74,7 @@ export class Projects extends vw.Unit {
 
   private async openSidePanel() {
     const tabId = this.getTabId()
-    await this.$.tools.medium.openSidePanel(tabId)
+    await this.$.medium.openSidePanel(tabId)
     self.close()
   }
 

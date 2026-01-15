@@ -1,12 +1,12 @@
 export type PermissionResult = { id: string; granted: boolean }
 
-export class ToolsBrowser extends sm.Unit {
+export class Ext extends sm.Unit {
   private id = this.$.utils.id()
 
   constructor(parent: sm.Unit) {
     super(parent)
-    this.$.bus.on('ToolsBrowser.requestPermissions', this.requestPermissions, this)
-    this.$.bus.on('ToolsBrowser.closePermissionTab', () => self.close())
+    this.$.bus.on('Ext.requestPermissions', this.requestPermissions, this)
+    this.$.bus.on('Ext.closePermissionTab', () => self.close())
   }
 
   async requestPermissions(opts: chrome.permissions.Permissions) {

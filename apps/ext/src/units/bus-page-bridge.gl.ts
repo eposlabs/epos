@@ -57,9 +57,8 @@ export class BusPageBridge extends gl.Unit {
       if (req.peerId === this.$bus.peerId) return
       if (req.tabToken !== this.$bus.tabToken) return
 
-      // TODO: in which cases source === null?
       const source = e.source as WindowProxy | null
-      if (!source) return
+      if (!source) throw this.never()
 
       // Register proxy action for the specified context (`csFrame` / `ex`).
       if (req.name === 'Bus.registerContextProxyAction') {

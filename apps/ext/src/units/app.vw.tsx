@@ -11,8 +11,8 @@ export class App extends vw.Unit {
   bus = new gl.Bus(this)
 
   dev = new gl.Dev(this)
+  medium = new swVw.Medium(this)
   projects = new vw.Projects(this)
-  tools = new vw.Tools(this)
 
   async init() {
     self.$ = this
