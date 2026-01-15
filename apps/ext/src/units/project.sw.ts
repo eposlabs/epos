@@ -262,9 +262,16 @@ export class Project extends sw.Unit {
   private async getHash(address?: Address) {
     const targets = this.targets.filter(target => target.test(address))
     if (targets.length === 0) return null
-    const resources = targets.flatMap(target => target.resources)
-    const resourcesData = resources.map(resource => [resource.type, this.sources[resource.path]])
-    return await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, resourcesData])
+
+    const targetsHashData: unknown[] = []
+    for (const target of targets) {
+      targetsHashData.push(target.matches)
+      for (const resource of target.resources) {
+        targetsHashData.push([resource.type, this.sources[resource.path]])
+      }
+    }
+
+    return await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, targetsHashData])
   }
 
   private async saveSnapshot() {
