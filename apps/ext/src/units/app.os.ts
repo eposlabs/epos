@@ -12,13 +12,16 @@ export class App extends os.Unit {
 
   async init() {
     self.$ = this
-    this.utils.init()
+    this.utils.initBusProxy()
     this.logOffscreenLabel()
     await this.projects.init()
     await this.dev.init()
   }
 
   private logOffscreenLabel() {
-    console.log(`%coffscreen.html`, 'padding: 4px 8px; margin: 12px 0; border: 1px dotted #9ca3af; border-radius: 6px;')
+    console.log(
+      `%c⬇︎ offscreen.html`,
+      'padding: 4px 8px; margin: 12px 0; border: 1px dotted #9ca3af; border-radius: 6px;',
+    )
   }
 }

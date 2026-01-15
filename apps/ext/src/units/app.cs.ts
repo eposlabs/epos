@@ -1,5 +1,3 @@
-// Allow several Yjs copies (allows several epos-based apps on the same page).
-// Use `self.self` instead of `self`, because `self` might be a Proxy (see `project-path-globals.sw.js`).
 export class App extends cs.Unit {
   browser = chrome
   utils = new cs.Utils(this)
@@ -12,6 +10,7 @@ export class App extends cs.Unit {
 
   async init() {
     self.$ = this
+    await this.bus.initTabToken()
     await this.projects.init()
     await this.dev.init()
   }

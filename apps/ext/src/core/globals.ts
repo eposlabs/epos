@@ -42,8 +42,8 @@ declare global {
     __eposIsTop?: boolean
     __eposTabId?: number | null
     __eposElement?: Element
-    __eposTabBusToken?: string | null
     __eposProjectDefs?: ProjectDef[]
+    __eposBusExTabToken?: string | null
     __eposOriginalGlobals?: Record<string, unknown>
   }
 

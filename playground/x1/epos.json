@@ -5,58 +5,21 @@
   "version": "0.0.1",
   "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
-  "assets": ["x1.css"],
   "permissions": ["browsingData", "notifications", "optional:downloads"],
   "targets": [
     {
-      "matches": "<allUrls>",
-      "load": "x1.js"
-    },
-    {
-      "matches": ["*://epos.dev/@x1"],
+      "matches": "https://epos.dev/@x1",
       "load": ["x1-hub.js"]
     },
-    // {
-    //   "matches": ["<allUrls>", "*://epos.dev/@x1"],
-    //   "load": ["lite:x1-lite.js", "x1.js", "shadow:x1.css"]
-    // },
     {
-      "matches": ["frame:*://*.epos.dev/*"],
-      "load": ["lite:x1-lite-2.js", "x1-frame.js"]
-    },
-    {
-      "matches": ["<popup>"],
-      "load": ["x1-popup.css", "x1-popup.js"]
-    },
-    {
-      "matches": ["<sidePanel>"],
-      "load": ["x1-popup.css", "x1-popup.js"]
-    },
-    {
-      "matches": ["<background>"],
-      "load": ["x1-bg.js"]
+      "matches": "frame:https://*.epos.dev/@x1",
+      "load": ["x1-hub.js"]
     }
-    // {
-    //   "matches": ["https://epos.dev/@x1", "https://x.com"],
-    //   "load": ["./x1-hub.js"]
-    // },
-    // {
-    //   "matches": ["frame:https://epos.dev/@x1-frame"],
-    //   "load": ["./x1-frame.js", "./x1-frame.css"]
-    //   // "mode": "lite"
-    // },
-    // {
-    //   "matches": ["frame:https://epos.dev/@x1-frame-2"],
-    //   "load": "./x1-frame-2.js"
-    //   // "mode": "lite"
-    // },
-    // {
-    //   "matches": ["<background>"],
-    //   "load": "./x1-bg.js"
-    // },
-    // {
-    //   "matches": ["<popup>", "<sidePanel>"],
-    //   "load": "./x1-popup.js"
-    // }
+    // { "matches": ["<allUrls>"], "load": ["x1.js"] },
+    // { "matches": ["*://epos.dev/@x1"], "load": ["x1-hub.js"] },
+    // { "matches": ["frame:*://*.epos.dev/*"], "load": ["lite:x1-lite-2.js", "x1-frame.js"] },
+    // { "matches": ["<popup>"], "load": ["x1-popup.css", "x1-popup.js"] },
+    // { "matches": ["<sidePanel>"], "load": ["x1-popup.css", "x1-popup.js"] },
+    // { "matches": ["<background>"], "load": ["x1-bg.js"] }
   ]
 }

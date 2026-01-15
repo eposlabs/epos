@@ -58,15 +58,14 @@ export class BusExtBridge extends gl.Unit {
 
       // Get tab id for the specified tab (`csTop`)
       if (req.name === 'Bus.getTabId') {
-        const resultJson = this.$bus.serializer.serialize(tabId)
-        respond(resultJson)
+        respond(this.$bus.serializer.serialize(tabId))
         return true
       }
 
       // Register proxy action for the specified tab (`csTop`)
       if (req.name === 'Bus.registerTabProxyAction') {
         void (async () => {
-          if (!this.$.utils.is.number(tabId)) throw this.never()
+          if (!tabId) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
@@ -80,7 +79,7 @@ export class BusExtBridge extends gl.Unit {
       // Remove proxy action for the specified tab (`csTop`)
       if (req.name === 'Bus.removeTabProxyAction') {
         void (async () => {
-          if (!this.$.utils.is.number(tabId)) throw this.never()
+          if (!tabId) throw this.never()
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
@@ -92,21 +91,30 @@ export class BusExtBridge extends gl.Unit {
 
       // Remove all proxy actions for the specified tab (`csTop`)
       if (req.name === 'Bus.removeAllTabProxyActions') {
-        if (!this.$.utils.is.number(tabId)) throw this.never()
+        if (!tabId) throw this.never()
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
 
-      // Special method for blobs support, see BusSerializer for details
+      // Get tab token of the specified tab (`csTop`), called from `csFrame`
+      if (req.name === 'Bus.getCsTopTabToken') {
+        void (async () => {
+          if (!tabId) throw this.never()
+          const tabToken = await this.sendToTab(tabId, 'Bus.getTabToken')
+          respond(this.$bus.serializer.serialize(tabToken))
+        })()
+        return true
+      }
+
       if (req.name === 'Bus.blobIdToObjectUrl') {
+        // Special method for blobs support, see BusSerializer for details
         void (async () => {
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [blobId] = args
           if (!this.$.utils.is.string(blobId)) throw this.never()
           const url = await this.$bus.serializer.blobIdToObjectUrl(blobId)
-          const resultJson = this.$bus.serializer.serialize(url)
-          respond(resultJson)
+          respond(this.$bus.serializer.serialize(url))
         })()
         return true
       }
@@ -124,8 +132,7 @@ export class BusExtBridge extends gl.Unit {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
         if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))
-        const resultJson = this.$bus.serializer.serialize(result)
-        respond(resultJson)
+        respond(this.$bus.serializer.serialize(result))
       })()
 
       return true
@@ -143,6 +150,12 @@ export class BusExtBridge extends gl.Unit {
     this.$.browser.runtime.onMessage.addListener((req, _, respond) => {
       if (!this.isRequest(req)) return
 
+      // Give tab token to `csFrame` (`csFrame` -> `sw` -> `csTop` -> `sw` -> `csFrame`)
+      if (this.$.env.is.csTop && req.name === 'Bus.getTabToken') {
+        respond(this.$bus.serializer.serialize(this.$bus.tabToken))
+        return true
+      }
+
       const actions = this.$bus.actions.filter(action => action.name === req.name)
       if (actions.length === 0) return
 
@@ -150,8 +163,7 @@ export class BusExtBridge extends gl.Unit {
         const args = await this.$bus.serializer.deserialize(req.argsJson)
         if (!this.$.utils.is.array(args)) throw this.never()
         const result = await this.$bus.utils.pick(actions.map(action => action.execute(...args)))
-        const resultJson = this.$bus.serializer.serialize(result)
-        respond(resultJson)
+        respond(this.$bus.serializer.serialize(result))
       })()
 
       return true

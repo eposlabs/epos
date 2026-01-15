@@ -47,15 +47,16 @@ export class Projects extends ex.Unit {
   private async startProjects() {
     const projectDefs = self.__eposProjectDefs ?? []
 
-    // Clean up globals
+    // Clean up globals.
+    // Some of them may already be deleted, but it is easier to delete all without extra checks.
     delete self.__eposIsTop
     delete self.__eposTabId
     delete self.__eposElement
-    delete self.__eposTabBusToken
     delete self.__eposProjectDefs
+    delete self.__eposBusExTabToken
     delete self.__eposOriginalGlobals
 
-    // Create and start projects
+    // Create and init projects
     for (const projectDef of projectDefs) {
       const project = new ex.Project(this, projectDef)
       this.dict[project.id] = project
@@ -67,20 +68,20 @@ export class Projects extends ex.Unit {
     // Top context? -> Get tab id from the injected `self.__eposTabId`
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
-      if (!this.$.utils.is.number(tabId)) throw this.never()
+      if (!tabId) throw this.never()
       return tabId
     }
 
     // Extension frame? -> Get tab id from URL params
     else if (this.$.env.is.exExtension) {
       const tabId = Number(this.$.env.params.tabId)
-      if (!tabId) return -1 // For offscreen frames
+      if (!tabId) return null // For offscreen frames
       return tabId
     }
 
-    // External frame? -> Tab id is not available, return -1
+    // External frame? -> Tab id is not available, return null
     else {
-      return -1
+      return null
     }
   }
 

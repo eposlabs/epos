@@ -4,18 +4,31 @@ export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 
 export class Bus extends gl.Unit {
-  // Different epos-based apps have different appId
-  appId = '' // this.$.env.is.sw ? this.$.utils.id() : '' // TODO: null
-  // Different peers of the same app have different peerId
   peerId = this.$.utils.id()
-  // Registered actions
-  actions: gl.BusAction[] = []
-
+  tabToken: string | null = null // For secure `cs` <-> `ex` communication
+  actions: gl.BusAction[] = [] // Registered actions
   utils = new gl.BusUtils(this)
   serializer = new gl.BusSerializer(this)
-
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
+
+  async initTabToken() {
+    const isCsOrEx = this.$.env.is.cs || this.$.env.is.ex
+    if (!isCsOrEx) throw this.never()
+
+    if (this.$.env.is.csTop) {
+      this.tabToken = this.$.utils.id()
+    } else if (this.$.env.is.csFrame) {
+      const tabToken = await this.extBridge.send<string>('Bus.getCsTopTabToken')
+      if (!tabToken) throw this.never()
+      this.tabToken = tabToken
+    } else if (!this.$.env.is.exExtension) {
+      const tabToken = self.__eposBusExTabToken
+      delete self.__eposBusExTabToken
+      if (!tabToken) throw this.never('Tab token is not passed to `ex`')
+      this.tabToken = tabToken
+    }
+  }
 
   on<T extends Fn = Fn>(name: string, fn: T, thisArg?: unknown, target?: Target) {
     if (!fn) return
@@ -164,7 +177,7 @@ export class Bus extends gl.Unit {
   async getTabData() {
     if (!this.$.env.is.cs) throw this.never()
     const tabId = await this.extBridge.send<number | null>('Bus.getTabId')
-    return { tabId, tabBusToken: 'xxx' }
+    return { tabId, tabToken: this.tabToken }
   }
 
   private async executeProxyActions(name: string, ...args: unknown[]) {

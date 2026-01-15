@@ -5,7 +5,7 @@ import { time } from './utils-time.js'
 import { without } from './utils-without.js'
 
 export class Utils extends os.Unit {
-  init() {
+  initBusProxy() {
     this.$.bus.on('Utils.createObjectUrl', (blob: Blob) => URL.createObjectURL(blob))
     this.$.bus.on('Utils.revokeObjectUrl', (url: string) => URL.revokeObjectURL(url))
   }

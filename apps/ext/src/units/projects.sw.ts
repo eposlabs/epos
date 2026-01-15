@@ -164,7 +164,7 @@ export class Projects extends sw.Unit {
     return { spec, sources, assets }
   }
 
-  private getJs(address?: Address, params: { tabId?: number | null; tabBusToken?: string | null } = {}) {
+  private getJs(address?: Address, busTabData: { tabId?: number | null; tabToken?: string | null } = {}) {
     const projects = this.listEnabled.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
@@ -184,8 +184,8 @@ export class Projects extends sw.Unit {
 
     return [
       `(() => {`,
-      `  this.__eposTabId = ${JSON.stringify(params.tabId ?? null)};`,
-      `  this.__eposTabBusToken = ${JSON.stringify(params.tabBusToken ?? null)};`,
+      `  this.__eposTabId = ${JSON.stringify(busTabData.tabId ?? null)};`,
+      `  this.__eposBusExTabToken = ${JSON.stringify(busTabData.tabToken ?? null)};`,
       `  this.__eposProjectDefs = [${defJsList.join(',')}];`,
       `  ${engineJs};`,
       `})()`,
