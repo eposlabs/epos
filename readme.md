@@ -61,12 +61,12 @@
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
 - **Projects**
+  - epos.projects.get
+  - epos.projects.has
+  - epos.projects.list
+  - epos.projects.watch
+  - epos.projects.fetch
   - epos.projects.create
   - epos.projects.update
   - epos.projects.remove
   - epos.projects.export
-  - epos.projects.has
-  - epos.projects.get
-  - epos.projects.list
-  - epos.projects.watch
-  - epos.projects.fetch

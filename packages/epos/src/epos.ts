@@ -195,8 +195,8 @@ export interface Epos {
 
   // Env
   env: {
-    /** `tabId` is `null` for `<background>` and iframes. */
-    tabId: number | null
+    /** `tabId` is `-1` for `<background>` and iframes. */
+    tabId: -1 | number
     project: { id: string; mode: Mode; spec: Spec }
     isPopup: boolean
     isSidePanel: boolean
@@ -216,15 +216,15 @@ export interface Epos {
 
   // Projects
   projects: {
+    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
+    has(id: string): Promise<boolean>
+    list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
+    watch(listener: () => void): void
+    fetch(url: string): Promise<Bundle>
     create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T>
     update(id: string, updates: Partial<ProjectSettings & Bundle>): Promise<void>
     remove(id: string): Promise<void>
     export(id: string, mode?: Mode): Promise<Record<string, Blob>>
-    has(id: string): Promise<boolean>
-    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
-    list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
-    watch(listener: () => void): void
-    fetch(url: string): Promise<Bundle>
   }
 
   // Engine

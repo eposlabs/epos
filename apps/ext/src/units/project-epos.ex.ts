@@ -87,7 +87,8 @@ export class ProjectEpos extends ex.Unit {
 
       // Env
       env: {
-        tabId: this.env.tabId,
+        // Use `-1` instead of `null` to use `epos.browser.tabs.*` api without extra checks
+        tabId: this.env.tabId ?? -1,
         project: this.env.project,
         isPopup: this.env.isPopup,
         isSidePanel: this.env.isSidePanel,
@@ -108,15 +109,15 @@ export class ProjectEpos extends ex.Unit {
       // Project
       ...(this.$project.spec.config.access.includes('projects') && {
         projects: {
+          get: this.$.utils.link(this.projects, 'get'),
+          has: this.$.utils.link(this.projects, 'has'),
+          list: this.$.utils.link(this.projects, 'list'),
+          watch: this.$.utils.link(this.projects, 'watch'),
+          fetch: this.$.utils.link(this.projects, 'fetch'),
           create: this.$.utils.link(this.projects, 'create'),
           update: this.$.utils.link(this.projects, 'update'),
           remove: this.$.utils.link(this.projects, 'remove'),
           export: this.$.utils.link(this.projects, 'export'),
-          has: this.$.utils.link(this.projects, 'has'),
-          get: this.$.utils.link(this.projects, 'get'),
-          list: this.$.utils.link(this.projects, 'list'),
-          watch: this.$.utils.link(this.projects, 'watch'),
-          fetch: this.$.utils.link(this.projects, 'fetch'),
         },
       }),
 
