@@ -1,5 +1,4 @@
-import 'chrome'
-import { type Spec } from 'epos-spec'
+import type { Spec } from 'epos-spec'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'
@@ -7,6 +6,7 @@ import type * as reactDom from 'react-dom'
 import type * as reactDomClient from 'react-dom/client'
 import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
+import type { Browser } from './browser.js'
 
 // Common types
 export type Fn = (...args: any[]) => unknown
@@ -72,7 +72,7 @@ export type Res = {
 export interface Epos {
   // General
   fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
-  browser: typeof chrome
+  browser: Browser
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): react.FC<T>
   container: HTMLDivElement

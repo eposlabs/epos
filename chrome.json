@@ -2,47 +2,30 @@
   "loadTimes": "<method>",
   "csi": "<method>",
 
-  "action": {
-    "onUserSettingsChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onClicked": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "disable": "<method>",
-    "enable": "<method>",
-    "getBadgeBackgroundColor": "<method>",
-    "getBadgeText": "<method>",
-    "getBadgeTextColor": "<method>",
-    "getPopup": "<method>",
-    "getTitle": "<method>",
-    "getUserSettings": "<method>",
-    "isEnabled": "<method>",
-    "openPopup": "<method>",
-    "setBadgeBackgroundColor": "<method>",
-    "setBadgeText": "<method>",
-    "setBadgeTextColor": "<method>",
-    "setIcon": "<method>",
-    "setPopup": "<method>",
-    "setTitle": "<method>"
-  },
+  // ✅ DONE
+  // "action": {
+  //   "onUserSettingsChanged": "<event>",
+  //   "onClicked": "<event>",
+  //   "disable": "<method>",
+  //   "enable": "<method>",
+  //   "getBadgeBackgroundColor": "<method>",
+  //   "getBadgeText": "<method>",
+  //   "getBadgeTextColor": "<method>",
+  //   "getPopup": "<method>",
+  //   "getTitle": "<method>",
+  //   "getUserSettings": "<method>",
+  //   "isEnabled": "<method>",
+  //   "openPopup": "<method>",
+  //   "setBadgeBackgroundColor": "<method>",
+  //   "setBadgeText": "<method>",
+  //   "setBadgeTextColor": "<method>",
+  //   "setIcon": "<method>",
+  //   "setPopup": "<method>",
+  //   "setTitle": "<method>"
+  // },
 
   "alarms": {
-    "onAlarm": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onAlarm": "<event>",
     "clear": "<method>",
     "clearAll": "<method>",
     "create": "<method>",
@@ -68,69 +51,31 @@
     "removeWebSQL": "<method>",
     "settings": "<method>"
   },
+
   "contextMenus": {
-    "onClicked": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onClicked": "<event>",
     "create": "<method>",
     "remove": "<method>",
     "removeAll": "<method>",
     "update": "<method>",
-    "ContextType": {
-      "ACTION": "action",
-      "ALL": "all",
-      "AUDIO": "audio",
-      "BROWSER_ACTION": "browser_action",
-      "EDITABLE": "editable",
-      "FRAME": "frame",
-      "IMAGE": "image",
-      "LAUNCHER": "launcher",
-      "LINK": "link",
-      "PAGE": "page",
-      "PAGE_ACTION": "page_action",
-      "SELECTION": "selection",
-      "VIDEO": "video"
-    },
-    "ItemType": {
-      "CHECKBOX": "checkbox",
-      "NORMAL": "normal",
-      "RADIO": "radio",
-      "SEPARATOR": "separator"
-    },
+    "ContextType": "<value>",
+    "ItemType": "<value>",
     "ACTION_MENU_TOP_LEVEL_LIMIT": 6
   },
-  "cookies": {
-    "onChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "get": "<method>",
-    "getAll": "<method>",
-    "getAllCookieStores": "<method>",
-    "getPartitionKey": "<method>",
-    "remove": "<method>",
-    "set": "<method>",
-    "OnChangedCause": {
-      "EVICTED": "evicted",
-      "EXPIRED": "expired",
-      "EXPIRED_OVERWRITE": "expired_overwrite",
-      "EXPLICIT": "explicit",
-      "OVERWRITE": "overwrite"
-    },
-    "SameSiteStatus": {
-      "LAX": "lax",
-      "NO_RESTRICTION": "no_restriction",
-      "STRICT": "strict",
-      "UNSPECIFIED": "unspecified"
-    }
-  },
+
+  // ✅ DONE
+  // "cookies": {
+  //   "onChanged": "<event>",
+  //   "get": "<method>",
+  //   "getAll": "<method>",
+  //   "getAllCookieStores": "<method>",
+  //   "getPartitionKey": "<method>",
+  //   "remove": "<method>",
+  //   "set": "<method>",
+  //   "OnChangedCause": "<value>",
+  //   "SameSiteStatus": "<value>"
+  // },
+
   "declarativeNetRequest": {
     "getAvailableStaticRuleCount": "<method>",
     "getDisabledRuleIds": "<method>",
@@ -145,55 +90,12 @@
     "updateEnabledRulesets": "<method>",
     "updateSessionRules": "<method>",
     "updateStaticRules": "<method>",
-    "DomainType": {
-      "FIRST_PARTY": "firstParty",
-      "THIRD_PARTY": "thirdParty"
-    },
-    "HeaderOperation": {
-      "APPEND": "append",
-      "REMOVE": "remove",
-      "SET": "set"
-    },
-    "RequestMethod": {
-      "CONNECT": "connect",
-      "DELETE": "delete",
-      "GET": "get",
-      "HEAD": "head",
-      "OPTIONS": "options",
-      "OTHER": "other",
-      "PATCH": "patch",
-      "POST": "post",
-      "PUT": "put"
-    },
-    "ResourceType": {
-      "CSP_REPORT": "csp_report",
-      "FONT": "font",
-      "IMAGE": "image",
-      "MAIN_FRAME": "main_frame",
-      "MEDIA": "media",
-      "OBJECT": "object",
-      "OTHER": "other",
-      "PING": "ping",
-      "SCRIPT": "script",
-      "STYLESHEET": "stylesheet",
-      "SUB_FRAME": "sub_frame",
-      "WEBBUNDLE": "webbundle",
-      "WEBSOCKET": "websocket",
-      "WEBTRANSPORT": "webtransport",
-      "XMLHTTPREQUEST": "xmlhttprequest"
-    },
-    "RuleActionType": {
-      "ALLOW": "allow",
-      "ALLOW_ALL_REQUESTS": "allowAllRequests",
-      "BLOCK": "block",
-      "MODIFY_HEADERS": "modifyHeaders",
-      "REDIRECT": "redirect",
-      "UPGRADE_SCHEME": "upgradeScheme"
-    },
-    "UnsupportedRegexReason": {
-      "MEMORY_LIMIT_EXCEEDED": "memoryLimitExceeded",
-      "SYNTAX_ERROR": "syntaxError"
-    },
+    "DomainType": "<value>",
+    "HeaderOperation": "<value>",
+    "RequestMethod": "<value>",
+    "ResourceType": "<value>",
+    "RuleActionType": "<value>",
+    "UnsupportedRegexReason": "<value>",
     "DYNAMIC_RULESET_ID": "_dynamic",
     "GETMATCHEDRULES_QUOTA_INTERVAL": 10,
     "GUARANTEED_MINIMUM_STATIC_RULES": 30000,
@@ -208,38 +110,17 @@
     "MAX_NUMBER_OF_UNSAFE_SESSION_RULES": 5000,
     "SESSION_RULESET_ID": "_session"
   },
-  "dom": {
-    "openOrClosedShadowRoot": "<method>"
-  },
+
+  // 🚫 IGNORE
+  // "dom": {
+  //   "openOrClosedShadowRoot": "<method>"
+  // },
+
   "downloads": {
-    "onDeterminingFilename": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onErased": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCreated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onDeterminingFilename": "<event>",
+    "onChanged": "<event>",
+    "onErased": "<event>",
+    "onCreated": "<event>",
     "acceptDanger": "<method>",
     "cancel": "<method>",
     "download": "<method>",
@@ -254,211 +135,64 @@
     "setUiOptions": "<method>",
     "show": "<method>",
     "showDefaultFolder": "<method>",
-    "DangerType": {
-      "ACCEPTED": "accepted",
-      "ACCOUNT_COMPROMISE": "accountCompromise",
-      "ALLOWLISTED_BY_POLICY": "allowlistedByPolicy",
-      "ASYNC_LOCAL_PASSWORD_SCANNING": "asyncLocalPasswordScanning",
-      "ASYNC_SCANNING": "asyncScanning",
-      "BLOCKED_SCAN_FAILED": "blockedScanFailed",
-      "BLOCKED_TOO_LARGE": "blockedTooLarge",
-      "CONTENT": "content",
-      "DEEP_SCANNED_FAILED": "deepScannedFailed",
-      "DEEP_SCANNED_OPENED_DANGEROUS": "deepScannedOpenedDangerous",
-      "DEEP_SCANNED_SAFE": "deepScannedSafe",
-      "FILE": "file",
-      "HOST": "host",
-      "PASSWORD_PROTECTED": "passwordProtected",
-      "PROMPT_FOR_LOCAL_PASSWORD_SCANNING": "promptForLocalPasswordScanning",
-      "PROMPT_FOR_SCANNING": "promptForScanning",
-      "SAFE": "safe",
-      "SENSITIVE_CONTENT_BLOCK": "sensitiveContentBlock",
-      "SENSITIVE_CONTENT_WARNING": "sensitiveContentWarning",
-      "UNCOMMON": "uncommon",
-      "UNWANTED": "unwanted",
-      "URL": "url"
-    },
-    "FilenameConflictAction": {
-      "OVERWRITE": "overwrite",
-      "PROMPT": "prompt",
-      "UNIQUIFY": "uniquify"
-    },
-    "HttpMethod": {
-      "GET": "GET",
-      "POST": "POST"
-    },
-    "InterruptReason": {
-      "CRASH": "CRASH",
-      "FILE_ACCESS_DENIED": "FILE_ACCESS_DENIED",
-      "FILE_BLOCKED": "FILE_BLOCKED",
-      "FILE_FAILED": "FILE_FAILED",
-      "FILE_HASH_MISMATCH": "FILE_HASH_MISMATCH",
-      "FILE_NAME_TOO_LONG": "FILE_NAME_TOO_LONG",
-      "FILE_NO_SPACE": "FILE_NO_SPACE",
-      "FILE_SAME_AS_SOURCE": "FILE_SAME_AS_SOURCE",
-      "FILE_SECURITY_CHECK_FAILED": "FILE_SECURITY_CHECK_FAILED",
-      "FILE_TOO_LARGE": "FILE_TOO_LARGE",
-      "FILE_TOO_SHORT": "FILE_TOO_SHORT",
-      "FILE_TRANSIENT_ERROR": "FILE_TRANSIENT_ERROR",
-      "FILE_VIRUS_INFECTED": "FILE_VIRUS_INFECTED",
-      "NETWORK_DISCONNECTED": "NETWORK_DISCONNECTED",
-      "NETWORK_FAILED": "NETWORK_FAILED",
-      "NETWORK_INVALID_REQUEST": "NETWORK_INVALID_REQUEST",
-      "NETWORK_SERVER_DOWN": "NETWORK_SERVER_DOWN",
-      "NETWORK_TIMEOUT": "NETWORK_TIMEOUT",
-      "SERVER_BAD_CONTENT": "SERVER_BAD_CONTENT",
-      "SERVER_CERT_PROBLEM": "SERVER_CERT_PROBLEM",
-      "SERVER_CONTENT_LENGTH_MISMATCH": "SERVER_CONTENT_LENGTH_MISMATCH",
-      "SERVER_CROSS_ORIGIN_REDIRECT": "SERVER_CROSS_ORIGIN_REDIRECT",
-      "SERVER_FAILED": "SERVER_FAILED",
-      "SERVER_FORBIDDEN": "SERVER_FORBIDDEN",
-      "SERVER_NO_RANGE": "SERVER_NO_RANGE",
-      "SERVER_UNAUTHORIZED": "SERVER_UNAUTHORIZED",
-      "SERVER_UNREACHABLE": "SERVER_UNREACHABLE",
-      "USER_CANCELED": "USER_CANCELED",
-      "USER_SHUTDOWN": "USER_SHUTDOWN"
-    },
-    "State": {
-      "COMPLETE": "complete",
-      "IN_PROGRESS": "in_progress",
-      "INTERRUPTED": "interrupted"
-    }
+    "DangerType": "<value>",
+    "FilenameConflictAction": "<value>",
+    "HttpMethod": "<value>",
+    "InterruptReason": "<value>",
+    "State": "<value>"
   },
+
   "extension": {
     "isAllowedFileSchemeAccess": "<method>",
     "isAllowedIncognitoAccess": "<method>",
     "setUpdateUrlData": "<method>",
-    "ViewType": {
-      "POPUP": "popup",
-      "TAB": "tab"
-    },
+    "ViewType": "<value>",
     "inIncognitoContext": false
   },
+
   "i18n": {
     "detectLanguage": "<method>",
     "getAcceptLanguages": "<method>",
     "getMessage": "<method>",
     "getUILanguage": "<method>"
   },
+
   "management": {
     "getPermissionWarningsByManifest": "<method>",
     "getSelf": "<method>",
     "uninstallSelf": "<method>",
-    "ExtensionDisabledReason": {
-      "PERMISSIONS_INCREASE": "permissions_increase",
-      "UNKNOWN": "unknown"
-    },
-    "ExtensionInstallType": {
-      "ADMIN": "admin",
-      "DEVELOPMENT": "development",
-      "NORMAL": "normal",
-      "OTHER": "other",
-      "SIDELOAD": "sideload"
-    },
-    "ExtensionType": {
-      "EXTENSION": "extension",
-      "HOSTED_APP": "hosted_app",
-      "LEGACY_PACKAGED_APP": "legacy_packaged_app",
-      "LOGIN_SCREEN_EXTENSION": "login_screen_extension",
-      "PACKAGED_APP": "packaged_app",
-      "THEME": "theme"
-    },
-    "LaunchType": {
-      "OPEN_AS_PINNED_TAB": "OPEN_AS_PINNED_TAB",
-      "OPEN_AS_REGULAR_TAB": "OPEN_AS_REGULAR_TAB",
-      "OPEN_AS_WINDOW": "OPEN_AS_WINDOW",
-      "OPEN_FULL_SCREEN": "OPEN_FULL_SCREEN"
-    }
+    "ExtensionDisabledReason": "<value>",
+    "ExtensionInstallType": "<value>",
+    "ExtensionType": "<value>",
+    "LaunchType": "<value>"
   },
+
   "notifications": {
-    "onShowSettings": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onPermissionLevelChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onButtonClicked": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onClicked": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onClosed": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onShowSettings": "<event>",
+    "onPermissionLevelChanged": "<event>",
+    "onButtonClicked": "<event>",
+    "onClicked": "<event>",
+    "onClosed": "<event>",
     "clear": "<method>",
     "create": "<method>",
     "getAll": "<method>",
     "getPermissionLevel": "<method>",
     "update": "<method>",
-    "PermissionLevel": {
-      "DENIED": "denied",
-      "GRANTED": "granted"
-    },
-    "TemplateType": {
-      "BASIC": "basic",
-      "IMAGE": "image",
-      "LIST": "list",
-      "PROGRESS": "progress"
-    }
+    "PermissionLevel": "<value>",
+    "TemplateType": "<value>"
   },
+
+  // 🚫 IGNORE
   "offscreen": {
     "closeDocument": "<method>",
     "createDocument": "<method>",
     "hasDocument": "<method>",
-    "Reason": {
-      "AUDIO_PLAYBACK": "AUDIO_PLAYBACK",
-      "BATTERY_STATUS": "BATTERY_STATUS",
-      "BLOBS": "BLOBS",
-      "CLIPBOARD": "CLIPBOARD",
-      "DISPLAY_MEDIA": "DISPLAY_MEDIA",
-      "DOM_PARSER": "DOM_PARSER",
-      "DOM_SCRAPING": "DOM_SCRAPING",
-      "GEOLOCATION": "GEOLOCATION",
-      "IFRAME_SCRIPTING": "IFRAME_SCRIPTING",
-      "LOCAL_STORAGE": "LOCAL_STORAGE",
-      "MATCH_MEDIA": "MATCH_MEDIA",
-      "TESTING": "TESTING",
-      "USER_MEDIA": "USER_MEDIA",
-      "WEB_RTC": "WEB_RTC",
-      "WORKERS": "WORKERS"
-    }
+    "Reason": "<value>"
   },
+
   "permissions": {
-    "onRemoved": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onAdded": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onRemoved": "<event>",
+    "onAdded": "<event>",
     "addHostAccessRequest": "<method>",
     "contains": "<method>",
     "getAll": "<method>",
@@ -466,100 +200,23 @@
     "removeHostAccessRequest": "<method>",
     "request": "<method>"
   },
+
   "runtime": {
     "dynamicId": "90efdf91-80ed-4e29-92fa-39fd8eb23e2d",
     "id": "kdnfheklogiaahghfocphkhgkjljfmbe",
-    "onRestartRequired": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onUserScriptMessage": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onMessageExternal": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onMessage": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onUserScriptConnect": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onConnectExternal": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onConnect": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onBrowserUpdateAvailable": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onUpdateAvailable": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onSuspendCanceled": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onSuspend": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onInstalled": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onStartup": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onRestartRequired": "<event>",
+    "onUserScriptMessage": "<event>",
+    "onMessageExternal": "<event>",
+    "onMessage": "<event>",
+    "onUserScriptConnect": "<event>",
+    "onConnectExternal": "<event>",
+    "onConnect": "<event>",
+    "onBrowserUpdateAvailable": "<event>",
+    "onUpdateAvailable": "<event>",
+    "onSuspendCanceled": "<event>",
+    "onSuspend": "<event>",
+    "onInstalled": "<event>",
+    "onStartup": "<event>",
     "connect": "<method>",
     "getContexts": "<method>",
     "getManifest": "<method>",
@@ -573,87 +230,31 @@
     "restartAfterDelay": "<method>",
     "sendMessage": "<method>",
     "setUninstallURL": "<method>",
-    "ContextType": {
-      "BACKGROUND": "BACKGROUND",
-      "DEVELOPER_TOOLS": "DEVELOPER_TOOLS",
-      "OFFSCREEN_DOCUMENT": "OFFSCREEN_DOCUMENT",
-      "POPUP": "POPUP",
-      "SIDE_PANEL": "SIDE_PANEL",
-      "TAB": "TAB"
-    },
-    "OnInstalledReason": {
-      "CHROME_UPDATE": "chrome_update",
-      "INSTALL": "install",
-      "SHARED_MODULE_UPDATE": "shared_module_update",
-      "UPDATE": "update"
-    },
-    "OnRestartRequiredReason": {
-      "APP_UPDATE": "app_update",
-      "OS_UPDATE": "os_update",
-      "PERIODIC": "periodic"
-    },
-    "PlatformArch": {
-      "ARM": "arm",
-      "ARM64": "arm64",
-      "MIPS": "mips",
-      "MIPS64": "mips64",
-      "RISCV64": "riscv64",
-      "X86_32": "x86-32",
-      "X86_64": "x86-64"
-    },
-    "PlatformNaclArch": {
-      "ARM": "arm",
-      "MIPS": "mips",
-      "MIPS64": "mips64",
-      "X86_32": "x86-32",
-      "X86_64": "x86-64"
-    },
-    "PlatformOs": {
-      "ANDROID": "android",
-      "CROS": "cros",
-      "LINUX": "linux",
-      "MAC": "mac",
-      "OPENBSD": "openbsd",
-      "WIN": "win"
-    },
-    "RequestUpdateCheckStatus": {
-      "NO_UPDATE": "no_update",
-      "THROTTLED": "throttled",
-      "UPDATE_AVAILABLE": "update_available"
-    }
+    "ContextType": "<value>",
+    "OnInstalledReason": "<value>",
+    "OnRestartRequiredReason": "<value>",
+    "PlatformArch": "<value>",
+    "PlatformNaclArch": "<value>",
+    "PlatformOs": "<value>",
+    "RequestUpdateCheckStatus": "<value>"
   },
-  "scripting": {
-    "executeScript": "<method>",
-    "getRegisteredContentScripts": "<method>",
-    "insertCSS": "<method>",
-    "registerContentScripts": "<method>",
-    "removeCSS": "<method>",
-    "unregisterContentScripts": "<method>",
-    "updateContentScripts": "<method>",
-    "ExecutionWorld": {
-      "ISOLATED": "ISOLATED",
-      "MAIN": "MAIN"
-    },
-    "StyleOrigin": {
-      "AUTHOR": "AUTHOR",
-      "USER": "USER"
-    }
-  },
+
+  // 🚫 IGNORE
+  // "scripting": {
+  //   "executeScript": "<method>",
+  //   "getRegisteredContentScripts": "<method>",
+  //   "insertCSS": "<method>",
+  //   "registerContentScripts": "<method>",
+  //   "removeCSS": "<method>",
+  //   "unregisterContentScripts": "<method>",
+  //   "updateContentScripts": "<method>",
+  //   "ExecutionWorld": "<value>",
+  //   "StyleOrigin": "<value>"
+  // },
+
   "sidePanel": {
-    "onClosed": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onOpened": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onClosed": "<event>",
+    "onOpened": "<event>",
     "close": "<method>",
     "getLayout": "<method>",
     "getOptions": "<method>",
@@ -661,11 +262,9 @@
     "open": "<method>",
     "setOptions": "<method>",
     "setPanelBehavior": "<method>",
-    "Side": {
-      "LEFT": "left",
-      "RIGHT": "right"
-    }
+    "Side": "<value>"
   },
+
   "storage": {
     "sync": {
       "get": "<method>",
@@ -675,13 +274,7 @@
       "clear": "<method>",
       "getBytesInUse": "<method>",
       "setAccessLevel": "<method>",
-      "onChanged": {
-        "addListener": "<addListener>",
-        "removeListener": "<removeListener>",
-        "hasListener": "<hasListener>",
-        "hasListeners": "<hasListeners>",
-        "dispatch": "<method>"
-      },
+      "onChanged": "<event>",
       "QUOTA_BYTES": 102400,
       "QUOTA_BYTES_PER_ITEM": 8192,
       "MAX_ITEMS": 512,
@@ -697,13 +290,7 @@
       "clear": "<method>",
       "getBytesInUse": "<method>",
       "setAccessLevel": "<method>",
-      "onChanged": {
-        "addListener": "<addListener>",
-        "removeListener": "<removeListener>",
-        "hasListener": "<hasListener>",
-        "hasListeners": "<hasListeners>",
-        "dispatch": "<method>"
-      },
+      "onChanged": "<event>",
       "QUOTA_BYTES": 10485760
     },
     "managed": {
@@ -714,13 +301,7 @@
       "clear": "<method>",
       "getBytesInUse": "<method>",
       "setAccessLevel": "<method>",
-      "onChanged": {
-        "addListener": "<addListener>",
-        "removeListener": "<removeListener>",
-        "hasListener": "<hasListener>",
-        "hasListeners": "<hasListeners>",
-        "dispatch": "<method>"
-      }
+      "onChanged": "<event>"
     },
     "local": {
       "get": "<method>",
@@ -730,267 +311,80 @@
       "clear": "<method>",
       "getBytesInUse": "<method>",
       "setAccessLevel": "<method>",
-      "onChanged": {
-        "addListener": "<addListener>",
-        "removeListener": "<removeListener>",
-        "hasListener": "<hasListener>",
-        "hasListeners": "<hasListeners>",
-        "dispatch": "<method>"
-      },
+      "onChanged": "<event>",
       "QUOTA_BYTES": 10485760
     },
-    "onChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "AccessLevel": {
-      "TRUSTED_AND_UNTRUSTED_CONTEXTS": "TRUSTED_AND_UNTRUSTED_CONTEXTS",
-      "TRUSTED_CONTEXTS": "TRUSTED_CONTEXTS"
-    }
+    "onChanged": "<event>",
+    "AccessLevel": "<value>"
   },
-  "tabs": {
-    "onZoomChange": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onReplaced": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onRemoved": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onAttached": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onDetached": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onHighlighted": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onActivated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onMoved": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onUpdated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCreated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "captureVisibleTab": "<method>",
-    "connect": "<method>",
-    "create": "<method>",
-    "detectLanguage": "<method>",
-    "discard": "<method>",
-    "duplicate": "<method>",
-    "get": "<method>",
-    "getCurrent": "<method>",
-    "getZoom": "<method>",
-    "getZoomSettings": "<method>",
-    "goBack": "<method>",
-    "goForward": "<method>",
-    "group": "<method>",
-    "highlight": "<method>",
-    "move": "<method>",
-    "query": "<method>",
-    "reload": "<method>",
-    "remove": "<method>",
-    "sendMessage": "<method>",
-    "setZoom": "<method>",
-    "setZoomSettings": "<method>",
-    "ungroup": "<method>",
-    "update": "<method>",
-    "MutedInfoReason": {
-      "CAPTURE": "capture",
-      "EXTENSION": "extension",
-      "USER": "user"
-    },
-    "TabStatus": {
-      "COMPLETE": "complete",
-      "LOADING": "loading",
-      "UNLOADED": "unloaded"
-    },
-    "WindowType": {
-      "APP": "app",
-      "DEVTOOLS": "devtools",
-      "NORMAL": "normal",
-      "PANEL": "panel",
-      "POPUP": "popup"
-    },
-    "ZoomSettingsMode": {
-      "AUTOMATIC": "automatic",
-      "DISABLED": "disabled",
-      "MANUAL": "manual"
-    },
-    "ZoomSettingsScope": {
-      "PER_ORIGIN": "per-origin",
-      "PER_TAB": "per-tab"
-    },
-    "MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND": 2,
-    "SPLIT_VIEW_ID_NONE": -1,
-    "TAB_ID_NONE": -1,
-    "TAB_INDEX_NONE": -1
-  },
+
+  // ✅ DONE
+  // "tabs": {
+  //   "onZoomChange": "<event>",
+  //   "onReplaced": "<event>",
+  //   "onRemoved": "<event>",
+  //   "onAttached": "<event>",
+  //   "onDetached": "<event>",
+  //   "onHighlighted": "<event>",
+  //   "onActivated": "<event>",
+  //   "onMoved": "<event>",
+  //   "onUpdated": "<event>",
+  //   "onCreated": "<event>",
+  //   "captureVisibleTab": "<method>",
+  //   "connect": "<method>",
+  //   "create": "<method>",
+  //   "detectLanguage": "<method>",
+  //   "discard": "<method>",
+  //   "duplicate": "<method>",
+  //   "get": "<method>",
+  //   "getCurrent": "<method>",
+  //   "getZoom": "<method>",
+  //   "getZoomSettings": "<method>",
+  //   "goBack": "<method>",
+  //   "goForward": "<method>",
+  //   "group": "<method>",
+  //   "highlight": "<method>",
+  //   "move": "<method>",
+  //   "query": "<method>",
+  //   "reload": "<method>",
+  //   "remove": "<method>",
+  //   "sendMessage": "<method>",
+  //   "setZoom": "<method>",
+  //   "setZoomSettings": "<method>",
+  //   "ungroup": "<method>",
+  //   "update": "<method>",
+  //   "MutedInfoReason": "<value>",
+  //   "TabStatus": "<value>",
+  //   "WindowType": "<value>",
+  //   "ZoomSettingsMode": "<value>",
+  //   "ZoomSettingsScope": "<value>",
+  //   "MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND": 2,
+  //   "SPLIT_VIEW_ID_NONE": -1,
+  //   "TAB_ID_NONE": -1,
+  //   "TAB_INDEX_NONE": -1
+  // },
+
   "webNavigation": {
-    "onHistoryStateUpdated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onTabReplaced": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onReferenceFragmentUpdated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCreatedNavigationTarget": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onErrorOccurred": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCompleted": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onDOMContentLoaded": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCommitted": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onBeforeNavigate": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onHistoryStateUpdated": "<event>",
+    "onTabReplaced": "<event>",
+    "onReferenceFragmentUpdated": "<event>",
+    "onCreatedNavigationTarget": "<event>",
+    "onErrorOccurred": "<event>",
+    "onCompleted": "<event>",
+    "onDOMContentLoaded": "<event>",
+    "onCommitted": "<event>",
+    "onBeforeNavigate": "<event>",
     "getAllFrames": "<method>",
     "getFrame": "<method>",
-    "TransitionQualifier": {
-      "CLIENT_REDIRECT": "client_redirect",
-      "FORWARD_BACK": "forward_back",
-      "FROM_ADDRESS_BAR": "from_address_bar",
-      "SERVER_REDIRECT": "server_redirect"
-    },
-    "TransitionType": {
-      "AUTO_BOOKMARK": "auto_bookmark",
-      "AUTO_SUBFRAME": "auto_subframe",
-      "FORM_SUBMIT": "form_submit",
-      "GENERATED": "generated",
-      "KEYWORD": "keyword",
-      "KEYWORD_GENERATED": "keyword_generated",
-      "LINK": "link",
-      "MANUAL_SUBFRAME": "manual_subframe",
-      "RELOAD": "reload",
-      "START_PAGE": "start_page",
-      "TYPED": "typed"
-    }
+    "TransitionQualifier": "<value>",
+    "TransitionType": "<value>"
   },
+
   "windows": {
-    "onBoundsChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onFocusChanged": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onRemoved": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
-    "onCreated": {
-      "addListener": "<addListener>",
-      "removeListener": "<removeListener>",
-      "hasListener": "<hasListener>",
-      "hasListeners": "<hasListeners>",
-      "dispatch": "<method>"
-    },
+    "onBoundsChanged": "<event>",
+    "onFocusChanged": "<event>",
+    "onRemoved": "<event>",
+    "onCreated": "<event>",
     "create": "<method>",
     "get": "<method>",
     "getAll": "<method>",
@@ -998,25 +392,9 @@
     "getLastFocused": "<method>",
     "remove": "<method>",
     "update": "<method>",
-    "CreateType": {
-      "NORMAL": "normal",
-      "PANEL": "panel",
-      "POPUP": "popup"
-    },
-    "WindowState": {
-      "FULLSCREEN": "fullscreen",
-      "LOCKED_FULLSCREEN": "locked-fullscreen",
-      "MAXIMIZED": "maximized",
-      "MINIMIZED": "minimized",
-      "NORMAL": "normal"
-    },
-    "WindowType": {
-      "APP": "app",
-      "DEVTOOLS": "devtools",
-      "NORMAL": "normal",
-      "PANEL": "panel",
-      "POPUP": "popup"
-    },
+    "CreateType": "<value>",
+    "WindowState": "<value>",
+    "WindowType": "<value>",
     "WINDOW_ID_CURRENT": -2,
     "WINDOW_ID_NONE": -1
   }

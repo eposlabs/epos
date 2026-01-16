@@ -14,7 +14,8 @@
   },
   "exports": {
     ".": "./dist/epos.js",
-    "./vite": "./dist/epos-vite.js"
+    "./vite": "./dist/epos-vite.js",
+    "./browser": "./dist/browser.js"
   },
   "files": [
     "dist"

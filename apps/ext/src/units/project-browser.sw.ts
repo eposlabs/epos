@@ -11,35 +11,37 @@ export class ProjectBrowser extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
     this.bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
-    this.bus.on('createApiTree', this.createApiTree, this)
+    this.bus.on('getApiTree', this.getApiTree, this)
     this.bus.on('callMethod', this.callMethod, this)
-    this.bus.on('registerListener', this.registerListener, this)
-    this.bus.on('unregisterListener', this.unregisterListener, this)
-    this.bus.on('updateSessionRules', this.updateSessionRules, this)
-    this.bus.on('updateDynamicRules', this.updateDynamicRules, this)
+    this.bus.on('addListener', this.addListener, this)
+    this.bus.on('removeListener', this.removeListener, this)
   }
 
-  private createApiTree(node: unknown = this.$.browser) {
+  dispose() {
+    this.bus.off()
+  }
+
+  private getApiTree(node: unknown = this.$.browser) {
     if (this.$.utils.is.object(node)) {
       const subtree: Obj = {}
-      for (const key in node) subtree[key] = this.createApiTree(node[key])
+      for (const key in node) subtree[key] = this.getApiTree(node[key])
       return subtree
     }
 
     if (this.$.utils.is.function(node)) {
-      if (node.name === 'addListener') return '<addListener>'
-      if (node.name === 'hasListener') return '<hasListener>'
-      if (node.name === 'hasListeners') return '<hasListeners>'
-      if (node.name === 'removeListener') return '<removeListener>'
-      return '<method>'
+      return '<function>'
     }
 
     return node
   }
 
-  private async callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
+  private async callMethod(path: string, ...args: unknown[]) {
+    const apiGetter = path.split('.').slice(0, -1)
+    const methodName = path.split('.').at(-1)
+    if (!methodName) throw this.never()
+
     // Get api object
-    const api = this.$.utils.get(this.$.browser, apiPath)
+    const api = this.$.utils.get(this.$.browser, apiGetter)
     if (!this.$.utils.is.object(api)) throw this.never()
 
     // Get method from this api object
@@ -50,14 +52,14 @@ export class ProjectBrowser extends sw.Unit {
     return await method.call(api, ...args)
   }
 
-  private registerListener(peerId: string, listenerId: string, path: string[]) {
+  private addListener(path: string, peerId: string, listenerId: string) {
     // Get api object
-    const api = this.$.utils.get(this.$.browser, path)
+    const api = this.$.utils.get(this.$.browser, path.split('.'))
     if (!this.$.utils.is.object(api)) throw this.never()
 
-    // Prepare proxy callback
+    // Prepare callback
     const callback = async (...args: unknown[]) => {
-      return await this.bus.send(`listener[${listenerId}]`, ...args)
+      return await this.bus.send(`listenerCallback[${listenerId}]`, ...args)
     }
 
     // Add listener
@@ -72,33 +74,35 @@ export class ProjectBrowser extends sw.Unit {
       delete this.disposers[listenerId]
     }
 
-    // Automatically unregister if peer does not respond
+    // Automatically remove the listener if its peer does not respond
     const pingInterval = setInterval(async () => {
       const ok = await this.$.peer.ping(peerId)
       if (ok) return
-      this.unregisterListener(listenerId)
+      this.removeListener(listenerId)
     }, this.$.utils.time('5m'))
   }
 
-  private unregisterListener(listenerId: string) {
+  private removeListener(listenerId: string) {
     this.disposers[listenerId]?.()
   }
-
-  private updateSessionRules(options: UpdateRuleOptions) {
-    const fullOptions = {
-      ...options,
-      addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
-    }
-
-    this.$.browser.declarativeNetRequest.updateSessionRules(fullOptions)
-  }
-
-  private updateDynamicRules(options: UpdateRuleOptions) {
-    const fullOptions = {
-      ...options,
-      addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
-    }
-
-    this.$.browser.declarativeNetRequest.updateDynamicRules(fullOptions)
-  }
 }
+
+// this.bus.on('updateSessionRules', this.updateSessionRules, this)
+// this.bus.on('updateDynamicRules', this.updateDynamicRules, this)
+// private updateSessionRules(options: UpdateRuleOptions) {
+// const fullOptions = {
+//   ...options,
+//   addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
+// }
+
+// this.$.browser.declarativeNetRequest.updateSessionRules(fullOptions)
+// }
+
+// private updateDynamicRules(options: UpdateRuleOptions) {
+// const fullOptions = {
+//   ...options,
+//   addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
+// }
+
+// this.$.browser.declarativeNetRequest.updateDynamicRules(fullOptions)
+// }

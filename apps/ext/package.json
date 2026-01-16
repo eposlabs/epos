@@ -21,7 +21,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "strip-json-comments": "^5.0.3",
-    "terser": "^5.44.1",
+    "terser": "^5.46.0",
     "yjs": "^13.6.29"
   },
   "devDependencies": {
@@ -31,7 +31,7 @@
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "paralayer": "^1.14.0",
+    "paralayer": "^1.15.0",
     "tailwindcss": "^4.1.18",
     "vite": "npm:rolldown-vite@7.3.1",
     "vite-plugin-rebundle": "^1.26.0"

@@ -5,6 +5,10 @@ export class Projects extends ex.Unit {
   tabId = this.getTabId()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
 
+  get list() {
+    return Object.values(this.dict)
+  }
+
   async init() {
     await this.watcher.init()
 

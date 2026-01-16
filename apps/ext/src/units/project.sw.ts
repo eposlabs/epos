@@ -30,11 +30,7 @@ export type Entry = {
   hasSidePanel: boolean
 }
 
-export type Meta = {
-  browser: {
-    grantedPermissions: string[]
-  }
-}
+export type Meta = {}
 
 export class Project extends sw.Unit {
   id: string
@@ -43,17 +39,14 @@ export class Project extends sw.Unit {
   spec: Spec
   sources: Sources
   meta: Meta
-  states: exSw.States
-  browser: sw.ProjectBrowser
   targets: sw.ProjectTarget[] = []
+  browser: sw.ProjectBrowser
+  states: exSw.States
   private netRuleIds = new Set<number>()
   static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
   static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
-    const meta: Meta = {
-      browser: { grantedPermissions: [] },
-    }
-
+    const meta: Meta = {}
     const project = new Project(parent, { ...params, meta })
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
@@ -81,11 +74,12 @@ export class Project extends sw.Unit {
     this.sources = params.sources
     this.meta = params.meta
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
     this.browser = new sw.ProjectBrowser(this)
+    this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
   }
 
   async dispose() {
+    this.browser.dispose()
     await this.states.dispose()
     await this.removeNetRules()
     await this.$.idb.deleteDatabase(this.id)
