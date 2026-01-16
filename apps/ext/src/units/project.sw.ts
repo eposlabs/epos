@@ -35,6 +35,7 @@ export class Project extends sw.Unit {
   enabled: boolean
   spec: Spec
   sources: Sources
+  ext: sw.Ext
   states: exSw.States
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
@@ -64,6 +65,7 @@ export class Project extends sw.Unit {
     this.mode = params.mode ?? 'production'
     this.enabled = params.enabled ?? true
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
+    this.ext = new sw.Ext(this, `Project[${this.id}]`)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
   }
 

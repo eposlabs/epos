@@ -3,16 +3,15 @@ import type { Container } from 'react-dom/client'
 
 export class ProjectEposGeneral extends ex.Unit {
   private $project = this.closest(ex.Project)!
-  declare browser: typeof chrome
   fetch = this.$.utils.link(this.$.fetcher, 'fetch')
   container = this.createProjectContainer()
 
-  component<T>(Component: FC<T>): FC<T> {
-    return this.$.libs.mobxReactLite.observer(Component)
+  get browser() {
+    return this.$project.ext.api
   }
 
-  async init(): Promise<void> {
-    this.browser = await this.$.ext.create(this.$project.id)
+  component<T>(Component: FC<T>): FC<T> {
+    return this.$.libs.mobxReactLite.observer(Component)
   }
 
   render(children: ReactNode, container?: Container): void {

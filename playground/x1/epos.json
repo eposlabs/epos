@@ -8,7 +8,7 @@
   "permissions": ["browsingData", "notifications", "optional:downloads"],
   "targets": [
     {
-      "matches": "https://epos.dev/@x1",
+      "matches": ["https://epos.dev/@x1", "<popup>"],
       "load": ["x1-hub.js"]
     },
     {

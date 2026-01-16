@@ -4,36 +4,41 @@ export type UpdateRuleOptions = {
 }
 
 export class Ext extends sw.Unit {
+  id: string
+  private bus: ReturnType<gl.Bus['use']>
   private disposers: { [listenerId: string]: Fn } = {}
 
-  constructor(parent: sw.Unit) {
+  constructor(parent: sw.Unit, id: string) {
     super(parent)
-    this.$.bus.on('Ext.getApiTree', () => this.getApiTree(this.$.browser))
-    this.$.bus.on('Ext.callMethod', this.callMethod, this)
-    this.$.bus.on('Ext.registerListener', this.registerListener, this)
-    this.$.bus.on('Ext.unregisterListener', this.unregisterListener, this)
-    this.$.bus.on('Ext.updateSessionRules', this.updateSessionRules, this)
-    this.$.bus.on('Ext.updateDynamicRules', this.updateDynamicRules, this)
+    this.id = id
+    this.bus = this.$.bus.use(id)
+    this.bus.on('buildApiTree', this.buildApiTree, this)
+    this.bus.on('callMethod', this.callMethod, this)
+    this.bus.on('registerListener', this.registerListener, this)
+    this.bus.on('unregisterListener', this.unregisterListener, this)
+    this.bus.on('updateSessionRules', this.updateSessionRules, this)
+    this.bus.on('updateDynamicRules', this.updateDynamicRules, this)
+    // project-ext.ts
+    // project-states.ts
+    // project-state.ts
   }
 
-  private getApiTree(value: unknown) {
-    if (this.$.utils.is.object(value)) {
-      const tree: Obj = {}
-      for (const key in value) {
-        tree[key] = this.getApiTree(value[key])
-      }
-      return tree
+  private buildApiTree(node: unknown = this.$.browser) {
+    if (this.$.utils.is.object(node)) {
+      const subtree: Obj = {}
+      for (const key in node) subtree[key] = this.buildApiTree(node[key])
+      return subtree
     }
 
-    if (this.$.utils.is.function(value)) {
-      if (value.name === 'addListener') return '<addListener>'
-      if (value.name === 'hasListener') return '<hasListener>'
-      if (value.name === 'hasListeners') return '<hasListeners>'
-      if (value.name === 'removeListener') return '<removeListener>'
+    if (this.$.utils.is.function(node)) {
+      if (node.name === 'addListener') return '<addListener>'
+      if (node.name === 'hasListener') return '<hasListener>'
+      if (node.name === 'hasListeners') return '<hasListeners>'
+      if (node.name === 'removeListener') return '<removeListener>'
       return '<method>'
     }
 
-    return value
+    return node
   }
 
   private async callMethod(apiPath: string[], methodName: string, ...args: unknown[]) {
@@ -56,7 +61,7 @@ export class Ext extends sw.Unit {
 
     // Prepare proxy callback
     const callback = async (...args: unknown[]) => {
-      return await this.$.bus.send(`Ext.listener[${listenerId}]`, ...args)
+      return await this.bus.send(`listener[${listenerId}]`, ...args)
     }
 
     // Add listener

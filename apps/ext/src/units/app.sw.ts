@@ -7,7 +7,6 @@ export class App extends sw.Unit {
 
   alive = new sw.Alive(this)
   dev = new gl.Dev(this)
-  ext = new sw.Ext(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
   medium = new swVw.Medium(this)
@@ -28,8 +27,8 @@ export class App extends sw.Unit {
   }
 
   private logInfo() {
-    const hasDevProject = this.projects.list.some(project => project.mode === 'development')
-    if (!hasDevProject) return
+    const hasDevProjects = this.projects.list.some(project => project.mode === 'development')
+    if (!hasDevProjects) return
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running, v${version} ${docsUrl}`

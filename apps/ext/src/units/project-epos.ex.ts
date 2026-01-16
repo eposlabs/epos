@@ -1,6 +1,6 @@
 export class ProjectEpos extends ex.Unit {
   private $project = this.closest(ex.Project)!
-  declare api: ReturnType<ProjectEpos['createApi']>
+  #api: ReturnType<ProjectEpos['createEposApi']> | null = null
   general = new ex.ProjectEposGeneral(this)
   bus = this.$.bus.use(`ProjectEpos[${this.$project.id}]`)
   state = new ex.ProjectEposState(this)
@@ -12,9 +12,13 @@ export class ProjectEpos extends ex.Unit {
   projects = new ex.ProjectEposProjects(this)
 
   async init() {
-    await this.general.init()
     await this.assets.init()
-    this.api = this.createApi()
+    this.#api = this.createEposApi()
+  }
+
+  get api() {
+    if (!this.#api) throw this.never()
+    return this.#api
   }
 
   error(message: string, caller: Fn) {
@@ -23,7 +27,7 @@ export class ProjectEpos extends ex.Unit {
     return error
   }
 
-  private createApi() {
+  private createEposApi() {
     const epos: PartialEpos = {
       // General
       fetch: this.$.utils.link(this.general, 'fetch'),

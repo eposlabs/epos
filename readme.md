@@ -36,10 +36,10 @@
   - epos.storage.use
   - epos.storage.list
 - **Frames**
-  - epos.frames.create
-  - epos.frames.remove
   - epos.frames.has
   - epos.frames.list
+  - epos.frames.create
+  - epos.frames.remove
 - **Assets**
   - epos.assets.load
   - epos.assets.unload
