@@ -7,6 +7,8 @@ export class ProjectBrowser extends sw.Unit {
   private $project = this.closest(sw.Project)!
   private bus: ReturnType<gl.Bus['use']>
   private disposers: { [listenerId: string]: Fn } = {}
+  private alarms = new sw.ProjectBrowserAlarms(this)
+  private contextMenus = new sw.ProjectBrowserContextMenus(this)
 
   constructor(parent: sw.Unit) {
     super(parent)
@@ -17,8 +19,15 @@ export class ProjectBrowser extends sw.Unit {
     this.bus.on('removeListener', this.removeListener, this)
   }
 
-  dispose() {
+  async init() {
+    await this.alarms.init()
+  }
+
+  // TODO: call disposers here
+  async dispose() {
     this.bus.off()
+    await this.alarms.dispose()
+    await this.contextMenus.dispose()
   }
 
   private getApiTree(node: unknown = this.$.browser) {
@@ -36,16 +45,21 @@ export class ProjectBrowser extends sw.Unit {
   }
 
   private async callMethod(path: string, ...args: unknown[]) {
-    const apiGetter = path.split('.').slice(0, -1)
-    const methodName = path.split('.').at(-1)
-    if (!methodName) throw this.never()
+    // Has method interceptor? -> Call it instead of the browser method
+    const interceptor = this.getInterceptor(path)
+    if (interceptor) return await interceptor(...args)
+
+    // Split path to getter and key
+    const getter = path.split('.').slice(0, -1)
+    const key = path.split('.').at(-1)
+    if (!key) throw this.never()
 
     // Get api object
-    const api = this.$.utils.get(this.$.browser, apiGetter)
+    const api = this.$.utils.get(this.$.browser, getter)
     if (!this.$.utils.is.object(api)) throw this.never()
 
-    // Get method from this api object
-    const method = api[methodName]
+    // Get method
+    const method = api[key]
     if (!this.$.utils.is.function(method)) throw this.never()
 
     // Call method
@@ -59,6 +73,9 @@ export class ProjectBrowser extends sw.Unit {
 
     // Prepare callback
     const callback = async (...args: unknown[]) => {
+      const interceptor = this.getInterceptor(path)
+      const result = interceptor ? await interceptor(...args) : null
+      if (result === false) return
       return await this.bus.send(`listenerCallback[${listenerId}]`, ...args)
     }
 
@@ -84,6 +101,36 @@ export class ProjectBrowser extends sw.Unit {
 
   private removeListener(listenerId: string) {
     this.disposers[listenerId]?.()
+  }
+
+  private getInterceptor(path: string) {
+    // Split path to getter and key
+    const getter = path.split('.').slice(0, -1)
+    const key = path.split('.').at(-1)
+    if (!key) throw this.never()
+
+    // Get possible unit that may contain the interceptor
+    const unit = this.$.utils.get(this, getter)
+    if (!this.$.utils.is.object(unit)) return null
+
+    // Get interceptor method
+    const method = unit[key]
+    if (!this.$.utils.is.function(method)) return null
+
+    // Return bound interceptor method
+    return (...args: unknown[]) => method.call(unit, ...args)
+  }
+
+  prefixed(key: string | number) {
+    return `${this.$project.id}:${key}`
+  }
+
+  unprefixed(key: string) {
+    return key.replace(`${this.$project.id}:`, '')
+  }
+
+  isPrefixed(key: string) {
+    return key.startsWith(`${this.$project.id}:`)
   }
 }
 

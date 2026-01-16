@@ -1,15 +1,15 @@
 export class ProjectEpos extends ex.Unit {
-  private $project = this.closest(ex.Project)!
   #api: ReturnType<ProjectEpos['createEposApi']> | null = null
-  general = new ex.ProjectEposGeneral(this)
-  bus = this.$.bus.use(`ProjectEpos[${this.$project.id}]`)
-  state = new ex.ProjectEposState(this)
-  storage = new ex.ProjectEposStorage(this)
-  assets = new ex.ProjectEposAssets(this)
-  frames = new ex.ProjectEposFrames(this)
-  env = new ex.ProjectEposEnv(this)
-  libs = new ex.ProjectEposLibs(this)
-  projects = new ex.ProjectEposProjects(this)
+  private $project = this.closest(ex.Project)!
+  private bus = this.$.bus.use(`ProjectEpos[${this.$project.id}]`)
+  private general = new ex.ProjectEposGeneral(this)
+  private state = new ex.ProjectEposState(this)
+  private storage = new ex.ProjectEposStorage(this)
+  private assets = new ex.ProjectEposAssets(this)
+  private frames = new ex.ProjectEposFrames(this)
+  private env = new ex.ProjectEposEnv(this)
+  private libs = new ex.ProjectEposLibs(this)
+  private projects = new ex.ProjectEposProjects(this)
 
   async init() {
     await this.assets.init()

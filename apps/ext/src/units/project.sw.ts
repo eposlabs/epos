@@ -30,7 +30,9 @@ export type Entry = {
   hasSidePanel: boolean
 }
 
-export type Meta = {}
+export type Meta = {
+  alarms: chrome.alarms.Alarm[]
+}
 
 export class Project extends sw.Unit {
   id: string
@@ -43,14 +45,16 @@ export class Project extends sw.Unit {
   browser: sw.ProjectBrowser
   states: exSw.States
   private netRuleIds = new Set<number>()
+  private onEnabledFns: Array<() => void> = []
+  private onDisabledFns: Array<() => void> = []
   static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
   static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
-    const meta: Meta = {}
+    const meta: Meta = { alarms: [] }
     const project = new Project(parent, { ...params, meta })
+    await project.init()
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
-    await project.updateNetRules()
     return project
   }
 
@@ -58,7 +62,7 @@ export class Project extends sw.Unit {
     const snapshot = await parent.$.idb.get<Snapshot>(id, ':project', 'snapshot')
     if (!snapshot) return null
     const project = new Project(parent, snapshot)
-    await project.updateNetRules()
+    await project.init()
     return project
   }
 
@@ -78,22 +82,50 @@ export class Project extends sw.Unit {
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
   }
 
+  private async init() {
+    await this.browser.init()
+    await this.updateNetRules()
+  }
+
   async dispose() {
-    this.browser.dispose()
+    await this.browser.dispose()
     await this.states.dispose()
     await this.removeNetRules()
     await this.$.idb.deleteDatabase(this.id)
   }
 
   async update(updates: Partial<Bundle & ProjectSettings>) {
+    const enabled0 = this.enabled
     this.mode = updates.mode ?? this.mode
     this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec
     this.sources = updates.sources ?? this.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     if (updates.assets) await this.saveAssets(updates.assets)
+
     await this.saveSnapshot()
     await this.updateNetRules()
+
+    if (enabled0 !== this.enabled) {
+      if (this.enabled) {
+        this.onEnabledFns.forEach(fn => fn())
+      } else {
+        this.onDisabledFns.forEach(fn => fn())
+      }
+    }
+  }
+
+  async updateMeta(meta: Partial<Meta>) {
+    Object.assign(this.meta, meta)
+    await this.saveSnapshot()
+  }
+
+  onEnabled(fn: () => void) {
+    this.onEnabledFns.push(fn)
+  }
+
+  onDisabled(fn: () => void) {
+    this.onDisabledFns.push(fn)
   }
 
   test(address?: Address) {

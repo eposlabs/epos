@@ -46,6 +46,16 @@
   - epos.assets.url
   - epos.assets.get
   - epos.assets.list
+- **Projects**
+  - epos.projects.get
+  - epos.projects.has
+  - epos.projects.list
+  - epos.projects.watch
+  - epos.projects.fetch
+  - epos.projects.create
+  - epos.projects.update
+  - epos.projects.remove
+  - epos.projects.export
 - **Env**
   - epos.env.tabId
   - epos.env.project
@@ -60,13 +70,3 @@
   - epos.libs.reactDomClient
   - epos.libs.reactJsxRuntime
   - epos.libs.yjs
-- **Projects**
-  - epos.projects.get
-  - epos.projects.has
-  - epos.projects.list
-  - epos.projects.watch
-  - epos.projects.fetch
-  - epos.projects.create
-  - epos.projects.update
-  - epos.projects.remove
-  - epos.projects.export

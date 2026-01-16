@@ -10,7 +10,7 @@ if (self === top) {
   `
 } else {
   document.body.innerHTML = `
-    <div style="background: lightblue">
+    <div style="background: #7d00ff; color: #fff; padding: 8px;">
       X1 FRAME
     </div>
   `

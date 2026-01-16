@@ -24,7 +24,7 @@ export type Initial<T> = T extends Obj ? T : Instance<T>
 export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
 
 // Project types
-export type { Spec }
+export type { Browser, Spec }
 export type Mode = 'development' | 'production'
 export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
@@ -70,14 +70,13 @@ export type Res = {
 }
 
 export interface Epos {
-  // General
   fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
   browser: Browser
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): react.FC<T>
   container: HTMLDivElement
+  engine: any
 
-  // Bus
   bus: {
     /** Register event listener. */
     on<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
@@ -95,7 +94,6 @@ export interface Epos {
     waitSignal<T>(name: string, timeout?: number): Promise<T | null>
   }
 
-  // State
   state: {
     /** Connect state. */
     connect: {
@@ -119,7 +117,6 @@ export interface Epos {
     DETACH: symbol
   }
 
-  // Storage
   storage: {
     /** Get value from storage. */
     get: {
@@ -157,7 +154,6 @@ export interface Epos {
     list(): Promise<string[]>
   }
 
-  // Frames
   frames: {
     /** Open background frame. */
     create(url: string, attrs?: Attrs): Promise<string>
@@ -169,7 +165,6 @@ export interface Epos {
     list(): Promise<{ id: string; url: string }[]>
   }
 
-  // Assets
   assets: {
     /** Load specified asset to memory. Load all assets if no path is provided. */
     load: {
@@ -193,28 +188,6 @@ export interface Epos {
     list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 
-  // Env
-  env: {
-    /** `tabId` is `-1` for `<background>` and iframes. */
-    tabId: -1 | number
-    project: { id: string; mode: Mode; spec: Spec }
-    isPopup: boolean
-    isSidePanel: boolean
-    isBackground: boolean
-  }
-
-  // Libs
-  libs: {
-    mobx: typeof mobx
-    mobxReactLite: typeof mobxReactLite
-    react: typeof react
-    reactDom: typeof reactDom
-    reactDomClient: typeof reactDomClient
-    reactJsxRuntime: typeof reactJsxRuntime
-    yjs: typeof yjs
-  }
-
-  // Projects
   projects: {
     get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
     has(id: string): Promise<boolean>
@@ -227,8 +200,24 @@ export interface Epos {
     export(id: string, mode?: Mode): Promise<Record<string, Blob>>
   }
 
-  // Engine
-  engine: any
+  env: {
+    /** `tabId` is `-1` for iframes, including `<background>` iframe. */
+    tabId: -1 | number
+    project: { id: string; mode: Mode; spec: Spec }
+    isPopup: boolean
+    isSidePanel: boolean
+    isBackground: boolean
+  }
+
+  libs: {
+    mobx: typeof mobx
+    mobxReactLite: typeof mobxReactLite
+    react: typeof react
+    reactDom: typeof reactDom
+    reactDomClient: typeof reactDomClient
+    reactJsxRuntime: typeof reactJsxRuntime
+    yjs: typeof yjs
+  }
 }
 
 declare global {
