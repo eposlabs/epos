@@ -221,8 +221,8 @@ export interface Epos {
     list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
     watch(listener: () => void): void
     fetch(url: string): Promise<Bundle>
-    create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T>
-    update(id: string, updates: Partial<ProjectSettings & Bundle>): Promise<void>
+    create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T>
+    update(id: string, updates: Partial<Bundle & ProjectSettings>): Promise<void>
     remove(id: string): Promise<void>
     export(id: string, mode?: Mode): Promise<Record<string, Blob>>
   }

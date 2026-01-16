@@ -135,7 +135,7 @@ export class Projects extends sw.Unit {
     return { spec, sources, assets }
   }
 
-  private async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
+  private async create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T> {
     if (params.id && this.dict[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
     const project = await sw.Project.new(this, params)
     this.dict[project.id] = project
@@ -143,7 +143,7 @@ export class Projects extends sw.Unit {
     return project.id as T
   }
 
-  private async update(id: string, updates: Partial<ProjectSettings & Bundle>) {
+  private async update(id: string, updates: Partial<Bundle & ProjectSettings>) {
     const project = this.dict[id]
     if (!project) throw new Error(`Project with id "${id}" does not exist`)
     await project.update(updates)

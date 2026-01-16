@@ -3,30 +3,26 @@ export type UpdateRuleOptions = {
   removeRuleIds?: chrome.declarativeNetRequest.UpdateRuleOptions['removeRuleIds']
 }
 
-export class Ext extends sw.Unit {
-  id: string
+export class ProjectBrowser extends sw.Unit {
+  private $project = this.closest(sw.Project)!
   private bus: ReturnType<gl.Bus['use']>
   private disposers: { [listenerId: string]: Fn } = {}
 
-  constructor(parent: sw.Unit, id: string) {
+  constructor(parent: sw.Unit) {
     super(parent)
-    this.id = id
-    this.bus = this.$.bus.use(id)
-    this.bus.on('buildApiTree', this.buildApiTree, this)
+    this.bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
+    this.bus.on('createApiTree', this.createApiTree, this)
     this.bus.on('callMethod', this.callMethod, this)
     this.bus.on('registerListener', this.registerListener, this)
     this.bus.on('unregisterListener', this.unregisterListener, this)
     this.bus.on('updateSessionRules', this.updateSessionRules, this)
     this.bus.on('updateDynamicRules', this.updateDynamicRules, this)
-    // project-ext.ts
-    // project-states.ts
-    // project-state.ts
   }
 
-  private buildApiTree(node: unknown = this.$.browser) {
+  private createApiTree(node: unknown = this.$.browser) {
     if (this.$.utils.is.object(node)) {
       const subtree: Obj = {}
-      for (const key in node) subtree[key] = this.buildApiTree(node[key])
+      for (const key in node) subtree[key] = this.createApiTree(node[key])
       return subtree
     }
 

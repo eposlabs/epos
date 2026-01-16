@@ -5,17 +5,16 @@ export const _cbId_ = Symbol('id')
 export type Callback = Fn & { [_cbId_]?: string }
 export type Chrome = typeof chrome
 
-export class Ext extends ex.Unit {
-  id: string
+export class ProjectBrowser extends ex.Unit {
+  private $project = this.closest(ex.Project)!
   #api: Chrome | null = null
   private bus: ReturnType<gl.Bus['use']>
   private listenerIds = new Set<string>()
   static _cbId_ = _cbId_
 
-  constructor(parent: ex.Unit, id: string) {
+  constructor(parent: ex.Unit) {
     super(parent)
-    this.id = id
-    this.bus = this.$.bus.use(id)
+    this.bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
     // this.$.browser.alarms.create
     // IDEA: keep array of "disposers"
     // ['alarms.remove', name]
@@ -27,7 +26,7 @@ export class Ext extends ex.Unit {
   }
 
   private async initApi() {
-    const apiTree = await this.bus.send<Obj>('buildApiTree')
+    const apiTree = await this.bus.send<Obj>('createApiTree')
     if (!apiTree) throw this.never()
     this.#api = await this.createApi(apiTree)
   }
@@ -38,28 +37,28 @@ export class Ext extends ex.Unit {
   }
 
   // TODO: no path, should return Browser type
-  private createApi<T>(value: T, path: string[] = []): any {
-    if (this.$.utils.is.object(value)) {
+  private createApi<T>(node: T, path: string[] = []): any {
+    if (this.$.utils.is.object(node)) {
       const api: Obj = {}
-      for (const key in value) api[key] = this.createApi(value[key], [...path, key])
+      for (const key in node) api[key] = this.createApi(node[key], [...path, key])
       return api
     }
 
-    if (this.$.utils.is.string(value) && value.startsWith('<')) {
+    if (this.$.utils.is.string(node) && node.startsWith('<')) {
       const apiPath = path.slice(0, -1)
 
-      if (value === '<addListener>') return this.addListener.bind(this, apiPath)
-      if (value === '<hasListener>') return this.hasListener.bind(this, apiPath)
-      if (value === '<hasListeners>') return this.hasListeners.bind(this, apiPath)
-      if (value === '<removeListener>') return this.removeListener.bind(this, apiPath)
+      if (node === '<addListener>') return this.addListener.bind(this, apiPath)
+      if (node === '<hasListener>') return this.hasListener.bind(this, apiPath)
+      if (node === '<hasListeners>') return this.hasListeners.bind(this, apiPath)
+      if (node === '<removeListener>') return this.removeListener.bind(this, apiPath)
 
-      if (value === '<method>') {
+      if (node === '<method>') {
         const methodName = path.at(-1) as string
         return this.callMethod.bind(this, apiPath, methodName)
       }
     }
 
-    return value
+    return node
   }
 
   // MANAGE LISTENERS

@@ -7,7 +7,7 @@ export class ProjectEposGeneral extends ex.Unit {
   container = this.createProjectContainer()
 
   get browser() {
-    return this.$project.ext.api
+    return this.$project.browser.api
   }
 
   component<T>(Component: FC<T>): FC<T> {

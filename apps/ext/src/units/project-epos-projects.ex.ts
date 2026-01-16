@@ -36,13 +36,13 @@ export class ProjectEposProjects extends ex.Unit {
     return bundle
   }
 
-  async create<T extends string>(params: { id?: T } & Partial<ProjectSettings> & Bundle): Promise<T> {
+  async create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T> {
     const id = await this.$.bus.send<sw.Projects['create']>('Projects.create', params)
     if (!id) throw this.never()
     return id as T
   }
 
-  async update(id: string, updates: Partial<ProjectSettings & Bundle>) {
+  async update(id: string, updates: Partial<Bundle & ProjectSettings>) {
     await this.$.bus.send<sw.Projects['update']>('Projects.update', id, updates)
   }
 

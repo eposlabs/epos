@@ -18,6 +18,7 @@ export type Snapshot = {
   enabled: boolean
   spec: Spec
   sources: Sources
+  meta: Meta
 }
 
 // Lightweight data sent to peers
@@ -29,20 +30,31 @@ export type Entry = {
   hasSidePanel: boolean
 }
 
+export type Meta = {
+  browser: {
+    grantedPermissions: string[]
+  }
+}
+
 export class Project extends sw.Unit {
   id: string
   mode: Mode
   enabled: boolean
   spec: Spec
   sources: Sources
-  ext: sw.Ext
+  meta: Meta
   states: exSw.States
+  browser: sw.ProjectBrowser
   targets: sw.ProjectTarget[] = []
   private netRuleIds = new Set<number>()
   static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
-  static async new(parent: sw.Unit, params: { id?: string } & Partial<ProjectSettings> & Bundle) {
-    const project = new Project(parent, params)
+  static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
+    const meta: Meta = {
+      browser: { grantedPermissions: [] },
+    }
+
+    const project = new Project(parent, { ...params, meta })
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
     await project.updateNetRules()
@@ -57,16 +69,20 @@ export class Project extends sw.Unit {
     return project
   }
 
-  constructor(parent: sw.Unit, params: { id?: string } & Partial<ProjectSettings> & Omit<Bundle, 'assets'>) {
+  constructor(
+    parent: sw.Unit,
+    params: Omit<Bundle, 'assets'> & { meta: Meta } & Partial<ProjectSettings & { id: string }>,
+  ) {
     super(parent)
     this.id = params.id ?? this.$.utils.id()
-    this.spec = params.spec
-    this.sources = params.sources
     this.mode = params.mode ?? 'production'
     this.enabled = params.enabled ?? true
+    this.spec = params.spec
+    this.sources = params.sources
+    this.meta = params.meta
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.ext = new sw.Ext(this, `Project[${this.id}]`)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
+    this.browser = new sw.ProjectBrowser(this)
   }
 
   async dispose() {
@@ -75,7 +91,7 @@ export class Project extends sw.Unit {
     await this.$.idb.deleteDatabase(this.id)
   }
 
-  async update(updates: Partial<ProjectSettings & Bundle>) {
+  async update(updates: Partial<Bundle & ProjectSettings>) {
     this.mode = updates.mode ?? this.mode
     this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec
@@ -181,6 +197,7 @@ export class Project extends sw.Unit {
       enabled: true,
       spec: this.spec,
       sources: this.sources,
+      meta: this.meta,
     }
 
     // Get project assets
@@ -283,6 +300,7 @@ export class Project extends sw.Unit {
       enabled: this.enabled,
       spec: this.spec,
       sources: this.sources,
+      meta: this.meta,
     })
   }
 
