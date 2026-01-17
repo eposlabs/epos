@@ -5,7 +5,7 @@
   "slug": "kit",
   "version": "1.8",
   "description": "Build browser extensions.",
-  "assets": ["public/icon.svg"],
+  "assets": ["public/icon.svg", "public/icon.png"],
 
   "config": {
     "access": ["projects", "engine"],

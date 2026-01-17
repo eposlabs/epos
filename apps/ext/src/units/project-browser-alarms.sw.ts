@@ -1,4 +1,6 @@
+export type Alarm = chrome.alarms.Alarm
 export type AlarmCreateInfo = chrome.alarms.AlarmCreateInfo
+export type OnAlarmArgs = Parameters<Parameters<typeof chrome.alarms.onAlarm.addListener>[0]>
 
 export class ProjectBrowserAlarms extends sw.Unit {
   private $project = this.closest(sw.Project)!
@@ -20,7 +22,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
 
   async init() {
     if (!this.$project.enabled) return
-    await this.onProjectEnabled()
+    await this.restoreProjectAlarms()
   }
 
   async dispose() {
@@ -44,7 +46,6 @@ export class ProjectBrowserAlarms extends sw.Unit {
     const [name, info] = this.$.utils.is.string(args[0])
       ? [this.$browser.prefixed(args[0]), args[1] as AlarmCreateInfo]
       : [this.$browser.prefixed(''), args[0] as AlarmCreateInfo]
-
     await this.$.browser.alarms.create(name, info)
     await this.updateProjectAlarms()
   }
@@ -61,23 +62,28 @@ export class ProjectBrowserAlarms extends sw.Unit {
       .map(alarm => ({ ...alarm, name: this.$browser.unprefixed(alarm.name) }))
   }
 
-  onAlarm(alarm: chrome.alarms.Alarm) {
-    if (!this.$browser.isPrefixed(alarm.name)) return false
+  onAlarm(alarm: Alarm) {
+    if (!this.$browser.isPrefixed(alarm.name)) return
     alarm.name = this.$browser.unprefixed(alarm.name)
+    return [alarm]
   }
 
   private async onProjectEnabled() {
-    for (const alarm of this.$project.meta.alarms) {
-      await this.$.browser.alarms.create(alarm.name, {
-        when: alarm.scheduledTime,
-        periodInMinutes: alarm.periodInMinutes,
-      })
-    }
+    await this.restoreProjectAlarms()
   }
 
   private async onProjectDisabled() {
     for (const alarm of this.$project.meta.alarms) {
       await this.$.browser.alarms.clear(alarm.name)
+    }
+  }
+
+  private async restoreProjectAlarms() {
+    for (const alarm of this.$project.meta.alarms) {
+      await this.$.browser.alarms.create(alarm.name, {
+        when: alarm.scheduledTime,
+        periodInMinutes: alarm.periodInMinutes,
+      })
     }
   }
 

@@ -8,6 +8,12 @@
   - epos.component
   - epos.render
   - epos.container
+- **Env**
+  - epos.env.tabId
+  - epos.env.project
+  - epos.env.isPopup
+  - epos.env.isSidePanel
+  - epos.env.isBackground
 - **Bus**
   - epos.bus.on
   - epos.bus.off
@@ -56,12 +62,6 @@
   - epos.projects.update
   - epos.projects.remove
   - epos.projects.export
-- **Env**
-  - epos.env.tabId
-  - epos.env.project
-  - epos.env.isPopup
-  - epos.env.isSidePanel
-  - epos.env.isBackground
 - **Libs**
   - epos.libs.mobx
   - epos.libs.mobxReactLite

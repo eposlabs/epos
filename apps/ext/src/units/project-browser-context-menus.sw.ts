@@ -56,9 +56,10 @@ export class ProjectBrowserContextMenus extends sw.Unit {
   }
 
   onClicked(data: OnClickData) {
-    if (!this.$browser.isPrefixed(String(data.menuItemId))) return false
+    if (!this.$browser.isPrefixed(String(data.menuItemId))) return
     data.menuItemId = this.$browser.unprefixed(String(data.menuItemId))
     if (data.parentMenuItemId) data.parentMenuItemId = this.$browser.unprefixed(String(data.parentMenuItemId))
+    return [data]
   }
 
   private async onProjectEnabled() {

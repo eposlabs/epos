@@ -13,6 +13,7 @@ export type LooseBrowser = {
   extension: { [K in keyof Browser['extension']]-?: unknown }
   i18n: { [K in keyof Browser['i18n']]-?: unknown }
   management?: { [K in keyof Browser['management']]-?: unknown }
+  notifications: { [K in keyof Browser['notifications']]-?: unknown }
   tabs: { [K in keyof Browser['tabs']]-?: unknown }
   webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
   windows: { [K in keyof Browser['windows']]-?: unknown }
@@ -182,6 +183,23 @@ export class ProjectBrowser extends ex.Unit {
         ExtensionInstallType: this.getValue('management.ExtensionInstallType'),
         ExtensionType: this.getValue('management.ExtensionType'),
         LaunchType: this.getValue('management.LaunchType'),
+      },
+
+      notifications: {
+        // Methods
+        clear: this.createMethod('notifications.clear'),
+        create: this.createMethod('notifications.create'),
+        getAll: this.createMethod('notifications.getAll'),
+        update: this.createMethod('notifications.update'),
+
+        // Events
+        onButtonClicked: this.createEvent('notifications.onButtonClicked'),
+        onClicked: this.createEvent('notifications.onClicked'),
+        onClosed: this.createEvent('notifications.onClosed'),
+
+        // Values
+        PermissionLevel: this.getValue('notifications.PermissionLevel'),
+        TemplateType: this.getValue('notifications.TemplateType'),
       },
 
       tabs: {

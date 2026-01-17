@@ -175,20 +175,21 @@
   //   "LaunchType": "<value>"
   // },
 
-  "notifications": {
-    "onShowSettings": "<event>",
-    "onPermissionLevelChanged": "<event>",
-    "onButtonClicked": "<event>",
-    "onClicked": "<event>",
-    "onClosed": "<event>",
-    "clear": "<method>",
-    "create": "<method>",
-    "getAll": "<method>",
-    "getPermissionLevel": "<method>",
-    "update": "<method>",
-    "PermissionLevel": "<value>",
-    "TemplateType": "<value>"
-  },
+  // ✅ DONE
+  // "notifications": {
+  //   "onShowSettings": "<event>",
+  //   "onPermissionLevelChanged": "<event>",
+  //   "onButtonClicked": "<event>",
+  //   "onClicked": "<event>",
+  //   "onClosed": "<event>",
+  //   "clear": "<method>",
+  //   "create": "<method>",
+  //   "getAll": "<method>",
+  //   "getPermissionLevel": "<method>",
+  //   "update": "<method>",
+  //   "PermissionLevel": "<value>",
+  //   "TemplateType": "<value>"
+  // },
 
   // 🚫 IGNORE
   // "offscreen": {

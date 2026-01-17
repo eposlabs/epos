@@ -36,6 +36,16 @@ export class ProjectEpos extends ex.Unit {
       render: this.$.utils.link(this.general, 'render'),
       container: this.general.container,
 
+      // Env
+      env: {
+        // Use `-1` instead of `null` to use `epos.browser.tabs.*` api without extra checks
+        tabId: this.env.tabId ?? -1,
+        project: this.env.project,
+        isPopup: this.env.isPopup,
+        isSidePanel: this.env.isSidePanel,
+        isBackground: this.env.isBackground,
+      },
+
       // Bus
       bus: {
         on: this.$.utils.link(this.bus, 'on'),
@@ -87,16 +97,6 @@ export class ProjectEpos extends ex.Unit {
         url: this.$.utils.link(this.assets, 'url'),
         get: this.$.utils.link(this.assets, 'get'),
         list: this.$.utils.link(this.assets, 'list'),
-      },
-
-      // Env
-      env: {
-        // Use `-1` instead of `null` to use `epos.browser.tabs.*` api without extra checks
-        tabId: this.env.tabId ?? -1,
-        project: this.env.project,
-        isPopup: this.env.isPopup,
-        isSidePanel: this.env.isSidePanel,
-        isBackground: this.env.isBackground,
       },
 
       // Libs

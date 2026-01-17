@@ -77,6 +77,15 @@ export interface Epos {
   container: HTMLDivElement
   engine: any
 
+  env: {
+    /** `tabId` is `-1` for iframes, including `<background>` iframe. */
+    tabId: -1 | number
+    project: { id: string; mode: Mode; spec: Spec }
+    isPopup: boolean
+    isSidePanel: boolean
+    isBackground: boolean
+  }
+
   bus: {
     /** Register event listener. */
     on<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
@@ -198,15 +207,6 @@ export interface Epos {
     update(id: string, updates: Partial<Bundle & ProjectSettings>): Promise<void>
     remove(id: string): Promise<void>
     export(id: string, mode?: Mode): Promise<Record<string, Blob>>
-  }
-
-  env: {
-    /** `tabId` is `-1` for iframes, including `<background>` iframe. */
-    tabId: -1 | number
-    project: { id: string; mode: Mode; spec: Spec }
-    isPopup: boolean
-    isSidePanel: boolean
-    isBackground: boolean
   }
 
   libs: {

@@ -9,6 +9,7 @@ export class ProjectBrowser extends sw.Unit {
   private disposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
+  private notifications = new sw.ProjectBrowserNotifications(this)
 
   constructor(parent: sw.Unit) {
     super(parent)
@@ -28,6 +29,7 @@ export class ProjectBrowser extends sw.Unit {
     this.bus.off()
     await this.alarms.dispose()
     await this.contextMenus.dispose()
+    await this.notifications.dispose()
   }
 
   private getApiTree(node: unknown = this.$.browser) {
@@ -74,8 +76,11 @@ export class ProjectBrowser extends sw.Unit {
     // Prepare callback
     const callback = async (...args: unknown[]) => {
       const interceptor = this.getInterceptor(path)
-      const result = interceptor ? await interceptor(...args) : null
-      if (result === false) return
+      if (interceptor) {
+        const patchedArgs = await interceptor(...args)
+        if (!this.$.utils.is.array(patchedArgs)) return
+        args = patchedArgs
+      }
       return await this.bus.send(`listenerCallback[${listenerId}]`, ...args)
     }
 
@@ -122,15 +127,15 @@ export class ProjectBrowser extends sw.Unit {
   }
 
   prefixed(key: string | number) {
-    return `${this.$project.id}:${key}`
+    return `@${this.$project.id}::${key}`
   }
 
   unprefixed(key: string) {
-    return key.replace(`${this.$project.id}:`, '')
+    return key.replace(`@${this.$project.id}::`, '')
   }
 
   isPrefixed(key: string) {
-    return key.startsWith(`${this.$project.id}:`)
+    return key.startsWith(`@${this.$project.id}::`)
   }
 }
 

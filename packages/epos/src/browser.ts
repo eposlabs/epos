@@ -18,6 +18,7 @@ export type Browser = {
   contextMenus: ContextMenus
   cookies: Cookies
   downloads: Downloads
+  notifications: Notifications
 }
 
 export type Alarms = typeof chrome.alarms
@@ -102,4 +103,14 @@ export type Downloads = Omit<
   // Not supported by epos
   | 'open' // Requires user gesture and "downloads.open" permission
   | 'setUiOptions' // Requires "downloads.ui" permission
+>
+
+export type Notifications = Omit<
+  typeof chrome.notifications,
+  // Deprecated
+  | 'onShowSettings'
+
+  // Not supported by epos
+  | 'getPermissionLevel'
+  | 'onPermissionLevelChanged'
 >
