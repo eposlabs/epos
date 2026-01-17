@@ -10,6 +10,7 @@ export class ProjectBrowser extends sw.Unit {
   private alarms = new sw.ProjectBrowserAlarms(this)
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
+  private declarativeNetRequest = new sw.ProjectBrowserDeclarativeNetRequest(this)
 
   constructor(parent: sw.Unit) {
     super(parent)
@@ -30,17 +31,19 @@ export class ProjectBrowser extends sw.Unit {
     await this.alarms.dispose()
     await this.contextMenus.dispose()
     await this.notifications.dispose()
+    await this.declarativeNetRequest.dispose()
   }
 
   private getApiTree(node: unknown = this.$.browser) {
     if (this.$.utils.is.object(node)) {
+      if (node.addListener) return '<event>'
       const subtree: Obj = {}
       for (const key in node) subtree[key] = this.getApiTree(node[key])
       return subtree
     }
 
     if (this.$.utils.is.function(node)) {
-      return '<function>'
+      return '<method>'
     }
 
     return node

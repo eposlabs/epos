@@ -7,7 +7,25 @@ export class Net extends sw.Unit {
   async init() {
     this.$.bus.on('Net.addRule', this.addRule, this)
     this.$.bus.on('Net.removeRule', this.removeRule, this)
+    await this.disableCsp()
     await this.removeAllRules()
+  }
+
+  private async disableCsp() {
+    await this.addRule({
+      priority: 1,
+      condition: {
+        urlFilter: '*://*/*',
+        resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
+      },
+      action: {
+        type: 'modifyHeaders',
+        responseHeaders: [
+          { header: 'Content-Security-Policy', operation: 'remove' },
+          { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
+        ],
+      },
+    })
   }
 
   async addRule(rule: Rule) {

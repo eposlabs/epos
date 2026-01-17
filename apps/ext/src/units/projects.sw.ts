@@ -45,7 +45,6 @@ export class Projects extends sw.Unit {
 
     await this.loadEx()
     await this.loadProjects()
-    await this.disableCsp()
     await this.watchAndFixCsp()
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
@@ -303,23 +302,6 @@ export class Projects extends sw.Unit {
     } else {
       await this.create({ ...snapshot, assets })
     }
-  }
-
-  private async disableCsp() {
-    await this.$.net.addRule({
-      priority: 1,
-      condition: {
-        urlFilter: '*://*/*',
-        resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
-      },
-      action: {
-        type: 'modifyHeaders',
-        responseHeaders: [
-          { header: 'Content-Security-Policy', operation: 'remove' },
-          { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
-        ],
-      },
-    })
   }
 
   private async watchAndFixCsp() {

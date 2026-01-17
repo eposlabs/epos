@@ -11,6 +11,7 @@ export type Browser = {
 
   // Mandatory for epos
   alarms: Alarms
+  declarativeNetRequest: DeclarativeNetRequest
   tabs: Tabs
   webNavigation: WebNavigation
 
@@ -23,15 +24,15 @@ export type Browser = {
   sidePanel: SidePanel
 }
 
+export type MakeAsync<T extends (...args: any[]) => any> = (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>
 export type Alarms = typeof chrome.alarms
-export type ContextMenus = typeof chrome.contextMenus
 export type Cookies = typeof chrome.cookies
 export type WebNavigation = typeof chrome.webNavigation
 export type Windows = typeof chrome.windows
 
 export type Action = Omit<
   typeof chrome.action,
-  // Not supported by epos
+  // Not supported by epos:
   'openPopup'
 >
 
@@ -105,6 +106,19 @@ export type Runtime = Omit<
   | 'sendNativeMessage' // Requires nativeMessaging" permission
 >
 
+export type DeclarativeNetRequest = Omit<
+  typeof chrome.declarativeNetRequest,
+  // Not supported by epos
+  | 'getAvailableStaticRuleCount'
+  | 'getDisabledRuleIds'
+  | 'getEnabledRulesets'
+  | 'onRuleMatchedDebug' // Requires "declarativeNetRequestFeedback" permission
+  | 'setExtensionActionOptions'
+  | 'testMatchOutcome'
+  | 'updateEnabledRulesets'
+  | 'updateStaticRules'
+>
+
 export type Tabs = Omit<
   typeof chrome.tabs,
   // Deprecated
@@ -128,6 +142,10 @@ export type BrowsingData = Omit<
   // Deprecated
   'removePasswords' | 'removePluginData'
 >
+
+export type ContextMenus = Omit<typeof chrome.contextMenus, 'create'> & {
+  create: MakeAsync<typeof chrome.contextMenus.create>
+}
 
 export type Downloads = Omit<
   typeof chrome.downloads,

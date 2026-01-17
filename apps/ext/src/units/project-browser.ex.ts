@@ -5,21 +5,27 @@ export const _cbId_ = Symbol('id')
 export type Callback = Fn & { [_cbId_]?: string }
 
 export type LooseBrowser = {
+  // Always available
   action: { [K in keyof Browser['action']]-?: unknown }
+  extension: { [K in keyof Browser['extension']]-?: unknown }
+  i18n: { [K in keyof Browser['i18n']]-?: unknown }
+  management: { [K in keyof Browser['management']]-?: unknown }
+  runtime: { [K in keyof Browser['runtime']]-?: unknown }
+  windows: { [K in keyof Browser['windows']]-?: unknown }
+
+  // Mandatory for epos
   alarms: { [K in keyof Browser['alarms']]-?: unknown }
+  declarativeNetRequest?: { [K in keyof Browser['declarativeNetRequest']]-?: unknown }
+  tabs: { [K in keyof Browser['tabs']]-?: unknown }
+  webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
+
+  // Optional for epos
   browsingData: { [K in keyof Browser['browsingData']]-?: unknown }
   contextMenus: { [K in keyof Browser['contextMenus']]-?: unknown }
   cookies: { [K in keyof Browser['cookies']]-?: unknown }
   downloads: { [K in keyof Browser['downloads']]-?: unknown }
-  extension: { [K in keyof Browser['extension']]-?: unknown }
-  i18n: { [K in keyof Browser['i18n']]-?: unknown }
-  management?: { [K in keyof Browser['management']]-?: unknown }
   notifications: { [K in keyof Browser['notifications']]-?: unknown }
-  runtime: { [K in keyof Browser['runtime']]-?: unknown }
   sidePanel: { [K in keyof Browser['sidePanel']]-?: unknown }
-  tabs: { [K in keyof Browser['tabs']]-?: unknown }
-  webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
-  windows: { [K in keyof Browser['windows']]-?: unknown }
 }
 
 export class ProjectBrowser extends ex.Unit {
@@ -39,12 +45,16 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   private async setupApi() {
-    const apiTree = await this.bus.send<Obj>('getApiTree')
-    const value = (path: string) => this.$.utils.get(apiTree, path.split('.'))
+    const tree = await this.bus.send<Obj<any>>('getApiTree')
+    if (!tree) throw this.never()
+
     const manifest = await this.callMethod('runtime.getManifest')
     if (!this.$.utils.is.object(manifest)) throw this.never()
 
     this.#api = {
+      // ALWAYS AVAILABLE
+      // ---------------------------------------------------------------------------
+
       action: {
         // Methods
         disable: this.createMethod('action.disable'),
@@ -68,97 +78,6 @@ export class ProjectBrowser extends ex.Unit {
         onUserSettingsChanged: this.createEvent('action.onUserSettingsChanged'),
       },
 
-      alarms: {
-        // Methods
-        clear: this.createMethod('alarms.clear'),
-        clearAll: this.createMethod('alarms.clearAll'),
-        create: this.createMethod('alarms.create'),
-        get: this.createMethod('alarms.get'),
-        getAll: this.createMethod('alarms.getAll'),
-
-        // Events
-        onAlarm: this.createEvent('alarms.onAlarm'),
-      },
-
-      browsingData: {
-        // Methods
-        remove: this.createMethod('browsingData.remove'),
-        removeAppcache: this.createMethod('browsingData.removeAppcache'),
-        removeCache: this.createMethod('browsingData.removeCache'),
-        removeCacheStorage: this.createMethod('browsingData.removeCacheStorage'),
-        removeCookies: this.createMethod('browsingData.removeCookies'),
-        removeDownloads: this.createMethod('browsingData.removeDownloads'),
-        removeFileSystems: this.createMethod('browsingData.removeFileSystems'),
-        removeFormData: this.createMethod('browsingData.removeFormData'),
-        removeHistory: this.createMethod('browsingData.removeHistory'),
-        removeIndexedDB: this.createMethod('browsingData.removeIndexedDB'),
-        removeLocalStorage: this.createMethod('browsingData.removeLocalStorage'),
-        removeServiceWorkers: this.createMethod('browsingData.removeServiceWorkers'),
-        removeWebSQL: this.createMethod('browsingData.removeWebSQL'),
-        settings: this.createMethod('browsingData.settings'),
-      },
-
-      contextMenus: {
-        // Methods
-        create: this.createMethod('contextMenus.create'),
-        remove: this.createMethod('contextMenus.remove'),
-        removeAll: this.createMethod('contextMenus.removeAll'),
-        update: this.createMethod('contextMenus.update'),
-
-        // Events
-        onClicked: this.createEvent('contextMenus.onClicked'),
-
-        // Values
-        ContextType: value('contextMenus.ContextType'),
-        ItemType: value('contextMenus.ItemType'),
-        ACTION_MENU_TOP_LEVEL_LIMIT: value('contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT'),
-      },
-
-      cookies: {
-        // Methods
-        get: this.createMethod('cookies.get'),
-        getAll: this.createMethod('cookies.getAll'),
-        getAllCookieStores: this.createMethod('cookies.getAllCookieStores'),
-        getPartitionKey: this.createMethod('cookies.getPartitionKey'),
-        remove: this.createMethod('cookies.remove'),
-        set: this.createMethod('cookies.set'),
-
-        // Events
-        onChanged: this.createEvent('cookies.onChanged'),
-
-        // Values
-        OnChangedCause: value('cookies.OnChangedCause'),
-        SameSiteStatus: value('cookies.SameSiteStatus'),
-      },
-
-      downloads: {
-        // Methods
-        acceptDanger: this.createMethod('downloads.acceptDanger'),
-        cancel: this.createMethod('downloads.cancel'),
-        download: this.createMethod('downloads.download'),
-        erase: this.createMethod('downloads.erase'),
-        getFileIcon: this.createMethod('downloads.getFileIcon'),
-        pause: this.createMethod('downloads.pause'),
-        removeFile: this.createMethod('downloads.removeFile'),
-        resume: this.createMethod('downloads.resume'),
-        search: this.createMethod('downloads.search'),
-        show: this.createMethod('downloads.show'),
-        showDefaultFolder: this.createMethod('downloads.showDefaultFolder'),
-
-        // Events
-        onChanged: this.createEvent('downloads.onChanged'),
-        onCreated: this.createEvent('downloads.onCreated'),
-        onDeterminingFilename: this.createEvent('downloads.onDeterminingFilename'),
-        onErased: this.createEvent('downloads.onErased'),
-
-        // Values
-        DangerType: value('downloads.DangerType'),
-        FilenameConflictAction: value('downloads.FilenameConflictAction'),
-        HttpMethod: value('downloads.HttpMethod'),
-        InterruptReason: value('downloads.InterruptReason'),
-        State: value('downloads.State'),
-      },
-
       extension: {
         // Methods
         isAllowedFileSchemeAccess: this.createMethod('extension.isAllowedFileSchemeAccess'),
@@ -166,8 +85,8 @@ export class ProjectBrowser extends ex.Unit {
         setUpdateUrlData: this.createMethod('extension.setUpdateUrlData'),
 
         // Values
-        inIncognitoContext: value('extension.inIncognitoContext'),
-        ViewType: value('extension.ViewType'),
+        inIncognitoContext: tree.extension.inIncognitoContext,
+        ViewType: tree.extension.ViewType,
       },
 
       i18n: {
@@ -184,27 +103,10 @@ export class ProjectBrowser extends ex.Unit {
         uninstallSelf: this.createMethod('management.uninstallSelf'),
 
         // Values
-        ExtensionDisabledReason: value('management.ExtensionDisabledReason'),
-        ExtensionInstallType: value('management.ExtensionInstallType'),
-        ExtensionType: value('management.ExtensionType'),
-        LaunchType: value('management.LaunchType'),
-      },
-
-      notifications: {
-        // Methods
-        clear: this.createMethod('notifications.clear'),
-        create: this.createMethod('notifications.create'),
-        getAll: this.createMethod('notifications.getAll'),
-        update: this.createMethod('notifications.update'),
-
-        // Events
-        onButtonClicked: this.createEvent('notifications.onButtonClicked'),
-        onClicked: this.createEvent('notifications.onClicked'),
-        onClosed: this.createEvent('notifications.onClosed'),
-
-        // Values
-        PermissionLevel: value('notifications.PermissionLevel'),
-        TemplateType: value('notifications.TemplateType'),
+        ExtensionDisabledReason: tree.management.ExtensionDisabledReason,
+        ExtensionInstallType: tree.management.ExtensionInstallType,
+        ExtensionType: tree.management.ExtensionType,
+        LaunchType: tree.management.LaunchType,
       },
 
       runtime: {
@@ -222,26 +124,82 @@ export class ProjectBrowser extends ex.Unit {
         onUpdateAvailable: this.createEvent('runtime.onUpdateAvailable'),
 
         // Values
-        ContextType: value('runtime.ContextType'),
-        id: value('runtime.id'),
-        PlatformArch: value('runtime.PlatformArch'),
-        PlatformNaclArch: value('runtime.PlatformNaclArch'),
-        PlatformOs: value('runtime.PlatformOs'),
-        RequestUpdateCheckStatus: value('runtime.RequestUpdateCheckStatus'),
+        ContextType: tree.runtime.ContextType,
+        id: tree.runtime.id,
+        PlatformArch: tree.runtime.PlatformArch,
+        PlatformNaclArch: tree.runtime.PlatformNaclArch,
+        PlatformOs: tree.runtime.PlatformOs,
+        RequestUpdateCheckStatus: tree.runtime.RequestUpdateCheckStatus,
       },
 
-      sidePanel: {
+      windows: {
         // Methods
-        getLayout: this.createMethod('sidePanel.getLayout'),
-        getOptions: this.createMethod('sidePanel.getOptions'),
-        getPanelBehavior: this.createMethod('sidePanel.getPanelBehavior'),
+        create: this.createMethod('windows.create'),
+        get: this.createMethod('windows.get'),
+        getAll: this.createMethod('windows.getAll'),
+        getCurrent: this.createMethod('windows.getCurrent'),
+        getLastFocused: this.createMethod('windows.getLastFocused'),
+        remove: this.createMethod('windows.remove'),
+        update: this.createMethod('windows.update'),
 
         // Events
-        onClosed: this.createEvent('sidePanel.onClosed'),
-        onOpened: this.createEvent('sidePanel.onOpened'),
+        onBoundsChanged: this.createEvent('windows.onBoundsChanged'),
+        onCreated: this.createEvent('windows.onCreated'),
+        onFocusChanged: this.createEvent('windows.onFocusChanged'),
+        onRemoved: this.createEvent('windows.onRemoved'),
 
         // Values
-        Side: value('sidePanel.Side'),
+        CreateType: tree.windows.CreateType,
+        WindowState: tree.windows.WindowState,
+        WindowType: tree.windows.WindowType,
+        WINDOW_ID_CURRENT: tree.windows.WINDOW_ID_CURRENT,
+        WINDOW_ID_NONE: tree.windows.WINDOW_ID_NONE,
+      },
+
+      // MANDATORY FOR EPOS
+      // ---------------------------------------------------------------------------
+
+      alarms: {
+        // Methods
+        clear: this.createMethod('alarms.clear'),
+        clearAll: this.createMethod('alarms.clearAll'),
+        create: this.createMethod('alarms.create'),
+        get: this.createMethod('alarms.get'),
+        getAll: this.createMethod('alarms.getAll'),
+
+        // Events
+        onAlarm: this.createEvent('alarms.onAlarm'),
+      },
+
+      declarativeNetRequest: {
+        // Methods
+        getDynamicRules: this.createMethod('declarativeNetRequest.getDynamicRules'),
+        getMatchedRules: this.createMethod('declarativeNetRequest.getMatchedRules'),
+        getSessionRules: this.createMethod('declarativeNetRequest.getSessionRules'),
+        isRegexSupported: this.createMethod('declarativeNetRequest.isRegexSupported'),
+        updateDynamicRules: this.createMethod('declarativeNetRequest.updateDynamicRules'),
+        updateSessionRules: this.createMethod('declarativeNetRequest.updateSessionRules'),
+
+        // Values
+        DomainType: tree.declarativeNetRequest.DomainType,
+        HeaderOperation: tree.declarativeNetRequest.HeaderOperation,
+        RequestMethod: tree.declarativeNetRequest.RequestMethod,
+        ResourceType: tree.declarativeNetRequest.ResourceType,
+        RuleActionType: tree.declarativeNetRequest.RuleActionType,
+        UnsupportedRegexReason: tree.declarativeNetRequest.UnsupportedRegexReason,
+        DYNAMIC_RULESET_ID: tree.declarativeNetRequest.DYNAMIC_RULESET_ID,
+        GETMATCHEDRULES_QUOTA_INTERVAL: tree.declarativeNetRequest.GETMATCHEDRULES_QUOTA_INTERVAL,
+        GUARANTEED_MINIMUM_STATIC_RULES: tree.declarativeNetRequest.GUARANTEED_MINIMUM_STATIC_RULES,
+        MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL: tree.declarativeNetRequest.MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL,
+        MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES,
+        MAX_NUMBER_OF_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES,
+        MAX_NUMBER_OF_ENABLED_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS,
+        MAX_NUMBER_OF_REGEX_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES,
+        MAX_NUMBER_OF_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_SESSION_RULES,
+        MAX_NUMBER_OF_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_STATIC_RULESETS,
+        MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES,
+        MAX_NUMBER_OF_UNSAFE_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_SESSION_RULES,
+        SESSION_RULESET_ID: tree.declarativeNetRequest.SESSION_RULESET_ID,
       },
 
       tabs: {
@@ -280,14 +238,14 @@ export class ProjectBrowser extends ex.Unit {
         onZoomChange: this.createEvent('tabs.onZoomChange'),
 
         // Values
-        MutedInfoReason: value('tabs.MutedInfoReason'),
-        TabStatus: value('tabs.TabStatus'),
-        WindowType: value('tabs.WindowType'),
-        ZoomSettingsMode: value('tabs.ZoomSettingsMode'),
-        ZoomSettingsScope: value('tabs.ZoomSettingsScope'),
-        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: value('tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND'),
-        TAB_ID_NONE: value('tabs.TAB_ID_NONE'),
-        TAB_INDEX_NONE: value('tabs.TAB_INDEX_NONE'),
+        MutedInfoReason: tree.tabs.MutedInfoReason,
+        TabStatus: tree.tabs.TabStatus,
+        WindowType: tree.tabs.WindowType,
+        ZoomSettingsMode: tree.tabs.ZoomSettingsMode,
+        ZoomSettingsScope: tree.tabs.ZoomSettingsScope,
+        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: tree.tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND,
+        TAB_ID_NONE: tree.tabs.TAB_ID_NONE,
+        TAB_INDEX_NONE: tree.tabs.TAB_INDEX_NONE,
       },
 
       webNavigation: {
@@ -307,32 +265,121 @@ export class ProjectBrowser extends ex.Unit {
         onTabReplaced: this.createEvent('webNavigation.onTabReplaced'),
 
         // Values
-        TransitionQualifier: value('webNavigation.TransitionQualifier'),
-        TransitionType: value('webNavigation.TransitionType'),
+        TransitionQualifier: tree.webNavigation.TransitionQualifier,
+        TransitionType: tree.webNavigation.TransitionType,
       },
 
-      windows: {
+      // OPTIONAL FOR EPOS
+      // ---------------------------------------------------------------------------
+
+      browsingData: {
         // Methods
-        create: this.createMethod('windows.create'),
-        get: this.createMethod('windows.get'),
-        getAll: this.createMethod('windows.getAll'),
-        getCurrent: this.createMethod('windows.getCurrent'),
-        getLastFocused: this.createMethod('windows.getLastFocused'),
-        remove: this.createMethod('windows.remove'),
-        update: this.createMethod('windows.update'),
+        remove: this.createMethod('browsingData.remove'),
+        removeAppcache: this.createMethod('browsingData.removeAppcache'),
+        removeCache: this.createMethod('browsingData.removeCache'),
+        removeCacheStorage: this.createMethod('browsingData.removeCacheStorage'),
+        removeCookies: this.createMethod('browsingData.removeCookies'),
+        removeDownloads: this.createMethod('browsingData.removeDownloads'),
+        removeFileSystems: this.createMethod('browsingData.removeFileSystems'),
+        removeFormData: this.createMethod('browsingData.removeFormData'),
+        removeHistory: this.createMethod('browsingData.removeHistory'),
+        removeIndexedDB: this.createMethod('browsingData.removeIndexedDB'),
+        removeLocalStorage: this.createMethod('browsingData.removeLocalStorage'),
+        removeServiceWorkers: this.createMethod('browsingData.removeServiceWorkers'),
+        removeWebSQL: this.createMethod('browsingData.removeWebSQL'),
+        settings: this.createMethod('browsingData.settings'),
+      },
+
+      contextMenus: {
+        // Methods
+        create: this.createMethod('contextMenus.create'),
+        remove: this.createMethod('contextMenus.remove'),
+        removeAll: this.createMethod('contextMenus.removeAll'),
+        update: this.createMethod('contextMenus.update'),
 
         // Events
-        onBoundsChanged: this.createEvent('windows.onBoundsChanged'),
-        onCreated: this.createEvent('windows.onCreated'),
-        onFocusChanged: this.createEvent('windows.onFocusChanged'),
-        onRemoved: this.createEvent('windows.onRemoved'),
+        onClicked: this.createEvent('contextMenus.onClicked'),
 
         // Values
-        CreateType: value('windows.CreateType'),
-        WindowState: value('windows.WindowState'),
-        WindowType: value('windows.WindowType'),
-        WINDOW_ID_CURRENT: value('windows.WINDOW_ID_CURRENT'),
-        WINDOW_ID_NONE: value('windows.WINDOW_ID_NONE'),
+        ContextType: tree.contextMenus.ContextType,
+        ItemType: tree.contextMenus.ItemType,
+        ACTION_MENU_TOP_LEVEL_LIMIT: tree.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT,
+      },
+
+      cookies: {
+        // Methods
+        get: this.createMethod('cookies.get'),
+        getAll: this.createMethod('cookies.getAll'),
+        getAllCookieStores: this.createMethod('cookies.getAllCookieStores'),
+        getPartitionKey: this.createMethod('cookies.getPartitionKey'),
+        remove: this.createMethod('cookies.remove'),
+        set: this.createMethod('cookies.set'),
+
+        // Events
+        onChanged: this.createEvent('cookies.onChanged'),
+
+        // Values
+        OnChangedCause: tree.cookies.OnChangedCause,
+        SameSiteStatus: tree.cookies.SameSiteStatus,
+      },
+
+      downloads: {
+        // Methods
+        acceptDanger: this.createMethod('downloads.acceptDanger'),
+        cancel: this.createMethod('downloads.cancel'),
+        download: this.createMethod('downloads.download'),
+        erase: this.createMethod('downloads.erase'),
+        getFileIcon: this.createMethod('downloads.getFileIcon'),
+        pause: this.createMethod('downloads.pause'),
+        removeFile: this.createMethod('downloads.removeFile'),
+        resume: this.createMethod('downloads.resume'),
+        search: this.createMethod('downloads.search'),
+        show: this.createMethod('downloads.show'),
+        showDefaultFolder: this.createMethod('downloads.showDefaultFolder'),
+
+        // Events
+        onChanged: this.createEvent('downloads.onChanged'),
+        onCreated: this.createEvent('downloads.onCreated'),
+        onDeterminingFilename: this.createEvent('downloads.onDeterminingFilename'),
+        onErased: this.createEvent('downloads.onErased'),
+
+        // Values
+        DangerType: tree.downloads.DangerType,
+        FilenameConflictAction: tree.downloads.FilenameConflictAction,
+        HttpMethod: tree.downloads.HttpMethod,
+        InterruptReason: tree.downloads.InterruptReason,
+        State: tree.downloads.State,
+      },
+
+      notifications: {
+        // Methods
+        clear: this.createMethod('notifications.clear'),
+        create: this.createMethod('notifications.create'),
+        getAll: this.createMethod('notifications.getAll'),
+        update: this.createMethod('notifications.update'),
+
+        // Events
+        onButtonClicked: this.createEvent('notifications.onButtonClicked'),
+        onClicked: this.createEvent('notifications.onClicked'),
+        onClosed: this.createEvent('notifications.onClosed'),
+
+        // Values
+        PermissionLevel: tree.notifications.PermissionLevel,
+        TemplateType: tree.notifications.TemplateType,
+      },
+
+      sidePanel: {
+        // Methods
+        getLayout: this.createMethod('sidePanel.getLayout'),
+        getOptions: this.createMethod('sidePanel.getOptions'),
+        getPanelBehavior: this.createMethod('sidePanel.getPanelBehavior'),
+
+        // Events
+        onClosed: this.createEvent('sidePanel.onClosed'),
+        onOpened: this.createEvent('sidePanel.onOpened'),
+
+        // Values
+        Side: tree.sidePanel.Side,
       },
     }
   }
