@@ -1,5 +1,6 @@
-export const _cbId_ = Symbol('id')
 import type { Browser } from 'epos'
+
+export const _cbId_ = Symbol('id')
 
 export type Callback = Fn & { [_cbId_]?: string }
 
@@ -14,6 +15,8 @@ export type LooseBrowser = {
   i18n: { [K in keyof Browser['i18n']]-?: unknown }
   management?: { [K in keyof Browser['management']]-?: unknown }
   notifications: { [K in keyof Browser['notifications']]-?: unknown }
+  runtime: { [K in keyof Browser['runtime']]-?: unknown }
+  sidePanel: { [K in keyof Browser['sidePanel']]-?: unknown }
   tabs: { [K in keyof Browser['tabs']]-?: unknown }
   webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
   windows: { [K in keyof Browser['windows']]-?: unknown }
@@ -24,7 +27,6 @@ export class ProjectBrowser extends ex.Unit {
   private $project = this.closest(ex.Project)!
   private bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
   private listenerIds = new Set<string>()
-  private apiTree: Obj | null = null
   static _cbId_ = _cbId_
 
   get api() {
@@ -37,7 +39,10 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   private async setupApi() {
-    this.apiTree = await this.bus.send<Obj>('getApiTree')
+    const apiTree = await this.bus.send<Obj>('getApiTree')
+    const value = (path: string) => this.$.utils.get(apiTree, path.split('.'))
+    const manifest = await this.callMethod('runtime.getManifest')
+    if (!this.$.utils.is.object(manifest)) throw this.never()
 
     this.#api = {
       action: {
@@ -104,9 +109,9 @@ export class ProjectBrowser extends ex.Unit {
         onClicked: this.createEvent('contextMenus.onClicked'),
 
         // Values
-        ContextType: this.getValue('ContextType'),
-        ItemType: this.getValue('ItemType'),
-        ACTION_MENU_TOP_LEVEL_LIMIT: this.getValue('ACTION_MENU_TOP_LEVEL_LIMIT'),
+        ContextType: value('contextMenus.ContextType'),
+        ItemType: value('contextMenus.ItemType'),
+        ACTION_MENU_TOP_LEVEL_LIMIT: value('contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT'),
       },
 
       cookies: {
@@ -122,8 +127,8 @@ export class ProjectBrowser extends ex.Unit {
         onChanged: this.createEvent('cookies.onChanged'),
 
         // Values
-        OnChangedCause: this.getValue('cookies.OnChangedCause'),
-        SameSiteStatus: this.getValue('cookies.SameSiteStatus'),
+        OnChangedCause: value('cookies.OnChangedCause'),
+        SameSiteStatus: value('cookies.SameSiteStatus'),
       },
 
       downloads: {
@@ -147,11 +152,11 @@ export class ProjectBrowser extends ex.Unit {
         onErased: this.createEvent('downloads.onErased'),
 
         // Values
-        DangerType: this.getValue('downloads.DangerType'),
-        FilenameConflictAction: this.getValue('downloads.FilenameConflictAction'),
-        HttpMethod: this.getValue('downloads.HttpMethod'),
-        InterruptReason: this.getValue('downloads.InterruptReason'),
-        State: this.getValue('downloads.State'),
+        DangerType: value('downloads.DangerType'),
+        FilenameConflictAction: value('downloads.FilenameConflictAction'),
+        HttpMethod: value('downloads.HttpMethod'),
+        InterruptReason: value('downloads.InterruptReason'),
+        State: value('downloads.State'),
       },
 
       extension: {
@@ -161,8 +166,8 @@ export class ProjectBrowser extends ex.Unit {
         setUpdateUrlData: this.createMethod('extension.setUpdateUrlData'),
 
         // Values
-        inIncognitoContext: this.getValue('extension.inIncognitoContext'),
-        ViewType: this.getValue('extension.ViewType'),
+        inIncognitoContext: value('extension.inIncognitoContext'),
+        ViewType: value('extension.ViewType'),
       },
 
       i18n: {
@@ -179,10 +184,10 @@ export class ProjectBrowser extends ex.Unit {
         uninstallSelf: this.createMethod('management.uninstallSelf'),
 
         // Values
-        ExtensionDisabledReason: this.getValue('management.ExtensionDisabledReason'),
-        ExtensionInstallType: this.getValue('management.ExtensionInstallType'),
-        ExtensionType: this.getValue('management.ExtensionType'),
-        LaunchType: this.getValue('management.LaunchType'),
+        ExtensionDisabledReason: value('management.ExtensionDisabledReason'),
+        ExtensionInstallType: value('management.ExtensionInstallType'),
+        ExtensionType: value('management.ExtensionType'),
+        LaunchType: value('management.LaunchType'),
       },
 
       notifications: {
@@ -198,8 +203,45 @@ export class ProjectBrowser extends ex.Unit {
         onClosed: this.createEvent('notifications.onClosed'),
 
         // Values
-        PermissionLevel: this.getValue('notifications.PermissionLevel'),
-        TemplateType: this.getValue('notifications.TemplateType'),
+        PermissionLevel: value('notifications.PermissionLevel'),
+        TemplateType: value('notifications.TemplateType'),
+      },
+
+      runtime: {
+        // Methods
+        getContexts: this.createMethod('runtime.getContexts'),
+        getManifest: () => manifest,
+        getPlatformInfo: this.createMethod('runtime.getPlatformInfo'),
+        getURL: (path: string) => `chrome-extension://${this.api.runtime.id}/${path}`,
+        getVersion: () => manifest.version,
+        reload: this.createMethod('runtime.reload'),
+        requestUpdateCheck: this.createMethod('runtime.requestUpdateCheck'),
+        setUninstallURL: this.createMethod('runtime.setUninstallURL'),
+
+        // Events
+        onUpdateAvailable: this.createEvent('runtime.onUpdateAvailable'),
+
+        // Values
+        ContextType: value('runtime.ContextType'),
+        id: value('runtime.id'),
+        PlatformArch: value('runtime.PlatformArch'),
+        PlatformNaclArch: value('runtime.PlatformNaclArch'),
+        PlatformOs: value('runtime.PlatformOs'),
+        RequestUpdateCheckStatus: value('runtime.RequestUpdateCheckStatus'),
+      },
+
+      sidePanel: {
+        // Methods
+        getLayout: this.createMethod('sidePanel.getLayout'),
+        getOptions: this.createMethod('sidePanel.getOptions'),
+        getPanelBehavior: this.createMethod('sidePanel.getPanelBehavior'),
+
+        // Events
+        onClosed: this.createEvent('sidePanel.onClosed'),
+        onOpened: this.createEvent('sidePanel.onOpened'),
+
+        // Values
+        Side: value('sidePanel.Side'),
       },
 
       tabs: {
@@ -238,14 +280,14 @@ export class ProjectBrowser extends ex.Unit {
         onZoomChange: this.createEvent('tabs.onZoomChange'),
 
         // Values
-        MutedInfoReason: this.getValue('tabs.MutedInfoReason'),
-        TabStatus: this.getValue('tabs.TabStatus'),
-        WindowType: this.getValue('tabs.WindowType'),
-        ZoomSettingsMode: this.getValue('tabs.ZoomSettingsMode'),
-        ZoomSettingsScope: this.getValue('tabs.ZoomSettingsScope'),
-        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: this.getValue('tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND'),
-        TAB_ID_NONE: this.getValue('tabs.TAB_ID_NONE'),
-        TAB_INDEX_NONE: this.getValue('tabs.TAB_INDEX_NONE'),
+        MutedInfoReason: value('tabs.MutedInfoReason'),
+        TabStatus: value('tabs.TabStatus'),
+        WindowType: value('tabs.WindowType'),
+        ZoomSettingsMode: value('tabs.ZoomSettingsMode'),
+        ZoomSettingsScope: value('tabs.ZoomSettingsScope'),
+        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: value('tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND'),
+        TAB_ID_NONE: value('tabs.TAB_ID_NONE'),
+        TAB_INDEX_NONE: value('tabs.TAB_INDEX_NONE'),
       },
 
       webNavigation: {
@@ -265,8 +307,8 @@ export class ProjectBrowser extends ex.Unit {
         onTabReplaced: this.createEvent('webNavigation.onTabReplaced'),
 
         // Values
-        TransitionQualifier: this.getValue('webNavigation.TransitionQualifier'),
-        TransitionType: this.getValue('webNavigation.TransitionType'),
+        TransitionQualifier: value('webNavigation.TransitionQualifier'),
+        TransitionType: value('webNavigation.TransitionType'),
       },
 
       windows: {
@@ -286,18 +328,13 @@ export class ProjectBrowser extends ex.Unit {
         onRemoved: this.createEvent('windows.onRemoved'),
 
         // Values
-        CreateType: this.getValue('windows.CreateType'),
-        WindowState: this.getValue('windows.WindowState'),
-        WindowType: this.getValue('windows.WindowType'),
-        WINDOW_ID_CURRENT: this.getValue('windows.WINDOW_ID_CURRENT'),
-        WINDOW_ID_NONE: this.getValue('windows.WINDOW_ID_NONE'),
+        CreateType: value('windows.CreateType'),
+        WindowState: value('windows.WindowState'),
+        WindowType: value('windows.WindowType'),
+        WINDOW_ID_CURRENT: value('windows.WINDOW_ID_CURRENT'),
+        WINDOW_ID_NONE: value('windows.WINDOW_ID_NONE'),
       },
     }
-  }
-
-  private getValue(path: string) {
-    if (!this.apiTree) throw this.never()
-    return this.$.utils.get(this.apiTree, path.split('.'))
   }
 
   private createMethod(path: string) {
@@ -314,8 +351,8 @@ export class ProjectBrowser extends ex.Unit {
     }
   }
 
-  private callMethod(path: string, ...args: unknown[]) {
-    return this.bus.send<sw.ProjectBrowser['callMethod']>('callMethod', path, ...args)
+  private async callMethod(path: string, ...args: unknown[]) {
+    return await this.bus.send<sw.ProjectBrowser['callMethod']>('callMethod', path, ...args)
   }
 
   private addListener(path: string, cb?: Callback) {

@@ -4,6 +4,6 @@
   "slug": "x2",
   "version": "0.0.2",
   "action": "https://epos.dev/@x2",
-  "matches": ["<sidePanel>", "<popup>"],
+  "matches": ["<sidePanel>"],
   "load": "x2.js"
 }

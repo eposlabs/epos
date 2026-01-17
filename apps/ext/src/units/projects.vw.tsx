@@ -99,7 +99,7 @@ export class Projects extends vw.Unit {
         {hasHeader && (
           <div className="flex h-7 shrink-0 items-center justify-between bg-black text-white">
             {/* Single project name */}
-            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.spec.name} ▾▾▾▾</div>}
+            {dropdownProjects.length === 1 && <div className="px-2.5">{dropdownProjects[0]!.spec.name}</div>}
 
             {/* Dropdown */}
             {dropdownProjects.length > 1 && (

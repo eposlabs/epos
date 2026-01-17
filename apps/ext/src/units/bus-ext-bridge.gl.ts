@@ -58,6 +58,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Get tab id for the specified tab (`csTop`)
       if (req.name === 'Bus.getTabId') {
+        if (!tabId === null) throw this.never()
         respond(this.$bus.serializer.serialize(tabId))
         return true
       }

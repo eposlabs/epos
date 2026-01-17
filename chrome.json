@@ -210,43 +210,44 @@
     "request": "<method>"
   },
 
-  "runtime": {
-    "dynamicId": "90efdf91-80ed-4e29-92fa-39fd8eb23e2d",
-    "id": "kdnfheklogiaahghfocphkhgkjljfmbe",
-    "onRestartRequired": "<event>",
-    "onUserScriptMessage": "<event>",
-    "onMessageExternal": "<event>",
-    "onMessage": "<event>",
-    "onUserScriptConnect": "<event>",
-    "onConnectExternal": "<event>",
-    "onConnect": "<event>",
-    "onBrowserUpdateAvailable": "<event>",
-    "onUpdateAvailable": "<event>",
-    "onSuspendCanceled": "<event>",
-    "onSuspend": "<event>",
-    "onInstalled": "<event>",
-    "onStartup": "<event>",
-    "connect": "<method>",
-    "getContexts": "<method>",
-    "getManifest": "<method>",
-    "getPlatformInfo": "<method>",
-    "getURL": "<method>",
-    "getVersion": "<method>",
-    "openOptionsPage": "<method>",
-    "reload": "<method>",
-    "requestUpdateCheck": "<method>",
-    "restart": "<method>",
-    "restartAfterDelay": "<method>",
-    "sendMessage": "<method>",
-    "setUninstallURL": "<method>",
-    "ContextType": "<value>",
-    "OnInstalledReason": "<value>",
-    "OnRestartRequiredReason": "<value>",
-    "PlatformArch": "<value>",
-    "PlatformNaclArch": "<value>",
-    "PlatformOs": "<value>",
-    "RequestUpdateCheckStatus": "<value>"
-  },
+  // ✅ DONE
+  // "runtime": {
+  //   "dynamicId": "90efdf91-80ed-4e29-92fa-39fd8eb23e2d",
+  //   "id": "kdnfheklogiaahghfocphkhgkjljfmbe",
+  //   "onRestartRequired": "<event>",
+  //   "onUserScriptMessage": "<event>",
+  //   "onMessageExternal": "<event>",
+  //   "onMessage": "<event>",
+  //   "onUserScriptConnect": "<event>",
+  //   "onConnectExternal": "<event>",
+  //   "onConnect": "<event>",
+  //   "onBrowserUpdateAvailable": "<event>",
+  //   "onUpdateAvailable": "<event>",
+  //   "onSuspendCanceled": "<event>",
+  //   "onSuspend": "<event>",
+  //   "onInstalled": "<event>",
+  //   "onStartup": "<event>",
+  //   "connect": "<method>",
+  //   "getContexts": "<method>",
+  //   "getManifest": "<method>",
+  //   "getPlatformInfo": "<method>",
+  //   "getURL": "<method>",
+  //   "getVersion": "<method>",
+  //   "openOptionsPage": "<method>",
+  //   "reload": "<method>",
+  //   "requestUpdateCheck": "<method>",
+  //   "restart": "<method>",
+  //   "restartAfterDelay": "<method>",
+  //   "sendMessage": "<method>",
+  //   "setUninstallURL": "<method>",
+  //   "ContextType": "<value>",
+  //   "OnInstalledReason": "<value>",
+  //   "OnRestartRequiredReason": "<value>",
+  //   "PlatformArch": "<value>",
+  //   "PlatformNaclArch": "<value>",
+  //   "PlatformOs": "<value>",
+  //   "RequestUpdateCheckStatus": "<value>"
+  // },
 
   // 🚫 IGNORE
   // "scripting": {
@@ -261,18 +262,19 @@
   //   "StyleOrigin": "<value>"
   // },
 
-  "sidePanel": {
-    "onClosed": "<event>",
-    "onOpened": "<event>",
-    "close": "<method>",
-    "getLayout": "<method>",
-    "getOptions": "<method>",
-    "getPanelBehavior": "<method>",
-    "open": "<method>",
-    "setOptions": "<method>",
-    "setPanelBehavior": "<method>",
-    "Side": "<value>"
-  },
+  // ✅ DONE
+  // "sidePanel": {
+  //   "onClosed": "<event>",
+  //   "onOpened": "<event>",
+  //   "close": "<method>",
+  //   "getLayout": "<method>",
+  //   "getOptions": "<method>",
+  //   "getPanelBehavior": "<method>",
+  //   "open": "<method>",
+  //   "setOptions": "<method>",
+  //   "setPanelBehavior": "<method>",
+  //   "Side": "<value>"
+  // },
 
   "storage": {
     "sync": {
