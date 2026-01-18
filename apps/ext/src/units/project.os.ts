@@ -128,7 +128,7 @@ export class Project extends os.Unit {
     const id = this.generateFrameId(url)
 
     // Remove `X-Frame-Options` header for the iframe's url
-    const ruleId = await this.$.bus.send<sw.Net['addRule']>('Net.addRule', {
+    const ruleId = await this.bus.send<sw.Project['addSystemRule']>('addSystemRule', {
       condition: {
         // Allow for the whole domain to support redirects (example.com -> www.example.com)
         requestDomains: [new URL(url).hostname],
@@ -178,7 +178,7 @@ export class Project extends os.Unit {
 
     // Remove network rule
     const ruleId = Number(iframe.getAttribute('data-net-rule-id'))
-    void this.$.bus.send<sw.Net['removeRule']>('Net.removeRule', ruleId)
+    void this.$.bus.send<sw.Project['removeSystemRule']>('removeSystemRule', ruleId)
 
     // Remove iframe
     iframe.remove()

@@ -52,9 +52,6 @@ export class ProjectBrowser extends ex.Unit {
     if (!this.$.utils.is.object(manifest)) throw this.never()
 
     this.#api = {
-      // ALWAYS AVAILABLE
-      // ---------------------------------------------------------------------------
-
       action: {
         // Methods
         disable: this.createMethod('action.disable'),
@@ -156,9 +153,6 @@ export class ProjectBrowser extends ex.Unit {
         WINDOW_ID_NONE: tree.windows.WINDOW_ID_NONE,
       },
 
-      // MANDATORY FOR EPOS
-      // ---------------------------------------------------------------------------
-
       alarms: {
         // Methods
         clear: this.createMethod('alarms.clear'),
@@ -174,7 +168,6 @@ export class ProjectBrowser extends ex.Unit {
       declarativeNetRequest: {
         // Methods
         getDynamicRules: this.createMethod('declarativeNetRequest.getDynamicRules'),
-        getMatchedRules: this.createMethod('declarativeNetRequest.getMatchedRules'),
         getSessionRules: this.createMethod('declarativeNetRequest.getSessionRules'),
         isRegexSupported: this.createMethod('declarativeNetRequest.isRegexSupported'),
         updateDynamicRules: this.createMethod('declarativeNetRequest.updateDynamicRules'),
@@ -268,9 +261,6 @@ export class ProjectBrowser extends ex.Unit {
         TransitionQualifier: tree.webNavigation.TransitionQualifier,
         TransitionType: tree.webNavigation.TransitionType,
       },
-
-      // OPTIONAL FOR EPOS
-      // ---------------------------------------------------------------------------
 
       browsingData: {
         // Methods

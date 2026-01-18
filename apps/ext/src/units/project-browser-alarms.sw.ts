@@ -89,7 +89,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
 
   private async updateProjectAlarms() {
     const allAlarms = await this.$.browser.alarms.getAll()
-    const projectAlarms = allAlarms.filter(alarm => this.$browser.isPrefixed(alarm.name))
-    await this.$project.updateMeta({ alarms: projectAlarms })
+    this.$project.meta.alarms = allAlarms.filter(alarm => this.$browser.isPrefixed(alarm.name))
+    await this.$project.saveSnapshot()
   }
 }

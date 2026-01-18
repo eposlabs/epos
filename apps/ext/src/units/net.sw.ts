@@ -1,64 +1,90 @@
-export type Rule = Omit<chrome.declarativeNetRequest.Rule, 'id'>
+export type Rule = chrome.declarativeNetRequest.Rule
+export type RuleNoId = Omit<Rule, 'id'>
+export type UpdateRuleOptions = { addRules?: RuleNoId[]; removeRuleIds?: number[] }
 
 export class Net extends sw.Unit {
-  private cursorRuleId = 1
-  private freeRuleIds = new Set<number>()
+  private dynamicRuleIdCursor = 1
+  private sessionRuleIdCursor = 1
+  private freeDynamicRuleIds = new Set<number>()
+  private freeSessionRuleIds = new Set<number>()
 
   async init() {
-    this.$.bus.on('Net.addRule', this.addRule, this)
-    this.$.bus.on('Net.removeRule', this.removeRule, this)
-    await this.disableCsp()
-    await this.removeAllRules()
+    await this.populateDynamicIdPool()
+    await this.populateSessionIdPool()
+    this.updateDynamicRules = this.$.utils.enqueue(this.updateDynamicRules, this)
+    this.updateSessionRules = this.$.utils.enqueue(this.updateSessionRules, this)
   }
 
-  private async disableCsp() {
-    await this.addRule({
-      priority: 1,
-      condition: {
-        urlFilter: '*://*/*',
-        resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
-      },
-      action: {
-        type: 'modifyHeaders',
-        responseHeaders: [
-          { header: 'Content-Security-Policy', operation: 'remove' },
-          { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
-        ],
-      },
-    })
+  async updateDynamicRules(options: UpdateRuleOptions): Promise<Rule[]> {
+    const addRules = (options.addRules ?? []).map(rule => ({ ...rule, id: this.nextDynamicRuleId() }))
+    const removeRuleIds = (options.removeRuleIds ?? []).filter(id => id < this.dynamicRuleIdCursor)
+    await this.$.browser.declarativeNetRequest.updateDynamicRules({ ...options, addRules })
+    removeRuleIds.forEach(id => this.freeDynamicRuleIds.add(id))
+    return addRules
   }
 
-  async addRule(rule: Rule) {
-    const id = this.getNextRuleId()
-    await this.$.browser.declarativeNetRequest.updateSessionRules({ addRules: [{ ...rule, id }] })
-    return id
+  async updateSessionRules(options: UpdateRuleOptions): Promise<Rule[]> {
+    const addRules = (options.addRules ?? []).map(rule => ({ ...rule, id: this.nextSessionRuleId() }))
+    const removeRuleIds = (options.removeRuleIds ?? []).filter(id => id < this.sessionRuleIdCursor)
+    await this.$.browser.declarativeNetRequest.updateSessionRules({ ...options, addRules })
+    removeRuleIds.forEach(id => this.freeSessionRuleIds.add(id))
+    return addRules
   }
 
-  async removeRule(id: number) {
-    await this.$.browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: [id] })
-    this.freeRuleIds.add(id)
+  private async populateDynamicIdPool() {
+    const rules = await this.$.browser.declarativeNetRequest.getDynamicRules()
+    const ruleIds = rules.map(rule => rule.id).sort((a, b) => a - b)
+    if (ruleIds.length === 0) return
+
+    const maxRuleId = ruleIds.at(-1)
+    if (!maxRuleId) throw this.never()
+
+    for (let i = 1; i < maxRuleId; i++) {
+      if (ruleIds.includes(i)) continue
+      this.freeDynamicRuleIds.add(i)
+    }
+
+    this.dynamicRuleIdCursor = maxRuleId + 1
   }
 
-  async getRules() {
-    return await this.$.browser.declarativeNetRequest.getSessionRules()
+  private async populateSessionIdPool() {
+    const rules = await this.$.browser.declarativeNetRequest.getSessionRules()
+    const ruleIds = rules.map(rule => rule.id).sort((a, b) => a - b)
+    if (ruleIds.length === 0) return
+
+    const maxRuleId = ruleIds.at(-1)
+    if (!maxRuleId) throw this.never()
+
+    for (let i = 1; i < maxRuleId; i++) {
+      if (ruleIds.includes(i)) continue
+      this.freeSessionRuleIds.add(i)
+    }
+
+    this.sessionRuleIdCursor = maxRuleId + 1
   }
 
-  private async removeAllRules() {
-    const sessionRules = await this.$.browser.declarativeNetRequest.getSessionRules()
-    if (sessionRules.length === 0) return
-    const sessionRuleIds = sessionRules.map(rule => rule.id)
-    await this.$.browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: sessionRuleIds })
-  }
-
-  private getNextRuleId() {
-    if (this.freeRuleIds.size === 0) {
-      const id = this.cursorRuleId
-      this.cursorRuleId += 1
+  private nextDynamicRuleId() {
+    if (this.freeDynamicRuleIds.size === 0) {
+      const id = this.dynamicRuleIdCursor
+      this.dynamicRuleIdCursor += 1
       return id
     } else {
-      const id = [...this.freeRuleIds][0]
+      const id = [...this.freeDynamicRuleIds][0]
       if (this.$.utils.is.undefined(id)) throw this.never()
-      this.freeRuleIds.delete(id)
+      this.freeDynamicRuleIds.delete(id)
+      return id
+    }
+  }
+
+  private nextSessionRuleId() {
+    if (this.freeSessionRuleIds.size === 0) {
+      const id = this.sessionRuleIdCursor
+      this.sessionRuleIdCursor += 1
+      return id
+    } else {
+      const id = [...this.freeSessionRuleIds][0]
+      if (this.$.utils.is.undefined(id)) throw this.never()
+      this.freeSessionRuleIds.delete(id)
       return id
     }
   }

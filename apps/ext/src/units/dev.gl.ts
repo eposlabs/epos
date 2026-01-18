@@ -3,6 +3,10 @@
 export class Dev extends gl.Unit {
   async init() {
     if (this.$.env.is.sw) {
+      Object.assign(self, { gl, sw })
+    }
+
+    if (this.$.env.is.sw) {
       this.$.bus.on('Dev.testApi', async (name: string) => {
         if (name === 'downloads') {
           const blob = new Blob(['test-file'], { type: 'text/plain' })

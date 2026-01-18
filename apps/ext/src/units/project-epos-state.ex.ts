@@ -1,7 +1,7 @@
 import type { Initial, Root, Versioner } from './state.ex.sw'
 import type { Models } from './states.ex.sw'
 
-const DEFAULT_NAME = ':state'
+export const DEFAULT_NAME = ':state'
 
 export class ProjectEposState extends ex.Unit {
   private $project = this.closest(ex.Project)!

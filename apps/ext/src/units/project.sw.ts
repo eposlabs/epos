@@ -1,4 +1,5 @@
 import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
+import type { RuleNoId } from './net.sw.js'
 import type { Address } from './project-target.sw'
 
 export const ENGINE_MANDATORY_PERMISSIONS = [
@@ -30,8 +31,12 @@ export type Entry = {
   hasSidePanel: boolean
 }
 
+// Meta information for internal use, cannot be changed or retrieved by `epos.projects.*` api
 export type Meta = {
   alarms: chrome.alarms.Alarm[]
+  dynamicRules: chrome.declarativeNetRequest.Rule[]
+  sessionRules: chrome.declarativeNetRequest.Rule[]
+  systemRuleIds: number[] // Special rules set by epos engine; hidden for `epos.browser.declarativeNetRequest` api
 }
 
 export class Project extends sw.Unit {
@@ -44,13 +49,13 @@ export class Project extends sw.Unit {
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
   states: exSw.States
-  private netRuleIds = new Set<number>()
+  private bus: ReturnType<gl.Bus['use']>
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
   static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
   static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
-    const meta: Meta = { alarms: [] }
+    const meta = this.getInitialMeta()
     const project = new Project(parent, { ...params, meta })
     await project.init()
     await project.saveSnapshot()
@@ -64,6 +69,15 @@ export class Project extends sw.Unit {
     const project = new Project(parent, snapshot)
     await project.init()
     return project
+  }
+
+  private static getInitialMeta(): Meta {
+    return {
+      alarms: [],
+      dynamicRules: [],
+      sessionRules: [],
+      systemRuleIds: [],
+    }
   }
 
   constructor(
@@ -80,17 +94,20 @@ export class Project extends sw.Unit {
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
+    this.bus = this.$.bus.use(`Project[${this.id}]`)
+    this.bus.on('addSystemRule', this.addSystemRule, this)
+    this.bus.on('removeSystemRule', this.removeSystemRule, this)
   }
 
   private async init() {
     await this.browser.init()
-    await this.updateNetRules()
+    await this.updateSystemRules()
   }
 
   async dispose() {
     await this.browser.dispose()
     await this.states.dispose()
-    await this.removeNetRules()
+    await this.removeSystemRules()
     await this.$.idb.deleteDatabase(this.id)
   }
 
@@ -104,7 +121,7 @@ export class Project extends sw.Unit {
     if (updates.assets) await this.saveAssets(updates.assets)
 
     await this.saveSnapshot()
-    await this.updateNetRules()
+    await this.updateSystemRules()
 
     if (enabled0 !== this.enabled) {
       if (this.enabled) {
@@ -113,11 +130,6 @@ export class Project extends sw.Unit {
         this.onDisabledFns.forEach(fn => fn())
       }
     }
-  }
-
-  async updateMeta(meta: Partial<Meta>) {
-    Object.assign(this.meta, meta)
-    await this.saveSnapshot()
   }
 
   onEnabled(fn: () => void) {
@@ -319,7 +331,7 @@ export class Project extends sw.Unit {
     return await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, targetsHashData])
   }
 
-  private async saveSnapshot() {
+  async saveSnapshot() {
     await this.$.idb.set<Snapshot>(this.id, ':project', 'snapshot', {
       id: this.id,
       mode: this.mode,
@@ -346,60 +358,98 @@ export class Project extends sw.Unit {
     }
   }
 
-  private async updateNetRules() {
-    // Remove old rules
-    await this.removeNetRules()
+  private async addSystemRule(rule: RuleNoId) {
+    const addedRule = (await this.$.net.updateDynamicRules({ addRules: [rule] }))[0]
+    if (!addedRule) throw this.never()
+    this.meta.systemRuleIds.push(addedRule.id)
+    await this.saveSnapshot()
+    return addedRule.id
+  }
 
-    // Add new rules
-    for (let targetIndex = 0; targetIndex < this.targets.length; targetIndex++) {
+  private async removeSystemRule(ruleId: number) {
+    if (!this.meta.systemRuleIds.includes(ruleId)) return
+    await this.$.net.updateDynamicRules({ removeRuleIds: [ruleId] })
+    this.meta.systemRuleIds = this.meta.systemRuleIds.filter(id => id !== ruleId)
+    await this.saveSnapshot()
+  }
+
+  private async updateSystemRules() {
+    const rules = [...this.prepareCspRules(), ...this.prepareLiteJsRules()]
+    const addedRules = await this.$.net.updateDynamicRules({ removeRuleIds: this.meta.systemRuleIds, addRules: rules })
+    this.meta.systemRuleIds = addedRules.map(rule => rule.id)
+    await this.saveSnapshot()
+  }
+
+  private async removeSystemRules() {
+    await this.$.net.updateDynamicRules({ removeRuleIds: this.meta.systemRuleIds })
+    this.meta.systemRuleIds = []
+  }
+
+  /** Create net rules that disable CSP for project's targets. */
+  private prepareCspRules(): RuleNoId[] {
+    if (!this.enabled) return []
+    return this.targets.flatMap(target => {
+      return target.matches.flatMap(match => {
+        if (match.context === 'locus') return []
+        return {
+          priority: 1,
+          condition: {
+            regexFilter: this.matchPatternToRegexFilter(match.value),
+            resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame', 'xmlhttprequest'],
+          },
+          action: {
+            type: 'modifyHeaders',
+            responseHeaders: [
+              { header: 'Content-Security-Policy', operation: 'remove' },
+              { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
+            ],
+          },
+        }
+      })
+    })
+  }
+
+  /** Create net rules that inject lite JS code via `Set-Cookie` headers. */
+  private prepareLiteJsRules(): RuleNoId[] {
+    if (!this.enabled) return []
+    return this.targets.flatMap((target, targetIndex) => {
       // Prepare cookie namespace for the target
       const namespace = `${this.id}[${targetIndex}]`
 
       // Get target's lite JS code
-      const target = this.targets[targetIndex]
       if (!target) throw this.never()
       const liteJsResources = target.resources.filter(resource => resource.type === 'lite-js')
       const liteJsPaths = liteJsResources.map(resource => resource.path)
       const liteJs = liteJsPaths.map(path => `(async () => {\n${this.sources[path]}\n})();`).join('\n')
-      if (!liteJs) continue
+      if (!liteJs) return []
 
       // Compress and split lite JS into chunks (fit browser's cookie size limit)
       const liteJsCompressed = this.$.libs.lzString.compressToBase64(liteJs)
       const chunks = this.splitToChunks(liteJsCompressed, 3900)
 
-      // Pass the chunks via `Set-Cookie` headers
-      for (const match of target.matches) {
-        const isTopOrFrame = match.context === 'top' || match.context === 'frame'
-        if (!isTopOrFrame) continue
-
-        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-          const ruleId = await this.$.net.addRule({
-            condition: {
-              regexFilter: this.matchPatternToRegexFilter(match.value),
-              resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame'],
-            },
-            action: {
-              type: 'modifyHeaders',
-              responseHeaders: [
-                {
-                  header: 'Set-Cookie',
-                  operation: 'append',
-                  // Use `SameSite=None; Secure;` to allow cookie access inside iframes
-                  value: `__epos_${namespace}_${chunkIndex}=${chunks[chunkIndex]}; SameSite=None; Secure;`,
-                },
-              ],
-            },
-          })
-
-          this.netRuleIds.add(ruleId)
-        }
-      }
-    }
-  }
-
-  private async removeNetRules() {
-    for (const ruleId of this.netRuleIds) await this.$.net.removeRule(ruleId)
-    this.netRuleIds.clear()
+      // Generate net rules which pass chunks via `Set-Cookie` headers
+      return target.matches.flatMap(match => {
+        if (match.context === 'locus') return []
+        return chunks.map((chunk, chunkIndex) => ({
+          priority: 1,
+          condition: {
+            regexFilter: this.matchPatternToRegexFilter(match.value),
+            resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame'],
+          },
+          action: {
+            type: 'modifyHeaders',
+            responseHeaders: [
+              {
+                header: 'Set-Cookie',
+                operation: 'append',
+                // Use `SameSite=None; Secure;` to allow cookie access inside iframes
+                value: `__epos_${namespace}_${chunkIndex}=${chunk}; SameSite=None; Secure;`,
+              },
+            ],
+          },
+        }))
+      })
+    })
   }
 
   private matchPatternToRegexFilter(pattern: string) {

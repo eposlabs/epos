@@ -1,12 +1,7 @@
-export type UpdateRuleOptions = {
-  addRules?: Omit<chrome.declarativeNetRequest.Rule, 'id'>[] | undefined
-  removeRuleIds?: chrome.declarativeNetRequest.UpdateRuleOptions['removeRuleIds']
-}
-
 export class ProjectBrowser extends sw.Unit {
   private $project = this.closest(sw.Project)!
   private bus: ReturnType<gl.Bus['use']>
-  private disposers: { [listenerId: string]: Fn } = {}
+  private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
@@ -25,9 +20,9 @@ export class ProjectBrowser extends sw.Unit {
     await this.alarms.init()
   }
 
-  // TODO: call disposers here
   async dispose() {
     this.bus.off()
+    Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
     await this.contextMenus.dispose()
     await this.notifications.dispose()
@@ -54,7 +49,7 @@ export class ProjectBrowser extends sw.Unit {
     const interceptor = this.getInterceptor(path)
     if (interceptor) return await interceptor(...args)
 
-    // Split path to getter and key
+    // Split path into getter and key
     const getter = path.split('.').slice(0, -1)
     const key = path.split('.').at(-1)
     if (!key) throw this.never()
@@ -92,11 +87,11 @@ export class ProjectBrowser extends sw.Unit {
     api.addListener(callback)
 
     // Register disposer that removes the listener
-    this.disposers[listenerId] = () => {
+    this.listenerDisposers[listenerId] = () => {
       clearInterval(pingInterval)
       if (!this.$.utils.is.function(api.removeListener)) throw this.never()
       api.removeListener(callback)
-      delete this.disposers[listenerId]
+      delete this.listenerDisposers[listenerId]
     }
 
     // Automatically remove the listener if its peer does not respond
@@ -108,11 +103,11 @@ export class ProjectBrowser extends sw.Unit {
   }
 
   private removeListener(listenerId: string) {
-    this.disposers[listenerId]?.()
+    this.listenerDisposers[listenerId]?.()
   }
 
   private getInterceptor(path: string) {
-    // Split path to getter and key
+    // Split path into getter and key
     const getter = path.split('.').slice(0, -1)
     const key = path.split('.').at(-1)
     if (!key) throw this.never()
@@ -141,23 +136,3 @@ export class ProjectBrowser extends sw.Unit {
     return key.startsWith(`@${this.$project.id}::`)
   }
 }
-
-// this.bus.on('updateSessionRules', this.updateSessionRules, this)
-// this.bus.on('updateDynamicRules', this.updateDynamicRules, this)
-// private updateSessionRules(options: UpdateRuleOptions) {
-// const fullOptions = {
-//   ...options,
-//   addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
-// }
-
-// this.$.browser.declarativeNetRequest.updateSessionRules(fullOptions)
-// }
-
-// private updateDynamicRules(options: UpdateRuleOptions) {
-// const fullOptions = {
-//   ...options,
-//   addRules: options.addRules ? options.addRules.map(rule => ({ id: 2, ...rule })) : undefined,
-// }
-
-// this.$.browser.declarativeNetRequest.updateDynamicRules(fullOptions)
-// }
