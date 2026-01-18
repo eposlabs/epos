@@ -10,7 +10,7 @@ export class App extends cs.Unit {
 
   async init() {
     self.$ = this
-    await this.bus.initTabToken()
+    await this.bus.initPageToken()
     await this.projects.init()
     await this.dev.init()
   }

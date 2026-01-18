@@ -23,7 +23,7 @@ export class Projects extends cs.Unit {
       if (!this.$.utils.is.string(index)) continue
       chunksByKey[key] ??= []
       chunksByKey[key][Number(index)] = value
-      // It is important to add `SameSite=None; Secure;` to allow cookies modification inside iframes
+      // It is important to add `SameSite=None; Secure;`, otherwise cookie won't be modified in iframes
       document.cookie = `${name}=; Max-Age=0; SameSite=None; Secure;`
     }
 

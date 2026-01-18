@@ -97,12 +97,20 @@ export class BusExtBridge extends gl.Unit {
         return
       }
 
-      // Get tab token of the specified tab (`csTop`), called from `csFrame`
-      if (req.name === 'Bus.getCsTopTabToken') {
+      // Get page token required for secure `cs` <-> `ex` communication.
+      // For tab frames, the token is retrieved through this flow: `csFrame` -> `sw` -> `csTop` -> `sw` -> `csFrame`.
+      // For offscreen frames, the page token is `null` (same as in `os` itself).
+      if (req.name === 'Bus.getPageToken') {
         void (async () => {
-          if (!tabId) throw this.never()
-          const tabToken = await this.sendToTab(tabId, 'Bus.getTabToken')
-          respond(this.$bus.serializer.serialize(tabToken))
+          // Called from tab's frame? -> Get page token from `csTop`
+          if (tabId) {
+            const pageToken = await this.sendToTab(tabId, 'Bus.getPageToken')
+            respond(this.$bus.serializer.serialize(pageToken))
+          }
+          // Called from offscreen's frame? -> Return null
+          else {
+            respond(this.$bus.serializer.serialize(null))
+          }
         })()
         return true
       }
@@ -151,9 +159,9 @@ export class BusExtBridge extends gl.Unit {
     this.$.browser.runtime.onMessage.addListener((req, _, respond) => {
       if (!this.isRequest(req)) return
 
-      // Give tab token to `csFrame` (`csFrame` -> `sw` -> `csTop` -> `sw` -> `csFrame`)
-      if (this.$.env.is.csTop && req.name === 'Bus.getTabToken') {
-        respond(this.$bus.serializer.serialize(this.$bus.tabToken))
+      // Give page token to `csFrame` (`csFrame` -> `sw` -> `csTop` -> `sw` -> `csFrame`)
+      if (this.$.env.is.csTop && req.name === 'Bus.getPageToken') {
+        respond(this.$bus.serializer.serialize(this.$bus.pageToken))
         return true
       }
 

@@ -57,7 +57,7 @@ export class Projects extends ex.Unit {
     delete self.__eposTabId
     delete self.__eposElement
     delete self.__eposProjectDefs
-    delete self.__eposBusExTabToken
+    delete self.__eposBusPageToken
     delete self.__eposOriginalGlobals
 
     // Create and init projects

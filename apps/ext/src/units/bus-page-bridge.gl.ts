@@ -7,7 +7,7 @@ export type PageRequest = {
   name: string
   args: unknown[]
   peerId: string
-  tabToken: string | null
+  pageToken: string | null
 }
 
 export type PageResponse = {
@@ -55,7 +55,7 @@ export class BusPageBridge extends gl.Unit {
       const req = e.data
       if (!this.isRequest(req)) return
       if (req.peerId === this.$bus.peerId) return
-      if (req.tabToken !== this.$bus.tabToken) return
+      if (req.pageToken !== this.$bus.pageToken) return
 
       const source = e.source as WindowProxy | null
       if (!source) throw this.never()
@@ -226,7 +226,7 @@ export class BusPageBridge extends gl.Unit {
       name: name,
       args: this.$bus.serializer.sanitize(args) as unknown[],
       peerId: this.$bus.peerId,
-      tabToken: this.$bus.tabToken,
+      pageToken: this.$bus.pageToken,
     }
   }
 
