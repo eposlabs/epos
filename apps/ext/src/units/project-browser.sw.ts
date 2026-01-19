@@ -3,6 +3,7 @@ export class ProjectBrowser extends sw.Unit {
   private bus: ReturnType<gl.Bus['use']>
   private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
+  private storage = new sw.ProjectBrowserStorage(this)
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
   private declarativeNetRequest = new sw.ProjectBrowserDeclarativeNetRequest(this)
@@ -24,6 +25,7 @@ export class ProjectBrowser extends sw.Unit {
     this.bus.off()
     Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
+    await this.storage.dispose()
     await this.contextMenus.dispose()
     await this.notifications.dispose()
     await this.declarativeNetRequest.dispose()
@@ -124,11 +126,11 @@ export class ProjectBrowser extends sw.Unit {
     return (...args: unknown[]) => method.call(unit, ...args)
   }
 
-  prefixed(key: string | number) {
+  prefix(key: string | number) {
     return `@${this.$project.id}::${key}`
   }
 
-  unprefixed(key: string) {
+  unprefix(key: string) {
     return key.replace(`@${this.$project.id}::`, '')
   }
 

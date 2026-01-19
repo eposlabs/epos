@@ -22,6 +22,7 @@ export type Browser = {
   downloads: Downloads
   notifications: Notifications
   sidePanel: SidePanel
+  storage: Storage
 }
 
 export type Alarms = typeof chrome.alarms
@@ -221,4 +222,31 @@ export type SidePanel = Omit<
   | 'setPanelBehavior'
 > & {
   onClosed: chrome.events.Event<() => void> // New api, not available in `@types/chrome`
+}
+
+export type Storage = Omit<
+  typeof chrome.storage,
+  | 'local'
+  | 'session'
+  | 'sync'
+  // Not supported by epos
+  | 'managed'
+> & {
+  local: Omit<
+    typeof chrome.storage.local,
+    // Not supported by epos
+    'setAccessLevel'
+  >
+  session: Omit<
+    typeof chrome.storage.session,
+    // Not supported by epos
+    'setAccessLevel'
+  >
+  sync: Omit<
+    typeof chrome.storage.sync,
+    // Deprecated
+    | 'MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE'
+    // Not supported by epos
+    | 'setAccessLevel'
+  >
 }

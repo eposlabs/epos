@@ -25,19 +25,19 @@ export class ProjectBrowserContextMenus extends sw.Unit {
   }
 
   async create(props: CreateProperties) {
-    const id = this.$browser.prefixed(props.id ?? this.$.utils.id())
+    const id = this.$browser.prefix(props.id ?? this.$.utils.id())
     const existingMenu = this.menus.find(menu => menu.id === id)
-    if (existingMenu) return this.$browser.unprefixed(existingMenu.id)
+    if (existingMenu) return this.$browser.unprefix(existingMenu.id)
 
-    const parentId = props.parentId ? this.$browser.prefixed(props.parentId) : undefined
+    const parentId = props.parentId ? this.$browser.prefix(props.parentId) : undefined
     const menu = { ...props, id, parentId }
     this.$.browser.contextMenus.create(menu)
     this.menus.push(menu)
-    return this.$browser.unprefixed(menu.id)
+    return this.$browser.unprefix(menu.id)
   }
 
   async remove(idArg: string | number) {
-    const id = this.$browser.prefixed(idArg)
+    const id = this.$browser.prefix(idArg)
     this.menus = this.menus.filter(menu => menu.id !== id)
     await this.$.browser.contextMenus.remove(id)
   }
@@ -48,7 +48,7 @@ export class ProjectBrowserContextMenus extends sw.Unit {
   }
 
   async update(idArg: string | number, updates: Omit<CreateProperties, 'id'>) {
-    const id = this.$browser.prefixed(idArg)
+    const id = this.$browser.prefix(idArg)
     const menu = this.menus.find(menu => menu.id === id)
     if (!menu) return
     await this.$.browser.contextMenus.update(id, updates)
@@ -57,8 +57,8 @@ export class ProjectBrowserContextMenus extends sw.Unit {
 
   onClicked(data: OnClickData) {
     if (!this.$browser.isPrefixed(String(data.menuItemId))) return
-    data.menuItemId = this.$browser.unprefixed(String(data.menuItemId))
-    if (data.parentMenuItemId) data.parentMenuItemId = this.$browser.unprefixed(String(data.parentMenuItemId))
+    data.menuItemId = this.$browser.unprefix(String(data.menuItemId))
+    if (data.parentMenuItemId) data.parentMenuItemId = this.$browser.unprefix(String(data.parentMenuItemId))
     return [data]
   }
 

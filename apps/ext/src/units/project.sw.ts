@@ -113,6 +113,7 @@ export class Project extends sw.Unit {
 
   async update(updates: Partial<Bundle & ProjectSettings>) {
     const enabled0 = this.enabled
+
     this.mode = updates.mode ?? this.mode
     this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec

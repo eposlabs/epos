@@ -80,40 +80,41 @@
   //   "SameSiteStatus": "<value>"
   // },
 
-  "declarativeNetRequest": {
-    "getAvailableStaticRuleCount": "<method>",
-    "getDisabledRuleIds": "<method>",
-    "getDynamicRules": "<method>",
-    "getEnabledRulesets": "<method>",
-    "getMatchedRules": "<method>",
-    "getSessionRules": "<method>",
-    "isRegexSupported": "<method>",
-    "setExtensionActionOptions": "<method>",
-    "testMatchOutcome": "<method>",
-    "updateDynamicRules": "<method>",
-    "updateEnabledRulesets": "<method>",
-    "updateSessionRules": "<method>",
-    "updateStaticRules": "<method>",
-    "DomainType": "<value>",
-    "HeaderOperation": "<value>",
-    "RequestMethod": "<value>",
-    "ResourceType": "<value>",
-    "RuleActionType": "<value>",
-    "UnsupportedRegexReason": "<value>",
-    "DYNAMIC_RULESET_ID": "_dynamic",
-    "GETMATCHEDRULES_QUOTA_INTERVAL": 10,
-    "GUARANTEED_MINIMUM_STATIC_RULES": 30000,
-    "MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL": 20,
-    "MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES": 5000,
-    "MAX_NUMBER_OF_DYNAMIC_RULES": 30000,
-    "MAX_NUMBER_OF_ENABLED_STATIC_RULESETS": 50,
-    "MAX_NUMBER_OF_REGEX_RULES": 1000,
-    "MAX_NUMBER_OF_SESSION_RULES": 5000,
-    "MAX_NUMBER_OF_STATIC_RULESETS": 100,
-    "MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES": 5000,
-    "MAX_NUMBER_OF_UNSAFE_SESSION_RULES": 5000,
-    "SESSION_RULESET_ID": "_session"
-  },
+  // ✅ DONE
+  // "declarativeNetRequest": {
+  //   "getAvailableStaticRuleCount": "<method>",
+  //   "getDisabledRuleIds": "<method>",
+  //   "getDynamicRules": "<method>",
+  //   "getEnabledRulesets": "<method>",
+  //   "getMatchedRules": "<method>",
+  //   "getSessionRules": "<method>",
+  //   "isRegexSupported": "<method>",
+  //   "setExtensionActionOptions": "<method>",
+  //   "testMatchOutcome": "<method>",
+  //   "updateDynamicRules": "<method>",
+  //   "updateEnabledRulesets": "<method>",
+  //   "updateSessionRules": "<method>",
+  //   "updateStaticRules": "<method>",
+  //   "DomainType": "<value>",
+  //   "HeaderOperation": "<value>",
+  //   "RequestMethod": "<value>",
+  //   "ResourceType": "<value>",
+  //   "RuleActionType": "<value>",
+  //   "UnsupportedRegexReason": "<value>",
+  //   "DYNAMIC_RULESET_ID": "_dynamic",
+  //   "GETMATCHEDRULES_QUOTA_INTERVAL": 10,
+  //   "GUARANTEED_MINIMUM_STATIC_RULES": 30000,
+  //   "MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL": 20,
+  //   "MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES": 5000,
+  //   "MAX_NUMBER_OF_DYNAMIC_RULES": 30000,
+  //   "MAX_NUMBER_OF_ENABLED_STATIC_RULESETS": 50,
+  //   "MAX_NUMBER_OF_REGEX_RULES": 1000,
+  //   "MAX_NUMBER_OF_SESSION_RULES": 5000,
+  //   "MAX_NUMBER_OF_STATIC_RULESETS": 100,
+  //   "MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES": 5000,
+  //   "MAX_NUMBER_OF_UNSAFE_SESSION_RULES": 5000,
+  //   "SESSION_RULESET_ID": "_session"
+  // },
 
   // 🚫 IGNORE
   // "dom": {
@@ -208,7 +209,7 @@
     "remove": "<method>",
     "removeHostAccessRequest": "<method>",
     "request": "<method>"
-  },
+  }
 
   // ✅ DONE
   // "runtime": {
@@ -276,58 +277,59 @@
   //   "Side": "<value>"
   // },
 
-  "storage": {
-    "sync": {
-      "get": "<method>",
-      "getKeys": "<method>",
-      "set": "<method>",
-      "remove": "<method>",
-      "clear": "<method>",
-      "getBytesInUse": "<method>",
-      "setAccessLevel": "<method>",
-      "onChanged": "<event>",
-      "QUOTA_BYTES": 102400,
-      "QUOTA_BYTES_PER_ITEM": 8192,
-      "MAX_ITEMS": 512,
-      "MAX_WRITE_OPERATIONS_PER_HOUR": 1800,
-      "MAX_WRITE_OPERATIONS_PER_MINUTE": 120,
-      "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": 1000000
-    },
-    "session": {
-      "get": "<method>",
-      "getKeys": "<method>",
-      "set": "<method>",
-      "remove": "<method>",
-      "clear": "<method>",
-      "getBytesInUse": "<method>",
-      "setAccessLevel": "<method>",
-      "onChanged": "<event>",
-      "QUOTA_BYTES": 10485760
-    },
-    "managed": {
-      "get": "<method>",
-      "getKeys": "<method>",
-      "set": "<method>",
-      "remove": "<method>",
-      "clear": "<method>",
-      "getBytesInUse": "<method>",
-      "setAccessLevel": "<method>",
-      "onChanged": "<event>"
-    },
-    "local": {
-      "get": "<method>",
-      "getKeys": "<method>",
-      "set": "<method>",
-      "remove": "<method>",
-      "clear": "<method>",
-      "getBytesInUse": "<method>",
-      "setAccessLevel": "<method>",
-      "onChanged": "<event>",
-      "QUOTA_BYTES": 10485760
-    },
-    "onChanged": "<event>",
-    "AccessLevel": "<value>"
-  }
+  // ✅ DONE
+  // "storage": {
+  //   "sync": {
+  //     "get": "<method>",
+  //     "getKeys": "<method>",
+  //     "set": "<method>",
+  //     "remove": "<method>",
+  //     "clear": "<method>",
+  //     "getBytesInUse": "<method>",
+  //     "setAccessLevel": "<method>",
+  //     "onChanged": "<event>",
+  //     "QUOTA_BYTES": 102400,
+  //     "QUOTA_BYTES_PER_ITEM": 8192,
+  //     "MAX_ITEMS": 512,
+  //     "MAX_WRITE_OPERATIONS_PER_HOUR": 1800,
+  //     "MAX_WRITE_OPERATIONS_PER_MINUTE": 120,
+  //     "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": 1000000
+  //   },
+  //   "session": {
+  //     "get": "<method>",
+  //     "getKeys": "<method>",
+  //     "set": "<method>",
+  //     "remove": "<method>",
+  //     "clear": "<method>",
+  //     "getBytesInUse": "<method>",
+  //     "setAccessLevel": "<method>",
+  //     "onChanged": "<event>",
+  //     "QUOTA_BYTES": 10485760
+  //   },
+  //   "managed": {
+  //     "get": "<method>",
+  //     "getKeys": "<method>",
+  //     "set": "<method>",
+  //     "remove": "<method>",
+  //     "clear": "<method>",
+  //     "getBytesInUse": "<method>",
+  //     "setAccessLevel": "<method>",
+  //     "onChanged": "<event>"
+  //   },
+  //   "local": {
+  //     "get": "<method>",
+  //     "getKeys": "<method>",
+  //     "set": "<method>",
+  //     "remove": "<method>",
+  //     "clear": "<method>",
+  //     "getBytesInUse": "<method>",
+  //     "setAccessLevel": "<method>",
+  //     "onChanged": "<event>",
+  //     "QUOTA_BYTES": 10485760
+  //   },
+  //   "onChanged": "<event>",
+  //   "AccessLevel": "<value>"
+  // }
 
   // ✅ DONE
   // "tabs": {

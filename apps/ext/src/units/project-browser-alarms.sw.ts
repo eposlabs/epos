@@ -30,7 +30,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
   }
 
   async clear(nameArg = '') {
-    const name = this.$browser.prefixed(nameArg)
+    const name = this.$browser.prefix(nameArg)
     await this.$.browser.alarms.clear(name)
     await this.updateProjectAlarms()
   }
@@ -44,14 +44,14 @@ export class ProjectBrowserAlarms extends sw.Unit {
   async create(name: string, info: AlarmCreateInfo): Promise<void>
   async create(...args: unknown[]): Promise<void> {
     const [name, info] = this.$.utils.is.string(args[0])
-      ? [this.$browser.prefixed(args[0]), args[1] as AlarmCreateInfo]
-      : [this.$browser.prefixed(''), args[0] as AlarmCreateInfo]
+      ? [this.$browser.prefix(args[0]), args[1] as AlarmCreateInfo]
+      : [this.$browser.prefix(''), args[0] as AlarmCreateInfo]
     await this.$.browser.alarms.create(name, info)
     await this.updateProjectAlarms()
   }
 
   async get(nameArg = '') {
-    const name = this.$browser.prefixed(nameArg)
+    const name = this.$browser.prefix(nameArg)
     return await this.$.browser.alarms.get(name)
   }
 
@@ -59,12 +59,12 @@ export class ProjectBrowserAlarms extends sw.Unit {
     const alarms = await this.$.browser.alarms.getAll()
     return alarms
       .filter(alarm => this.$browser.isPrefixed(alarm.name))
-      .map(alarm => ({ ...alarm, name: this.$browser.unprefixed(alarm.name) }))
+      .map(alarm => ({ ...alarm, name: this.$browser.unprefix(alarm.name) }))
   }
 
   onAlarm(alarm: Alarm) {
     if (!this.$browser.isPrefixed(alarm.name)) return
-    alarm.name = this.$browser.unprefixed(alarm.name)
+    alarm.name = this.$browser.unprefix(alarm.name)
     return [alarm]
   }
 

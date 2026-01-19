@@ -26,6 +26,13 @@ export type LooseBrowser = {
   downloads: { [K in keyof Browser['downloads']]-?: unknown }
   notifications: { [K in keyof Browser['notifications']]-?: unknown }
   sidePanel: { [K in keyof Browser['sidePanel']]-?: unknown }
+  storage: {
+    local: { [K in keyof Browser['storage']['local']]-?: unknown }
+    session: { [K in keyof Browser['storage']['session']]-?: unknown }
+    sync: { [K in keyof Browser['storage']['sync']]-?: unknown }
+    onChanged: unknown
+    AccessLevel: unknown
+  }
 }
 
 export class ProjectBrowser extends ex.Unit {
@@ -147,10 +154,10 @@ export class ProjectBrowser extends ex.Unit {
 
         // Values
         CreateType: tree.windows.CreateType,
-        WindowState: tree.windows.WindowState,
-        WindowType: tree.windows.WindowType,
         WINDOW_ID_CURRENT: tree.windows.WINDOW_ID_CURRENT,
         WINDOW_ID_NONE: tree.windows.WINDOW_ID_NONE,
+        WindowState: tree.windows.WindowState,
+        WindowType: tree.windows.WindowType,
       },
 
       alarms: {
@@ -370,6 +377,63 @@ export class ProjectBrowser extends ex.Unit {
 
         // Values
         Side: tree.sidePanel.Side,
+      },
+
+      storage: {
+        local: {
+          // Methods
+          get: this.createMethod('storage.local.get'),
+          getKeys: this.createMethod('storage.local.getKeys'),
+          set: this.createMethod('storage.local.set'),
+          remove: this.createMethod('storage.local.remove'),
+          clear: this.createMethod('storage.local.clear'),
+          getBytesInUse: this.createMethod('storage.local.getBytesInUse'),
+
+          // Events
+          onChanged: this.createEvent('storage.local.onChanged'),
+
+          // Values
+          QUOTA_BYTES: tree.storage.local.QUOTA_BYTES,
+        },
+
+        session: {
+          // Methods
+          clear: this.createMethod('storage.session.clear'),
+          get: this.createMethod('storage.session.get'),
+          getBytesInUse: this.createMethod('storage.session.getBytesInUse'),
+          getKeys: this.createMethod('storage.session.getKeys'),
+          remove: this.createMethod('storage.session.remove'),
+          set: this.createMethod('storage.session.set'),
+
+          // Events
+          onChanged: this.createEvent('storage.session.onChanged'),
+
+          // Values
+          QUOTA_BYTES: tree.storage.session.QUOTA_BYTES,
+        },
+
+        sync: {
+          // Methods
+          clear: this.createMethod('storage.sync.clear'),
+          get: this.createMethod('storage.sync.get'),
+          getBytesInUse: this.createMethod('storage.sync.getBytesInUse'),
+          getKeys: this.createMethod('storage.sync.getKeys'),
+          remove: this.createMethod('storage.sync.remove'),
+          set: this.createMethod('storage.sync.set'),
+
+          // Events
+          onChanged: this.createEvent('storage.sync.onChanged'),
+
+          // Values
+          QUOTA_BYTES: tree.storage.sync.QUOTA_BYTES,
+          QUOTA_BYTES_PER_ITEM: tree.storage.sync.QUOTA_BYTES_PER_ITEM,
+          MAX_ITEMS: tree.storage.sync.MAX_ITEMS,
+          MAX_WRITE_OPERATIONS_PER_HOUR: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_HOUR,
+          MAX_WRITE_OPERATIONS_PER_MINUTE: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_MINUTE,
+        },
+
+        onChanged: this.createEvent('storage.onChanged'),
+        AccessLevel: tree.storage.AccessLevel,
       },
     }
   }
