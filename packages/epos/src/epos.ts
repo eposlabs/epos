@@ -26,17 +26,18 @@ export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => voi
 // Project types
 export type { Browser, Spec }
 export type Mode = 'development' | 'production'
+export type Manifest = chrome.runtime.ManifestV3
 export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
 export type Bundle = { spec: Spec; sources: Sources; assets: Assets }
 export type ProjectSettings = { mode: Mode; enabled: boolean }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
-export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec }
+export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec; manifest: Manifest }
 export type ProjectFull = ProjectBase & { sources: Sources; assets: Assets }
 export type ProjectWithSources = ProjectBase & { sources: Sources }
 export type ProjectWithAssets = ProjectBase & { assets: Assets }
 // :
-export type Project<T = {}> = ProjectBase &
+export type Project<T extends ProjectQuery = {}> = ProjectBase &
   (T extends { sources: true } ? { sources: Sources } : {}) &
   (T extends { assets: true } ? { assets: Assets } : {})
 
@@ -75,7 +76,6 @@ export interface Epos {
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): react.FC<T>
   container: HTMLDivElement
-  engine: any
 
   env: {
     /** `tabId` is `-1` for iframes, including `<background>` iframe. */

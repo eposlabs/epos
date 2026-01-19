@@ -5,12 +5,12 @@
   "manifest_version": 3,
   "action": { "default_title": "epos" },
   "icons": { "128": "/icon.png" },
-  "background": { "type": "module", "service_worker": "/sw.js" },
   "sandbox": { "pages": ["/project.html"] },
+  "background": { "type": "module", "service_worker": "/sw.js" },
   "web_accessible_resources": [{ "matches": ["<all_urls>"], "resources": ["*"] }],
   "host_permissions": ["<all_urls>"],
   "permissions": [
-    // Mandatory
+    // Required
     "alarms",
     "declarativeNetRequest",
     "offscreen",
@@ -26,9 +26,10 @@
     "cookies",
     "downloads",
     "notifications",
-    "sidePanel",
-    "storage"
+    "sidePanel"
+    // "storage"
   ],
+  "optional_permissions": ["storage"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';",
     "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"

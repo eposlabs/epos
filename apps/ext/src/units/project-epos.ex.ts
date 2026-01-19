@@ -99,19 +99,8 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.assets, 'list'),
       },
 
-      // Libs
-      libs: {
-        mobx: this.libs.mobx,
-        mobxReactLite: this.libs.mobxReactLite,
-        react: this.libs.react,
-        reactDom: this.libs.reactDom,
-        reactDomClient: this.libs.reactDomClient,
-        reactJsxRuntime: this.libs.reactJsxRuntime,
-        yjs: this.libs.yjs,
-      },
-
       // Project
-      ...(this.$project.spec.config.access.includes('projects') && {
+      ...(this.$project.spec.config.allowProjectsApi && {
         projects: {
           get: this.$.utils.link(this.projects, 'get'),
           has: this.$.utils.link(this.projects, 'has'),
@@ -125,10 +114,16 @@ export class ProjectEpos extends ex.Unit {
         },
       }),
 
-      // Engine
-      ...(this.$project.spec.config.access.includes('engine') && {
-        engine: this.$,
-      }),
+      // Libs
+      libs: {
+        mobx: this.libs.mobx,
+        mobxReactLite: this.libs.mobxReactLite,
+        react: this.libs.react,
+        reactDom: this.libs.reactDom,
+        reactDomClient: this.libs.reactDomClient,
+        reactJsxRuntime: this.libs.reactJsxRuntime,
+        yjs: this.libs.yjs,
+      },
     }
 
     // Set prototype to see `Epos` in DevTools instead of a plain object

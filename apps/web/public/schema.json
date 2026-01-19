@@ -68,8 +68,8 @@
     "Config": {
       "type": "object",
       "properties": {
-        "access": { "type": "array", "items": { "$ref": "#/definitions/Access" }, "default": [] },
         "preloadAssets": { "type": "boolean", "default": true },
+        "allowProjectsApi": { "type": "boolean", "default": false },
         "allowMissingModels": { "type": "boolean", "default": false }
       },
       "additionalProperties": false

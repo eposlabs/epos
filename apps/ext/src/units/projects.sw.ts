@@ -61,7 +61,7 @@ export class Projects extends sw.Unit {
     }
   }
 
-  private async get<T extends ProjectQuery>(id: string, query?: T) {
+  private async get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null> {
     const project = this.dict[id]
     if (!project) return null
 
@@ -70,6 +70,7 @@ export class Projects extends sw.Unit {
       mode: project.mode,
       enabled: project.enabled,
       spec: project.spec,
+      manifest: project.manifest,
       ...(query?.sources && { sources: project.sources }),
       ...(query?.assets && { assets: await project.getAssets() }),
     } as Project<T>

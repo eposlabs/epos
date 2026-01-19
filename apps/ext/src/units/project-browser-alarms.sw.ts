@@ -22,7 +22,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
 
   async init() {
     if (!this.$project.enabled) return
-    await this.restoreProjectAlarms()
+    await this.restoreAlarms()
   }
 
   async dispose() {
@@ -32,12 +32,12 @@ export class ProjectBrowserAlarms extends sw.Unit {
   async clear(nameArg = '') {
     const name = this.$browser.prefix(nameArg)
     await this.$.browser.alarms.clear(name)
-    await this.updateProjectAlarms()
+    await this.updateAlarms()
   }
 
   async clearAll() {
     for (const alarm of this.$project.meta.alarms) await this.$.browser.alarms.clear(alarm.name)
-    await this.updateProjectAlarms()
+    await this.updateAlarms()
   }
 
   async create(info: AlarmCreateInfo): Promise<void>
@@ -47,7 +47,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
       ? [this.$browser.prefix(args[0]), args[1] as AlarmCreateInfo]
       : [this.$browser.prefix(''), args[0] as AlarmCreateInfo]
     await this.$.browser.alarms.create(name, info)
-    await this.updateProjectAlarms()
+    await this.updateAlarms()
   }
 
   async get(nameArg = '') {
@@ -69,7 +69,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
   }
 
   private async onProjectEnabled() {
-    await this.restoreProjectAlarms()
+    await this.restoreAlarms()
   }
 
   private async onProjectDisabled() {
@@ -78,7 +78,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
     }
   }
 
-  private async restoreProjectAlarms() {
+  private async restoreAlarms() {
     for (const alarm of this.$project.meta.alarms) {
       await this.$.browser.alarms.create(alarm.name, {
         when: alarm.scheduledTime,
@@ -87,7 +87,7 @@ export class ProjectBrowserAlarms extends sw.Unit {
     }
   }
 
-  private async updateProjectAlarms() {
+  private async updateAlarms() {
     const allAlarms = await this.$.browser.alarms.getAll()
     this.$project.meta.alarms = allAlarms.filter(alarm => this.$browser.isPrefixed(alarm.name))
     await this.$project.saveSnapshot()

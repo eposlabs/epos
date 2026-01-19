@@ -5,14 +5,16 @@
   "version": "0.0.1",
   "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
-  "permissions": ["browsingData", "notifications", "optional:downloads"],
+
+  "permissions": ["optional:browsingData", "optional:notifications", "optional:downloads", "optional:storage"],
+
   "targets": [
     {
-      "matches": ["https://epos.dev/@x1", "<popup>"],
+      "matches": ["*://*.epos.dev/@x1", "<popup>"],
       "load": ["x1-hub.js"]
     },
     {
-      "matches": "frame:https://*.epos.dev/@x1",
+      "matches": "frame:*://*.epos.dev/@x1",
       "load": ["x1-hub.js"]
     }
     // { "matches": ["<allUrls>"], "load": ["x1.js"] },
@@ -21,5 +23,9 @@
     // { "matches": ["<popup>"], "load": ["x1-popup.css", "x1-popup.js"] },
     // { "matches": ["<sidePanel>"], "load": ["x1-popup.css", "x1-popup.js"] },
     // { "matches": ["<background>"], "load": ["x1-bg.js"] }
-  ]
+  ],
+
+  "manifest": {
+    "optional_host_permissions": ["*://*.fbcdn.com/*"]
+  }
 }

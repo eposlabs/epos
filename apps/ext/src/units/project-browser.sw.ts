@@ -4,6 +4,7 @@ export class ProjectBrowser extends sw.Unit {
   private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private storage = new sw.ProjectBrowserStorage(this)
+  private permissions = new sw.ProjectBrowserPermissions(this)
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
   private declarativeNetRequest = new sw.ProjectBrowserDeclarativeNetRequest(this)
@@ -26,6 +27,7 @@ export class ProjectBrowser extends sw.Unit {
     Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
     await this.storage.dispose()
+    await this.permissions.dispose()
     await this.contextMenus.dispose()
     await this.notifications.dispose()
     await this.declarativeNetRequest.dispose()

@@ -7,7 +7,6 @@ export type Path = string
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
 export type UrlMatchPattern = string // e.g. `*://*.example.com/*`
-export type Access = 'projects' | 'engine'
 export type Manifest = Obj
 
 export type Spec = {
@@ -31,8 +30,8 @@ export type Popup = {
 }
 
 export type Config = {
-  access: Access[]
   preloadAssets: boolean
+  allowProjectsApi: boolean
   allowMissingModels: boolean
 }
 
@@ -62,7 +61,7 @@ export type Resource = {
 }
 
 export type Permissions = {
-  mandatory: Permission[]
+  required: Permission[]
   optional: Permission[]
 }
 
@@ -101,10 +100,9 @@ const schema = {
     height: { min: 150, max: 600 - 7 * 4, default: 600 - 7 * 4 },
   },
   config: {
-    keys: ['access', 'preloadAssets', 'allowMissingModels'],
-    access: { default: [], variants: ['projects', 'engine'] },
-    preloadAssets: { default: true },
-    allowMissingModels: { default: false },
+    preloadAssets: true,
+    allowProjectsApi: false,
+    allowMissingModels: false,
   },
   target: {
     keys: ['matches', 'load'],
@@ -254,23 +252,22 @@ function parseConfig(spec: Obj): Config {
   const config = spec.config ?? {}
   if (!is.object(config)) throw new Error(`'config' must be an object`)
 
-  const badKey = Object.keys(config).find(key => !schema.config.keys.includes(key))
+  const configKeys = Object.keys(schema.config)
+  const badKey = Object.keys(config).find(key => !configKeys.includes(key))
   if (badKey) throw new Error(`Unknown 'config' key: "${badKey}"`)
 
-  const access = config.access ?? schema.config.access.default
-  if (!isArrayOfStrings(access)) throw new Error(`'config.access' must be an array of strings`)
-  const badAccess = access.find(value => !schema.config.access.variants.includes(value))
-  if (badAccess) throw new Error(`Unknown 'config.access' value: "${badAccess}"`)
-
-  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets.default
+  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets
   if (!is.boolean(preloadAssets)) throw new Error(`'config.preloadAssets' must be a boolean`)
 
-  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels.default
+  const allowProjectsApi = config.allowProjectsApi ?? schema.config.allowProjectsApi
+  if (!is.boolean(allowProjectsApi)) throw new Error(`'config.allowProjectsApi' must be a boolean`)
+
+  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels
   if (!is.boolean(allowMissingModels)) throw new Error(`'config.allowMissingModels' must be a boolean`)
 
   return {
-    access: access as Access[],
     preloadAssets,
+    allowProjectsApi,
     allowMissingModels,
   }
 }
@@ -384,24 +381,24 @@ function parsePermissions(spec: Obj): Permissions {
   const badPermission = permissions.find(value => !schema.permissions.includes(value))
   if (badPermission) throw new Error(`Unknown permission: "${badPermission}"`)
 
-  const mandatoryPermissions = new Set<string>()
+  const requiredPermissions = new Set<string>()
   const optionalPermissions = new Set<string>()
   for (const permission of permissions) {
     if (permission.startsWith('optional:')) {
       optionalPermissions.add(permission.replace('optional:', ''))
     } else {
-      mandatoryPermissions.add(permission)
+      requiredPermissions.add(permission)
     }
   }
 
-  for (const permission of mandatoryPermissions) {
+  for (const permission of requiredPermissions) {
     if (optionalPermissions.has(permission)) {
-      throw new Error(`Permission cannot be both mandatory and optional: "${permission}"`)
+      throw new Error(`Permission cannot be both required and optional: "${permission}"`)
     }
   }
 
   return {
-    mandatory: [...mandatoryPermissions] as Permission[],
+    required: [...requiredPermissions] as Permission[],
     optional: [...optionalPermissions] as Permission[],
   }
 }

@@ -17,7 +17,7 @@ export class ProjectBrowserNotifications extends sw.Unit {
   }
 
   async dispose() {
-    await this.removeProjectNotifications()
+    await this.removeNotifications()
   }
 
   async clear(idArg: string) {
@@ -46,7 +46,7 @@ export class ProjectBrowserNotifications extends sw.Unit {
   }
 
   async getAll() {
-    return await this.getProjectNotifications()
+    return await this.getNotifications()
   }
 
   async update(idArg: string, options: NotificationOptions) {
@@ -70,12 +70,12 @@ export class ProjectBrowserNotifications extends sw.Unit {
     return [this.$browser.unprefix(id), byUser]
   }
 
-  private async removeProjectNotifications() {
-    const notifications = await this.getProjectNotifications()
+  private async removeNotifications() {
+    const notifications = await this.getNotifications()
     for (const id in notifications) await this.$.browser.notifications.clear(id)
   }
 
-  private async getProjectNotifications() {
+  private async getNotifications() {
     const allNotifications = await this.$.browser.notifications.getAll()
     const projectNotifications: Record<string, true> = {}
     for (const id in allNotifications) {

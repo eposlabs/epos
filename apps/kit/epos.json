@@ -1,38 +1,18 @@
 {
-  "$schema": "https://epos.dev/schema.json",
-
+  "$schema": "../../apps/web/public/schema.json",
   "name": "[epos]",
   "slug": "kit",
   "version": "1.8",
   "description": "Build browser extensions.",
+  "config": { "allowProjectsApi": true, "allowMissingModels": true },
   "assets": ["public/icon.svg", "public/icon.png"],
-
-  "config": {
-    "access": ["projects", "engine"],
-    "allowMissingModels": true
-  },
-
-  "targets": [
-    {
-      "matches": ["https://epos.dev/@kit", "https://epos.dev/@learn"],
-      "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"]
-    }
-  ],
+  "matches": ["https://epos.dev/@kit", "https://epos.dev/@learn"],
+  "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"],
 
   // Override manifest to include `<all_urls>` and `sidePanel` permissions
   "manifest": {
     "host_permissions": ["<all_urls>"],
     "permissions": [
-      // Mandatory
-      "alarms",
-      "declarativeNetRequest",
-      "offscreen",
-      "scripting",
-      "tabs",
-      "unlimitedStorage",
-      "webNavigation",
-
-      // Optional
       "background",
       "browsingData",
       "contextMenus",

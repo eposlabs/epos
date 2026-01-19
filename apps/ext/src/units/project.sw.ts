@@ -2,16 +2,6 @@ import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
 import type { RuleNoId } from './net.sw.js'
 import type { Address } from './project-target.sw'
 
-export const ENGINE_MANDATORY_PERMISSIONS = [
-  'alarms',
-  'declarativeNetRequest',
-  'offscreen',
-  'scripting',
-  'tabs',
-  'unlimitedStorage',
-  'webNavigation',
-]
-
 // Data saved to IndexedDB
 export type Snapshot = {
   id: string
@@ -37,6 +27,8 @@ export type Meta = {
   dynamicRules: chrome.declarativeNetRequest.Rule[]
   sessionRules: chrome.declarativeNetRequest.Rule[]
   systemRuleIds: number[] // Special rules set by epos engine; hidden for `epos.browser.declarativeNetRequest` api
+  grantedPermissions: chrome.runtime.ManifestPermission[]
+  grantedOrigins: string[]
 }
 
 export class Project extends sw.Unit {
@@ -46,17 +38,17 @@ export class Project extends sw.Unit {
   spec: Spec
   sources: Sources
   meta: Meta
+  manifest: chrome.runtime.ManifestV3
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
   states: exSw.States
-  private bus: ReturnType<gl.Bus['use']>
+  bus: ReturnType<gl.Bus['use']>
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
-  static ENGINE_MANDATORY_PERMISSIONS = ENGINE_MANDATORY_PERMISSIONS
 
   static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
-    const meta = this.getInitialMeta()
-    const project = new Project(parent, { ...params, meta })
+    // Prevent cases when params contain `meta`, always initialize project with the initial meta
+    const project = new Project(parent, { ...params, meta: undefined })
     await project.init()
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
@@ -71,27 +63,16 @@ export class Project extends sw.Unit {
     return project
   }
 
-  private static getInitialMeta(): Meta {
-    return {
-      alarms: [],
-      dynamicRules: [],
-      sessionRules: [],
-      systemRuleIds: [],
-    }
-  }
-
-  constructor(
-    parent: sw.Unit,
-    params: Omit<Bundle, 'assets'> & { meta: Meta } & Partial<ProjectSettings & { id: string }>,
-  ) {
+  constructor(parent: sw.Unit, params: Omit<Bundle, 'assets'> & Partial<ProjectSettings & { id: string; meta: Meta }>) {
     super(parent)
     this.id = params.id ?? this.$.utils.id()
     this.mode = params.mode ?? 'production'
     this.enabled = params.enabled ?? true
     this.spec = params.spec
     this.sources = params.sources
-    this.meta = params.meta
+    this.meta = params.meta ?? this.getInitialMeta()
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
+    this.manifest = this.generateManifest()
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
     this.bus = this.$.bus.use(`Project[${this.id}]`)
@@ -119,8 +100,9 @@ export class Project extends sw.Unit {
     this.spec = updates.spec ?? this.spec
     this.sources = updates.sources ?? this.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    if (updates.assets) await this.saveAssets(updates.assets)
+    this.manifest = this.generateManifest()
 
+    if (updates.assets) await this.saveAssets(updates.assets)
     await this.saveSnapshot()
     await this.updateSystemRules()
 
@@ -246,53 +228,9 @@ export class Project extends sw.Unit {
     const iconFromAssets = this.spec.icon ? assets[this.spec.icon] : null
     const icon = iconFromAssets ? await this.prepareIcon(iconFromAssets) : await fetchBlob('/icon.png')
 
-    // Extract match patterns from targets
-    const matchPatterns = new Set<string>()
-    for (const target of this.spec.targets) {
-      for (const match of target.matches) {
-        if (match.context === 'locus') continue
-        matchPatterns.add(match.value)
-      }
-    }
-
-    // Match patterns include `<all_urls>`? ->  Keep `<all_urls>` only
-    if (matchPatterns.has('<all_urls>')) {
-      matchPatterns.clear()
-      matchPatterns.add('<all_urls>')
-    }
-
-    // Prepare mandatory permissions
-    const mandatoryPermissions = [...ENGINE_MANDATORY_PERMISSIONS]
-    if (this.hasSidePanel()) mandatoryPermissions.push('sidePanel')
-
-    // Read engine's manifest.json
-    const engineManifestText = await fetch('/manifest.json').then(res => res.text())
-    const engineManifestJson = this.$.libs.stripJsonComments(engineManifestText)
-    const [engineManifest] = this.$.utils.safeSync(() => JSON.parse(engineManifestJson))
-    if (!engineManifest) throw this.never()
-
-    // Generate manifest object
-    const manifest = {
-      ...engineManifest,
-      name: this.spec.name,
-      version: this.spec.version,
-      description: this.spec.description ?? '',
-      action: { default_title: this.spec.name },
-      host_permissions: [...matchPatterns],
-      permissions: [...mandatoryPermissions, ...this.spec.permissions.mandatory],
-      optional_permissions: this.spec.permissions.optional,
-    }
-
-    // Override with spec's manifest if provided
-    if (this.spec.manifest) {
-      const permissions = this.$.utils.is.array(this.spec.manifest.permissions) ? this.spec.manifest.permissions : []
-      const allPermissions = this.$.utils.unique([...mandatoryPermissions, ...permissions])
-      Object.assign(manifest, this.spec.manifest, { permissions: allPermissions })
-    }
-
     return {
       'project.json': jsonBlob(snapshot),
-      'manifest.json': jsonBlob(manifest),
+      'manifest.json': jsonBlob(this.manifest),
       'icon.png': icon,
 
       // Assets
@@ -315,6 +253,65 @@ export class Project extends sw.Unit {
         'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       }),
     }
+  }
+
+  private generateManifest() {
+    // Prepare engine permissions
+    const enginePermissions: chrome.runtime.ManifestPermission[] = [
+      'alarms',
+      'declarativeNetRequest',
+      'offscreen',
+      'scripting',
+      'tabs',
+      'unlimitedStorage',
+      'webNavigation',
+      ...(this.hasSidePanel() ? ['sidePanel' as const] : []),
+    ]
+
+    // Extract host permissions from targets
+    const hostPermissions = new Set<string>()
+    for (const target of this.spec.targets) {
+      for (const match of target.matches) {
+        if (match.context === 'locus') continue
+        const hostPermission = this.matchPatternToHostPermission(match.value)
+        hostPermissions.add(hostPermission)
+      }
+    }
+
+    // Host permissions include `<all_urls>`? ->  Keep `<all_urls>` only
+    if (hostPermissions.has('<all_urls>')) {
+      hostPermissions.clear()
+      hostPermissions.add('<all_urls>')
+    }
+
+    // Generate manifest object
+    const manifest: chrome.runtime.ManifestV3 = {
+      name: this.spec.name,
+      version: this.spec.version,
+      description: this.spec.description ?? '',
+      icons: { 128: '/icon.png' },
+      manifest_version: 3,
+      action: { default_title: this.spec.name },
+      sandbox: { pages: ['/project.html'] },
+      background: { type: 'module', service_worker: '/sw.js' },
+      web_accessible_resources: [{ matches: ['<all_urls>'], resources: ['*'] }],
+      content_security_policy: {
+        extension_pages: `script-src 'self'; object-src 'self';`,
+        sandbox: `sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';`,
+      },
+      host_permissions: [...hostPermissions],
+      permissions: [...enginePermissions, ...this.spec.permissions.required],
+      optional_permissions: this.spec.permissions.optional,
+    }
+
+    // Override with spec's manifest; preserve engine permissions
+    if (this.spec.manifest) {
+      const permissions = this.$.utils.is.array(this.spec.manifest.permissions) ? this.spec.manifest.permissions : []
+      const allPermissions = this.$.utils.unique([...enginePermissions, ...permissions])
+      Object.assign(manifest, this.spec.manifest, { permissions: allPermissions })
+    }
+
+    return manifest
   }
 
   private async getHash(address?: Address) {
@@ -495,5 +492,28 @@ export class Project extends sw.Unit {
 
     // Convert to png blob
     return await canvas.convertToBlob({ type })
+  }
+
+  /**
+   * - `*://*.epos.dev/*` => `*://*.epos.dev/`
+   * - `https://epos.dev` => `https://epos.dev/`
+   * - `any://web.epos.dev/path` => `any://web.epos.dev/`
+   */
+  private matchPatternToHostPermission(pattern: string) {
+    if (pattern === '<all_urls>') return '<all_urls>'
+    const url = URL.parse(pattern.replaceAll('*', 'wildcard--'))
+    if (!url) throw this.never()
+    return `${`${url.protocol}//${url.host}`.replaceAll('wildcard--', '*')}/`
+  }
+
+  private getInitialMeta(): Meta {
+    return {
+      alarms: [],
+      dynamicRules: [],
+      sessionRules: [],
+      systemRuleIds: [],
+      grantedPermissions: [],
+      grantedOrigins: [],
+    }
   }
 }

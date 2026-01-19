@@ -6,10 +6,11 @@ export type Browser = {
   extension: Extension
   i18n: I18n
   management: Management
+  permissions: Permissions
   runtime: Runtime
   windows: Windows
 
-  // Mandatory for epos
+  // Required for epos
   alarms: Alarms
   declarativeNetRequest: DeclarativeNetRequest
   tabs: Tabs
@@ -73,6 +74,37 @@ export type Management = Omit<
   | 'setLaunchType'
   | 'uninstall'
 >
+
+export type Permissions = Omit<
+  typeof chrome.permissions,
+  | 'contains'
+  | 'getAll'
+  | 'remove'
+  | 'request'
+  // Not supported by epos
+  | 'addHostAccessRequest'
+  | 'removeHostAccessRequest'
+> & {
+  contains: (query: PermissionsQuery) => Promise<boolean>
+  getAll: () => Promise<{ origins: string[]; permissions: Permission[] }>
+  remove: (query: PermissionsQuery) => Promise<boolean>
+  request: (query: PermissionsQuery) => Promise<boolean>
+}
+
+export type PermissionsQuery = {
+  origins?: string[]
+  permissions?: Permission[]
+}
+
+export type Permission =
+  | 'background'
+  | 'browsingData'
+  | 'contextMenus'
+  | 'cookies'
+  | 'downloads'
+  | 'notifications'
+  | 'sidePanel'
+  | 'storage'
 
 export type Runtime = Omit<
   typeof chrome.runtime,
