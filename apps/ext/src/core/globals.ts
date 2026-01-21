@@ -22,7 +22,6 @@ declare global {
 
   type PartialEpos = Omit<Epos, 'projects' | 'engine'> & {
     projects?: Epos['projects']
-    engine?: Epos['engine']
   }
 
   type ProjectDef = {

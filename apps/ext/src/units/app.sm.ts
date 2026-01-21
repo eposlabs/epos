@@ -4,12 +4,10 @@ export class App extends sm.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  dev = new gl.Dev(this)
   permissions = new sm.Permissions(this)
 
   async init() {
     self.$ = this
     this.$.bus.setSignal(`App.ready[system:${this.env.params.type}]`)
-    await this.dev.init()
   }
 }

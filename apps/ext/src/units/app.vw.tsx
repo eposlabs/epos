@@ -10,14 +10,12 @@ export class App extends vw.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  dev = new gl.Dev(this)
   medium = new swVw.Medium(this)
   projects = new vw.Projects(this)
 
   async init() {
     self.$ = this
     await this.projects.init()
-    await this.dev.init()
     this.onDomReady(() => this.render())
   }
 

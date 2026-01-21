@@ -5,13 +5,11 @@ export class App extends cs.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  dev = new gl.Dev(this)
   projects = new cs.Projects(this)
 
   async init() {
     self.$ = this
     await this.bus.initPageToken()
     await this.projects.init()
-    await this.dev.init()
   }
 }

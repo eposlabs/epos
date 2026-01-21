@@ -6,7 +6,6 @@ export class App extends sw.Unit {
   bus = new gl.Bus(this)
 
   alive = new sw.Alive(this)
-  dev = new gl.Dev(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
   medium = new swVw.Medium(this)
@@ -23,7 +22,6 @@ export class App extends sw.Unit {
     await this.setupContentScript()
     await this.createOffscreen()
     await this.reloadKitTabs()
-    await this.dev.init()
   }
 
   private logInfo() {

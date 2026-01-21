@@ -5,7 +5,6 @@ export class App extends ex.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  dev = new gl.Dev(this)
   fetcher = new ex.Fetcher(this)
   idb = new ex.Idb(this)
   peer = new exOs.Peer(this)
@@ -15,7 +14,6 @@ export class App extends ex.Unit {
     if (this.$.env.is.dev) self.$epos = this
     await this.bus.initPageToken()
     await this.projects.init()
-    await this.dev.init()
 
     this.$.bus.on('Permissions.requestViaEx', async () => {
       console.warn('ex')

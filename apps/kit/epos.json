@@ -17,7 +17,7 @@
       "browsingData",
       "contextMenus",
       "cookies",
-      // "downloads",
+      "downloads",
       "notifications",
       "sidePanel",
       "storage"

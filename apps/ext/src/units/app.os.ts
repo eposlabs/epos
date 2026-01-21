@@ -6,7 +6,6 @@ export class App extends os.Unit {
   bus = new gl.Bus(this)
 
   alive = new os.Alive(this)
-  dev = new gl.Dev(this)
   peer = new exOs.Peer(this)
   projects = new os.Projects(this)
 
@@ -15,7 +14,6 @@ export class App extends os.Unit {
     this.utils.initBusProxy()
     this.logOffscreenLabel()
     await this.projects.init()
-    await this.dev.init()
   }
 
   private logOffscreenLabel() {
