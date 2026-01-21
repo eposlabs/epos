@@ -3,31 +3,40 @@ export class UtilsOrigins extends sw.Unit {
     return this.$.utils.unique(origins.map(this.normalizeOrigin, this))
   }
 
-  matches(origin: string, testOrigin: string) {
+  /**
+   * Check if `patternOrigin` covers `urlOrigin`.
+   * @example
+   * ```ts
+   * covers('*://example.com', 'https://example.com/') // true
+   * covers('*://example.com', '*://example.com/') // true
+   * covers('https://sub.example.com', 'https://*.example.com/*') // false
+   * ```
+   */
+  covers(patternOrigin: string, urlOrigin: string) {
     // Normalize origins
-    origin = this.normalizeOrigin(origin)
-    testOrigin = this.normalizeOrigin(testOrigin)
+    patternOrigin = this.normalizeOrigin(patternOrigin)
+    urlOrigin = this.normalizeOrigin(urlOrigin)
 
     // Handle `<all_urls>`
-    if (origin === '<all_urls>') return true
-    if (testOrigin === '<all_urls>') return false
+    if (patternOrigin === '<all_urls>') return true
+    if (urlOrigin === '<all_urls>') return false
 
     // Create pattern matcher from `origin`
-    const matcher = this.$.libs.matchPattern(origin).assertValid()
+    const matcher = this.$.libs.matchPattern(patternOrigin).assertValid()
 
-    // Create URL variants from `testOrigin`:
+    // Create URL variants from `urlOrigin`:
     // - Treat `*:` protocol as both `http:` and `https:`
     // - Remove path
-    const variants = (() => {
-      const url = URL.parse(testOrigin.replaceAll('*', 'wildcard--'))
-      if (!url) throw new Error(`Invalid origin: '${testOrigin}'`)
+    const urlVariants = (() => {
+      const url = URL.parse(urlOrigin.replaceAll('*', 'wildcard--'))
+      if (!url) throw new Error(`Invalid origin: '${urlOrigin}'`)
       const protocol = url.protocol.replaceAll('wildcard--', '*')
       const host = url.host.replaceAll('wildcard--', '*')
       if (protocol === '*:') return [`http://${host}/`, `https://${host}/`]
       return [`${protocol}//${host}/`]
     })()
 
-    return variants.every(variant => matcher.match(variant))
+    return urlVariants.every(variant => matcher.match(variant))
   }
 
   private normalizeOrigin(origin: string) {

@@ -37,8 +37,8 @@ export type LooseBrowser = {
 }
 
 export class ProjectBrowser extends ex.Unit {
-  #api: LooseBrowser | null = null
   private $project = this.closest(ex.Project)!
+  #api: Obj = {}
   private bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
   private listenerIds = new Set<string>()
   static _cbId_ = _cbId_
@@ -115,7 +115,7 @@ export class ProjectBrowser extends ex.Unit {
     if (this.$.utils.is.absent(permissions)) throw this.never()
     const hasPermission = (permission: chrome.runtime.ManifestPermission) => permissions.includes(permission)
 
-    this.#api = {
+    const api: LooseBrowser = {
       action: {
         // Methods
         disable: this.createMethod('action.disable'),
@@ -176,16 +176,15 @@ export class ProjectBrowser extends ex.Unit {
         getAll: this.createMethod('permissions.getAll'),
         remove: this.createMethod('permissions.remove'),
         request: async (...args: unknown[]) => {
+          // Sendind `Permissions.request` from `sw` fails with 'gesture' error, but sending from `ex` works.
+          // Here we create a temporary listener to forward request: `sw` -> `ex` -> `sm`.
           const reqId = this.$.utils.id()
-          const proxyAction = (...args: unknown[]) => this.$.bus.send('Permissions.request', ...args)
-          this.$.bus.once(`ProjectBrowser.request[${reqId}]`, proxyAction)
-          setTimeout(() => this.$.bus.off(`ProjectBrowser.request[${reqId}]`), this.$.utils.time('15s'))
-          return await this.callMethod('permissions.request', ...args, reqId)
-        },
+          const name = `ProjectBrowser.requestPermissions[${reqId}]`
+          this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('Permissions.request', ...args))
+          setTimeout(() => this.$.bus.off(name), this.$.utils.time('15s'))
 
-        // Events
-        onAdded: this.createEvent('permissions.onAdded'),
-        onRemoved: this.createEvent('permissions.onRemoved'),
+          return await this.callMethod('permissions.request', reqId, ...args)
+        },
       },
 
       runtime: {
@@ -193,7 +192,7 @@ export class ProjectBrowser extends ex.Unit {
         getContexts: this.createMethod('runtime.getContexts'),
         getManifest: () => manifest,
         getPlatformInfo: this.createMethod('runtime.getPlatformInfo'),
-        getURL: (path: string) => `chrome-extension://${this.api.runtime.id}/${path}`,
+        getURL: (path: string) => `chrome-extension://${tree.runtime.id}/${path}`,
         getVersion: () => manifest.version,
         reload: this.createMethod('runtime.reload'),
         requestUpdateCheck: this.createMethod('runtime.requestUpdateCheck'),
@@ -525,5 +524,8 @@ export class ProjectBrowser extends ex.Unit {
         },
       }),
     }
+
+    Object.keys(this.#api).forEach(key => delete this.#api[key])
+    Object.assign(this.#api, api)
   }
 }

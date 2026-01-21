@@ -83,6 +83,8 @@ export type Permissions = Omit<
   | 'request'
   // Not supported by epos
   | 'addHostAccessRequest'
+  | 'onAdded'
+  | 'onRemoved'
   | 'removeHostAccessRequest'
 > & {
   contains: (query: PermissionQuery) => Promise<boolean>

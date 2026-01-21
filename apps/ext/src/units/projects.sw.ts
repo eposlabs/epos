@@ -496,13 +496,14 @@ export class Projects extends sw.Unit {
     const optionalPermissions2 = manifest2.optional_permissions ?? []
     const permissions2 = [...requiredPermissions2, ...optionalPermissions2]
 
-    // Every `requiredOrigins1` should match some `requiredOrigins2`
-    const badRequiredOrigin = requiredOrigins1.find(o1 => !requiredOrigins2.some(o2 => this.$.utils.origins.matches(o1, o2)))
+    // Every `requiredOrigins1` should be covered by some `requiredOrigins2`
+    const badRequiredOrigin = requiredOrigins1.find(o1 => !requiredOrigins2.some(o2 => this.$.utils.origins.covers(o1, o2)))
     if (badRequiredOrigin) throw new Error(`Not compatible '${badRequiredOrigin}' origin`)
 
-    // Every `optionalOrigins1` should match some `origins2`
-    const badOptionalOrigin = optionalOrigins1.find(o1 => !origins2.some(o2 => this.$.utils.origins.matches(o1, o2)))
+    // Every `optionalOrigins1` should be covered by some `origins2`
+    const badOptionalOrigin = optionalOrigins1.find(o1 => !origins2.some(o2 => this.$.utils.origins.covers(o1, o2)))
     if (badOptionalOrigin) throw new Error(`Not compatible '${badOptionalOrigin}' origin`)
+
     // Every `requiredPermissions1` should be in `requiredPermissions2`
     const badRequiredPermission = requiredPermissions1.find(p1 => !requiredPermissions2.includes(p1))
     if (badRequiredPermission) throw new Error(`Not compatible '${badRequiredPermission}' permission`)

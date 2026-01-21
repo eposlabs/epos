@@ -1,11 +1,17 @@
 import type { PermissionQuery } from 'epos/browser'
 
-// TODO:
-// onAdded
-// onRemoved
 export class ProjectBrowserPermissions extends sw.Unit {
   private $project = this.closest(sw.Project)!
   private $browser = this.closest(sw.ProjectBrowser)!
+  private queue = new this.$.utils.Queue()
+
+  constructor(parent: sw.Unit) {
+    super(parent)
+    this.contains = this.queue.wrap(this.contains, this)
+    this.getAll = this.queue.wrap(this.getAll, this)
+    this.remove = this.queue.wrap(this.remove, this)
+    this.request = this.queue.wrap(this.request, this)
+  }
 
   async contains(queryArg: PermissionQuery) {
     const query = this.prepareQuery(queryArg)
@@ -35,12 +41,13 @@ export class ProjectBrowserPermissions extends sw.Unit {
     // Remove granted origins and permissions
     for (const origin of query.origins) this.removeGrantedOrigin(origin)
     for (const permission of query.permissions) this.removeGrantedPermission(permission)
+    await this.$browser.resetApi()
     await this.$project.saveSnapshot()
 
     return true
   }
 
-  async request(queryArg: PermissionQuery, peerId: string) {
+  async request(reqId: string, queryArg: PermissionQuery) {
     const query = this.prepareQuery(queryArg)
 
     // Filter out already accessible origins and permissions
@@ -58,14 +65,15 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
     // Request via system page if not granted yet
     let granted = await this.$.browser.permissions.contains({ origins, permissions })
-    if (!granted) granted = await this.requestViaSystemPage({ origins, permissions }, peerId)
+    if (!granted) granted = await this.requestViaSystemPage(reqId, { origins, permissions })
 
     // Not granted? -> Return false
     if (!granted) return false
 
-    // Granted? -> Update and save
+    // Update granted origins and permissions
     this.$project.meta.grantedOrigins.push(...origins)
     this.$project.meta.grantedPermissions.push(...permissions)
+    await this.$browser.resetApi()
     await this.$project.saveSnapshot()
 
     return true
@@ -82,7 +90,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
   private hasOrigin(origin: string) {
     const origins = this.getOrigins()
-    return origins.some(projectOrigin => this.$.utils.origins.matches(projectOrigin, origin))
+    return origins.some(projectOrigin => this.$.utils.origins.covers(projectOrigin, origin))
   }
 
   private getRequiredOrigins() {
@@ -97,17 +105,17 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
   private isRequiredOrigin(origin: string) {
     const requiredOrigins = this.getRequiredOrigins()
-    return requiredOrigins.some(requiredOrigin => this.$.utils.origins.matches(requiredOrigin, origin))
+    return requiredOrigins.some(requiredOrigin => this.$.utils.origins.covers(requiredOrigin, origin))
   }
 
   private isOptionalOrigin(origin: string) {
     const optionalOrigins = this.getOptionalOrigins()
-    return optionalOrigins.some(optionalOrigin => this.$.utils.origins.matches(optionalOrigin, origin))
+    return optionalOrigins.some(optionalOrigin => this.$.utils.origins.covers(optionalOrigin, origin))
   }
 
   private removeGrantedOrigin(origin: string) {
     const grantedOrigins = this.$project.meta.grantedOrigins
-    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.$.utils.origins.matches(origin, grantedOrigin))
+    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.$.utils.origins.covers(origin, grantedOrigin))
     this.$project.meta.grantedOrigins = nextGrantedOrigins
   }
 
@@ -152,7 +160,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
   // REQUEST VIA SYSTEM PAGE
   // ---------------------------------------------------------------------------
 
-  private async requestViaSystemPage(query: PermissionQuery, peerId: string) {
+  private async requestViaSystemPage(reqId: string, query: PermissionQuery) {
     // Prepare permission url
     const url = this.$.browser.runtime.getURL(this.$.env.url.system({ type: 'permission' }))
 
@@ -165,19 +173,14 @@ export class ProjectBrowserPermissions extends sw.Unit {
     await this.$.bus.waitSignal('App.ready[system:permission]')
 
     // Request permissions
-    // this.$browser.requestViaOffscreen()
-    // It is important to call this "SEND" via ex or os, not sw, otherwise "gesture" error
-    const granted = await this.$.bus.send<sm.Permissions['request']>(`ProjectBrowser.request[${peerId}]`, query)
-    // if (this.$.utils.is.absent(granted)) throw this.never()
+    const granted = await this.$.bus.send<boolean>(`ProjectBrowser.requestPermissions[${reqId}]`, query)
+    if (this.$.utils.is.absent(granted)) throw this.never()
 
-    // // Close permission tab
-    // if (!tab.id) throw this.never()
-    // await this.$.browser.tabs.remove(tab.id)
+    // Close permission tab
+    if (!tab.id) throw this.never()
+    await this.$.browser.tabs.remove(tab.id)
 
-    // // Reset projects's browser API (new APIs might be added)
-    // if (granted) await this.$browser.resetApi()
-
-    // return granted
+    return granted
   }
 
   // HELPERS

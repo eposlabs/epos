@@ -24,7 +24,7 @@ export class ProjectBrowser extends sw.Unit {
   }
 
   async resetApi() {
-    await this.$.bus.send<ex.ProjectBrowser['resetApi']>('resetApi')
+    await this.bus.send<ex.ProjectBrowser['resetApi']>('resetApi')
   }
 
   async dispose() {
