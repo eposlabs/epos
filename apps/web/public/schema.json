@@ -108,10 +108,7 @@
     },
 
     "Resources": {
-      "oneOf": [
-        { "$ref": "#/definitions/Resource" },
-        { "type": "array", "items": { "$ref": "#/definitions/Resource" } }
-      ]
+      "oneOf": [{ "$ref": "#/definitions/Resource" }, { "type": "array", "items": { "$ref": "#/definitions/Resource" } }]
     },
 
     "Resource": {

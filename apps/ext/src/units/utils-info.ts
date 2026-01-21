@@ -1,10 +1,4 @@
-export function info(params: {
-  title: string
-  color?: string
-  label?: string
-  subtitle?: string
-  timestamp?: boolean
-}) {
+export function info(params: { title: string; color?: string; label?: string; subtitle?: string; timestamp?: boolean }) {
   const title = params.title
   const color = params.color ?? '#d7eb00'
   const label = params.label ? `[${params.label}] ` : ''

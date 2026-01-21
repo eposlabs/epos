@@ -19,9 +19,6 @@ export class App extends os.Unit {
   }
 
   private logOffscreenLabel() {
-    console.log(
-      `%c⬇︎ offscreen.html`,
-      'padding: 4px 8px; margin: 12px 0; border: 1px dotted #9ca3af; border-radius: 6px;',
-    )
+    console.log(`%c⬇︎ offscreen.html`, 'padding: 4px 8px; margin: 12px 0; border: 1px dotted #9ca3af; border-radius: 6px;;;')
   }
 }

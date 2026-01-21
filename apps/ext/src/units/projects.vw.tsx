@@ -103,9 +103,7 @@ export class Projects extends vw.Unit {
 
             {/* Dropdown */}
             {dropdownProjects.length > 1 && (
-              <div
-                className={cn('relative flex h-full items-center gap-1 px-2.5', this.$.env.is.vwSidePanel && 'pl-3')}
-              >
+              <div className={cn('relative flex h-full items-center gap-1 px-2.5', this.$.env.is.vwSidePanel && 'pl-3')}>
                 <div className="text-nowrap">{selectedProject?.spec.name ?? 'SELECT ACTION'}</div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

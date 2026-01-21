@@ -129,9 +129,7 @@ export class BusExtBridge extends gl.Unit {
       }
 
       // `tabId` is present only for messages from `csTop`, so exclude proxy action for this tab if any
-      const actions = this.$bus.actions.filter(
-        action => action.name === req.name && (!tabId || action.target !== tabId),
-      )
+      const actions = this.$bus.actions.filter(action => action.name === req.name && (!tabId || action.target !== tabId))
 
       // No actions? -> Ignore message
       if (actions.length === 0) return
