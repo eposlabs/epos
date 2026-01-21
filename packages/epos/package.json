@@ -1,6 +1,6 @@
 {
   "name": "epos",
-  "version": "1.39.0",
+  "version": "1.40.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -22,10 +22,10 @@
   ],
   "dependencies": {
     "@parcel/watcher": "^2.5.4",
-    "@types/chrome": "^0.1.33",
-    "@types/react": "^19.2.8",
+    "@types/chrome": "^0.1.36",
+    "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
-    "epos-spec": "^1.7.0",
+    "epos-spec": "^1.8.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "portfinder": "^1.0.38",

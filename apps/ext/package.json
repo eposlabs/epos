@@ -27,14 +27,14 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
     "@tailwindcss/vite": "^4.1.18",
-    "@types/chrome": "^0.1.33",
-    "@types/react": "^19.2.8",
+    "@types/chrome": "^0.1.36",
+    "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "paralayer": "^1.15.0",
+    "paralayer": "^1.16.0",
     "tailwindcss": "^4.1.18",
     "vite": "npm:rolldown-vite@7.3.1",
-    "vite-plugin-rebundle": "^1.26.0"
+    "vite-plugin-rebundle": "^1.27.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.3.1"
