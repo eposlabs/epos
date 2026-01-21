@@ -59,7 +59,7 @@ export class ProjectEposStorage extends ex.Unit {
 
   private validateName(name: string) {
     if (name.startsWith(':') && name !== DEFAULT_NAME) {
-      throw new Error(`Storage name cannot start with ":"`)
+      throw new Error(`Storage name cannot start with ':'`)
     }
   }
 }

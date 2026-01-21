@@ -200,7 +200,7 @@ export class Project extends sw.Unit {
     const assets: Assets = {}
     for (const path of this.spec.assets) {
       const blob = await this.$.idb.get<Blob>(this.id, ':assets', path)
-      if (!blob) throw new Error(`Asset not found: "${path}"`)
+      if (!blob) throw new Error(`Asset not found: '${path}'`)
       assets[path] = blob
     }
 

@@ -202,7 +202,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     const variants = (() => {
       if (testOrigin === '<all_urls>') return ['<all_urls>']
       const url = URL.parse(testOrigin.replaceAll('*', 'wildcard--'))
-      if (!url) throw new Error(`Invalid origin: "${testOrigin}"`)
+      if (!url) throw new Error(`Invalid origin: '${testOrigin}'`)
       const protocol = url.protocol.replaceAll('wildcard--', '*')
       const host = url.host.replaceAll('wildcard--', '*')
       if (protocol === '*:') return [`http://${host}/`, `https://${host}/`]

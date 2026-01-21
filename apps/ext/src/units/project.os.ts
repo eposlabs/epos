@@ -67,7 +67,7 @@ export class Project extends os.Unit {
 
     // Log info
     const title = `<background> started`
-    const subtitle = `Listed in the context dropdown as "${this.spec.slug}"`
+    const subtitle = `Listed in the context dropdown as '${this.spec.slug}'`
     this.info({ title, subtitle })
   }
 
@@ -163,8 +163,8 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const title = `Frame created: "${id}" ${url}`
-    const subtitle = `Listed in the context dropdown as "${this.spec.slug}:${id}"`
+    const title = `Frame created: '${id}' ${url}`
+    const subtitle = `Listed in the context dropdown as '${this.spec.slug}:${id}'`
     this.info({ title, subtitle })
 
     return id
@@ -184,7 +184,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    const title = `Frame removed: "${id}" ${iframe.src}`
+    const title = `Frame removed: '${id}' ${iframe.src}`
     this.info({ title })
   }
 

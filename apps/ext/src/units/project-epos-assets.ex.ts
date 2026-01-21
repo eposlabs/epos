@@ -46,7 +46,7 @@ export class ProjectEposAssets extends ex.Unit {
   url(path: string) {
     const normalizedPath = this.normalizePath(path, this.url)
     if (!this.files[normalizedPath]) {
-      const message = `Asset not loaded: "${path}"`
+      const message = `Asset not loaded: '${path}'`
       const tip = `Call epos.assets.load('${path}') first, or use epos.assets.load() to load all assets`
       throw this.$epos.error(`${message}. ${tip}.`, this.url)
     }
@@ -86,7 +86,7 @@ export class ProjectEposAssets extends ex.Unit {
       .join('/')
 
     if (!this.paths.includes(normalizedPath)) {
-      const message = `Asset not found: "${path}"`
+      const message = `Asset not found: '${path}'`
       const tip = `Make sure it is listed in epos.json 'assets' field`
       throw this.$epos.error(`${message}. ${tip}.`, caller)
     }

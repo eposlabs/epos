@@ -16,7 +16,7 @@
       const { searchParams } = new URL(location.href)
       const mode = searchParams.get('mode')
       if (!mode) throw new Error(`Missing 'mode' param`)
-      if (mode !== 'development' && mode !== 'production') throw new Error(`Invalid mode: "${mode}"`)
+      if (mode !== 'development' && mode !== 'production') throw new Error(`Invalid mode: '${mode}'`)
       const script = document.createElement('script')
       script.src = mode === 'development' ? '/ex.dev.js' : '/ex.prod.js'
       document.head.append(script)

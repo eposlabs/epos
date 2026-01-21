@@ -93,15 +93,15 @@ export class Projects extends sw.Unit {
 
   private async fetch(specUrl: string): Promise<Bundle> {
     // Check if URL is valid
-    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: "${specUrl}"`)
+    if (!URL.parse(specUrl)) throw new Error(`Invalid URL: '${specUrl}'`)
 
     // Fetch spec file
     const [res] = await this.$.utils.safe(fetch(specUrl))
-    if (!res) throw new Error(`Failed to fetch ${specUrl}`)
+    if (!res) throw new Error(`Failed to fetch '${specUrl}'`)
 
     // Read spec file
     const [json] = await this.$.utils.safe(res.text())
-    if (!json) throw new Error(`Failed to read ${specUrl}`)
+    if (!json) throw new Error(`Failed to read '${specUrl}'`)
 
     // Parse spec file
     const spec = this.$.libs.parseSpecJson(json)
@@ -136,7 +136,7 @@ export class Projects extends sw.Unit {
   }
 
   private async create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T> {
-    if (params.id && this.dict[params.id]) throw new Error(`Project with id "${params.id}" already exists`)
+    if (params.id && this.dict[params.id]) throw new Error(`Project with id '${params.id}' already exists`)
     const project = await sw.Project.new(this, params)
     this.dict[project.id] = project
     await this.$.bus.send('Projects.changed')
@@ -145,7 +145,7 @@ export class Projects extends sw.Unit {
 
   private async update(id: string, updates: Partial<Bundle & ProjectSettings>) {
     const project = this.dict[id]
-    if (!project) throw new Error(`Project with id "${id}" does not exist`)
+    if (!project) throw new Error(`Project with id '${id}' does not exist`)
     await project.update(updates)
     await this.$.bus.send('Projects.changed')
   }

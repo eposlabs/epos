@@ -19,7 +19,7 @@ Reflect.defineProperty(Object.prototype, '__d', {
           const newBody = patch(name, body)
           if (newBody) args[2] = new Function(argsStr, newBody)
         } catch (e) {
-          console.error(`Failed to patch "${name}"`, { body })
+          console.error(`Failed to patch '${name}'`, { body })
           console.error(e)
         }
       })

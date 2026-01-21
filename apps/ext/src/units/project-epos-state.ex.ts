@@ -58,7 +58,7 @@ export class ProjectEposState extends ex.Unit {
 
   private validateName(name: string) {
     if (name.startsWith(':') && name !== DEFAULT_NAME) {
-      throw new Error(`State name cannot start with ":"`)
+      throw new Error(`State name cannot start with ':'`)
     }
   }
 }
