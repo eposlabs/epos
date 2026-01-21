@@ -16,10 +16,15 @@ export class ProjectBrowser extends sw.Unit {
     this.bus.on('callMethod', this.callMethod, this)
     this.bus.on('addListener', this.addListener, this)
     this.bus.on('removeListener', this.removeListener, this)
+    this.bus.on('getPermissions', this.getPermissions, this)
   }
 
   async init() {
     await this.alarms.init()
+  }
+
+  async resetApi() {
+    await this.$.bus.send<ex.ProjectBrowser['resetApi']>('resetApi')
   }
 
   async dispose() {
@@ -27,7 +32,6 @@ export class ProjectBrowser extends sw.Unit {
     Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
     await this.storage.dispose()
-    await this.permissions.dispose()
     await this.contextMenus.dispose()
     await this.notifications.dispose()
     await this.declarativeNetRequest.dispose()
@@ -108,6 +112,10 @@ export class ProjectBrowser extends sw.Unit {
 
   private removeListener(listenerId: string) {
     this.listenerDisposers[listenerId]?.()
+  }
+
+  private getPermissions() {
+    return this.permissions.getPermissions()
   }
 
   private getInterceptor(path: string) {

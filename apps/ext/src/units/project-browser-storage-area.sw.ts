@@ -29,7 +29,7 @@ export class ProjectBrowserStorageArea extends sw.Unit {
   }
 
   async get(keysArg?: string | string[] | Obj | null) {
-    if (!this.$.utils.is.present(keysArg)) {
+    if (this.$.utils.is.absent(keysArg)) {
       const data = await this.api.get(null)
       return this.unprefixObject(data)
     } else if (this.$.utils.is.object(keysArg)) {

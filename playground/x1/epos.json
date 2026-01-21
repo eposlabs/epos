@@ -6,7 +6,7 @@
   "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
 
-  "permissions": ["optional:browsingData", "optional:notifications", "optional:downloads", "optional:storage"],
+  "permissions": ["optional:browsingData", "optional:notifications", "optional:downloads"],
 
   "targets": [
     {

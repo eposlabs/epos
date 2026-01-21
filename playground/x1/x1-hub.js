@@ -4,11 +4,20 @@ self.epos = epos
 
 document.body.style = 'font-family: system-ui; margin: 0;'
 
-console.warn('run')
+window.requestDownloads = async () => {
+  epos.browser.permissions.request({ permissions: ['downloads'] })
+  // setTimeout(() => {
+  //   $epos.bus.send('Permissions.request')
+  //   // await epos.browser.permissions.request({ permissions: ['downloads'] })
+  // }, 3000)
+}
 
 if (self === top) {
   document.body.innerHTML = `
-    <iframe src="https://epos.dev/@x1" style="width: 600px; height: 500px; border: 1px solid black;"/>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px;">
+      <button style="width: fit-content;" onClick="window.requestDownloads()">REQUEST DOWNLOADS</button>
+      <iframe src="https://epos.dev/@x1" style="width: 600px; height: 500px; border: 1px solid black;"/>
+    </div>
   `
 } else {
   document.body.innerHTML = `

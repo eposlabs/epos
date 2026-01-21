@@ -5,7 +5,7 @@ export class App extends sm.Unit {
   bus = new gl.Bus(this)
 
   dev = new gl.Dev(this)
-  ext = new sm.Ext(this)
+  permissions = new sm.Permissions(this)
 
   async init() {
     self.$ = this

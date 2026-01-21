@@ -16,5 +16,10 @@ export class App extends ex.Unit {
     await this.bus.initPageToken()
     await this.projects.init()
     await this.dev.init()
+
+    this.$.bus.on('Permissions.requestViaEx', async () => {
+      console.warn('ex')
+      this.$.bus.send('Permissions.request')
+    })
   }
 }

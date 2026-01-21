@@ -21,13 +21,13 @@ export type LooseBrowser = {
   webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
 
   // Optional for epos
-  browsingData: { [K in keyof Browser['browsingData']]-?: unknown }
-  contextMenus: { [K in keyof Browser['contextMenus']]-?: unknown }
-  cookies: { [K in keyof Browser['cookies']]-?: unknown }
-  downloads: { [K in keyof Browser['downloads']]-?: unknown }
-  notifications: { [K in keyof Browser['notifications']]-?: unknown }
-  sidePanel: { [K in keyof Browser['sidePanel']]-?: unknown }
-  storage: {
+  browsingData?: { [K in keyof Browser['browsingData']]-?: unknown }
+  contextMenus?: { [K in keyof Browser['contextMenus']]-?: unknown }
+  cookies?: { [K in keyof Browser['cookies']]-?: unknown }
+  downloads?: { [K in keyof Browser['downloads']]-?: unknown }
+  notifications?: { [K in keyof Browser['notifications']]-?: unknown }
+  sidePanel?: { [K in keyof Browser['sidePanel']]-?: unknown }
+  storage?: {
     local: { [K in keyof Browser['storage']['local']]-?: unknown }
     session: { [K in keyof Browser['storage']['session']]-?: unknown }
     sync: { [K in keyof Browser['storage']['sync']]-?: unknown }
@@ -49,7 +49,8 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   async init() {
-    await this.setupApi()
+    this.bus.on('resetApi', this.resetApi, this)
+    await this.resetApi()
   }
 
   private createMethod(path: string) {
@@ -103,12 +104,16 @@ export class ProjectBrowser extends ex.Unit {
     return `${path}[${cb[_cbId_]}]`
   }
 
-  private async setupApi() {
+  private async resetApi() {
     const tree = await this.bus.send<Obj<any>>('getApiTree')
     if (!tree) throw this.never()
 
     const manifest = await this.callMethod('runtime.getManifest')
     if (!this.$.utils.is.object(manifest)) throw this.never()
+
+    const permissions = await this.bus.send<sw.ProjectBrowser['getPermissions']>('getPermissions')
+    if (this.$.utils.is.absent(permissions)) throw this.never()
+    const hasPermission = (permission: chrome.runtime.ManifestPermission) => permissions.includes(permission)
 
     this.#api = {
       action: {
@@ -170,7 +175,13 @@ export class ProjectBrowser extends ex.Unit {
         contains: this.createMethod('permissions.contains'),
         getAll: this.createMethod('permissions.getAll'),
         remove: this.createMethod('permissions.remove'),
-        request: this.createMethod('permissions.request'),
+        request: async (...args: unknown[]) => {
+          const reqId = this.$.utils.id()
+          const proxyAction = (...args: unknown[]) => this.$.bus.send('Permissions.request', ...args)
+          this.$.bus.once(`ProjectBrowser.request[${reqId}]`, proxyAction)
+          setTimeout(() => this.$.bus.off(`ProjectBrowser.request[${reqId}]`), this.$.utils.time('15s'))
+          return await this.callMethod('permissions.request', ...args, reqId)
+        },
 
         // Events
         onAdded: this.createEvent('permissions.onAdded'),
@@ -333,172 +344,186 @@ export class ProjectBrowser extends ex.Unit {
         TransitionType: tree.webNavigation.TransitionType,
       },
 
-      browsingData: {
-        // Methods
-        remove: this.createMethod('browsingData.remove'),
-        removeAppcache: this.createMethod('browsingData.removeAppcache'),
-        removeCache: this.createMethod('browsingData.removeCache'),
-        removeCacheStorage: this.createMethod('browsingData.removeCacheStorage'),
-        removeCookies: this.createMethod('browsingData.removeCookies'),
-        removeDownloads: this.createMethod('browsingData.removeDownloads'),
-        removeFileSystems: this.createMethod('browsingData.removeFileSystems'),
-        removeFormData: this.createMethod('browsingData.removeFormData'),
-        removeHistory: this.createMethod('browsingData.removeHistory'),
-        removeIndexedDB: this.createMethod('browsingData.removeIndexedDB'),
-        removeLocalStorage: this.createMethod('browsingData.removeLocalStorage'),
-        removeServiceWorkers: this.createMethod('browsingData.removeServiceWorkers'),
-        removeWebSQL: this.createMethod('browsingData.removeWebSQL'),
-        settings: this.createMethod('browsingData.settings'),
-      },
+      ...(hasPermission('browsingData') && {
+        browsingData: {
+          // Methods
+          remove: this.createMethod('browsingData.remove'),
+          removeAppcache: this.createMethod('browsingData.removeAppcache'),
+          removeCache: this.createMethod('browsingData.removeCache'),
+          removeCacheStorage: this.createMethod('browsingData.removeCacheStorage'),
+          removeCookies: this.createMethod('browsingData.removeCookies'),
+          removeDownloads: this.createMethod('browsingData.removeDownloads'),
+          removeFileSystems: this.createMethod('browsingData.removeFileSystems'),
+          removeFormData: this.createMethod('browsingData.removeFormData'),
+          removeHistory: this.createMethod('browsingData.removeHistory'),
+          removeIndexedDB: this.createMethod('browsingData.removeIndexedDB'),
+          removeLocalStorage: this.createMethod('browsingData.removeLocalStorage'),
+          removeServiceWorkers: this.createMethod('browsingData.removeServiceWorkers'),
+          removeWebSQL: this.createMethod('browsingData.removeWebSQL'),
+          settings: this.createMethod('browsingData.settings'),
+        },
+      }),
 
-      contextMenus: {
-        // Methods
-        create: this.createMethod('contextMenus.create'),
-        remove: this.createMethod('contextMenus.remove'),
-        removeAll: this.createMethod('contextMenus.removeAll'),
-        update: this.createMethod('contextMenus.update'),
+      ...(hasPermission('contextMenus') && {
+        contextMenus: {
+          // Methods
+          create: this.createMethod('contextMenus.create'),
+          remove: this.createMethod('contextMenus.remove'),
+          removeAll: this.createMethod('contextMenus.removeAll'),
+          update: this.createMethod('contextMenus.update'),
 
-        // Events
-        onClicked: this.createEvent('contextMenus.onClicked'),
+          // Events
+          onClicked: this.createEvent('contextMenus.onClicked'),
 
-        // Values
-        ContextType: tree.contextMenus.ContextType,
-        ItemType: tree.contextMenus.ItemType,
-        ACTION_MENU_TOP_LEVEL_LIMIT: tree.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT,
-      },
+          // Values
+          ContextType: tree.contextMenus.ContextType,
+          ItemType: tree.contextMenus.ItemType,
+          ACTION_MENU_TOP_LEVEL_LIMIT: tree.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT,
+        },
+      }),
 
-      cookies: {
-        // Methods
-        get: this.createMethod('cookies.get'),
-        getAll: this.createMethod('cookies.getAll'),
-        getAllCookieStores: this.createMethod('cookies.getAllCookieStores'),
-        getPartitionKey: this.createMethod('cookies.getPartitionKey'),
-        remove: this.createMethod('cookies.remove'),
-        set: this.createMethod('cookies.set'),
+      ...(hasPermission('cookies') && {
+        cookies: {
+          // Methods
+          get: this.createMethod('cookies.get'),
+          getAll: this.createMethod('cookies.getAll'),
+          getAllCookieStores: this.createMethod('cookies.getAllCookieStores'),
+          getPartitionKey: this.createMethod('cookies.getPartitionKey'),
+          remove: this.createMethod('cookies.remove'),
+          set: this.createMethod('cookies.set'),
 
-        // Events
-        onChanged: this.createEvent('cookies.onChanged'),
+          // Events
+          onChanged: this.createEvent('cookies.onChanged'),
 
-        // Values
-        OnChangedCause: tree.cookies.OnChangedCause,
-        SameSiteStatus: tree.cookies.SameSiteStatus,
-      },
+          // Values
+          OnChangedCause: tree.cookies.OnChangedCause,
+          SameSiteStatus: tree.cookies.SameSiteStatus,
+        },
+      }),
 
-      downloads: {
-        // Methods
-        acceptDanger: this.createMethod('downloads.acceptDanger'),
-        cancel: this.createMethod('downloads.cancel'),
-        download: this.createMethod('downloads.download'),
-        erase: this.createMethod('downloads.erase'),
-        getFileIcon: this.createMethod('downloads.getFileIcon'),
-        pause: this.createMethod('downloads.pause'),
-        removeFile: this.createMethod('downloads.removeFile'),
-        resume: this.createMethod('downloads.resume'),
-        search: this.createMethod('downloads.search'),
-        show: this.createMethod('downloads.show'),
-        showDefaultFolder: this.createMethod('downloads.showDefaultFolder'),
+      ...(hasPermission('downloads') && {
+        downloads: {
+          // Methods
+          acceptDanger: this.createMethod('downloads.acceptDanger'),
+          cancel: this.createMethod('downloads.cancel'),
+          download: this.createMethod('downloads.download'),
+          erase: this.createMethod('downloads.erase'),
+          getFileIcon: this.createMethod('downloads.getFileIcon'),
+          pause: this.createMethod('downloads.pause'),
+          removeFile: this.createMethod('downloads.removeFile'),
+          resume: this.createMethod('downloads.resume'),
+          search: this.createMethod('downloads.search'),
+          show: this.createMethod('downloads.show'),
+          showDefaultFolder: this.createMethod('downloads.showDefaultFolder'),
 
-        // Events
-        onChanged: this.createEvent('downloads.onChanged'),
-        onCreated: this.createEvent('downloads.onCreated'),
-        onDeterminingFilename: this.createEvent('downloads.onDeterminingFilename'),
-        onErased: this.createEvent('downloads.onErased'),
+          // Events
+          onChanged: this.createEvent('downloads.onChanged'),
+          onCreated: this.createEvent('downloads.onCreated'),
+          onDeterminingFilename: this.createEvent('downloads.onDeterminingFilename'),
+          onErased: this.createEvent('downloads.onErased'),
 
-        // Values
-        DangerType: tree.downloads.DangerType,
-        FilenameConflictAction: tree.downloads.FilenameConflictAction,
-        HttpMethod: tree.downloads.HttpMethod,
-        InterruptReason: tree.downloads.InterruptReason,
-        State: tree.downloads.State,
-      },
+          // Values
+          DangerType: tree.downloads.DangerType,
+          FilenameConflictAction: tree.downloads.FilenameConflictAction,
+          HttpMethod: tree.downloads.HttpMethod,
+          InterruptReason: tree.downloads.InterruptReason,
+          State: tree.downloads.State,
+        },
+      }),
 
-      notifications: {
-        // Methods
-        clear: this.createMethod('notifications.clear'),
-        create: this.createMethod('notifications.create'),
-        getAll: this.createMethod('notifications.getAll'),
-        update: this.createMethod('notifications.update'),
+      ...(hasPermission('notifications') && {
+        notifications: {
+          // Methods
+          clear: this.createMethod('notifications.clear'),
+          create: this.createMethod('notifications.create'),
+          getAll: this.createMethod('notifications.getAll'),
+          update: this.createMethod('notifications.update'),
 
-        // Events
-        onButtonClicked: this.createEvent('notifications.onButtonClicked'),
-        onClicked: this.createEvent('notifications.onClicked'),
-        onClosed: this.createEvent('notifications.onClosed'),
+          // Events
+          onButtonClicked: this.createEvent('notifications.onButtonClicked'),
+          onClicked: this.createEvent('notifications.onClicked'),
+          onClosed: this.createEvent('notifications.onClosed'),
 
-        // Values
-        PermissionLevel: tree.notifications.PermissionLevel,
-        TemplateType: tree.notifications.TemplateType,
-      },
+          // Values
+          PermissionLevel: tree.notifications.PermissionLevel,
+          TemplateType: tree.notifications.TemplateType,
+        },
+      }),
 
-      sidePanel: {
-        // Methods
-        getLayout: this.createMethod('sidePanel.getLayout'),
-        getOptions: this.createMethod('sidePanel.getOptions'),
-        getPanelBehavior: this.createMethod('sidePanel.getPanelBehavior'),
+      ...(hasPermission('sidePanel') && {
+        sidePanel: {
+          // Methods
+          getLayout: this.createMethod('sidePanel.getLayout'),
+          getOptions: this.createMethod('sidePanel.getOptions'),
+          getPanelBehavior: this.createMethod('sidePanel.getPanelBehavior'),
 
-        // Events
-        onClosed: this.createEvent('sidePanel.onClosed'),
-        onOpened: this.createEvent('sidePanel.onOpened'),
+          // Events
+          onClosed: this.createEvent('sidePanel.onClosed'),
+          onOpened: this.createEvent('sidePanel.onOpened'),
 
-        // Values
-        Side: tree.sidePanel.Side,
-      },
+          // Values
+          Side: tree.sidePanel.Side,
+        },
+      }),
 
-      // storage: {
-      //   local: {
-      //     // Methods
-      //     get: this.createMethod('storage.local.get'),
-      //     getKeys: this.createMethod('storage.local.getKeys'),
-      //     set: this.createMethod('storage.local.set'),
-      //     remove: this.createMethod('storage.local.remove'),
-      //     clear: this.createMethod('storage.local.clear'),
-      //     getBytesInUse: this.createMethod('storage.local.getBytesInUse'),
+      ...(hasPermission('storage') && {
+        storage: {
+          local: {
+            // Methods
+            get: this.createMethod('storage.local.get'),
+            getKeys: this.createMethod('storage.local.getKeys'),
+            set: this.createMethod('storage.local.set'),
+            remove: this.createMethod('storage.local.remove'),
+            clear: this.createMethod('storage.local.clear'),
+            getBytesInUse: this.createMethod('storage.local.getBytesInUse'),
 
-      //     // Events
-      //     onChanged: this.createEvent('storage.local.onChanged'),
+            // Events
+            onChanged: this.createEvent('storage.local.onChanged'),
 
-      //     // Values
-      //     QUOTA_BYTES: tree.storage.local.QUOTA_BYTES,
-      //   },
+            // Values
+            QUOTA_BYTES: tree.storage.local.QUOTA_BYTES,
+          },
 
-      //   session: {
-      //     // Methods
-      //     clear: this.createMethod('storage.session.clear'),
-      //     get: this.createMethod('storage.session.get'),
-      //     getBytesInUse: this.createMethod('storage.session.getBytesInUse'),
-      //     getKeys: this.createMethod('storage.session.getKeys'),
-      //     remove: this.createMethod('storage.session.remove'),
-      //     set: this.createMethod('storage.session.set'),
+          session: {
+            // Methods
+            clear: this.createMethod('storage.session.clear'),
+            get: this.createMethod('storage.session.get'),
+            getBytesInUse: this.createMethod('storage.session.getBytesInUse'),
+            getKeys: this.createMethod('storage.session.getKeys'),
+            remove: this.createMethod('storage.session.remove'),
+            set: this.createMethod('storage.session.set'),
 
-      //     // Events
-      //     onChanged: this.createEvent('storage.session.onChanged'),
+            // Events
+            onChanged: this.createEvent('storage.session.onChanged'),
 
-      //     // Values
-      //     QUOTA_BYTES: tree.storage.session.QUOTA_BYTES,
-      //   },
+            // Values
+            QUOTA_BYTES: tree.storage.session.QUOTA_BYTES,
+          },
 
-      //   sync: {
-      //     // Methods
-      //     clear: this.createMethod('storage.sync.clear'),
-      //     get: this.createMethod('storage.sync.get'),
-      //     getBytesInUse: this.createMethod('storage.sync.getBytesInUse'),
-      //     getKeys: this.createMethod('storage.sync.getKeys'),
-      //     remove: this.createMethod('storage.sync.remove'),
-      //     set: this.createMethod('storage.sync.set'),
+          sync: {
+            // Methods
+            clear: this.createMethod('storage.sync.clear'),
+            get: this.createMethod('storage.sync.get'),
+            getBytesInUse: this.createMethod('storage.sync.getBytesInUse'),
+            getKeys: this.createMethod('storage.sync.getKeys'),
+            remove: this.createMethod('storage.sync.remove'),
+            set: this.createMethod('storage.sync.set'),
 
-      //     // Events
-      //     onChanged: this.createEvent('storage.sync.onChanged'),
+            // Events
+            onChanged: this.createEvent('storage.sync.onChanged'),
 
-      //     // Values
-      //     QUOTA_BYTES: tree.storage.sync.QUOTA_BYTES,
-      //     QUOTA_BYTES_PER_ITEM: tree.storage.sync.QUOTA_BYTES_PER_ITEM,
-      //     MAX_ITEMS: tree.storage.sync.MAX_ITEMS,
-      //     MAX_WRITE_OPERATIONS_PER_HOUR: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_HOUR,
-      //     MAX_WRITE_OPERATIONS_PER_MINUTE: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_MINUTE,
-      //   },
+            // Values
+            QUOTA_BYTES: tree.storage.sync.QUOTA_BYTES,
+            QUOTA_BYTES_PER_ITEM: tree.storage.sync.QUOTA_BYTES_PER_ITEM,
+            MAX_ITEMS: tree.storage.sync.MAX_ITEMS,
+            MAX_WRITE_OPERATIONS_PER_HOUR: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_HOUR,
+            MAX_WRITE_OPERATIONS_PER_MINUTE: tree.storage.sync.MAX_WRITE_OPERATIONS_PER_MINUTE,
+          },
 
-      //   onChanged: this.createEvent('storage.onChanged'),
-      //   AccessLevel: tree.storage.AccessLevel,
-      // },
+          onChanged: this.createEvent('storage.onChanged'),
+          AccessLevel: tree.storage.AccessLevel,
+        },
+      }),
     }
   }
 }

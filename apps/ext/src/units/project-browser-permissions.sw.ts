@@ -1,25 +1,13 @@
-// manifest: 'https://*.wer.com/' => 'https://*.wer.com/*', 'https://wer.com/*'
-// manifest: 'https://wer.com/' => 'https://wer.com/*'
-// manifest: 'https://wer.com' => []
+import type { PermissionQuery } from 'epos/browser'
 
-import type { Permission, PermissionsQuery } from 'epos/browser'
-
-// Logic:
-// 1. same as for contains.
-// if removing some origins that match host_permissions, throw error
-// if removing some origins that match grantedOrigins, remove them from grantedOrigins.
-// .When requesting. we need to make sure that requested lives in optional_host_permissions.
-// You cannot remove required permissions.
-
-// IDEA: just use checkOrigin(pattern, origin)
-// this function removes path, treats *: protocol as http/https and so on
-
+// TODO:
+// onAdded
+// onRemoved
 export class ProjectBrowserPermissions extends sw.Unit {
   private $project = this.closest(sw.Project)!
+  private $browser = this.closest(sw.ProjectBrowser)!
 
-  async dispose() {}
-
-  async contains(queryArg: PermissionsQuery) {
+  async contains(queryArg: PermissionQuery) {
     const query = this.prepareQuery(queryArg)
     const hasOrigins = query.origins.every(origin => this.hasOrigin(origin))
     const hasPermissions = query.permissions.every(permission => this.hasPermission(permission))
@@ -33,7 +21,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     }
   }
 
-  async remove(queryArg: PermissionsQuery) {
+  async remove(queryArg: PermissionQuery) {
     const query = this.prepareQuery(queryArg)
 
     // Removing required origin? -> Throw
@@ -52,7 +40,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return true
   }
 
-  async request(queryArg: PermissionsQuery) {
+  async request(queryArg: PermissionQuery, peerId: string) {
     const query = this.prepareQuery(queryArg)
 
     // Filter out already accessible origins and permissions
@@ -70,7 +58,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
     // Request via system page if not granted yet
     let granted = await this.$.browser.permissions.contains({ origins, permissions })
-    if (!granted) granted = await this.requestViaSystemPage({ origins, permissions })
+    if (!granted) granted = await this.requestViaSystemPage({ origins, permissions }, peerId)
 
     // Not granted? -> Return false
     if (!granted) return false
@@ -119,14 +107,14 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
   private removeGrantedOrigin(origin: string) {
     const grantedOrigins = this.$project.meta.grantedOrigins
-    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.checkOriginMatch(grantedOrigin, origin))
+    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.checkOriginMatch(origin, grantedOrigin))
     this.$project.meta.grantedOrigins = nextGrantedOrigins
   }
 
   // PERMISSION ACCESS
   // ---------------------------------------------------------------------------
 
-  private getPermissions() {
+  getPermissions() {
     const requiredPermissions = this.getRequiredPermissions()
     const grantedPermissions = this.$project.meta.grantedPermissions
     return [...requiredPermissions, ...grantedPermissions]
@@ -136,26 +124,26 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return this.$project.manifest.permissions ?? []
   }
 
-  private getOptionalPermissions() {
-    return (this.$project.manifest.optional_permissions ?? []) as Permission[]
+  private getOptionalPermissions(): chrome.runtime.ManifestPermission[] {
+    return this.$project.manifest.optional_permissions ?? []
   }
 
-  private hasPermission(permission: Permission) {
+  private hasPermission(permission: chrome.runtime.ManifestPermission) {
     const permissions = this.getPermissions()
     return permissions.includes(permission)
   }
 
-  private isRequiredPermission(permission: Permission) {
+  private isRequiredPermission(permission: chrome.runtime.ManifestPermission) {
     const requiredPermissions = this.getRequiredPermissions()
     return requiredPermissions.includes(permission)
   }
 
-  private isOptionalPermission(permission: Permission) {
+  private isOptionalPermission(permission: chrome.runtime.ManifestPermission) {
     const optionalPermissions = this.getOptionalPermissions()
     return optionalPermissions.includes(permission)
   }
 
-  private removeGrantedPermission(permission: string) {
+  private removeGrantedPermission(permission: chrome.runtime.ManifestPermission) {
     const grantedPermissions = this.$project.meta.grantedPermissions
     const nextGrantedPermissions = grantedPermissions.filter(grantedPermission => grantedPermission !== permission)
     this.$project.meta.grantedPermissions = nextGrantedPermissions
@@ -164,7 +152,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
   // REQUEST VIA SYSTEM PAGE
   // ---------------------------------------------------------------------------
 
-  private async requestViaSystemPage(query: PermissionsQuery) {
+  private async requestViaSystemPage(query: PermissionQuery, peerId: string) {
     // Prepare permission url
     const url = this.$.browser.runtime.getURL(this.$.env.url.system({ type: 'permission' }))
 
@@ -173,24 +161,23 @@ export class ProjectBrowserPermissions extends sw.Unit {
     await Promise.all(tabs.map(tab => tab.id && this.$.browser.tabs.remove(tab.id)))
 
     // Create new permission tab and wait till it is ready for requesting
-    await this.$.browser.tabs.create({ url, active: false, pinned: true })
+    const tab = await this.$.browser.tabs.create({ url, active: false, pinned: true })
     await this.$.bus.waitSignal('App.ready[system:permission]')
 
     // Request permissions
-    const [result, error] = await this.$.utils.safe(() => this.$.bus.send('requestPermissions', query))
-    console.warn(result, error)
+    // this.$browser.requestViaOffscreen()
+    // It is important to call this "SEND" via ex or os, not sw, otherwise "gesture" error
+    const granted = await this.$.bus.send<sm.Permissions['request']>(`ProjectBrowser.request[${peerId}]`, query)
+    // if (this.$.utils.is.absent(granted)) throw this.never()
 
-    // Close permission tab
-    await this.$.bus.send('closePermissionTab')
+    // // Close permission tab
+    // if (!tab.id) throw this.never()
+    // await this.$.browser.tabs.remove(tab.id)
 
-    // Error? -> Throw
-    if (error) throw error
+    // // Reset projects's browser API (new APIs might be added)
+    // if (granted) await this.$browser.resetApi()
 
-    return false
-
-    // Update API object as new APIs might be added
-    // if (!result) throw this.never()
-    // if (result.granted) await this.initApi()
+    // return granted
   }
 
   // HELPERS
@@ -222,19 +209,19 @@ export class ProjectBrowserPermissions extends sw.Unit {
       return [`${protocol}//${host}/`]
     })()
 
-    return variants.some(variant => matcher.match(variant))
+    return variants.every(variant => matcher.match(variant))
   }
 
-  private prepareQuery(query: PermissionsQuery) {
+  private prepareQuery(query: PermissionQuery) {
     if (!this.$.utils.is.object(query)) throw new Error(`No matching signature`)
 
     const badKey = Object.keys(query).find(key => !['origins', 'permissions'].includes(key))
     if (badKey) throw new Error(`Unexpected property: '${badKey}'`)
 
-    const originsOk = !this.$.utils.is.present(query.origins) || this.isArrayOfStrings(query.origins)
+    const originsOk = this.$.utils.is.absent(query.origins) || this.isArrayOfStrings(query.origins)
     if (!originsOk) throw new Error(`Property 'origins' must be an array of strings`)
 
-    const permissionsOk = !this.$.utils.is.present(query.permissions) || this.isArrayOfStrings(query.permissions)
+    const permissionsOk = this.$.utils.is.absent(query.permissions) || this.isArrayOfStrings(query.permissions)
     if (!permissionsOk) throw new Error(`Property 'permissions' must be an array of strings`)
 
     return {
@@ -247,36 +234,3 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return this.$.utils.is.array(value) && value.every(this.$.utils.is.string)
   }
 }
-
-// private async 'permissions.request'(opts: PermissionsQuery) {
-//   // Check if permissions are already granted
-//   const alreadyGranted = await this.api.permissions.contains(opts)
-//   if (alreadyGranted) return true
-
-//   // Prepare permission url
-//   const url = this.api.runtime.getURL(this.$.env.url.system({ type: 'permission' }))
-
-//   // Close all permission tabs
-//   const tabs = await this.api.tabs.query({ url })
-//   await Promise.all(tabs.map(tab => tab.id && this.api.tabs.remove(tab.id)))
-
-//   // Create new permission tab and wait till it is ready for requesting
-//   await this.api.tabs.create({ url, active: false, pinned: true })
-//   await this.bus.waitSignal('App.ready[system:permission]')
-
-//   // Request permissions
-//   const request = this.bus.send<PermissionResult>('requestPermissions', opts)
-//   const [result, error] = await this.$.utils.safe(request)
-
-//   // Close permission tab
-//   await this.bus.send('closePermissionTab')
-
-//   // Error? -> Throw
-//   if (error) throw error
-
-//   // Update API object as new APIs might be added
-//   if (!result) throw this.never()
-//   if (result.granted) await this.initApi()
-
-//   return result
-// }

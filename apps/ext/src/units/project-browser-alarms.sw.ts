@@ -1,6 +1,5 @@
 export type Alarm = chrome.alarms.Alarm
 export type AlarmCreateInfo = chrome.alarms.AlarmCreateInfo
-export type OnAlarmArgs = Parameters<Parameters<typeof chrome.alarms.onAlarm.addListener>[0]>
 
 export class ProjectBrowserAlarms extends sw.Unit {
   private $project = this.closest(sw.Project)!

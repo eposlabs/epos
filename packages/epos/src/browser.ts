@@ -85,18 +85,29 @@ export type Permissions = Omit<
   | 'addHostAccessRequest'
   | 'removeHostAccessRequest'
 > & {
-  contains: (query: PermissionsQuery) => Promise<boolean>
+  contains: (query: PermissionQuery) => Promise<boolean>
   getAll: () => Promise<{ origins: string[]; permissions: Permission[] }>
-  remove: (query: PermissionsQuery) => Promise<boolean>
-  request: (query: PermissionsQuery) => Promise<boolean>
+  remove: (query: PermissionQuery) => Promise<boolean>
+  request: (query: PermissionQuery) => Promise<boolean>
 }
 
-export type PermissionsQuery = {
+export type PermissionQuery = {
   origins?: string[]
-  permissions?: Permission[]
+  permissions?: chrome.runtime.ManifestPermission[]
 }
 
-export type Permission =
+export type Permission = RequiredPermission | OptionalPermission
+
+export type RequiredPermission =
+  | 'alarms'
+  | 'declarativeNetRequest'
+  | 'offscreen'
+  | 'scripting'
+  | 'tabs'
+  | 'unlimitedStorage'
+  | 'webNavigation'
+
+export type OptionalPermission =
   | 'background'
   | 'browsingData'
   | 'contextMenus'

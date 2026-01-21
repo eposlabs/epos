@@ -76,7 +76,7 @@ export class Bus extends gl.Unit {
   async send<T>(name: string, ...args: FnArgsOrArr<T>) {
     let result: unknown
 
-    if (this.$.env.is.sw || this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.vw) {
+    if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.sm || this.$.env.is.sw || this.$.env.is.vw) {
       result = await this.utils.pick([this.extBridge.send(name, ...args), this.executeProxyActions(name, ...args)])
     } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
       result = await this.pageBridge.sendToTop(name, ...args)
@@ -109,13 +109,13 @@ export class Bus extends gl.Unit {
   }
 
   setSignal(name: string, value: unknown = true) {
-    name = `signal[${name}]`
+    name = `Bus.signal[${name}]`
     this.on(name, () => value)
     void this.send(name, value)
   }
 
   async waitSignal<T>(name: string, timeout?: number) {
-    name = `signal[${name}]`
+    name = `Bus.signal[${name}]`
 
     // Setup listener
     const listener$ = Promise.withResolvers<unknown>()
