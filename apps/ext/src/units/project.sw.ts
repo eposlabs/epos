@@ -43,6 +43,7 @@ export class Project extends sw.Unit {
   browser: sw.ProjectBrowser
   states: exSw.States
   bus: ReturnType<gl.Bus['use']>
+  private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
 
@@ -72,7 +73,7 @@ export class Project extends sw.Unit {
     this.sources = params.sources
     this.meta = params.meta ?? this.getInitialMeta()
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.manifest = this.generateManifest()
+    this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
     this.bus = this.$.bus.use(`Project[${this.id}]`)
@@ -100,7 +101,7 @@ export class Project extends sw.Unit {
     this.spec = updates.spec ?? this.spec
     this.sources = updates.sources ?? this.sources
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
-    this.manifest = this.generateManifest()
+    this.manifest = this.$projects.generateManifest(this.spec)
 
     if (updates.assets) await this.saveAssets(updates.assets)
     await this.saveSnapshot()
@@ -253,65 +254,6 @@ export class Project extends sw.Unit {
         'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       }),
     }
-  }
-
-  private generateManifest() {
-    // Prepare engine permissions
-    const enginePermissions: chrome.runtime.ManifestPermission[] = [
-      'alarms',
-      'declarativeNetRequest',
-      'offscreen',
-      'scripting',
-      'tabs',
-      'unlimitedStorage',
-      'webNavigation',
-      ...(this.hasSidePanel() ? ['sidePanel' as const] : []),
-    ]
-
-    // Extract host permissions from targets
-    const hostPermissions = new Set<string>()
-    for (const target of this.spec.targets) {
-      for (const match of target.matches) {
-        if (match.context === 'locus') continue
-        const hostPermission = this.matchPatternToHostPermission(match.value)
-        hostPermissions.add(hostPermission)
-      }
-    }
-
-    // Host permissions include `<all_urls>`? ->  Keep `<all_urls>` only
-    if (hostPermissions.has('<all_urls>')) {
-      hostPermissions.clear()
-      hostPermissions.add('<all_urls>')
-    }
-
-    // Generate manifest object
-    const manifest: chrome.runtime.ManifestV3 = {
-      name: this.spec.name,
-      version: this.spec.version,
-      description: this.spec.description ?? '',
-      icons: { 128: '/icon.png' },
-      manifest_version: 3,
-      action: { default_title: this.spec.name },
-      sandbox: { pages: ['/project.html'] },
-      background: { type: 'module', service_worker: '/sw.js' },
-      web_accessible_resources: [{ matches: ['<all_urls>'], resources: ['*'] }],
-      content_security_policy: {
-        extension_pages: `script-src 'self'; object-src 'self';`,
-        sandbox: `sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';`,
-      },
-      host_permissions: [...hostPermissions],
-      permissions: [...enginePermissions, ...this.spec.permissions.required],
-      optional_permissions: this.spec.permissions.optional,
-    }
-
-    // Override with spec's manifest; preserve engine permissions
-    if (this.spec.manifest) {
-      const permissions = this.$.utils.is.array(this.spec.manifest.permissions) ? this.spec.manifest.permissions : []
-      const allPermissions = this.$.utils.unique([...enginePermissions, ...permissions])
-      Object.assign(manifest, this.spec.manifest, { permissions: allPermissions })
-    }
-
-    return manifest
   }
 
   private async getHash(address?: Address) {
@@ -492,18 +434,6 @@ export class Project extends sw.Unit {
 
     // Convert to png blob
     return await canvas.convertToBlob({ type })
-  }
-
-  /**
-   * - `*://*.epos.dev/*` => `*://*.epos.dev/`
-   * - `https://epos.dev` => `https://epos.dev/`
-   * - `any://web.epos.dev/path` => `any://web.epos.dev/`
-   */
-  private matchPatternToHostPermission(pattern: string) {
-    if (pattern === '<all_urls>') return '<all_urls>'
-    const url = URL.parse(pattern.replaceAll('*', 'wildcard--'))
-    if (!url) throw this.never()
-    return `${`${url.protocol}//${url.host}`.replaceAll('wildcard--', '*')}/`
   }
 
   private getInitialMeta(): Meta {

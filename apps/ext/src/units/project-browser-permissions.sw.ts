@@ -82,32 +82,32 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
   private hasOrigin(origin: string) {
     const origins = this.getOrigins()
-    return origins.some(projectOrigin => this.checkOriginMatch(projectOrigin, origin))
+    return origins.some(projectOrigin => this.$.utils.origins.matches(projectOrigin, origin))
   }
 
   private getRequiredOrigins() {
     const hostPermissions = this.$project.manifest.host_permissions ?? []
-    return hostPermissions.map(this.normalizeOrigin, this)
+    return this.$.utils.origins.normalize(hostPermissions)
   }
 
   private getOptionalOrigins() {
     const optionalHostPermissions = this.$project.manifest.optional_host_permissions ?? []
-    return optionalHostPermissions.map(this.normalizeOrigin, this)
+    return this.$.utils.origins.normalize(optionalHostPermissions)
   }
 
   private isRequiredOrigin(origin: string) {
     const requiredOrigins = this.getRequiredOrigins()
-    return requiredOrigins.some(requiredOrigin => this.checkOriginMatch(requiredOrigin, origin))
+    return requiredOrigins.some(requiredOrigin => this.$.utils.origins.matches(requiredOrigin, origin))
   }
 
   private isOptionalOrigin(origin: string) {
     const optionalOrigins = this.getOptionalOrigins()
-    return optionalOrigins.some(optionalOrigin => this.checkOriginMatch(optionalOrigin, origin))
+    return optionalOrigins.some(optionalOrigin => this.$.utils.origins.matches(optionalOrigin, origin))
   }
 
   private removeGrantedOrigin(origin: string) {
     const grantedOrigins = this.$project.meta.grantedOrigins
-    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.checkOriginMatch(origin, grantedOrigin))
+    const nextGrantedOrigins = grantedOrigins.filter(grantedOrigin => !this.$.utils.origins.matches(origin, grantedOrigin))
     this.$project.meta.grantedOrigins = nextGrantedOrigins
   }
 
@@ -183,35 +183,6 @@ export class ProjectBrowserPermissions extends sw.Unit {
   // HELPERS
   // ---------------------------------------------------------------------------
 
-  private normalizeOrigin(origin: string) {
-    if (origin === '<all_urls>') return '<all_urls>'
-    const url = URL.parse(origin.replaceAll('*', 'wildcard--'))
-    if (!url) throw new Error(`Invalid origin: '${origin}'`)
-    const protocol = url.protocol.replaceAll('wildcard--', '*')
-    const host = url.host.replaceAll('wildcard--', '*')
-    return `${protocol}//${host}/*`
-  }
-
-  private checkOriginMatch(origin: string, testOrigin: string) {
-    // Create pattern matcher from `origin`
-    const matcher = this.$.libs.matchPattern(origin).assertValid()
-
-    // Create URL variants from `testOrigin`:
-    // - Treat `*:` protocol as both `http:` and `https:`
-    // - Remove path
-    const variants = (() => {
-      if (testOrigin === '<all_urls>') return ['<all_urls>']
-      const url = URL.parse(testOrigin.replaceAll('*', 'wildcard--'))
-      if (!url) throw new Error(`Invalid origin: '${testOrigin}'`)
-      const protocol = url.protocol.replaceAll('wildcard--', '*')
-      const host = url.host.replaceAll('wildcard--', '*')
-      if (protocol === '*:') return [`http://${host}/`, `https://${host}/`]
-      return [`${protocol}//${host}/`]
-    })()
-
-    return variants.every(variant => matcher.match(variant))
-  }
-
   private prepareQuery(query: PermissionQuery) {
     if (!this.$.utils.is.object(query)) throw new Error(`No matching signature`)
 
@@ -225,7 +196,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     if (!permissionsOk) throw new Error(`Property 'permissions' must be an array of strings`)
 
     return {
-      origins: this.$.utils.unique((query.origins ?? []).map(this.normalizeOrigin, this)),
+      origins: this.$.utils.origins.normalize(query.origins ?? []),
       permissions: this.$.utils.unique(query.permissions ?? []),
     }
   }

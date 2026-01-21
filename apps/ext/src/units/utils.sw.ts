@@ -17,6 +17,7 @@ export class Utils extends sw.Unit {
   is = is
   link = link
   normalizeUrl = normalizeUrl
+  origins = new sw.UtilsOrigins(this)
   Queue = Queue
   safe = safe
   safeSync = safeSync

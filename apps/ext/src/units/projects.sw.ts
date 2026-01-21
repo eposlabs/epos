@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources } from 'epos'
+import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
 import type { Address } from './project-target.sw'
 import type { Entry, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -105,6 +105,12 @@ export class Projects extends sw.Unit {
 
     // Parse spec file
     const spec = this.$.libs.parseSpecJson(json)
+
+    // Generate manifest from the spec
+    const manifest = this.generateManifest(spec)
+
+    // Check manifest compatibility with the extension
+    this.checkManifestCompatibility(manifest)
 
     // Fetch sources
     const sources: Sources = {}
@@ -400,5 +406,109 @@ export class Projects extends sw.Unit {
     const { code } = await this.$.libs.terser.minify(js)
     if (!this.$.utils.is.string(code)) throw this.never()
     return code
+  }
+
+  generateManifest(spec: Spec) {
+    const matches = spec.targets.flatMap(target => target.matches)
+    const hasSidePanel = matches.some(match => match.context === 'locus' && match.value === 'sidePanel')
+
+    // Prepare engine permissions
+    const enginePermissions: chrome.runtime.ManifestPermission[] = [
+      'alarms',
+      'declarativeNetRequest',
+      'offscreen',
+      'scripting',
+      'tabs',
+      'unlimitedStorage',
+      'webNavigation',
+      ...(hasSidePanel ? ['sidePanel' as const] : []),
+    ]
+
+    // Extract host permissions from targets
+    const hostPermissions = new Set<string>()
+    for (const target of spec.targets) {
+      for (const match of target.matches) {
+        if (match.context === 'locus') continue
+        const hostPermission = this.matchPatternToHostPermission(match.value)
+        hostPermissions.add(hostPermission)
+      }
+    }
+
+    // Host permissions include `<all_urls>`? ->  Keep `<all_urls>` only
+    if (hostPermissions.has('<all_urls>')) {
+      hostPermissions.clear()
+      hostPermissions.add('<all_urls>')
+    }
+
+    // Generate manifest object
+    const manifest: chrome.runtime.ManifestV3 = {
+      name: spec.name,
+      version: spec.version,
+      description: spec.description ?? '',
+      icons: { 128: '/icon.png' },
+      manifest_version: 3,
+      action: { default_title: spec.name },
+      sandbox: { pages: ['/project.html'] },
+      background: { type: 'module', service_worker: '/sw.js' },
+      web_accessible_resources: [{ matches: ['<all_urls>'], resources: ['*'] }],
+      content_security_policy: {
+        extension_pages: `script-src 'self'; object-src 'self';`,
+        sandbox: `sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';`,
+      },
+      host_permissions: [...hostPermissions],
+      permissions: [...enginePermissions, ...spec.permissions.required],
+      optional_permissions: spec.permissions.optional,
+    }
+
+    // Override with spec's manifest; preserve engine permissions
+    if (spec.manifest) {
+      Object.assign(manifest, spec.manifest)
+      manifest.permissions = this.$.utils.unique([...enginePermissions, ...(manifest.permissions ?? [])])
+    }
+
+    return manifest
+  }
+
+  /**
+   * - `*://*.epos.dev/*` => `*://*.epos.dev/`
+   * - `https://epos.dev` => `https://epos.dev/`
+   * - `any://web.epos.dev/path` => `any://web.epos.dev/`
+   */
+  private matchPatternToHostPermission(pattern: string) {
+    if (pattern === '<all_urls>') return '<all_urls>'
+    const url = URL.parse(pattern.replaceAll('*', 'wildcard--'))
+    if (!url) throw this.never()
+    return `${`${url.protocol}//${url.host}`.replaceAll('wildcard--', '*')}/`
+  }
+
+  /** Check if provided manifest is compatible with the current extension manifest. */
+  private checkManifestCompatibility(manifest: chrome.runtime.Manifest) {
+    const manifest1 = manifest
+    const manifest2 = this.$.browser.runtime.getManifest()
+    const requiredOrigins1 = this.$.utils.origins.normalize(manifest1.host_permissions ?? [])
+    const requiredOrigins2 = this.$.utils.origins.normalize(manifest2.host_permissions ?? [])
+    const optionalOrigins1 = this.$.utils.origins.normalize(manifest1.optional_host_permissions ?? [])
+    const optionalOrigins2 = this.$.utils.origins.normalize(manifest2.optional_host_permissions ?? [])
+    const origins2 = [...requiredOrigins2, ...optionalOrigins2]
+    const requiredPermissions1 = manifest1.permissions ?? []
+    const requiredPermissions2 = manifest2.permissions ?? []
+    const optionalPermissions1 = manifest1.optional_permissions ?? []
+    const optionalPermissions2 = manifest2.optional_permissions ?? []
+    const permissions2 = [...requiredPermissions2, ...optionalPermissions2]
+
+    // Every `requiredOrigins1` should match some `requiredOrigins2`
+    const badRequiredOrigin = requiredOrigins1.find(o1 => !requiredOrigins2.some(o2 => this.$.utils.origins.matches(o1, o2)))
+    if (badRequiredOrigin) throw new Error(`Not compatible '${badRequiredOrigin}' origin`)
+
+    // Every `optionalOrigins1` should match some `origins2`
+    const badOptionalOrigin = optionalOrigins1.find(o1 => !origins2.some(o2 => this.$.utils.origins.matches(o1, o2)))
+    if (badOptionalOrigin) throw new Error(`Not compatible '${badOptionalOrigin}' origin`)
+    // Every `requiredPermissions1` should be in `requiredPermissions2`
+    const badRequiredPermission = requiredPermissions1.find(p1 => !requiredPermissions2.includes(p1))
+    if (badRequiredPermission) throw new Error(`Not compatible '${badRequiredPermission}' permission`)
+
+    // Every `optionalPermissions1` should be in `permissions2`
+    const badOptionalPermission = optionalPermissions1.find(p1 => !permissions2.includes(p1))
+    if (badOptionalPermission) throw new Error(`Not compatible '${badOptionalPermission}' permission`)
   }
 }
