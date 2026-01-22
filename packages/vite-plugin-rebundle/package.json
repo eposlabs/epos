@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -12,8 +12,7 @@
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
-    "lint": "tsgo --build --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "lint": "tsgo --build --noEmit"
   },
   "exports": {
     ".": "./dist/rebundle.js"
@@ -24,12 +23,12 @@
   "dependencies": {
     "@types/ws": "^8.18.1",
     "chalk": "^5.6.2",
-    "dropcap": "^1.11.0",
+    "dropcap": "^1.15.0",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
-    "rolldown": "^1.0.0-beta.60",
-    "rollup": "^4.55.3",
-    "vite": "^7.3.1",
+    "rolldown": "^1.0.0-rc.1",
+    "rollup": "^4.56.0",
+    "vite": "npm:rolldown-vite@^7.3.1",
     "ws": "^8.19.0"
   }
 }

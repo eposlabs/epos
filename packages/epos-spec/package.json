@@ -1,6 +1,6 @@
 {
   "name": "epos-spec",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -9,8 +9,7 @@
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
-    "lint": "tsgo --build --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "lint": "tsgo --build --noEmit"
   },
   "exports": {
     ".": "./dist/epos-spec.js"
@@ -20,7 +19,7 @@
   ],
   "dependencies": {
     "browser-extension-url-match": "^1.2.0",
-    "dropcap": "^1.11.0",
+    "dropcap": "^1.15.0",
     "strip-json-comments": "^5.0.3"
   }
 }

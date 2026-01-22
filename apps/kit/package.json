@@ -14,10 +14,10 @@
     "@tabler/icons-react": "^3.36.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dropcap": "*",
-    "epos": "*",
-    "epos-spec": "*",
-    "epos-unit": "*",
+    "dropcap": "^1.15.0",
+    "epos": "^1.41.0",
+    "epos-spec": "^1.9.0",
+    "epos-unit": "^1.21.0",
     "fflate": "^0.8.2",
     "shadcn": "^3.7.0",
     "strip-json-comments": "^5.0.3",
@@ -28,12 +28,12 @@
     "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.36",
     "@types/wicg-file-system-access": "^2023.10.7",
-    "paralayer": "^1.16.0",
+    "paralayer": "^1.17.0",
     "tailwindcss": "^4.1.18",
-    "vite": "npm:rolldown-vite@7.3.1",
-    "vite-plugin-rebundle": "^1.27.0"
+    "vite": "npm:rolldown-vite@^7.3.1",
+    "vite-plugin-rebundle": "^1.28.0"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@7.3.1"
+    "vite": "npm:rolldown-vite@^7.3.1"
   }
 }

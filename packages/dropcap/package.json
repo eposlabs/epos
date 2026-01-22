@@ -1,6 +1,6 @@
 {
   "name": "dropcap",
-  "version": "1.11.0",
+  "version": "1.15.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
-    "lint": "tsgo --build --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "lint": "tsgo --build --noEmit"
   },
   "exports": {
     "./idb": "./dist/idb.js",

@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -12,8 +12,7 @@
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo && chmod +x dist/bin.js",
-    "lint": "tsgo --build --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "lint": "tsgo --build --noEmit"
   },
   "bin": {
     "paralayer": "./src/bin.js"
@@ -26,7 +25,7 @@
   ],
   "dependencies": {
     "chokidar": "^5.0.0",
-    "dropcap": "^1.11.0",
+    "dropcap": "^1.15.0",
     "minimist": "^1.2.8"
   },
   "devDependencies": {

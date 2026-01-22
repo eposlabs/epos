@@ -1,6 +1,6 @@
 {
   "name": "epos-unit",
-  "version": "1.20.0",
+  "version": "1.21.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -9,8 +9,7 @@
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
-    "lint": "tsgo --build --noEmit",
-    "release": "sh -c 'npm version ${1:-minor} && npm run build && npm publish' --"
+    "lint": "tsgo --build --noEmit"
   },
   "exports": {
     ".": "./dist/epos-unit.js"
@@ -20,8 +19,8 @@
     "src"
   ],
   "dependencies": {
-    "dropcap": "^1.11.0",
-    "epos": "^1.40.0",
+    "dropcap": "^1.15.0",
+    "epos": "^1.41.0",
     "nanoid": "^5.1.6"
   }
 }
