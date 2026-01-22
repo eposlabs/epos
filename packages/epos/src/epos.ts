@@ -25,14 +25,13 @@ export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => voi
 
 // Project types
 export type { Browser, Spec }
-export type Mode = 'development' | 'production'
 export type Manifest = chrome.runtime.ManifestV3
 export type Sources = { [path: string]: string }
 export type Assets = { [path: string]: Blob }
 export type Bundle = { spec: Spec; sources: Sources; assets: Assets }
-export type ProjectSettings = { mode: Mode; enabled: boolean }
+export type ProjectSettings = { debug: boolean; enabled: boolean }
 export type ProjectQuery = { sources?: boolean; assets?: boolean }
-export type ProjectBase = { id: string; mode: Mode; enabled: boolean; spec: Spec; manifest: Manifest }
+export type ProjectBase = { id: string; debug: boolean; enabled: boolean; spec: Spec; manifest: Manifest }
 export type ProjectFull = ProjectBase & { sources: Sources; assets: Assets }
 export type ProjectWithSources = ProjectBase & { sources: Sources }
 export type ProjectWithAssets = ProjectBase & { assets: Assets }
@@ -85,7 +84,7 @@ export interface Epos {
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean
-    project: { id: string; mode: Mode; spec: Spec }
+    project: ProjectBase
   }
 
   bus: {
@@ -206,7 +205,7 @@ export interface Epos {
     create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T>
     update(id: string, updates: Partial<Bundle & ProjectSettings>): Promise<void>
     remove(id: string): Promise<void>
-    export(id: string, mode?: Mode): Promise<Record<string, Blob>>
+    export(id: string, debug?: boolean): Promise<Record<string, Blob>>
     watch(listener: () => void): void
     fetch(url: string): Promise<Bundle>
   }

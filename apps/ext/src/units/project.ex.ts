@@ -1,7 +1,9 @@
 export class Project extends ex.Unit {
   id: ProjectDef['id']
-  mode: ProjectDef['mode']
+  debug: ProjectDef['debug']
+  enabled: ProjectDef['enabled']
   spec: ProjectDef['spec']
+  manifest: ProjectDef['manifest']
   shadowCss: ProjectDef['shadowCss']
   fn: ProjectDef['fn'] | null = null
   bus: ReturnType<gl.Bus['use']>
@@ -12,8 +14,10 @@ export class Project extends ex.Unit {
   constructor(parent: ex.Unit, def: ProjectDef) {
     super(parent)
     this.id = def.id
-    this.mode = def.mode
+    this.debug = def.debug
+    this.enabled = def.enabled
     this.spec = def.spec
+    this.manifest = def.manifest
     this.shadowCss = def.shadowCss
     this.fn = def.fn
     this.bus = this.$.bus.use(`Project[${this.id}]`)

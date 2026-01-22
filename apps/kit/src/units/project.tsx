@@ -5,12 +5,12 @@ import { Separator } from '@ui/components/ui/separator.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 import { Spinner } from '@ui/components/ui/spinner'
 import { cn } from '@ui/lib/utils'
-import type { Assets, Mode, ProjectBase, Sources, Spec } from 'epos'
+import type { Assets, ProjectBase, Sources, Spec } from 'epos'
 
 export class Project extends gl.Unit {
-  mode: Mode
-  spec: Spec
+  debug: boolean
   enabled: boolean
+  spec: Spec
   specText: string | null = null
   assetsInfo: Record<string, { size: number }> = {}
   sourcesInfo: Record<string, { size: number }> = {}
@@ -28,7 +28,7 @@ export class Project extends gl.Unit {
   constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
     this.id = params.id
-    this.mode = params.mode
+    this.debug = params.debug
     this.spec = params.spec
     this.enabled = params.enabled
   }
@@ -59,7 +59,7 @@ export class Project extends gl.Unit {
   }
 
   update(updates: Omit<ProjectBase, 'id'>) {
-    this.mode = updates.mode
+    this.debug = updates.debug
     this.spec = updates.spec
     this.enabled = updates.enabled
   }
@@ -72,9 +72,8 @@ export class Project extends gl.Unit {
     await epos.projects.update(this.id, { enabled: !this.enabled })
   }
 
-  async toggleMode() {
-    const newMode: Mode = this.mode === 'development' ? 'production' : 'development'
-    await epos.projects.update(this.id, { mode: newMode })
+  async toggleDebug() {
+    await epos.projects.update(this.id, { debug: !this.debug })
   }
 
   async remove() {
@@ -205,7 +204,8 @@ export class Project extends gl.Unit {
   }
 
   private async export() {
-    const files = await epos.projects.export(this.id, 'production')
+    const debug = false // TODO: e.shift
+    const files = await epos.projects.export(this.id, debug)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
     const filename = `${this.spec.slug}-${this.spec.version}.zip`
@@ -251,8 +251,8 @@ export class Project extends gl.Unit {
 
         <Item variant="outline">
           <ItemContent>
-            <ItemTitle>Mode</ItemTitle>
-            <ItemDescription>{this.mode}</ItemDescription>
+            <ItemTitle>Debug</ItemTitle>
+            <ItemDescription>{String(this.debug)}</ItemDescription>
           </ItemContent>
           <ItemActions></ItemActions>
         </Item>
@@ -351,8 +351,8 @@ export class Project extends gl.Unit {
         <Button variant="outline" size="sm" onClick={this.toggleEnabled}>
           Toggle enabled
         </Button>
-        <Button variant="outline" size="sm" onClick={this.toggleMode}>
-          Toggle mode
+        <Button variant="outline" size="sm" onClick={this.toggleDebug}>
+          Toggle debug
         </Button>
         <Button variant="outline" size="sm" onClick={this.connectDir}>
           Connect dir
@@ -413,6 +413,10 @@ export class Project extends gl.Unit {
     },
     10(this: any) {
       delete this.exporter
+    },
+    11(this: any) {
+      delete this.mode
+      this.debug = false
     },
   })
 }

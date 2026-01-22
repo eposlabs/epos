@@ -1,5 +1,3 @@
-import type { Mode } from 'epos'
-
 export class EnvUrl extends gl.Unit {
   offscreen() {
     return '/offscreen.html'
@@ -18,7 +16,7 @@ export class EnvUrl extends gl.Unit {
     locus: 'popup' | 'sidePanel' | 'background'
     tabId?: number
     windowId?: number
-    mode: Mode
+    debug: boolean
   }) {
     return `/project.html?${this.toSearchParams(params)}`
   }

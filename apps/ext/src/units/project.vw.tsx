@@ -3,7 +3,7 @@ import type { Entry } from './project.sw'
 export class Project extends vw.Unit {
   private $projects = this.closest(vw.Projects)!
   id: Entry['id']
-  mode: Entry['mode']
+  debug: Entry['debug']
   spec: Entry['spec']
   hash: Entry['hash']
   hasSidePanel: Entry['hasSidePanel']
@@ -12,14 +12,14 @@ export class Project extends vw.Unit {
   constructor(parent: vw.Unit, params: Entry) {
     super(parent)
     this.id = params.id
-    this.mode = params.mode
+    this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
     this.hasSidePanel = params.hasSidePanel
   }
 
   update(updates: Omit<Entry, 'id'>) {
-    this.mode = updates.mode
+    this.debug = updates.debug
     this.spec = updates.spec
     this.hash = updates.hash
     this.hasSidePanel = updates.hasSidePanel
@@ -54,7 +54,7 @@ export class Project extends vw.Unit {
     const { tabId, windowId } = this.$projects.getTabInfo()
     return this.$.env.url.project({
       id: this.id,
-      mode: this.mode,
+      debug: this.debug,
       locus: this.getLocus(),
       tabId: tabId,
       windowId: windowId,

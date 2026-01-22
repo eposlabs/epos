@@ -5,15 +5,15 @@ export type Frame = { id: string; url: string }
 
 export class Project extends os.Unit {
   id: Entry['id']
-  mode: Entry['mode']
+  debug: Entry['debug']
   spec: Entry['spec']
   hash: Entry['hash']
   bus: ReturnType<gl.Bus['use']>
 
-  constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'mode' | 'spec' | 'hash'>) {
+  constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'debug' | 'spec' | 'hash'>) {
     super(parent)
     this.id = params.id
-    this.mode = params.mode
+    this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
     this.bus = this.$.bus.use(`Project[${this.id}]`)
@@ -24,11 +24,11 @@ export class Project extends os.Unit {
     this.bus.on('removeFrame', this.removeFrame, this)
   }
 
-  update(updates: Pick<Entry, 'mode' | 'spec' | 'hash'>) {
+  update(updates: Pick<Entry, 'debug' | 'spec' | 'hash'>) {
     const hash1 = this.hash
     const hash2 = updates.hash
 
-    this.mode = updates.mode
+    this.debug = updates.debug
     this.spec = updates.spec
     this.hash = updates.hash
 
@@ -107,7 +107,7 @@ export class Project extends os.Unit {
   }
 
   private getBackgroundUrl() {
-    return this.$.env.url.project({ id: this.id, locus: 'background', mode: this.mode })
+    return this.$.env.url.project({ id: this.id, locus: 'background', debug: this.debug })
   }
 
   // FRAME MANAGEMENT
@@ -219,7 +219,7 @@ export class Project extends os.Unit {
   // ---------------------------------------------------------------------------
 
   private info(params: { title: string; subtitle?: string }) {
-    if (this.mode !== 'development') return
+    if (!this.debug) return
     this.$.utils.info({
       ...params,
       color: this.$.utils.colorHash(this.id),

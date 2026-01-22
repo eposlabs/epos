@@ -25,8 +25,8 @@ export class App extends sw.Unit {
   }
 
   private logInfo() {
-    const hasDevProjects = this.projects.list.some(project => project.mode === 'development')
-    if (!hasDevProjects) return
+    const hasDebugProject = this.projects.list.some(project => project.debug)
+    if (!hasDebugProject) return
     const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running, v${version} ${docsUrl}`

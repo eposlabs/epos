@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 /// <reference types="dropcap/globals"/>
-import type { Epos, Mode, Spec } from 'epos'
+import type { Epos, Spec } from 'epos'
 
 declare global {
   // BUNDLER VARS
@@ -41,8 +41,10 @@ declare global {
 
   type ProjectDef = {
     id: string
-    mode: Mode
+    debug: boolean
+    enabled: boolean
     spec: Spec
+    manifest: chrome.runtime.ManifestV3
     shadowCss: string
     fn: (epos: PartialEpos) => void
   }

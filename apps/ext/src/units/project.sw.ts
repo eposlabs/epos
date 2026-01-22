@@ -1,11 +1,11 @@
-import type { Assets, Bundle, Mode, ProjectSettings, Sources, Spec } from 'epos'
+import type { Assets, Bundle, ProjectSettings, Sources, Spec } from 'epos'
 import type { RuleNoId } from './net.sw.js'
 import type { Address } from './project-target.sw'
 
 // Data saved to IndexedDB
 export type Snapshot = {
   id: string
-  mode: Mode
+  debug: boolean
   enabled: boolean
   spec: Spec
   sources: Sources
@@ -15,7 +15,7 @@ export type Snapshot = {
 // Lightweight data sent to peers
 export type Entry = {
   id: string
-  mode: Mode
+  debug: boolean
   spec: Spec
   hash: string | null // `null` if project has no matching resources for the given address
   hasSidePanel: boolean
@@ -33,7 +33,7 @@ export type Meta = {
 
 export class Project extends sw.Unit {
   id: string
-  mode: Mode
+  debug: boolean
   enabled: boolean
   spec: Spec
   sources: Sources
@@ -67,7 +67,7 @@ export class Project extends sw.Unit {
   constructor(parent: sw.Unit, params: Omit<Bundle, 'assets'> & Partial<ProjectSettings & { id: string; meta: Meta }>) {
     super(parent)
     this.id = params.id ?? this.$.utils.id()
-    this.mode = params.mode ?? 'production'
+    this.debug = params.debug ?? false
     this.enabled = params.enabled ?? true
     this.spec = params.spec
     this.sources = params.sources
@@ -96,7 +96,7 @@ export class Project extends sw.Unit {
   async update(updates: Partial<Bundle & ProjectSettings>) {
     const enabled0 = this.enabled
 
-    this.mode = updates.mode ?? this.mode
+    this.debug = updates.debug ?? this.debug
     this.enabled = updates.enabled ?? this.enabled
     this.spec = updates.spec ?? this.spec
     this.sources = updates.sources ?? this.sources
@@ -179,8 +179,10 @@ export class Project extends sw.Unit {
     return [
       `{`,
       `  id: ${JSON.stringify(this.id)},`,
+      `  debug: ${JSON.stringify(this.debug)},`,
+      `  enabled: ${JSON.stringify(this.enabled)},`,
       `  spec: ${JSON.stringify(this.spec)},`,
-      `  mode: ${JSON.stringify(this.mode)},`,
+      `  manifest: ${JSON.stringify(this.manifest)},`,
       `  shadowCss: ${JSON.stringify(shadowCss)},`,
       `  async fn(epos, React = epos.libs.react) { ${js} },`,
       `}`,
@@ -190,7 +192,7 @@ export class Project extends sw.Unit {
   async getEntry(address?: Address): Promise<Entry> {
     return {
       id: this.id,
-      mode: this.mode,
+      debug: this.debug,
       spec: this.spec,
       hash: await this.getHash(address),
       hasSidePanel: this.hasSidePanel(),
@@ -208,14 +210,14 @@ export class Project extends sw.Unit {
     return assets
   }
 
-  async export(mode: Mode = 'production'): Promise<Record<string, Blob>> {
+  async export(debug = false): Promise<Record<string, Blob>> {
     const fetchBlob = (path: string) => fetch(path).then(res => res.blob())
     const jsonBlob = (data: unknown) => new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
 
     // Prepare project snapshot
     const snapshot: Snapshot = {
       id: this.id,
-      mode: mode,
+      debug: debug,
       enabled: true,
       spec: this.spec,
       sources: this.sources,
@@ -249,7 +251,7 @@ export class Project extends sw.Unit {
       'system.html': await fetchBlob('/system.html'),
       'project.html': await fetchBlob('/project.html'),
       'offscreen.html': await fetchBlob('/offscreen.html'),
-      ...(mode === 'development' && {
+      ...(debug && {
         'ex.dev.js': await fetchBlob('/ex.dev.js'),
         'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       }),
@@ -268,13 +270,13 @@ export class Project extends sw.Unit {
       }
     }
 
-    return await this.$.utils.hash([this.mode, this.spec.name, this.spec.slug, this.spec.assets, targetsHashData])
+    return await this.$.utils.hash([this.debug, this.spec.name, this.spec.slug, this.spec.assets, targetsHashData])
   }
 
   async saveSnapshot() {
     await this.$.idb.set<Snapshot>(this.id, ':project', 'snapshot', {
       id: this.id,
-      mode: this.mode,
+      debug: this.debug,
       enabled: this.enabled,
       spec: this.spec,
       sources: this.sources,

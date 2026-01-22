@@ -1,4 +1,4 @@
-import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
+import type { Assets, Bundle, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
 import type { CsTabInfo } from './bus.gl.js'
 import type { Address } from './project-target.sw'
 import type { Entry, Snapshot } from './project.sw'
@@ -50,15 +50,15 @@ export class Projects extends sw.Unit {
     this.$.browser.action.onClicked.addListener(tab => this.handleActionClick(tab))
   }
 
-  async install(url: string, mode: Mode = 'development') {
+  async install(url: string, debug = false) {
     const urlHash = await this.$.utils.hash(url)
     const projectId = urlHash.slice(0, 10)
     const bundle = await this.fetch(url)
 
     if (this.has(projectId)) {
-      await this.update(projectId, { ...bundle, mode })
+      await this.update(projectId, { ...bundle, debug })
     } else {
-      await this.create({ id: projectId, ...bundle, mode })
+      await this.create({ id: projectId, ...bundle, debug })
     }
   }
 
@@ -68,7 +68,7 @@ export class Projects extends sw.Unit {
 
     return {
       id: project.id,
-      mode: project.mode,
+      debug: project.debug,
       enabled: project.enabled,
       spec: project.spec,
       manifest: project.manifest,
@@ -165,10 +165,10 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  async export(id: string, mode: Mode = 'production') {
+  async export(id: string, debug = false) {
     const project = this.dict[id]
     if (!project) return null
-    return await project.export(mode)
+    return await project.export(debug)
   }
 
   private getJs(address?: Address, csTabInfo?: CsTabInfo) {
@@ -181,9 +181,9 @@ export class Projects extends sw.Unit {
     const origin = address ? this.getAddressOrigin(address) : null
     if (origin !== location.origin) {
       const hasReact = defJsList.some(js => this.hasReactCode(js))
-      const hasDevProject = projects.some(project => project.mode === 'development')
+      const hasDebugProject = projects.some(project => project.debug)
       const ex = hasReact ? this.ex.full : this.ex.mini
-      const exJs = hasDevProject ? ex.dev : ex.prod
+      const exJs = hasDebugProject ? ex.dev : ex.prod
       // Do not patch `window` for projects code, because it can have checks like
       // `e.source === window` which will break if `window` is a proxy
       engineJs = `${tamperUseGlobalsJs}; (async () => { ${tamperPatchWindowJs};\n${exJs} })()`
