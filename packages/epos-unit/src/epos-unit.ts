@@ -1,9 +1,11 @@
 /// <reference types="epos" />
 import { createLog, is, type Arr, type Cls, type Obj } from 'dropcap/utils'
+import type { Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 
 export const _root_ = Symbol('root')
+export const _rpcs_ = Symbol('rpcs')
 export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
@@ -20,6 +22,7 @@ export class Unit<TRoot = unknown> {
   declare log: ReturnType<typeof createLog>;
   declare [':version']?: number;
   declare [_root_]?: TRoot;
+  declare [_rpcs_]?: Record<string, unknown>;
   declare [_parent_]?: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
   declare [_attached_]?: boolean;
   declare [_disposers_]?: Set<() => void>;
@@ -184,6 +187,16 @@ export class Unit<TRoot = unknown> {
 
   // METHODS
   // ---------------------------------------------------------------------------
+
+  rpc<T>(id: string) {
+    ensure(this, _rpcs_, () => ({}))
+    this[_rpcs_][id] ??= epos.bus.use<T>(`${this['@']}.${id}[${this.id}]`)
+    return this[_rpcs_][id] as Asyncify<T>
+  }
+
+  registerRpc(id: string) {
+    epos.bus.register(`${this['@']}.${id}[${this.id}]`, this)
+  }
 
   /**
    * A wrapper around MobX's `autorun` that automatically disposes the reaction when the unit is detached.

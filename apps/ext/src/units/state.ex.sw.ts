@@ -53,7 +53,7 @@ export class State<T = Obj> extends exSw.Unit {
   private initial: Initial<T> | null = null
   private versioner: Versioner<T>
   private connected = false
-  private bus: ReturnType<gl.Bus['use']>
+  private bus: ReturnType<gl.Bus['scoped']>
   private applyingYjsToMobx = false
   private attachQueue: (() => void)[] = []
   private saveTimeout = -1
@@ -73,7 +73,7 @@ export class State<T = Obj> extends exSw.Unit {
     this.initial = initial ?? ({} as Initial<T>)
     this.versioner = versioner ?? {}
     this.local = name === null
-    this.bus = this.$.bus.use(`State[${this.id}]`)
+    this.bus = this.$.bus.scoped(`State[${this.id}]`)
     this.save = this.$.utils.enqueue(this.save, this)
     if (this.local) this.initLocal()
   }

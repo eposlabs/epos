@@ -21,6 +21,9 @@
   - epos.bus.send
   - epos.bus.emit
   - epos.bus.once
+  - epos.bus.register
+  - epos.bus.unregister
+  - epos.bus.use
   - epos.bus.setSignal
   - epos.bus.waitSignal
 - **State**

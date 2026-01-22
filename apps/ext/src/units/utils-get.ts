@@ -1,7 +1,7 @@
 import { is } from 'dropcap/utils'
 
-export function get(target: unknown, getter: PropertyKey[]): unknown {
-  const [key, ...rest] = getter
+export function get(target: unknown, path: PropertyKey[]): unknown {
+  const [key, ...rest] = path
   if (key === undefined) return target
 
   if (is.object(target)) {

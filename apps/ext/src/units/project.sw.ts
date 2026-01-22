@@ -42,7 +42,7 @@ export class Project extends sw.Unit {
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
   states: exSw.States
-  bus: ReturnType<gl.Bus['use']>
+  bus: ReturnType<gl.Bus['scoped']>
   private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
@@ -76,7 +76,7 @@ export class Project extends sw.Unit {
     this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
-    this.bus = this.$.bus.use(`Project[${this.id}]`)
+    this.bus = this.$.bus.scoped(`Project[${this.id}]`)
     this.bus.on('addSystemRule', this.addSystemRule, this)
     this.bus.on('removeSystemRule', this.removeSystemRule, this)
   }

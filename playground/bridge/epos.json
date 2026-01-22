@@ -1,16 +1,16 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "UnitBridge",
-  "slug": "bridge-6",
+  "slug": "bridge",
   "assets": ["./public/logo.svg"],
   "targets": [
     {
       "matches": ["<popup>", "https://epos.dev/@bridge"],
-      "load": ["./dist/app.js", "./dist/app.css"]
+      "load": ["./dist/fg.js", "./dist/fg.css"]
     },
     {
       "matches": "<background>",
-      "load": ["./dist/background.js"]
+      "load": ["./dist/bg.js"]
     }
   ]
 }

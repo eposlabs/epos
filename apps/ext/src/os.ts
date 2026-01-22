@@ -1,5 +1,5 @@
-import './core/globals'
-import './core/units'
-import './layers/index.os'
+import './core/globals.js'
+import './core/units.js'
+import './layers/index.os.js'
 
 await new os.App().init()

@@ -1,7 +1,7 @@
 export class ProjectEpos extends ex.Unit {
   #api: ReturnType<ProjectEpos['createEposApi']> | null = null
   private $project = this.closest(ex.Project)!
-  private bus = this.$.bus.use(`ProjectEpos[${this.$project.id}]`)
+  private bus = this.$.bus.scoped(`ProjectEpos[${this.$project.id}]`)
   private general = new ex.ProjectEposGeneral(this)
   private state = new ex.ProjectEposState(this)
   private storage = new ex.ProjectEposStorage(this)
@@ -53,6 +53,9 @@ export class ProjectEpos extends ex.Unit {
         once: this.$.utils.link(this.bus, 'once'),
         send: this.$.utils.link(this.bus, 'send'),
         emit: this.$.utils.link(this.bus, 'emit'),
+        register: this.$.utils.link(this.bus, 'register'),
+        unregister: this.$.utils.link(this.bus, 'unregister'),
+        use: this.$.utils.link(this.bus, 'use'),
         setSignal: this.$.utils.link(this.bus, 'setSignal'),
         waitSignal: this.$.utils.link(this.bus, 'waitSignal'),
       },

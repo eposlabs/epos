@@ -33,7 +33,7 @@ export class Projects extends gl.Unit {
       spec: this.$.libs.parseSpecObject({ name }),
       sources: {},
       assets: {},
-      mode: 'development',
+      debug: true,
       enabled: true,
     })
   }

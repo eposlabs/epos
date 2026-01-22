@@ -1,3 +1,4 @@
+import type { Asyncify } from 'epos'
 import type { Target } from './bus-action.gl'
 
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
@@ -9,6 +10,7 @@ export class Bus extends gl.Unit {
   pageToken: string | null = null // For secure `cs` <-> `ex` communication
   actions: gl.BusAction[] = [] // Registered actions
   utils = new gl.BusUtils(this)
+  rpcIds = new Set<string>()
   serializer = new gl.BusSerializer(this)
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
@@ -138,7 +140,44 @@ export class Bus extends gl.Unit {
     return result as T | null
   }
 
-  use(namespace: string) {
+  register(id: string, api: unknown) {
+    if (this.rpcIds.has(id)) return
+    this.rpcIds.add(id)
+
+    this.on(`Bus.rpc[${id}]`, (path: string[], ...args: unknown[]) => {
+      const targetPath = path.slice(0, -1)
+      const key = path.at(-1)
+      if (!key) throw this.never()
+      const target = this.$.utils.get(api, targetPath)
+      if (!this.$.utils.is.object(target)) throw new Error(`Method not found: '${path.join('.')}'`)
+      if (!this.$.utils.is.function(target[key])) throw new Error(`Method not found: '${path.join('.')}'`)
+      return target[key].call(target, ...args)
+    })
+  }
+
+  unregister(id: string) {
+    if (!this.rpcIds.has(id)) return
+    this.rpcIds.delete(id)
+    this.off(`Bus.rpc[${id}]`)
+  }
+
+  use<T>(id: string): Asyncify<T> {
+    const createProxy = (path: string[] = []): unknown => {
+      return new Proxy(() => {}, {
+        get: (_target, key: string) => {
+          if (key === 'then') return undefined // Handle async/await check
+          return createProxy([...path, key])
+        },
+        apply: async (_target, _thisArg, args) => {
+          return await this.send(`Bus.rpc[${id}]`, path, ...args)
+        },
+      })
+    }
+
+    return createProxy() as Asyncify<T>
+  }
+
+  scoped(namespace: string) {
     const prefix = `@${namespace}::`
     const prefixed = (name: string) => `${prefix}${name}`
 
@@ -163,6 +202,15 @@ export class Bus extends gl.Unit {
       },
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
         this.once<T>(prefixed(name), fn, thisArg)
+      },
+      register: (id: string, api: unknown) => {
+        this.register(prefixed(id), api)
+      },
+      unregister: (id: string) => {
+        this.unregister(prefixed(id))
+      },
+      use: <T>(id: string) => {
+        return this.use<T>(prefixed(id))
       },
       setSignal: (name: string, ...args: unknown[]) => {
         this.setSignal(prefixed(name), ...args)

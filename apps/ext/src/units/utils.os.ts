@@ -1,4 +1,5 @@
 import { colorHash, is, safe } from 'dropcap/utils'
+import { get } from './utils-get.js'
 import { id } from './utils-id.js'
 import { info } from './utils-info.js'
 import { time } from './utils-time.js'
@@ -11,6 +12,7 @@ export class Utils extends os.Unit {
   }
 
   colorHash = colorHash
+  get = get
   id = id
   info = info
   is = is

@@ -1,6 +1,6 @@
-import './core/globals'
-import './core/units'
-import './layers/index.vw'
+import './core/globals.js'
+import './core/units.js'
+import './layers/index.vw.js'
 import './vw.css'
 
 await new vw.App().init()

@@ -6,7 +6,7 @@ export class Project extends ex.Unit {
   manifest: ProjectDef['manifest']
   shadowCss: ProjectDef['shadowCss']
   fn: ProjectDef['fn'] | null = null
-  bus: ReturnType<gl.Bus['use']>
+  bus: ReturnType<gl.Bus['scoped']>
   browser: ex.ProjectBrowser
   states: exSw.States
   epos: ex.ProjectEpos
@@ -20,7 +20,7 @@ export class Project extends ex.Unit {
     this.manifest = def.manifest
     this.shadowCss = def.shadowCss
     this.fn = def.fn
-    this.bus = this.$.bus.use(`Project[${this.id}]`)
+    this.bus = this.$.bus.scoped(`Project[${this.id}]`)
     this.browser = new ex.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: this.spec.config.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)

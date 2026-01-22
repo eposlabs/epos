@@ -1,5 +1,5 @@
-import './core/globals'
-import './core/units'
-import './layers/index.ex'
+import './core/globals.js'
+import './core/units.js'
+import './layers/index.ex.js'
 
 await new ex.App().init()

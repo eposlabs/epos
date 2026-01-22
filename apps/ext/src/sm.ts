@@ -1,5 +1,5 @@
-import './core/globals'
-import './core/units'
-import './layers/index.sm'
+import './core/globals.js'
+import './core/units.js'
+import './layers/index.sm.js'
 
 await new sm.App().init()

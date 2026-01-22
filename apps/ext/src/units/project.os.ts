@@ -8,7 +8,7 @@ export class Project extends os.Unit {
   debug: Entry['debug']
   spec: Entry['spec']
   hash: Entry['hash']
-  bus: ReturnType<gl.Bus['use']>
+  bus: ReturnType<gl.Bus['scoped']>
 
   constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'debug' | 'spec' | 'hash'>) {
     super(parent)
@@ -16,7 +16,7 @@ export class Project extends os.Unit {
     this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
-    this.bus = this.$.bus.use(`Project[${this.id}]`)
+    this.bus = this.$.bus.scoped(`Project[${this.id}]`)
     if (this.hash) this.createBackground()
 
     this.bus.on('getFrames', this.getFrames, this)

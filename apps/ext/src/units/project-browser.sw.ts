@@ -1,6 +1,6 @@
 export class ProjectBrowser extends sw.Unit {
   private $project = this.closest(sw.Project)!
-  private bus: ReturnType<gl.Bus['use']>
+  private bus: ReturnType<gl.Bus['scoped']>
   private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private storage = new sw.ProjectBrowserStorage(this)
@@ -11,7 +11,7 @@ export class ProjectBrowser extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.bus = this.$.bus.use(`ProjectBrowser[${this.$project.id}]`)
+    this.bus = this.$.bus.scoped(`ProjectBrowser[${this.$project.id}]`)
     this.bus.on('getApiTree', this.getApiTree, this)
     this.bus.on('callMethod', this.callMethod, this)
     this.bus.on('addListener', this.addListener, this)
@@ -52,18 +52,18 @@ export class ProjectBrowser extends sw.Unit {
     return node
   }
 
-  private async callMethod(path: string, ...args: unknown[]) {
+  private async callMethod(getter: string, ...args: unknown[]) {
     // Has method interceptor? -> Call it instead of the browser method
-    const interceptor = this.getInterceptor(path)
+    const interceptor = this.getInterceptor(getter)
     if (interceptor) return await interceptor(...args)
 
     // Split path into getter and key
-    const getter = path.split('.').slice(0, -1)
-    const key = path.split('.').at(-1)
+    const path = getter.split('.').slice(0, -1)
+    const key = getter.split('.').at(-1)
     if (!key) throw this.never()
 
     // Get api object
-    const api = this.$.utils.get(this.$.browser, getter)
+    const api = this.$.utils.get(this.$.browser, path)
     if (!this.$.utils.is.object(api)) throw this.never()
 
     // Get method
@@ -74,14 +74,14 @@ export class ProjectBrowser extends sw.Unit {
     return await method.call(api, ...args)
   }
 
-  private addListener(path: string, peerId: string, listenerId: string) {
+  private addListener(getter: string, peerId: string, listenerId: string) {
     // Get api object
-    const api = this.$.utils.get(this.$.browser, path.split('.'))
+    const api = this.$.utils.get(this.$.browser, getter.split('.'))
     if (!this.$.utils.is.object(api)) throw this.never()
 
     // Prepare callback
     const callback = async (...args: unknown[]) => {
-      const interceptor = this.getInterceptor(path)
+      const interceptor = this.getInterceptor(getter)
       if (interceptor) {
         const patchedArgs = await interceptor(...args)
         if (!this.$.utils.is.array(patchedArgs)) return
@@ -118,14 +118,14 @@ export class ProjectBrowser extends sw.Unit {
     return this.permissions.getPermissions()
   }
 
-  private getInterceptor(path: string) {
+  private getInterceptor(getter: string) {
     // Split path into getter and key
-    const getter = path.split('.').slice(0, -1)
-    const key = path.split('.').at(-1)
+    const path = getter.split('.').slice(0, -1)
+    const key = getter.split('.').at(-1)
     if (!key) throw this.never()
 
     // Get possible unit that may contain the interceptor
-    const unit = this.$.utils.get(this, getter)
+    const unit = this.$.utils.get(this, path)
     if (!this.$.utils.is.object(unit)) return null
 
     // Get interceptor method

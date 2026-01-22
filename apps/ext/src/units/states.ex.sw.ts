@@ -11,7 +11,7 @@ export class States extends exSw.Unit {
   dbStoreName: DbStoreName
   config: Config
   models: Models = {}
-  private bus: ReturnType<gl.Bus['use']>
+  private bus: ReturnType<gl.Bus['scoped']>
   private queue = new this.$.utils.Queue()
   private autoDisconnectInterval = -1 // For `sw`
   private static instanceIds = new Set<string>()
@@ -27,7 +27,7 @@ export class States extends exSw.Unit {
     this.dbName = dbName
     this.dbStoreName = dbStoreName
     this.config = config ?? { allowMissingModels: false }
-    this.bus = this.$.bus.use(`States[${dbName}/${dbStoreName}]`)
+    this.bus = this.$.bus.scoped(`States[${dbName}/${dbStoreName}]`)
     this.connect = this.queue.wrap(this.connect, this)
     this.disconnect = this.queue.wrap(this.disconnect, this)
 

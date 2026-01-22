@@ -17,6 +17,11 @@ export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 export type Attrs = Record<string, string | number>
+export type Asyncify<T> = T extends Fn
+  ? (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>
+  : T extends object
+    ? { [K in keyof T]: Asyncify<T[K]> }
+    : T
 
 // State types
 export type Root<T> = Initial<T> & { ':version'?: number }
@@ -98,6 +103,12 @@ export interface Epos {
     send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
     /** Call local listeners (remote listeners ignored). */
     emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+    /** Register RPC API. */
+    register(id: string, api: unknown): void
+    /** Unregister RPC API. */
+    unregister(id: string): void
+    /** Get RPC API proxy. */
+    use<T>(id: string): Asyncify<T>
     /** Set signal with optional value. */
     setSignal(name: string, value?: unknown): void
     /** Wait for signal to be set. */

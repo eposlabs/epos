@@ -10,8 +10,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "dropcap": "^1.15.0",
     "epos": "^1.41.0",
-    "epos-unit": "^1.21.0"
+    "epos-unit": "^1.21.0",
+    "paralayer": "^1.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

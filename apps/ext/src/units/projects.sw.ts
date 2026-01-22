@@ -250,7 +250,7 @@ export class Projects extends sw.Unit {
       const project = projectsWithAction[0]
       if (!project) throw this.never()
       if (project.spec.action === true) {
-        const projectEposBus = this.$.bus.use(`ProjectEpos[${project.id}]`)
+        const projectEposBus = this.$.bus.scoped(`ProjectEpos[${project.id}]`)
         await projectEposBus.send(':action', tab)
       } else if (this.$.utils.is.string(project.spec.action)) {
         await this.$.medium.openTab(project.spec.action)
