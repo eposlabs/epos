@@ -1,7 +1,7 @@
 import type { Initial, Root, Versioner } from './state.ex.sw'
 import type { Models } from './states.ex.sw'
 
-export const DEFAULT_NAME = ':state'
+export const DEFAULT_NAME = ':default'
 
 export class ProjectEposState extends ex.Unit {
   private $project = this.closest(ex.Project)!
@@ -38,7 +38,7 @@ export class ProjectEposState extends ex.Unit {
     const names = await this.$.idb.keys(this.$project.id, ':state')
     return names
       .map(name => ({
-        name: name,
+        name: name === DEFAULT_NAME ? null : name,
         connected: this.$project.states.isConnected(name),
       }))
       .filter(state => {

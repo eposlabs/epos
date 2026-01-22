@@ -13,10 +13,11 @@ export class Projects extends vw.Unit {
     await this.watcher.init()
   }
 
-  getTabId() {
+  getTabInfo(): TabInfo {
     const tabId = Number(this.$.env.params.tabId)
-    if (!tabId) throw this.never()
-    return tabId
+    const windowId = Number(this.$.env.params.windowId)
+    if (!tabId || !windowId) throw this.never()
+    return { tabId, windowId }
   }
 
   private onWatcherData(data: WatcherData) {
@@ -73,8 +74,8 @@ export class Projects extends vw.Unit {
   }
 
   private async openSidePanel() {
-    const tabId = this.getTabId()
-    await this.$.medium.openSidePanel(tabId)
+    const { tabId, windowId } = this.getTabInfo()
+    await this.$.medium.openSidePanel(tabId, windowId)
     self.close()
   }
 

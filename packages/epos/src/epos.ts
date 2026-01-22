@@ -78,12 +78,14 @@ export interface Epos {
   container: HTMLDivElement
 
   env: {
-    /** `tabId` is `-1` for iframes, including `<background>` iframe. */
+    /** `tabId` is `-1` for `<background>`, regular iframes and iframes created with `epos.frames.create`. */
     tabId: -1 | number
-    project: { id: string; mode: Mode; spec: Spec }
+    /** `windowId` is `-1` for `<background>`, regular iframes and iframes created with `epos.frames.create`. */
+    windowId: -1 | number
     isPopup: boolean
     isSidePanel: boolean
     isBackground: boolean
+    project: { id: string; mode: Mode; spec: Spec }
   }
 
   bus: {
@@ -116,7 +118,7 @@ export interface Epos {
     /** Create local state (no sync). */
     create<T>(initial?: Initial<T>): T
     /** Get list of all state names. */
-    list(filter?: { connected?: boolean }): Promise<{ name: string | null }[]>
+    list(filter?: { connected?: boolean }): Promise<{ name: string | null; connected: boolean }[]>
     /** Remove state and all its data. */
     remove(name?: string): Promise<void>
     /** Register models that can be used by all states. */
@@ -144,8 +146,6 @@ export interface Epos {
     }
     /** Get all storage keys. */
     keys(name?: string): Promise<string[]>
-    /** Remove storage. */
-    remove(name?: string): Promise<void>
     /** Get storage API for specific storage. */
     use(name?: string): {
       /** Get value from storage. */
@@ -156,11 +156,13 @@ export interface Epos {
       delete(key: string): Promise<void>
       /** Get all keys from storage. */
       keys(): Promise<string[]>
-      /** Remove storage. */
+      /** Remove storage and all its data. */
       remove(): Promise<void>
     }
-    /** Get list of all storage names. */
-    list(): Promise<string[]>
+    /** Get list of all storages. */
+    list(): Promise<{ name: string | null; keys: string[] }[]>
+    /** Remove storage and all its data. */
+    remove(name?: string): Promise<void>
   }
 
   frames: {
@@ -175,6 +177,12 @@ export interface Epos {
   }
 
   assets: {
+    /** Get asset URL. Asset must be loaded first via `epos.assets.load`. */
+    url(path: string): string
+    /** Get asset as Blob. */
+    get(path: string): Promise<Blob | null>
+    /** Get list of all available assets. */
+    list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
     /** Load specified asset to memory. Load all assets if no path is provided. */
     load: {
       /** Load all assets. */
@@ -189,24 +197,18 @@ export interface Epos {
       /** Unload asset by path. */
       (path: string): void
     }
-    /** Get asset URL. Asset must be loaded first via `epos.assets.load`. */
-    url(path: string): string
-    /** Get asset as Blob. */
-    get(path: string): Promise<Blob | null>
-    /** Get list of all available assets. */
-    list(filter?: { loaded?: boolean }): { path: string; loaded: boolean }[]
   }
 
   projects: {
-    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
     has(id: string): Promise<boolean>
+    get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null>
     list<T extends ProjectQuery>(query?: T): Promise<Project<T>[]>
-    watch(listener: () => void): void
-    fetch(url: string): Promise<Bundle>
     create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T>
     update(id: string, updates: Partial<Bundle & ProjectSettings>): Promise<void>
     remove(id: string): Promise<void>
     export(id: string, mode?: Mode): Promise<Record<string, Blob>>
+    watch(listener: () => void): void
+    fetch(url: string): Promise<Bundle>
   }
 
   libs: {

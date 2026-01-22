@@ -38,12 +38,12 @@ export class ProjectEpos extends ex.Unit {
 
       // Env
       env: {
-        // Use `-1` instead of `null` to use `epos.browser.tabs.*` api without extra checks
-        tabId: this.env.tabId ?? -1,
-        project: this.env.project,
+        tabId: this.env.tabId,
+        windowId: this.env.windowId,
         isPopup: this.env.isPopup,
         isSidePanel: this.env.isSidePanel,
         isBackground: this.env.isBackground,
+        project: this.env.project,
       },
 
       // Bus
@@ -77,9 +77,9 @@ export class ProjectEpos extends ex.Unit {
         set: this.$.utils.link(this.storage, 'set'),
         delete: this.$.utils.link(this.storage, 'delete'),
         keys: this.$.utils.link(this.storage, 'keys'),
-        remove: this.$.utils.link(this.storage, 'remove'),
         use: this.$.utils.link(this.storage, 'use'),
         list: this.$.utils.link(this.storage, 'list'),
+        remove: this.$.utils.link(this.storage, 'remove'),
       },
 
       // Frames
@@ -92,25 +92,25 @@ export class ProjectEpos extends ex.Unit {
 
       // Assets
       assets: {
-        load: this.$.utils.link(this.assets, 'load'),
-        unload: this.$.utils.link(this.assets, 'unload'),
         url: this.$.utils.link(this.assets, 'url'),
         get: this.$.utils.link(this.assets, 'get'),
         list: this.$.utils.link(this.assets, 'list'),
+        load: this.$.utils.link(this.assets, 'load'),
+        unload: this.$.utils.link(this.assets, 'unload'),
       },
 
       // Project
       ...(this.$project.spec.config.allowProjectsApi && {
         projects: {
-          get: this.$.utils.link(this.projects, 'get'),
           has: this.$.utils.link(this.projects, 'has'),
+          get: this.$.utils.link(this.projects, 'get'),
           list: this.$.utils.link(this.projects, 'list'),
-          watch: this.$.utils.link(this.projects, 'watch'),
-          fetch: this.$.utils.link(this.projects, 'fetch'),
           create: this.$.utils.link(this.projects, 'create'),
           update: this.$.utils.link(this.projects, 'update'),
           remove: this.$.utils.link(this.projects, 'remove'),
           export: this.$.utils.link(this.projects, 'export'),
+          watch: this.$.utils.link(this.projects, 'watch'),
+          fetch: this.$.utils.link(this.projects, 'fetch'),
         },
       }),
 

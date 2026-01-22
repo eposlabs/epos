@@ -9,11 +9,17 @@ export class EnvUrl extends gl.Unit {
     return `/system.html?${this.toSearchParams(params)}`
   }
 
-  view(params: { locus: 'popup' | 'sidePanel'; tabId: number }) {
+  view(params: { locus: 'popup' | 'sidePanel'; tabId: number; windowId: number }) {
     return `/view.html?${this.toSearchParams(params)}`
   }
 
-  project(params: { id: string; locus: 'popup' | 'sidePanel' | 'background'; tabId?: number; mode: Mode }) {
+  project(params: {
+    id: string
+    locus: 'popup' | 'sidePanel' | 'background'
+    tabId?: number
+    windowId?: number
+    mode: Mode
+  }) {
     return `/project.html?${this.toSearchParams(params)}`
   }
 

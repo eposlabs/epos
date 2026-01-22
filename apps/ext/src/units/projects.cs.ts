@@ -42,8 +42,8 @@ export class Projects extends cs.Unit {
     if (css) this.injectCss(css)
 
     // Inject JS
-    const busTabData = await this.$.bus.getTabData()
-    const js = await this.$.bus.send<sw.Projects['getJs']>('Projects.getJs', address, busTabData)
+    const csTabInfo = await this.$.bus.csGetTabInfo()
+    const js = await this.$.bus.send<sw.Projects['getJs']>('Projects.getJs', address, csTabInfo)
     if (js) this.injectJs(js)
   }
 

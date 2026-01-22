@@ -1,4 +1,5 @@
 import type { Assets, Bundle, Mode, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
+import type { CsTabInfo } from './bus.gl.js'
 import type { Address } from './project-target.sw'
 import type { Entry, Snapshot } from './project.sw'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -170,7 +171,7 @@ export class Projects extends sw.Unit {
     return await project.export(mode)
   }
 
-  private getJs(address?: Address, busTabData: { tabId?: number | null; pageToken?: string | null } = {}) {
+  private getJs(address?: Address, csTabInfo?: CsTabInfo) {
     const projects = this.listEnabled.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
@@ -190,8 +191,9 @@ export class Projects extends sw.Unit {
 
     return [
       `(() => {`,
-      `  this.__eposTabId = ${JSON.stringify(busTabData.tabId ?? null)};`,
-      `  this.__eposBusPageToken = ${JSON.stringify(busTabData.pageToken ?? null)};`,
+      `  this.__eposTabId = ${JSON.stringify(csTabInfo?.tabId ?? -1)};`,
+      `  this.__eposWindowId = ${JSON.stringify(csTabInfo?.windowId ?? -1)};`,
+      `  this.__eposBusPageToken = ${JSON.stringify(csTabInfo?.pageToken ?? null)};`,
       `  this.__eposProjectDefs = [${defJsList.join(',')}];`,
       `  ${engineJs};`,
       `})()`,
@@ -226,20 +228,20 @@ export class Projects extends sw.Unit {
 
     // Has popup? -> Open popup
     if (this.listEnabled.some(project => project.hasPopup())) {
-      await this.$.medium.openPopup(tab.id)
+      await this.$.medium.openPopup(tab.id, tab.windowId)
       return
     }
 
     // Has side panel? -> Toggle side panel
     if (this.listEnabled.some(project => project.hasSidePanel())) {
-      await this.$.medium.toggleSidePanel(tab.id)
+      await this.$.medium.toggleSidePanel(tab.id, tab.windowId)
       return
     }
 
     // Several actions? -> Open popup
     const projectsWithAction = this.listEnabled.filter(project => project.spec.action)
     if (projectsWithAction.length > 1) {
-      await this.$.medium.openPopup(tab.id)
+      await this.$.medium.openPopup(tab.id, tab.windowId)
       return
     }
 

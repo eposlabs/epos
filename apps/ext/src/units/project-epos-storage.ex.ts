@@ -53,8 +53,14 @@ export class ProjectEposStorage extends ex.Unit {
   }
 
   async list() {
-    const names = await this.$.idb.listStores(this.$project.id)
-    return names.filter(name => !name.startsWith(':') || name === DEFAULT_NAME)
+    const dbStoreNames = await this.$.idb.listStores(this.$project.id)
+    const storageNames = dbStoreNames.filter(name => !name.startsWith(':') || name === DEFAULT_NAME)
+    return await Promise.all(
+      storageNames.map(async name => ({
+        name: name === DEFAULT_NAME ? null : name,
+        keys: await this.$.idb.keys(this.$project.id, name),
+      })),
+    )
   }
 
   private validateName(name: string) {

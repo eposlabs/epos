@@ -2,7 +2,7 @@ import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends ex.Unit {
   dict: { [id: string]: ex.Project } = {}
-  tabId = this.getTabId()
+  env = this.getEnv()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
 
   get list() {
@@ -55,6 +55,7 @@ export class Projects extends ex.Unit {
     // Some of them may already be deleted, but it is easier to delete all without extra checks.
     delete self.__eposIsTop
     delete self.__eposTabId
+    delete self.__eposWindowId
     delete self.__eposElement
     delete self.__eposProjectDefs
     delete self.__eposBusPageToken
@@ -68,24 +69,26 @@ export class Projects extends ex.Unit {
     }
   }
 
-  private getTabId() {
-    // Top context? -> Get tab id from the injected `self.__eposTabId`
+  // Use `-1` instead of `null` to use `epos.browser.tabs.*` / `epos.browser.windows.*` without extra checks
+  private getEnv() {
+    // Top context? -> Get tab id and window id from the injected global variables
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
-      if (!tabId) throw this.never()
-      return tabId
+      const windowId = self.__eposWindowId
+      if (!tabId || !windowId) throw this.never()
+      return { tabId, windowId }
     }
 
-    // Extension frame? -> Get tab id from URL params
+    // Extension frame? -> Get tab id and window id from URL params
     else if (this.$.env.is.exExtension) {
-      const tabId = Number(this.$.env.params.tabId)
-      if (!tabId) return null // For offscreen frames
-      return tabId
+      const tabId = Number(this.$.env.params.tabId ?? -1) // Absent for offscreen frames
+      const windowId = Number(this.$.env.params.windowId ?? -1) // Absent for offscreen frames
+      return { tabId, windowId }
     }
 
-    // External frame? -> Tab id is not available, return null
+    // External frame? -> No tab id and window id
     else {
-      return null
+      return { tabId: -1, windowId: -1 }
     }
   }
 

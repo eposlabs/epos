@@ -2,6 +2,7 @@ import type { Target } from './bus-action.gl'
 
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
+export type CsTabInfo = TabInfo & { pageToken: string | null }
 
 export class Bus extends gl.Unit {
   peerId = this.$.utils.id()
@@ -172,10 +173,21 @@ export class Bus extends gl.Unit {
     }
   }
 
-  async getTabData() {
+  async csGetTabInfo(): Promise<CsTabInfo> {
     if (!this.$.env.is.cs) throw this.never()
-    const tabId = await this.extBridge.send<number | null>('Bus.getTabId')
-    return { tabId, pageToken: this.pageToken }
+
+    let tabInfo: TabInfo
+    if (this.$.env.is.csTop) {
+      const result = await this.extBridge.send<TabInfo>('Bus.getTabInfo')
+      if (!result) throw this.never()
+      tabInfo = result
+    } else if (this.$.env.is.csFrame) {
+      tabInfo = { tabId: -1, windowId: -1 }
+    } else {
+      throw this.never()
+    }
+
+    return { ...tabInfo, pageToken: this.pageToken }
   }
 
   private async executeProxyActions(name: string, ...args: unknown[]) {

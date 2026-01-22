@@ -41,7 +41,7 @@ export class Project extends vw.Unit {
 
     // Action is `true`? -> Send `:action` event
     else {
-      const tabId = this.$projects.getTabId()
+      const { tabId } = this.$projects.getTabInfo()
       const tab = await this.$.browser.tabs.get(tabId)
       const projectEposBus = this.$.bus.use(`ProjectEpos[${this.id}]`)
       await projectEposBus.send(':action', tab)
@@ -51,11 +51,13 @@ export class Project extends vw.Unit {
 
   private getSrc() {
     if (!this.visited) return 'about:blank'
+    const { tabId, windowId } = this.$projects.getTabInfo()
     return this.$.env.url.project({
       id: this.id,
       mode: this.mode,
       locus: this.getLocus(),
-      tabId: this.$projects.getTabId(),
+      tabId: tabId,
+      windowId: windowId,
     })
   }
 

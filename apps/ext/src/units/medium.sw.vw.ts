@@ -31,8 +31,8 @@ export class Medium extends swVw.Unit {
   // POPUP
   // ---------------------------------------------------------------------------
 
-  async openPopup(tabId: number) {
-    const path = this.$.env.url.view({ locus: 'popup', tabId })
+  async openPopup(tabId: number, windowId: number) {
+    const path = this.$.env.url.view({ locus: 'popup', tabId, windowId })
     await this.$.browser.action.setPopup({ popup: path })
     await this.$.utils.safe(() => this.$.browser.action.openPopup())
     await this.$.browser.action.setPopup({ popup: '' })
@@ -49,8 +49,8 @@ export class Medium extends swVw.Unit {
   // SIDE PANEL
   // ---------------------------------------------------------------------------
 
-  async openSidePanel(tabId: number) {
-    const path = this.$.env.url.view({ locus: 'sidePanel', tabId })
+  async openSidePanel(tabId: number, windowId: number) {
+    const path = this.$.env.url.view({ locus: 'sidePanel', tabId, windowId })
     // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
     void this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
@@ -60,9 +60,9 @@ export class Medium extends swVw.Unit {
     await this.$.browser.sidePanel.setOptions({ tabId, enabled: false })
   }
 
-  async toggleSidePanel(tabId: number) {
+  async toggleSidePanel(tabId: number, windowId: number) {
     const wasOpenPromise = this.$.bus.send(`Medium.isSidePanelOpen[${tabId}]`)
-    await this.openSidePanel(tabId)
+    await this.openSidePanel(tabId, windowId)
     const wasOpen = await wasOpenPromise
     if (wasOpen) await this.closeSidePanel(tabId)
   }

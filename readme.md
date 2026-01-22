@@ -10,10 +10,11 @@
   - epos.container
 - **Env**
   - epos.env.tabId
-  - epos.env.project
+  - epos.env.windowId
   - epos.env.isPopup
   - epos.env.isSidePanel
   - epos.env.isBackground
+  - epos.env.project
 - **Bus**
   - epos.bus.on
   - epos.bus.off
@@ -27,8 +28,8 @@
   - epos.state.disconnect
   - epos.state.transaction
   - epos.state.create
-  - epos.state.remove
   - epos.state.list
+  - epos.state.remove
   - epos.state.register
   - epos.state.PARENT
   - epos.state.ATTACH
@@ -38,30 +39,30 @@
   - epos.storage.set
   - epos.storage.delete
   - epos.storage.keys
-  - epos.storage.remove
   - epos.storage.use
   - epos.storage.list
+  - epos.storage.remove
 - **Frames**
-  - epos.frames.has
-  - epos.frames.list
   - epos.frames.create
   - epos.frames.remove
+  - epos.frames.has
+  - epos.frames.list
 - **Assets**
-  - epos.assets.load
-  - epos.assets.unload
   - epos.assets.url
   - epos.assets.get
   - epos.assets.list
+  - epos.assets.load
+  - epos.assets.unload
 - **Projects**
-  - epos.projects.get
   - epos.projects.has
+  - epos.projects.get
   - epos.projects.list
-  - epos.projects.watch
-  - epos.projects.fetch
   - epos.projects.create
   - epos.projects.update
   - epos.projects.remove
   - epos.projects.export
+  - epos.projects.watch
+  - epos.projects.fetch
 - **Libs**
   - epos.libs.mobx
   - epos.libs.mobxReactLite

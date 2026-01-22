@@ -56,10 +56,13 @@ export class BusExtBridge extends gl.Unit {
       // `tabId` is null for messages from `os`, `vw`, and `csFrame` inside offscreen.
       const tabId = sender.tab?.id ?? null
 
-      // Get tab id for the specified tab (`csTop`)
-      if (req.name === 'Bus.getTabId') {
-        if (!tabId === null) throw this.never()
-        respond(this.$bus.serializer.serialize(tabId))
+      // Get tab info for the specified tab (`csTop`)
+      if (req.name === 'Bus.getTabInfo') {
+        if (!tabId) throw this.never()
+        const windowId = sender.tab?.windowId
+        if (!windowId) throw this.never()
+        const tabInfo: TabInfo = { tabId, windowId }
+        respond(this.$bus.serializer.serialize(tabInfo))
         return true
       }
 
