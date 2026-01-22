@@ -140,17 +140,21 @@ export function parseSpecObject(spec: Obj): Spec {
   const badKey = Object.keys(spec).find(key => !keys.includes(key))
   if (badKey) throw new Error(`Unknown spec key: '${badKey}'`)
 
+  const name = parseName(spec)
+  const icon = parseIcon(spec)
+  const targets = parseTargets(spec)
+
   return {
-    name: parseName(spec),
-    slug: parseSlug(spec),
+    name: name,
+    slug: parseSlug(spec, name),
     version: parseVersion(spec),
     description: parseDescription(spec),
-    icon: parseIcon(spec),
-    action: parseAction(spec),
+    icon: icon,
+    action: parseAction(spec, targets),
     popup: parsePopup(spec),
     config: parseConfig(spec),
-    assets: parseAssets(spec),
-    targets: parseTargets(spec),
+    assets: parseAssets(spec, icon),
+    targets: targets,
     permissions: parsePermissions(spec),
     manifest: parseManifest(spec),
   }
@@ -169,8 +173,8 @@ function parseName(spec: Obj) {
   return name
 }
 
-function parseSlug(spec: Obj) {
-  if (!('slug' in spec)) return slugify(parseName(spec))
+function parseSlug(spec: Obj, name: string) {
+  if (!('slug' in spec)) return slugify(name)
 
   const slug = spec.slug
   if (!is.string(slug)) throw new Error(`'slug' must be a string`)
@@ -216,7 +220,12 @@ function parseIcon(spec: Obj) {
   return parsePath(icon)
 }
 
-function parseAction(spec: Obj): Action | null {
+function parseAction(spec: Obj, targets: Target[]): Action | null {
+  const matches = targets.flatMap(target => target.matches)
+  const hasPopup = matches.some(match => match.context === 'locus' && match.value === 'popup')
+  const hasSidePanel = matches.some(match => match.context === 'locus' && match.value === 'sidePanel')
+  if (hasPopup || hasSidePanel) return null
+
   const action = spec.action ?? null
   if (action === null) return null
   if (action === true) return true
@@ -272,12 +281,11 @@ function parseConfig(spec: Obj): Config {
   }
 }
 
-function parseAssets(spec: Obj) {
+function parseAssets(spec: Obj, icon: string | null) {
   const assets = structuredClone(spec.assets ?? [])
   if (!isArrayOfStrings(assets)) throw new Error(`'assets' must be an array of strings`)
 
   // Add icon to assets
-  const icon = parseIcon(spec)
   if (icon) assets.push(icon)
 
   return unique(assets.map(path => parsePath(path)))

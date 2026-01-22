@@ -27,6 +27,8 @@ export class Project extends os.Unit {
   update(updates: Pick<Entry, 'debug' | 'spec' | 'hash'>) {
     const hash1 = this.hash
     const hash2 = updates.hash
+    const slug1 = this.spec.slug
+    const slug2 = updates.spec.slug
 
     this.debug = updates.debug
     this.spec = updates.spec
@@ -37,7 +39,10 @@ export class Project extends os.Unit {
       if (!hash2) {
         this.removeBackground()
       } else if (this.hasBackground()) {
-        this.reloadBackground()
+        // Slug changed? -> Recreate background instead of just reloading.
+        // Why? Changing iframe's `name` does not change it in the context dropdown.
+        // Why not always recreate? If user has the context selected, recreating will unselect the context.
+        this.reloadBackground(slug1 !== slug2)
       } else {
         this.createBackground()
       }
@@ -53,7 +58,7 @@ export class Project extends os.Unit {
   // BACKGROUND MANAGEMENT
   // ---------------------------------------------------------------------------
 
-  private createBackground() {
+  private createBackground(silent = false) {
     // Already exists? -> Ignore
     if (this.hasBackground()) return
 
@@ -66,25 +71,31 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
+    if (silent) return
     const title = `<background> started`
     const subtitle = `Listed in the context dropdown as '${this.spec.slug}'`
     this.info({ title, subtitle })
   }
 
-  private reloadBackground() {
-    // No background iframe? -> Ignore
-    const iframe = this.getBackground()
-    if (!iframe) return
+  private reloadBackground(force = false) {
+    if (force) {
+      this.removeBackground(true)
+      this.createBackground(true)
+    } else {
+      // No background iframe? -> Ignore
+      const iframe = this.getBackground()
+      if (!iframe) return
 
-    // Reload iframe
-    iframe.src = this.getBackgroundUrl()
+      // Reload iframe
+      iframe.src = this.getBackgroundUrl()
+    }
 
     // Log info
     const title = `<background> restarted`
     this.info({ title })
   }
 
-  private removeBackground() {
+  private removeBackground(silent = false) {
     // No background iframe? -> Ignore
     const iframe = this.getBackground()
     if (!iframe) return
@@ -93,6 +104,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
+    if (silent) return
     const title = `<background> stopped`
     this.info({ title })
   }

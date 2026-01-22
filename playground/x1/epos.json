@@ -10,7 +10,7 @@
 
   "targets": [
     {
-      "matches": ["*://*.epos.dev/@x1", "<popup>", "<sidePanel>"],
+      "matches": ["*://*.epos.dev/@x1", "<popup>"],
       "load": ["x1-hub.js"]
     },
     {
