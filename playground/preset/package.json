@@ -31,6 +31,6 @@
     "vite": "npm:rolldown-vite@^7.3.1"
   },
   "dependencies": {
-    "epos": "^1.50.0"
+    "epos": "^1.52.0"
   }
 }

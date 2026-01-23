@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "dropcap": "^1.17.0",
-    "epos": "^1.50.0",
-    "epos-spec": "^1.11.0",
+    "epos": "^1.52.0",
+    "epos-spec": "^1.12.0",
     "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",

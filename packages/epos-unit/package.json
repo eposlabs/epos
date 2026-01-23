@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "dropcap": "^1.17.0",
-    "epos": "^1.50.0",
+    "epos": "^1.52.0",
     "nanoid": "^5.1.6"
   }
 }
