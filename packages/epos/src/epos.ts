@@ -226,7 +226,7 @@ export interface Epos {
     create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T>
     update(id: string, updates: Partial<Bundle & ProjectSettings>): Promise<void>
     remove(id: string): Promise<void>
-    export(id: string, debug?: boolean): Promise<Record<string, Blob>>
+    export(id: string): Promise<Record<string, Blob>>
     watch(listener: () => void): void
     fetch(url: string): Promise<Bundle>
   }

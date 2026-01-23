@@ -43,7 +43,7 @@ export class Projects extends gl.Unit {
     let projectsData = await epos.projects.list()
 
     // Exclude `kit` project
-    projectsData = projectsData.filter(projectData => projectData.spec.slug !== 'kit')
+    // projectsData = projectsData.filter(projectData => projectData.spec.slug !== 'kit')
 
     // Update existing projects and add new ones
     projectsData.forEach(projectData => {

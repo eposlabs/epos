@@ -62,8 +62,8 @@ export class ProjectEposProjects extends ex.Unit {
     await this.$.bus.send<sw.Projects['remove']>('Projects.remove', id)
   }
 
-  async export(id: string, debug = false) {
-    const files = await this.$.bus.send<sw.Projects['export']>('Projects.export', id, debug)
+  async export(id: string) {
+    const files = await this.$.bus.send<sw.Projects['export']>('Projects.export', id)
     if (!files) throw this.never()
     return files
   }

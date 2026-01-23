@@ -256,7 +256,7 @@ export class Project extends sw.Unit {
     return assets
   }
 
-  async export(debug = false): Promise<Record<string, Blob>> {
+  async export(): Promise<Record<string, Blob>> {
     const fetchBlob = (path: string) => fetch(path).then(res => res.blob())
     const jsonBlob = (data: unknown) => new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
 
@@ -264,7 +264,7 @@ export class Project extends sw.Unit {
     const snapshot = {
       id: this.id,
       main: true,
-      debug: debug,
+      debug: false,
       enabled: true,
       spec: this.spec,
       sources: this.sources,
@@ -292,16 +292,14 @@ export class Project extends sw.Unit {
       'sw.js': await fetchBlob('/sw.js'),
       'vw.js': await fetchBlob('/vw.js'),
       'vw.css': await fetchBlob('/vw.css'),
+      'ex.dev.js': await fetchBlob('/ex.dev.js'),
       'ex.prod.js': await fetchBlob('/ex.prod.js'),
+      'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       'ex-mini.prod.js': await fetchBlob('/ex-mini.prod.js'),
       'view.html': await fetchBlob('/view.html'),
       'system.html': await fetchBlob('/system.html'),
       'project.html': await fetchBlob('/project.html'),
       'offscreen.html': await fetchBlob('/offscreen.html'),
-      ...(debug && {
-        'ex.dev.js': await fetchBlob('/ex.dev.js'),
-        'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
-      }),
     }
   }
 

@@ -166,10 +166,10 @@ export class Projects extends sw.Unit {
     await this.$.bus.send('Projects.changed')
   }
 
-  async export(id: string, debug = false) {
+  async export(id: string) {
     const project = this.dict[id]
     if (!project) return null
-    return await project.export(debug)
+    return await project.export()
   }
 
   private getJs(address?: Address, csTabInfo?: CsTabInfo) {
@@ -259,7 +259,7 @@ export class Projects extends sw.Unit {
     }
 
     // Has `kit` package? -> Open `@kit` page
-    if (this.dict.kit) {
+    if (this.list.some(project => project.spec.slug === 'kit')) {
       const kitTab = (await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' }))[0]
       if (kitTab) {
         await this.$.browser.tabs.update(kitTab.id, { active: true })

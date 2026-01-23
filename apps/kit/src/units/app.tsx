@@ -22,6 +22,12 @@ export class App extends gl.Unit {
     await this.ensureSinglePinnedTab()
   }
 
+  async exportKit() {
+    const project = this.projects.list.find(project => project.spec.slug === 'kit')
+    if (!project) return
+    await project.export()
+  }
+
   private async ensureSinglePinnedTab() {
     let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
     tabs = tabs.filter(tab => tab.url && new URL(tab.url).pathname === '/@kit')

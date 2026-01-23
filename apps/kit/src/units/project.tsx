@@ -205,9 +205,8 @@ export class Project extends gl.Unit {
     return fileHandle
   }
 
-  private async export() {
-    const debug = false // TODO: e.shift
-    const files = await epos.projects.export(this.id, debug)
+  async export() {
+    const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
     const filename = `${this.spec.slug}-${this.spec.version}.zip`
@@ -376,6 +375,7 @@ export class Project extends gl.Unit {
   }
 
   SidebarView() {
+    if (this.spec.slug === 'kit') return
     return (
       <SidebarMenuItem>
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
