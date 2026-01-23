@@ -175,7 +175,7 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const title = `Frame created: '${id}' ${url}`
+    const title = `Frame created: ${url}`
     const subtitle = `Listed in the context dropdown as '${this.spec.slug}:${id}'`
     this.info({ title, subtitle })
 
@@ -196,7 +196,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    const title = `Frame removed: '${id}' ${iframe.src}`
+    const title = `Frame removed: ${iframe.src}`
     this.info({ title })
   }
 

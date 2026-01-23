@@ -69,9 +69,15 @@ export class Project extends vw.Unit {
 
   private getStyle() {
     if (this.$.env.is.vwPopup) {
-      return { width: this.spec.popup.width, height: this.spec.popup.height }
-    } else if (this.$.env.is.vwSidePanel) {
-      return { width: '100%', height: '100%' }
+      return {
+        width: this.spec.config.popup.width,
+        height: this.spec.config.popup.height,
+      }
+    }
+
+    return {
+      width: '100%',
+      height: '100%',
     }
   }
 

@@ -79,7 +79,6 @@ export interface Epos {
   browser: Browser
   render(node: react.ReactNode, container?: reactDomClient.Container): void
   component<T>(Component: react.FC<T>): react.FC<T>
-  container: HTMLDivElement
 
   env: {
     /** `tabId` is `-1` for `<background>`, regular iframes and iframes created with `epos.frames.create`. */
@@ -90,6 +89,13 @@ export interface Epos {
     isSidePanel: boolean
     isBackground: boolean
     project: ProjectBase
+  }
+
+  dom: {
+    root: HTMLDivElement
+    reactRoot: HTMLDivElement
+    shadowRoot: ShadowRoot
+    shadowReactRoot: HTMLDivElement
   }
 
   bus: {
@@ -239,4 +245,4 @@ declare global {
 const _epos = epos
 export { _epos as epos }
 
-export default epos
+export default _epos

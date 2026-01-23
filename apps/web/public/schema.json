@@ -12,7 +12,6 @@
     "description": { "$ref": "#/definitions/Description" },
     "icon": { "$ref": "#/definitions/Icon" },
     "action": { "$ref": "#/definitions/Action" },
-    "popup": { "$ref": "#/definitions/Popup" },
     "config": { "$ref": "#/definitions/Config" },
     "assets": { "$ref": "#/definitions/Assets" },
     "targets": { "$ref": "#/definitions/Targets" },
@@ -56,18 +55,10 @@
       "oneOf": [{ "type": "null" }, { "type": "string" }, { "type": "boolean" }]
     },
 
-    "Popup": {
-      "type": "object",
-      "properties": {
-        "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 380 },
-        "height": { "type": "number", "minimum": 150, "maximum": 572, "default": 572 }
-      },
-      "additionalProperties": false
-    },
-
     "Config": {
       "type": "object",
       "properties": {
+        "popup": { "$ref": "#/definitions/PopupConfig" },
         "preloadAssets": { "type": "boolean", "default": true },
         "allowProjectsApi": { "type": "boolean", "default": false },
         "allowMissingModels": { "type": "boolean", "default": false }
@@ -75,9 +66,13 @@
       "additionalProperties": false
     },
 
-    "Access": {
-      "type": "string",
-      "enum": ["projects", "engine"]
+    "PopupConfig": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "number", "minimum": 150, "maximum": 800, "default": 380 },
+        "height": { "type": "number", "minimum": 150, "maximum": 572, "default": 572 }
+      },
+      "additionalProperties": false
     },
 
     "Assets": {

@@ -26,7 +26,7 @@ export class Bus extends gl.Unit {
     } else if (this.$.env.is.ex && !this.$.env.is.exExtension) {
       const pageToken = self.__eposBusPageToken
       delete self.__eposBusPageToken
-      if (!pageToken) throw new Error('Page token is not passed to `ex`')
+      if (this.$.utils.is.undefined(pageToken)) throw new Error('Page token is not passed to `ex`')
       this.pageToken = pageToken
     }
   }

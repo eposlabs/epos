@@ -27,8 +27,8 @@ export type Meta = {
   dynamicRules: chrome.declarativeNetRequest.Rule[]
   sessionRules: chrome.declarativeNetRequest.Rule[]
   systemRuleIds: number[] // Special rules set by epos engine; hidden for `epos.browser.declarativeNetRequest` api
-  grantedPermissions: chrome.runtime.ManifestPermission[]
   grantedOrigins: string[]
+  grantedPermissions: chrome.runtime.ManifestPermission[]
 }
 
 export class Project extends sw.Unit {
@@ -221,7 +221,7 @@ export class Project extends sw.Unit {
       enabled: true,
       spec: this.spec,
       sources: this.sources,
-      meta: this.meta,
+      meta: this.getInitialMeta(),
     }
 
     // Get project assets
@@ -316,7 +316,7 @@ export class Project extends sw.Unit {
   }
 
   private async updateSystemRules() {
-    const rules = [...this.prepareCspRules(), ...this.prepareLiteJsRules()]
+    const rules = [...this.prepareLiteJsRules()]
     const addedRules = await this.$.net.updateDynamicRules({ removeRuleIds: this.meta.systemRuleIds, addRules: rules })
     this.meta.systemRuleIds = addedRules.map(rule => rule.id)
     await this.saveSnapshot()
@@ -325,30 +325,6 @@ export class Project extends sw.Unit {
   private async removeSystemRules() {
     await this.$.net.updateDynamicRules({ removeRuleIds: this.meta.systemRuleIds })
     this.meta.systemRuleIds = []
-  }
-
-  /** Create net rules that disable CSP for project's targets. */
-  private prepareCspRules(): RuleNoId[] {
-    if (!this.enabled) return []
-    return this.targets.flatMap(target => {
-      return target.matches.flatMap(match => {
-        if (match.context === 'locus') return []
-        return {
-          priority: 1,
-          condition: {
-            regexFilter: this.matchPatternToRegexFilter(match.value),
-            resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame', 'xmlhttprequest'],
-          },
-          action: {
-            type: 'modifyHeaders',
-            responseHeaders: [
-              { header: 'Content-Security-Policy', operation: 'remove' },
-              { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
-            ],
-          },
-        }
-      })
-    })
   }
 
   /** Create net rules that inject lite JS code via `Set-Cookie` headers. */
@@ -373,7 +349,7 @@ export class Project extends sw.Unit {
       return target.matches.flatMap(match => {
         if (match.context === 'locus') return []
         return chunks.map((chunk, chunkIndex) => ({
-          priority: 1,
+          priority: this.$.net.MAX_PRIORITY,
           condition: {
             regexFilter: this.matchPatternToRegexFilter(match.value),
             resourceTypes: [match.context === 'top' ? 'main_frame' : 'sub_frame'],
@@ -397,16 +373,11 @@ export class Project extends sw.Unit {
   private matchPatternToRegexFilter(pattern: string) {
     if (pattern === '<all_urls>') pattern = '*://*/*'
 
-    let regex = pattern
-      // Escape special regex characters except `*`
-      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-      // Replace all `*` with `.*`
-      .replaceAll('*', '.*')
-
-    // Make subdomain optional for patterns like `...//*.example.com/...`
-    if (regex.includes('//.*\\.')) {
-      regex = regex.replace('//.*\\.', '//(.*\\.)?')
-    }
+    const regex = RegExp.escape(pattern)
+      // Replace all escaped `*` with `.*`
+      .replaceAll('\\*', '.*')
+      // Make subdomain optional for patterns like `...//*.example.com/...`
+      .replace('\\/\\/.*\\.', '\\/\\/(.*\\.)?')
 
     return `^${regex}$`
   }

@@ -16,7 +16,6 @@ export type Spec = {
   description: string | null
   icon: string | null
   action: Action | null
-  popup: Popup
   config: Config
   assets: Path[]
   targets: Target[]
@@ -24,15 +23,16 @@ export type Spec = {
   manifest: Manifest | null
 }
 
-export type Popup = {
-  width: number
-  height: number
-}
-
 export type Config = {
+  popup: PopupConfig
   preloadAssets: boolean
   allowProjectsApi: boolean
   allowMissingModels: boolean
+}
+
+export type PopupConfig = {
+  width: number
+  height: number
 }
 
 export type Target = {
@@ -83,7 +83,6 @@ const schema = {
     'description',
     'icon',
     'action',
-    'popup',
     'config',
     'assets',
     'targets',
@@ -94,15 +93,15 @@ const schema = {
   slug: { min: 2, max: 45, regex: /^[a-z][a-z0-9-]*[a-z0-9]$/ },
   description: { max: 132 },
   version: { regex: /^(?:\d{1,5}\.){0,3}\d{1,5}$/ },
-  popup: {
-    keys: ['width', 'height'],
-    width: { min: 150, max: 800, default: 380 },
-    height: { min: 150, max: 600 - 7 * 4, default: 600 - 7 * 4 },
-  },
   config: {
-    preloadAssets: true,
-    allowProjectsApi: false,
-    allowMissingModels: false,
+    popup: {
+      keys: ['width', 'height'],
+      width: { min: 150, max: 800, default: 380 },
+      height: { min: 150, max: 600 - 7 * 4, default: 600 - 7 * 4 },
+    },
+    preloadAssets: { default: true },
+    allowProjectsApi: { default: false },
+    allowMissingModels: { default: false },
   },
   target: {
     keys: ['matches', 'load'],
@@ -151,7 +150,6 @@ export function parseSpecObject(spec: Obj): Spec {
     description: parseDescription(spec),
     icon: icon,
     action: parseAction(spec, targets),
-    popup: parsePopup(spec),
     config: parseConfig(spec),
     assets: parseAssets(spec, icon),
     targets: targets,
@@ -236,27 +234,6 @@ function parseAction(spec: Obj, targets: Target[]): Action | null {
   return action
 }
 
-function parsePopup(spec: Obj) {
-  const popup = structuredClone(spec.popup ?? {})
-  if (!is.object(popup)) throw new Error(`'popup' must be an object`)
-
-  const { keys, width, height } = schema.popup
-  const badKey = Object.keys(popup).find(key => !keys.includes(key))
-  if (badKey) throw new Error(`Unknown 'popup' key: '${badKey}'`)
-
-  popup.width ??= width.default
-  if (!is.integer(popup.width)) throw new Error(`'popup.width' must be an integer`)
-  if (popup.width < width.min) throw new Error(`'popup.width' must be ≥ ${width.min}`)
-  if (popup.width > width.max) throw new Error(`'popup.width' must be ≤ ${width.max}`)
-
-  popup.height ??= height.default
-  if (!is.integer(popup.height)) throw new Error(`'popup.height' must be an integer`)
-  if (popup.height < height.min) throw new Error(`'popup.height' must be ≥ ${height.min}`)
-  if (popup.height > height.max) throw new Error(`'popup.height' must be ≤ ${height.max}`)
-
-  return popup as Popup
-}
-
 function parseConfig(spec: Obj): Config {
   const config = spec.config ?? {}
   if (!is.object(config)) throw new Error(`'config' must be an object`)
@@ -265,20 +242,42 @@ function parseConfig(spec: Obj): Config {
   const badKey = Object.keys(config).find(key => !configKeys.includes(key))
   if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
 
-  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets
+  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets.default
   if (!is.boolean(preloadAssets)) throw new Error(`'config.preloadAssets' must be a boolean`)
 
-  const allowProjectsApi = config.allowProjectsApi ?? schema.config.allowProjectsApi
+  const allowProjectsApi = config.allowProjectsApi ?? schema.config.allowProjectsApi.default
   if (!is.boolean(allowProjectsApi)) throw new Error(`'config.allowProjectsApi' must be a boolean`)
 
-  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels
+  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels.default
   if (!is.boolean(allowMissingModels)) throw new Error(`'config.allowMissingModels' must be a boolean`)
 
   return {
+    popup: parsePopupConfig(config),
     preloadAssets,
     allowProjectsApi,
     allowMissingModels,
   }
+}
+
+function parsePopupConfig(config: Obj) {
+  const popup = structuredClone(config.popup ?? {})
+  if (!is.object(popup)) throw new Error(`'config.popup' must be an object`)
+
+  const { keys, width, height } = schema.config.popup
+  const badKey = Object.keys(popup).find(key => !keys.includes(key))
+  if (badKey) throw new Error(`Unknown 'config.popup' key: '${badKey}'`)
+
+  popup.width ??= width.default
+  if (!is.integer(popup.width)) throw new Error(`'config.popup.width' must be an integer`)
+  if (popup.width < width.min) throw new Error(`'config.popup.width' must be ≥ ${width.min}`)
+  if (popup.width > width.max) throw new Error(`'config.popup.width' must be ≤ ${width.max}`)
+
+  popup.height ??= height.default
+  if (!is.integer(popup.height)) throw new Error(`'config.popup.height' must be an integer`)
+  if (popup.height < height.min) throw new Error(`'config.popup.height' must be ≥ ${height.min}`)
+  if (popup.height > height.max) throw new Error(`'config.popup.height' must be ≤ ${height.max}`)
+
+  return popup as PopupConfig
 }
 
 function parseAssets(spec: Obj, icon: string | null) {

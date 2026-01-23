@@ -2,7 +2,7 @@ import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends ex.Unit {
   dict: { [id: string]: ex.Project } = {}
-  env = this.getEnv()
+  tabInfo = this.getTabInfo()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
 
   get list() {
@@ -70,7 +70,7 @@ export class Projects extends ex.Unit {
   }
 
   // Use `-1` instead of `null` to use `epos.browser.tabs.*` / `epos.browser.windows.*` without extra checks
-  private getEnv() {
+  private getTabInfo(): TabInfo {
     // Top context? -> Get tab id and window id from the injected global variables
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId

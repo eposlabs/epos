@@ -7,7 +7,6 @@
   - epos.browser
   - epos.component
   - epos.render
-  - epos.container
 - **Env**
   - epos.env.tabId
   - epos.env.windowId
@@ -15,6 +14,11 @@
   - epos.env.isSidePanel
   - epos.env.isBackground
   - epos.env.project
+- **Dom**
+  - epos.dom.root
+  - epos.dom.reactRoot
+  - epos.dom.shadowRoot
+  - epos.dom.shadowReactRoot
 - **Bus**
   - epos.bus.on
   - epos.bus.off

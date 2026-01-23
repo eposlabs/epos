@@ -144,6 +144,7 @@ export class Project extends gl.Unit {
       if (parseError) throw new Error('Failed to parse epos.json', { cause: parseError })
 
       // Read assets
+      this.assetsInfo = {}
       const assets: Assets = {}
       for (const path of spec.assets) {
         const file = await this.readFile(path)
@@ -152,6 +153,7 @@ export class Project extends gl.Unit {
       }
 
       // Read sources
+      this.sourcesInfo = {}
       const sources: Sources = {}
       for (const target of spec.targets) {
         for (const resource of target.resources) {

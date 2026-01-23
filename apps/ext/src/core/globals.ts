@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 /// <reference types="vite/client" />
 /// <reference types="dropcap/globals"/>
 import type { Epos, Spec } from 'epos'
@@ -18,7 +19,7 @@ declare global {
   var install: any
   var remove: any
 
-  // APP VARS
+  // ENGINE VARS
   // ---------------------------------------------------------------------------
 
   // Global variables injected to pages and frames
@@ -32,12 +33,15 @@ declare global {
     __eposOriginalGlobals?: Record<string, unknown>
   }
 
-  // COMMON GLOBAL TYPES
+  // COMMON TYPES
   // ---------------------------------------------------------------------------
 
   type Url = string
   type TabInfo = { tabId: number; windowId: number }
-  type PartialEpos = Omit<Epos, 'projects'> & { projects?: Epos['projects'] }
+
+  type PartialEpos = Omit<Epos, 'projects'> & {
+    projects?: Epos['projects']
+  }
 
   type ProjectDef = {
     id: string
@@ -54,6 +58,10 @@ declare global {
 
   interface Node {
     epos?: boolean
+  }
+
+  interface RegExpConstructor {
+    escape(str: string): string
   }
 
   interface ErrorConstructor {

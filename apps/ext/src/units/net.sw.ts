@@ -3,16 +3,43 @@ export type RuleNoId = Omit<Rule, 'id'>
 export type UpdateRuleOptions = { addRules?: RuleNoId[]; removeRuleIds?: number[] }
 
 export class Net extends sw.Unit {
-  private dynamicRuleIdCursor = 1
-  private sessionRuleIdCursor = 1
+  MAX_PRIORITY = 2_147_483_647
+  private MIN_DYNAMIC_RULE_ID = 2 // 1 is reserved for CSP
+  private MIN_SESSION_RULE_ID = 1
+  private dynamicRuleIdCursor = this.MIN_DYNAMIC_RULE_ID
+  private sessionRuleIdCursor = this.MIN_SESSION_RULE_ID
   private freeDynamicRuleIds = new Set<number>()
   private freeSessionRuleIds = new Set<number>()
 
   async init() {
+    await this.disableCsp()
     await this.populateDynamicIdPool()
     await this.populateSessionIdPool()
     this.updateDynamicRules = this.$.utils.enqueue(this.updateDynamicRules, this)
     this.updateSessionRules = this.$.utils.enqueue(this.updateSessionRules, this)
+  }
+
+  async disableCsp() {
+    await this.$.browser.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [1],
+      addRules: [
+        {
+          id: 1,
+          priority: this.MAX_PRIORITY,
+          condition: {
+            urlFilter: '*://*/*',
+            resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest'],
+          },
+          action: {
+            type: 'modifyHeaders',
+            responseHeaders: [
+              { header: 'Content-Security-Policy', operation: 'remove' },
+              { header: 'Content-Security-Policy-Report-Only', operation: 'remove' },
+            ],
+          },
+        },
+      ],
+    })
   }
 
   async updateDynamicRules(options: UpdateRuleOptions): Promise<Rule[]> {
@@ -39,7 +66,7 @@ export class Net extends sw.Unit {
     const maxRuleId = ruleIds.at(-1)
     if (!maxRuleId) throw this.never()
 
-    for (let i = 1; i < maxRuleId; i++) {
+    for (let i = this.MIN_DYNAMIC_RULE_ID; i < maxRuleId; i++) {
       if (ruleIds.includes(i)) continue
       this.freeDynamicRuleIds.add(i)
     }
@@ -55,7 +82,7 @@ export class Net extends sw.Unit {
     const maxRuleId = ruleIds.at(-1)
     if (!maxRuleId) throw this.never()
 
-    for (let i = 1; i < maxRuleId; i++) {
+    for (let i = this.MIN_SESSION_RULE_ID; i < maxRuleId; i++) {
       if (ruleIds.includes(i)) continue
       this.freeSessionRuleIds.add(i)
     }

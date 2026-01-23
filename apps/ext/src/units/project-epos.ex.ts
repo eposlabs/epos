@@ -2,14 +2,15 @@ export class ProjectEpos extends ex.Unit {
   #api: ReturnType<ProjectEpos['createEposApi']> | null = null
   private $project = this.closest(ex.Project)!
   private bus = this.$.bus.scoped(`ProjectEpos[${this.$project.id}]`)
-  private general = new ex.ProjectEposGeneral(this)
-  private state = new ex.ProjectEposState(this)
-  private storage = new ex.ProjectEposStorage(this)
-  private assets = new ex.ProjectEposAssets(this)
-  private frames = new ex.ProjectEposFrames(this)
-  private env = new ex.ProjectEposEnv(this)
-  private libs = new ex.ProjectEposLibs(this)
-  private projects = new ex.ProjectEposProjects(this)
+  general = new ex.ProjectEposGeneral(this)
+  env = new ex.ProjectEposEnv(this)
+  dom = new ex.ProjectEposDom(this)
+  state = new ex.ProjectEposState(this)
+  storage = new ex.ProjectEposStorage(this)
+  assets = new ex.ProjectEposAssets(this)
+  frames = new ex.ProjectEposFrames(this)
+  libs = new ex.ProjectEposLibs(this)
+  projects = new ex.ProjectEposProjects(this)
 
   async init() {
     await this.assets.init()
@@ -34,7 +35,6 @@ export class ProjectEpos extends ex.Unit {
       browser: this.general.browser,
       component: this.$.utils.link(this.general, 'component'),
       render: this.$.utils.link(this.general, 'render'),
-      container: this.general.container,
 
       // Env
       env: {
@@ -44,6 +44,14 @@ export class ProjectEpos extends ex.Unit {
         isSidePanel: this.env.isSidePanel,
         isBackground: this.env.isBackground,
         project: this.env.project,
+      },
+
+      // Dom
+      dom: {
+        root: this.dom.root,
+        reactRoot: this.dom.reactRoot,
+        shadowRoot: this.dom.shadowRoot,
+        shadowReactRoot: this.dom.shadowReactRoot,
       },
 
       // Bus
