@@ -113,7 +113,7 @@ export interface Epos {
     register(id: string, api: unknown): void
     /** Unregister RPC API. */
     unregister(id: string): void
-    /** Get RPC API proxy. */
+    /** Get RPC API. */
     use<T>(id: string): Asyncify<T>
     /** Set signal with optional value. */
     setSignal(name: string, value?: unknown): void

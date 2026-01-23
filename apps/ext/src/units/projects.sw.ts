@@ -142,9 +142,9 @@ export class Projects extends sw.Unit {
     return { spec, sources, assets }
   }
 
-  private async create<T extends string>(params: Bundle & Partial<{ id: T } & ProjectSettings>): Promise<T> {
+  private async create<T extends string>(params: Bundle & Partial<{ id: T; main: boolean } & ProjectSettings>): Promise<T> {
     if (params.id && this.dict[params.id]) throw new Error(`Project with id '${params.id}' already exists`)
-    const project = await sw.Project.new(this, params)
+    const project = await sw.Project.new(this, { ...params })
     this.dict[project.id] = project
     await this.$.bus.send('Projects.changed')
     return project.id as T
@@ -160,6 +160,7 @@ export class Projects extends sw.Unit {
   async remove(id: string) {
     const project = this.dict[id]
     if (!project) return
+    if (project.main) throw new Error(`Main project cannot be removed`)
     await project.dispose()
     delete this.dict[id]
     await this.$.bus.send('Projects.changed')
@@ -289,13 +290,13 @@ export class Projects extends sw.Unit {
       this.dict[id] = project
     }
 
-    // Read project's snapshot from `project.json`
+    // Read main project's snapshot from `project.json`
     const [snapshot] = await this.$.utils.safe<Snapshot>(fetch('/project.json').then(res => res.json()))
     if (!snapshot) return
 
-    // Already at the latest version? -> Skip
-    const project = this.dict[snapshot.id]
-    if (project && this.compareSemver(project.spec.version, snapshot.spec.version) >= 0) return
+    // Main project is already at the latest version? -> Skip upgrade
+    const mainProject = this.list.find(project => project.main)
+    if (mainProject && this.compareSemver(mainProject.spec.version, snapshot.spec.version) >= 0) return
 
     // Fetch assets
     const assets: Assets = {}
@@ -305,9 +306,9 @@ export class Projects extends sw.Unit {
       assets[path] = blob
     }
 
-    // Create or update project from the snapshot
-    if (this.has(snapshot.id)) {
-      await this.update(snapshot.id, { ...snapshot, assets })
+    // Create or update main project from the snapshot
+    if (mainProject) {
+      await mainProject.update({ ...snapshot, assets })
     } else {
       await this.create({ ...snapshot, assets })
     }

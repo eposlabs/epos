@@ -188,14 +188,16 @@ export class Unit<TRoot = unknown> {
   // METHODS
   // ---------------------------------------------------------------------------
 
-  rpc<T>(id: string) {
+  use<T>(id: string) {
     ensure(this, _rpcs_, () => ({}))
     this[_rpcs_][id] ??= epos.bus.use<T>(`${this['@']}.${id}[${this.id}]`)
     return this[_rpcs_][id] as Asyncify<T>
   }
 
-  registerRpc(id: string) {
+  expose(id: string) {
     epos.bus.register(`${this['@']}.${id}[${this.id}]`, this)
+    ensure(this, _disposers_, () => new Set())
+    this[_disposers_].add(() => epos.bus.unregister(`${this['@']}.${id}[${this.id}]`))
   }
 
   /**

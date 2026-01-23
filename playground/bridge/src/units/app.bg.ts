@@ -1,10 +1,10 @@
 export class App extends gl.App<bg> {
   get fg() {
-    return this.rpc<fg.App>('fg')
+    return this.use<fg.App>('fg')
   }
 
   attach() {
-    this.registerRpc('bg')
+    this.expose('bg')
   }
 
   async spawn() {

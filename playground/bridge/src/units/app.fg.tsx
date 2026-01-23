@@ -1,10 +1,10 @@
 export class App extends gl.App<fg> {
   get bg() {
-    return this.rpc<bg.App>('bg')
+    return this.use<bg.App>('bg')
   }
 
   attach() {
-    this.registerRpc('fg')
+    this.expose('fg')
   }
 
   alert() {

@@ -5,6 +5,7 @@ import type { Address } from './project-target.sw'
 // Data saved to IndexedDB
 export type Snapshot = {
   id: string
+  main: boolean
   debug: boolean
   enabled: boolean
   spec: Spec
@@ -33,6 +34,7 @@ export type Meta = {
 
 export class Project extends sw.Unit {
   id: string
+  main: boolean
   debug: boolean
   enabled: boolean
   spec: Spec
@@ -47,9 +49,8 @@ export class Project extends sw.Unit {
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
 
-  static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string }>) {
-    // Prevent cases when params contain `meta`, always initialize project with the initial meta
-    const project = new Project(parent, { ...params, meta: undefined })
+  static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string; main: boolean }>) {
+    const project = new Project(parent, { ...params, meta: undefined }) // Always initial meta
     await project.init()
     await project.saveSnapshot()
     await project.saveAssets(params.assets)
@@ -58,15 +59,60 @@ export class Project extends sw.Unit {
 
   static async restore(parent: sw.Unit, id: string) {
     const snapshot = await parent.$.idb.get<Snapshot>(id, ':project', 'snapshot')
-    if (!snapshot) return null
+    if (!snapshot) return (await this.restoreOld(parent, id)) ?? null
     const project = new Project(parent, snapshot)
     await project.init()
     return project
   }
 
-  constructor(parent: sw.Unit, params: Omit<Bundle, 'assets'> & Partial<ProjectSettings & { id: string; meta: Meta }>) {
+  private static async restoreOld(parent: sw.Unit, id: string) {
+    const oldSnapshot = await parent.$.idb.get<any>(id, ':project', ':default')
+    if (!oldSnapshot) return null
+    await parent.$.idb.delete(id, ':project', ':default')
+    const snapshot: any = {
+      id: oldSnapshot.spec.name,
+      main: true,
+      debug: false,
+      enabled: true,
+      spec: {
+        name: '',
+        slug: '',
+        version: '',
+        description: '',
+        icon: null,
+        action: null,
+        popup: null,
+        config: {},
+        assets: [],
+        targets: [],
+        permissions: {
+          required: [],
+          optional: [],
+        },
+      },
+      sources: {},
+      meta: {
+        alarms: [],
+        dynamicRules: [],
+        sessionRules: [],
+        systemRuleIds: [],
+        grantedPermissions: [],
+        grantedOrigins: [],
+      },
+    }
+
+    const project = new Project(parent, snapshot)
+    await project.init()
+    return project
+  }
+
+  constructor(
+    parent: sw.Unit,
+    params: Omit<Bundle, 'assets'> & Partial<ProjectSettings & { id: string; main: boolean; meta: Meta }>,
+  ) {
     super(parent)
     this.id = params.id ?? this.$.utils.id()
+    this.main = params.main ?? false
     this.debug = params.debug ?? false
     this.enabled = params.enabled ?? true
     this.spec = params.spec
@@ -215,8 +261,9 @@ export class Project extends sw.Unit {
     const jsonBlob = (data: unknown) => new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
 
     // Prepare project snapshot
-    const snapshot: Snapshot = {
+    const snapshot = {
       id: this.id,
+      main: true,
       debug: debug,
       enabled: true,
       spec: this.spec,
@@ -276,6 +323,7 @@ export class Project extends sw.Unit {
   async saveSnapshot() {
     await this.$.idb.set<Snapshot>(this.id, ':project', 'snapshot', {
       id: this.id,
+      main: this.main,
       debug: this.debug,
       enabled: this.enabled,
       spec: this.spec,
@@ -389,6 +437,9 @@ export class Project extends sw.Unit {
   }
 
   private async prepareIcon(blob: Blob, { size = 128, type = 'image/png' } = {}) {
+    // SVG? -> Convert to PNG, because `createImageBitmap` fails on SVG blobs
+    if (blob.type.startsWith('image/svg')) blob = await this.$.os.utils.toPng(blob)
+
     const image = await createImageBitmap(blob)
     const canvas = new OffscreenCanvas(size, size)
     const ctx = canvas.getContext('2d')
@@ -405,7 +456,6 @@ export class Project extends sw.Unit {
     const offsetY = (size - height) / 2
     ctx.drawImage(image, offsetX, offsetY, width, height)
 
-    // Convert to png blob
     return await canvas.convertToBlob({ type })
   }
 

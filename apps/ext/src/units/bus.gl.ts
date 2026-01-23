@@ -161,7 +161,7 @@ export class Bus extends gl.Unit {
     this.off(`Bus.rpc[${id}]`)
   }
 
-  use<T>(id: string): Asyncify<T> {
+  use<T = unknown, TForced = unknown>(id: string) {
     const createProxy = (path: string[] = []): unknown => {
       return new Proxy(() => {}, {
         get: (_target, key: string) => {
@@ -174,7 +174,7 @@ export class Bus extends gl.Unit {
       })
     }
 
-    return createProxy() as Asyncify<T>
+    return createProxy() as T extends null ? TForced : Asyncify<T>
   }
 
   scoped(namespace: string) {

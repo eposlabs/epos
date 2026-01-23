@@ -5,6 +5,8 @@ export class App extends sw.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
+  os = this.$.bus.use<null, os.App>('App[os]')
+
   alive = new sw.Alive(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
@@ -27,11 +29,10 @@ export class App extends sw.Unit {
   private logInfo() {
     const hasDebugProject = this.projects.list.some(project => project.debug)
     if (!hasDebugProject) return
-    const version = this.browser.runtime.getManifest().version
     const docsUrl = 'https://epos.dev/docs/api'
-    const title = `ᛃ epos is running, v${version} ${docsUrl}`
+    const title = `ᛃ epos is running | ${docsUrl}`
     const subtitle = `To inspect background processes, open offscreen.html from the extension details page`
-    this.$.utils.info({ title, subtitle })
+    this.$.utils.info({ title, subtitle, timestamp: true })
   }
 
   private initGlobalMethods() {

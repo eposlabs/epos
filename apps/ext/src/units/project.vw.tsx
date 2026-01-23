@@ -70,8 +70,8 @@ export class Project extends vw.Unit {
   private getStyle() {
     if (this.$.env.is.vwPopup) {
       return {
-        width: this.spec.config.popup.width,
-        height: this.spec.config.popup.height,
+        width: this.spec.popup.width,
+        height: this.spec.popup.height,
       }
     }
 
