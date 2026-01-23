@@ -25,11 +25,12 @@
   - epos.bus.send
   - epos.bus.emit
   - epos.bus.once
+  - epos.bus.setSignal
+  - epos.bus.waitSignal
   - epos.bus.register
   - epos.bus.unregister
   - epos.bus.use
-  - epos.bus.setSignal
-  - epos.bus.waitSignal
+  - epos.bus.for
 - **State**
   - epos.state.connect
   - epos.state.disconnect
@@ -46,9 +47,9 @@
   - epos.storage.set
   - epos.storage.delete
   - epos.storage.keys
-  - epos.storage.use
   - epos.storage.list
   - epos.storage.remove
+  - epos.storage.for
 - **Frames**
   - epos.frames.create
   - epos.frames.remove

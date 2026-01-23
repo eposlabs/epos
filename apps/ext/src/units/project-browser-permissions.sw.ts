@@ -41,7 +41,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     // Remove granted origins and permissions
     for (const origin of query.origins) this.removeGrantedOrigin(origin)
     for (const permission of query.permissions) this.removeGrantedPermission(permission)
-    await this.$browser.resetApi()
+    await this.$browser.resetExApi()
     await this.$project.saveSnapshot()
 
     return true
@@ -73,7 +73,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     // Update granted origins and permissions
     this.$project.meta.grantedOrigins.push(...origins)
     this.$project.meta.grantedPermissions.push(...permissions)
-    await this.$browser.resetApi()
+    await this.$browser.resetExApi()
     await this.$project.saveSnapshot()
 
     return true

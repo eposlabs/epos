@@ -44,7 +44,7 @@ export class Project extends sw.Unit {
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
   states: exSw.States
-  bus: ReturnType<gl.Bus['scoped']>
+  bus: ReturnType<gl.Bus['for']>
   private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
@@ -122,7 +122,7 @@ export class Project extends sw.Unit {
     this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
-    this.bus = this.$.bus.scoped(`Project[${this.id}]`)
+    this.bus = this.$.bus.for(`Project[${this.id}]`)
     this.bus.on('addSystemRule', this.addSystemRule, this)
     this.bus.on('removeSystemRule', this.removeSystemRule, this)
   }
@@ -438,15 +438,16 @@ export class Project extends sw.Unit {
 
   private async prepareIcon(blob: Blob, { size = 128, type = 'image/png' } = {}) {
     // SVG? -> Convert to PNG, because `createImageBitmap` fails on SVG blobs
-    if (blob.type.startsWith('image/svg')) blob = await this.$.os.utils.toPng(blob)
+    if (blob.type.startsWith('image/svg')) blob = await this.$.utils.os.toPng(blob)
 
-    const image = await createImageBitmap(blob)
+    // Prepare canvas
     const canvas = new OffscreenCanvas(size, size)
     const ctx = canvas.getContext('2d')
     if (!ctx) throw this.never()
     ctx.clearRect(0, 0, size, size)
 
     // Calculate resulting width and height
+    const image = await createImageBitmap(blob)
     const ratio = image.width / image.height
     const width = ratio > 1 ? size : size * ratio
     const height = ratio > 1 ? size / ratio : size

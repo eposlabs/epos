@@ -11,16 +11,6 @@ export class Idb extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-
-    this.$.bus.on('Idb.get', this.get, this)
-    this.$.bus.on('Idb.has', this.has, this)
-    this.$.bus.on('Idb.set', this.set, this)
-    this.$.bus.on('Idb.keys', this.keys, this)
-    this.$.bus.on('Idb.delete', this.delete, this)
-
-    this.$.bus.on('Idb.listStores', this.listStores, this)
-    this.$.bus.on('Idb.listDatabases', this.listDatabases, this)
-    this.$.bus.on('Idb.deleteStore', this.deleteStore, this)
-    this.$.bus.on('Idb.deleteDatabase', this.deleteDatabase, this)
+    this.$.bus.register('Idb[sw]', this)
   }
 }

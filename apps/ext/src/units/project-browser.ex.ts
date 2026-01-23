@@ -39,7 +39,7 @@ export type LooseBrowser = {
 export class ProjectBrowser extends ex.Unit {
   private $project = this.closest(ex.Project)!
   #api: Obj = {}
-  private bus = this.$.bus.scoped(`ProjectBrowser[${this.$project.id}]`)
+  private bus = this.$.bus.for(`ProjectBrowser[${this.$project.id}]`)
   private listenerIds = new Set<string>()
   static _cbId_ = _cbId_
 

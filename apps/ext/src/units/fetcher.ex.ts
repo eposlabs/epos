@@ -14,10 +14,11 @@ export type Res = {
 }
 
 export class Fetcher extends ex.Unit {
+  private sw = this.$.bus.use<sw.Fetcher>('Fetcher[sw]')
+
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
     const href = new URL(String(url), location.href).href
-    const res = await this.$.bus.send<sw.Fetcher['fetch']>('Fetcher.fetch', href, init)
-    if (!res) throw this.never()
+    const res = await this.sw.fetch(href, init)
     if (this.$.utils.is.error(res)) throw res
 
     return {
@@ -29,22 +30,19 @@ export class Fetcher extends ex.Unit {
       redirected: res.redirected,
       headers: new Headers(res.headers),
       text: async () => {
-        const text = await this.$.bus.send<sw.Fetcher['readAsText']>('Fetcher.readAsText', res.id)
-        if (this.$.utils.is.absent(text)) throw this.never()
-        if (this.$.utils.is.error(text)) throw text
-        return text
+        const result = await this.sw.readAsText(res.id)
+        if (this.$.utils.is.error(result)) throw result
+        return result
       },
       json: async () => {
-        const json = await this.$.bus.send<sw.Fetcher['readAsJson']>('Fetcher.readAsJson', res.id)
-        if (this.$.utils.is.absent(json)) throw this.never()
-        if (this.$.utils.is.error(json)) throw json
-        return json
+        const result = await this.sw.readAsJson(res.id)
+        if (this.$.utils.is.error(result)) throw result
+        return result
       },
       blob: async () => {
-        const blob = await this.$.bus.send<sw.Fetcher['readAsBlob']>('Fetcher.readAsBlob', res.id)
-        if (this.$.utils.is.absent(blob)) throw this.never()
-        if (this.$.utils.is.error(blob)) throw res
-        return blob
+        const result = await this.sw.readAsBlob(res.id)
+        if (this.$.utils.is.error(result)) throw result
+        return result
       },
     }
   }

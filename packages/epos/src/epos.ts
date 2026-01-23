@@ -74,6 +74,29 @@ export type Res = {
   blob: Response['blob']
 }
 
+export type Bus = {
+  /** Register event listener. */
+  on<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
+  /** Remove event listener. */
+  off<T extends Fn>(name: string, callback?: T): void
+  /** Register one-time event listener. */
+  once<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
+  /** Send event to all remote listeners (local listeners ignored). */
+  send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+  /** Call local listeners (remote listeners ignored). */
+  emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+  /** Set signal with optional value. */
+  setSignal(name: string, value?: unknown): void
+  /** Wait for signal to be set. */
+  waitSignal<T>(name: string, timeout?: number): Promise<T | null>
+  /** Register RPC API. */
+  register(name: string, api: unknown): void
+  /** Unregister RPC API. */
+  unregister(name: string): void
+  /** Use RPC API. */
+  use<T>(name: string): Asyncify<T>
+}
+
 export interface Epos {
   fetch: (url: string | URL, init?: ReqInit) => Promise<Res>
   browser: Browser
@@ -98,27 +121,8 @@ export interface Epos {
     shadowReactRoot: HTMLDivElement
   }
 
-  bus: {
-    /** Register event listener. */
-    on<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
-    /** Remove event listener. */
-    off<T extends Fn>(name: string, callback?: T): void
-    /** Register one-time event listener. */
-    once<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
-    /** Send event to all remote listeners (local listeners ignored). */
-    send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
-    /** Call local listeners (remote listeners ignored). */
-    emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
-    /** Register RPC API. */
-    register(id: string, api: unknown): void
-    /** Unregister RPC API. */
-    unregister(id: string): void
-    /** Get RPC API. */
-    use<T>(id: string): Asyncify<T>
-    /** Set signal with optional value. */
-    setSignal(name: string, value?: unknown): void
-    /** Wait for signal to be set. */
-    waitSignal<T>(name: string, timeout?: number): Promise<T | null>
+  bus: Bus & {
+    for(namespace: string): Bus
   }
 
   state: {
@@ -162,8 +166,12 @@ export interface Epos {
     }
     /** Get all storage keys. */
     keys(name?: string): Promise<string[]>
-    /** Get storage API for specific storage. */
-    use(name?: string): {
+    /** Get list of all storages. */
+    list(): Promise<{ name: string | null; keys: string[] }[]>
+    /** Remove storage and all its data. */
+    remove(name?: string): Promise<void>
+    /** Create storage API for the specific storage. */
+    for(name?: string): {
       /** Get value from storage. */
       get<T>(key: string): Promise<T | null>
       /** Set value in storage. */
@@ -175,10 +183,6 @@ export interface Epos {
       /** Remove storage and all its data. */
       remove(): Promise<void>
     }
-    /** Get list of all storages. */
-    list(): Promise<{ name: string | null; keys: string[] }[]>
-    /** Remove storage and all its data. */
-    remove(name?: string): Promise<void>
   }
 
   frames: {

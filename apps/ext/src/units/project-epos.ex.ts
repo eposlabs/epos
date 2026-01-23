@@ -1,7 +1,7 @@
 export class ProjectEpos extends ex.Unit {
   #api: ReturnType<ProjectEpos['createEposApi']> | null = null
   private $project = this.closest(ex.Project)!
-  private bus = this.$.bus.scoped(`ProjectEpos[${this.$project.id}]`)
+  private bus = this.$.bus.for(`ProjectEpos[${this.$project.id}]`)
   general = new ex.ProjectEposGeneral(this)
   env = new ex.ProjectEposEnv(this)
   dom = new ex.ProjectEposDom(this)
@@ -61,11 +61,12 @@ export class ProjectEpos extends ex.Unit {
         once: this.$.utils.link(this.bus, 'once'),
         send: this.$.utils.link(this.bus, 'send'),
         emit: this.$.utils.link(this.bus, 'emit'),
+        setSignal: this.$.utils.link(this.bus, 'setSignal'),
+        waitSignal: this.$.utils.link(this.bus, 'waitSignal'),
         register: this.$.utils.link(this.bus, 'register'),
         unregister: this.$.utils.link(this.bus, 'unregister'),
         use: this.$.utils.link(this.bus, 'use'),
-        setSignal: this.$.utils.link(this.bus, 'setSignal'),
-        waitSignal: this.$.utils.link(this.bus, 'waitSignal'),
+        for: (id: string) => this.$.bus.for(`ProjectEpos[${this.$project.id}][${id}]`),
       },
 
       // State
@@ -88,9 +89,9 @@ export class ProjectEpos extends ex.Unit {
         set: this.$.utils.link(this.storage, 'set'),
         delete: this.$.utils.link(this.storage, 'delete'),
         keys: this.$.utils.link(this.storage, 'keys'),
-        use: this.$.utils.link(this.storage, 'use'),
         list: this.$.utils.link(this.storage, 'list'),
         remove: this.$.utils.link(this.storage, 'remove'),
+        for: this.$.utils.link(this.storage, 'for'),
       },
 
       // Frames

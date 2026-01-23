@@ -1,6 +1,6 @@
 export class ProjectBrowser extends sw.Unit {
   private $project = this.closest(sw.Project)!
-  private bus: ReturnType<gl.Bus['scoped']>
+  private bus: ReturnType<gl.Bus['for']>
   private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private storage = new sw.ProjectBrowserStorage(this)
@@ -11,7 +11,7 @@ export class ProjectBrowser extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.bus = this.$.bus.scoped(`ProjectBrowser[${this.$project.id}]`)
+    this.bus = this.$.bus.for(`ProjectBrowser[${this.$project.id}]`)
     this.bus.on('getApiTree', this.getApiTree, this)
     this.bus.on('callMethod', this.callMethod, this)
     this.bus.on('addListener', this.addListener, this)
@@ -23,7 +23,7 @@ export class ProjectBrowser extends sw.Unit {
     await this.alarms.init()
   }
 
-  async resetApi() {
+  async resetExApi() {
     await this.bus.send<ex.ProjectBrowser['resetApi']>('resetApi')
   }
 

@@ -10,7 +10,7 @@ export class Bus extends gl.Unit {
   pageToken: string | null = null // For secure `cs` <-> `ex` communication
   actions: gl.BusAction[] = [] // Registered actions
   utils = new gl.BusUtils(this)
-  rpcIds = new Set<string>()
+  rpcNames = new Set<string>()
   serializer = new gl.BusSerializer(this)
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
@@ -140,14 +140,14 @@ export class Bus extends gl.Unit {
     return result as T | null
   }
 
-  register(id: string, api: unknown) {
-    if (this.rpcIds.has(id)) return
-    this.rpcIds.add(id)
+  register(name: string, api: unknown) {
+    if (this.rpcNames.has(name)) return
+    this.rpcNames.add(name)
 
-    this.on(`Bus.rpc[${id}]`, (path: string[], ...args: unknown[]) => {
+    this.on(`Bus.rpc[${name}]`, (path: string[], ...args: unknown[]) => {
       const targetPath = path.slice(0, -1)
       const key = path.at(-1)
-      if (!key) throw this.never()
+      if (!key) throw new Error('Method not provided')
       const target = this.$.utils.get(api, targetPath)
       if (!this.$.utils.is.object(target)) throw new Error(`Method not found: '${path.join('.')}'`)
       if (!this.$.utils.is.function(target[key])) throw new Error(`Method not found: '${path.join('.')}'`)
@@ -155,13 +155,13 @@ export class Bus extends gl.Unit {
     })
   }
 
-  unregister(id: string) {
-    if (!this.rpcIds.has(id)) return
-    this.rpcIds.delete(id)
-    this.off(`Bus.rpc[${id}]`)
+  unregister(name: string) {
+    if (!this.rpcNames.has(name)) return
+    this.rpcNames.delete(name)
+    this.off(`Bus.rpc[${name}]`)
   }
 
-  use<T = unknown, TForced = unknown>(id: string) {
+  use<T>(name: string) {
     const createProxy = (path: string[] = []): unknown => {
       return new Proxy(() => {}, {
         get: (_target, key: string) => {
@@ -169,15 +169,15 @@ export class Bus extends gl.Unit {
           return createProxy([...path, key])
         },
         apply: async (_target, _thisArg, args) => {
-          return await this.send(`Bus.rpc[${id}]`, path, ...args)
+          return await this.send(`Bus.rpc[${name}]`, path, ...args)
         },
       })
     }
 
-    return createProxy() as T extends null ? TForced : Asyncify<T>
+    return createProxy() as Asyncify<T>
   }
 
-  scoped(namespace: string) {
+  for(namespace: string) {
     const prefix = `@${namespace}::`
     const prefixed = (name: string) => `${prefix}${name}`
 
@@ -203,6 +203,12 @@ export class Bus extends gl.Unit {
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
         this.once<T>(prefixed(name), fn, thisArg)
       },
+      setSignal: (name: string, ...args: unknown[]) => {
+        this.setSignal(prefixed(name), ...args)
+      },
+      waitSignal: async <T>(name: string, timeout?: number) => {
+        return await this.waitSignal<T>(prefixed(name), timeout)
+      },
       register: (id: string, api: unknown) => {
         this.register(prefixed(id), api)
       },
@@ -211,12 +217,6 @@ export class Bus extends gl.Unit {
       },
       use: <T>(id: string) => {
         return this.use<T>(prefixed(id))
-      },
-      setSignal: (name: string, ...args: unknown[]) => {
-        this.setSignal(prefixed(name), ...args)
-      },
-      waitSignal: async <T>(name: string, timeout?: number) => {
-        return await this.waitSignal<T>(prefixed(name), timeout)
       },
     }
   }

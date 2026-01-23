@@ -14,10 +14,5 @@ export class App extends ex.Unit {
     if (this.$.env.is.dev) self.$epos = this
     await this.bus.initPageToken()
     await this.projects.init()
-
-    this.$.bus.on('Permissions.requestViaEx', async () => {
-      console.warn('ex')
-      this.$.bus.send('Permissions.request')
-    })
   }
 }

@@ -5,8 +5,6 @@ export class App extends sw.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  os = this.$.bus.use<null, os.App>('App[os]')
-
   alive = new sw.Alive(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)

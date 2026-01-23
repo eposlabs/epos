@@ -11,6 +11,7 @@ export class App extends os.Unit {
 
   async init() {
     self.$ = this
+    this.$.utils.initBusApi()
     this.$.bus.register('App[os]', this)
     this.logOffscreenLabel()
     await this.projects.init()

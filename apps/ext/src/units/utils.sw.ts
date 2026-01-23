@@ -7,6 +7,10 @@ import { normalizeUrl } from './utils-normalize-url.js'
 import { time } from './utils-time.js'
 
 export class Utils extends sw.Unit {
+  get os() {
+    return this.$.bus.use<Omit<os.Utils, '$'>>('Utils[os]')
+  }
+
   colorHash = colorHash
   enqueue = enqueue
   ensureArray = ensureArray

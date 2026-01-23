@@ -29,10 +29,7 @@ export class Fetcher extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.on('Fetcher.fetch', this.fetch, this)
-    this.$.bus.on('Fetcher.readAsText', this.readAsText, this)
-    this.$.bus.on('Fetcher.readAsJson', this.readAsJson, this)
-    this.$.bus.on('Fetcher.readAsBlob', this.readAsBlob, this)
+    this.$.bus.register('Fetcher[sw]', this)
   }
 
   async fetch(url: string | URL, init?: ReqInit): Promise<ResData | Error> {
@@ -61,7 +58,7 @@ export class Fetcher extends sw.Unit {
     }
   }
 
-  private async readAsText(resId: string) {
+  async readAsText(resId: string) {
     try {
       const res = this.responses[resId]
       if (!res) throw new Error('Response timed out')
@@ -71,7 +68,7 @@ export class Fetcher extends sw.Unit {
     }
   }
 
-  private async readAsJson(resId: string) {
+  async readAsJson(resId: string) {
     try {
       const res = this.responses[resId]
       if (!res) throw new Error('Response timed out')
@@ -81,7 +78,7 @@ export class Fetcher extends sw.Unit {
     }
   }
 
-  private async readAsBlob(resId: string) {
+  async readAsBlob(resId: string) {
     try {
       const res = this.responses[resId]
       if (!res) throw new Error('Response timed out')

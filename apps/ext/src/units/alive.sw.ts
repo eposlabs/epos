@@ -1,12 +1,12 @@
 export class Alive extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
-    this.initBus()
+    this.$.bus.register('Alive[sw]', this)
     void this.initAlarm()
   }
 
-  private initBus() {
-    this.$.bus.on('Alive.ping', () => true)
+  ping() {
+    return true
   }
 
   private async initAlarm() {

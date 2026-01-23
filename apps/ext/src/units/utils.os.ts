@@ -7,6 +7,10 @@ import { toPng } from './utils-to-png.js'
 import { without } from './utils-without.js'
 
 export class Utils extends os.Unit {
+  initBusApi() {
+    this.$.bus.register('Utils[os]', this)
+  }
+
   colorHash = colorHash
   get = get
   id = id

@@ -41,7 +41,7 @@ export class ProjectEposStorage extends ex.Unit {
     return await this.$.idb.deleteStore(this.$project.id, name)
   }
 
-  use(name: string = DEFAULT_NAME) {
+  for(name: string = DEFAULT_NAME) {
     this.validateName(name)
     return {
       get: <T>(key: string) => this.get<T>(name, key),
