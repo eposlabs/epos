@@ -43,14 +43,14 @@ export default defineConfig(async ({ mode }) => {
       preact({ reactAliasesEnabled: false }),
       rebundle(null, {
         'cs': bundle('cs'),
-        'ex.dev': bundle('ex', 'development'),
-        'ex.prod': bundle('ex', 'production'),
-        'ex-mini.dev': bundle('ex-mini', 'development'),
-        'ex-mini.prod': bundle('ex-mini', 'production'),
         'os': bundle('os'),
         'pm': bundle('pm'),
         'sw': bundle('sw'),
         'vw': bundle('vw'),
+        'exd': bundle('ex', 'development'),
+        'exp': bundle('ex', 'production'),
+        'exd-mini': bundle('ex-mini', 'development'),
+        'exp-mini': bundle('ex-mini', 'production'),
       }),
     ],
 
@@ -65,10 +65,10 @@ export default defineConfig(async ({ mode }) => {
           'pm': './src/pm.ts', // Permission
           'sw': './src/sw.ts', // Service Worker
           'vw': './src/vw.ts', // View
-          'ex.dev': './src/ex.ts', // Execution with forced NODE_ENV=development
-          'ex.prod': './src/ex.ts', // Execution with forced NODE_ENV=production
-          'ex-mini.dev': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
-          'ex-mini.prod': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
+          'exd': './src/ex.ts', // Execution with forced NODE_ENV=development
+          'exp': './src/ex.ts', // Execution with forced NODE_ENV=production
+          'exd-mini': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
+          'exp-mini': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
         },
         output: {
           sourcemap: false,

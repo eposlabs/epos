@@ -22,10 +22,10 @@ export class Learn extends gl.Unit {
   }
 
   static versioner = this.defineVersioner({
-    1(this: Learn) {
+    1() {
       this.permissions = []
     },
-    2(this: Learn) {
+    2() {
       this.permissions = [
         new gl.Permission(this, 'contextMenus'),
         new gl.Permission(this, 'cookies'),
@@ -34,13 +34,13 @@ export class Learn extends gl.Unit {
         new gl.Permission(this, 'storage'),
       ]
     },
-    3(this: Learn) {
+    3() {
       this.permissions.push(new gl.Permission(this, 'browsingData'))
     },
-    4(this: Learn) {
+    4() {
       this.permissions.push(new gl.Permission(this, 'contextMenus'))
     },
-    5(this: Learn) {
+    5() {
       this.permissions = [
         new gl.Permission(this, 'browsingData'),
         new gl.Permission(this, 'contextMenus'),

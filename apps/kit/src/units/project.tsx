@@ -5,12 +5,13 @@ import { Separator } from '@ui/components/ui/separator.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 import { Spinner } from '@ui/components/ui/spinner'
 import { cn } from '@ui/lib/utils'
-import type { Assets, ProjectBase, Sources, Spec } from 'epos'
+import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
 
 export class Project extends gl.Unit {
   debug: boolean
   enabled: boolean
   spec: Spec
+  manifest: Manifest
   specText: string | null = null
   assetsInfo: Record<string, { size: number }> = {}
   sourcesInfo: Record<string, { size: number }> = {}
@@ -30,6 +31,7 @@ export class Project extends gl.Unit {
     this.id = params.id
     this.debug = params.debug
     this.spec = params.spec
+    this.manifest = params.manifest
     this.enabled = params.enabled
   }
 
@@ -60,8 +62,9 @@ export class Project extends gl.Unit {
 
   update(updates: Omit<ProjectBase, 'id'>) {
     this.debug = updates.debug
-    this.spec = updates.spec
     this.enabled = updates.enabled
+    this.spec = updates.spec
+    this.manifest = updates.manifest
   }
 
   select() {
@@ -339,6 +342,13 @@ export class Project extends gl.Unit {
             <pre className="text-muted-foreground">{this.specText ?? '—'}</pre>
           </ItemContent>
         </Item>
+
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>manifest.json</ItemTitle>
+            <pre className="text-muted-foreground">{JSON.stringify(this.manifest, null, 2)}</pre>
+          </ItemContent>
+        </Item>
       </div>
     )
   }
@@ -419,6 +429,9 @@ export class Project extends gl.Unit {
     11(this: any) {
       delete this.mode
       this.debug = false
+    },
+    12(this: any) {
+      this.manifest = null
     },
   })
 }

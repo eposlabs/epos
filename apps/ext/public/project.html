@@ -18,7 +18,7 @@
       if (!debug) throw new Error(`Missing 'debug' parameter`)
       if (debug !== 'true' && debug !== 'false') throw new Error(`Invalid 'debug' parameter: '${debug}'`)
       const script = document.createElement('script')
-      script.src = debug === 'true' ? '/ex.dev.js' : '/ex.prod.js'
+      script.src = debug === 'true' ? '/exd.js' : '/exp.js'
       document.head.append(script)
     </script>
   </head>
