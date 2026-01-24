@@ -75,8 +75,9 @@ export class Unit<TRoot = unknown> {
       const value: unknown = descriptor.get.call(this)
       if (!is.object(value)) throw new Error(`'state' getter return an object`)
       const state = epos.state.create(value)
+      // It is important to have `state` and `inert` non-enumerable to avoid issues when unit is added to state
       Reflect.defineProperty(state, epos.state.PARENT, { configurable: true, value: this })
-      Reflect.defineProperty(this, 'state', { enumerable: true, get: () => state })
+      Reflect.defineProperty(this, 'state', { enumerable: false, get: () => state })
     })()
 
     // Setup inert
@@ -85,7 +86,7 @@ export class Unit<TRoot = unknown> {
       if (!descriptor || !descriptor.get) return
       const value: unknown = descriptor.get.call(this)
       if (!is.object(value)) throw new Error(`'inert' getter return an object`)
-      Reflect.defineProperty(this, 'inert', { enumerable: true, get: () => value })
+      Reflect.defineProperty(this, 'inert', { enumerable: false, get: () => value })
     })()
 
     // Prepare properties for the whole prototype chain:
