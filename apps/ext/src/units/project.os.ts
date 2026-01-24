@@ -55,8 +55,9 @@ export class Project extends os.Unit {
     this.removeBackground()
   }
 
-  // BACKGROUND MANAGEMENT
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region BACKGROUND MANAGEMENT
+  // ============================================================================
 
   private createBackground(silent = false) {
     // Already exists? -> Ignore
@@ -122,8 +123,9 @@ export class Project extends os.Unit {
     return this.$.env.url.project({ id: this.id, locus: 'background', debug: this.debug })
   }
 
-  // FRAME MANAGEMENT
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region FRAME MANAGEMENT
+  // ============================================================================
 
   private getFrames(): Frame[] {
     const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
@@ -227,8 +229,9 @@ export class Project extends os.Unit {
     }
   }
 
-  // HELPERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
 
   private info(params: { title: string; subtitle?: string }) {
     if (!this.debug) return
@@ -239,4 +242,8 @@ export class Project extends os.Unit {
       timestamp: true,
     })
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }

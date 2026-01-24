@@ -1,4 +1,4 @@
-export class AppTheme extends gl.Unit {
+export class Theme extends gl.Unit {
   value: 'light' | 'dark' = this.getSystemTheme()
 
   get inert() {
@@ -10,14 +10,14 @@ export class AppTheme extends gl.Unit {
   attach() {
     this.value = this.getSystemTheme()
     this.inert.systemThemeWatcher.addEventListener('change', this.onSystemThemeChange)
-    this.setDocumentElementClass()
+    this.syncValueWithClass()
   }
 
   detach() {
     this.inert.systemThemeWatcher.removeEventListener('change', this.onSystemThemeChange)
   }
 
-  private setDocumentElementClass() {
+  private syncValueWithClass() {
     this.reaction(
       () => this.value,
       () => document.documentElement.classList.toggle('dark', this.value === 'dark'),
@@ -32,4 +32,10 @@ export class AppTheme extends gl.Unit {
   private onSystemThemeChange() {
     this.value = this.getSystemTheme()
   }
+
+  static versioner = this.defineVersioner({
+    1(this: any) {
+      delete this.abc
+    },
+  })
 }

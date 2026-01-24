@@ -37,8 +37,9 @@ export class Unit<TRoot = unknown> {
     this[_parent_] = parent
   }
 
-  // ATTACH
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region ATTACH
+  // ============================================================================
 
   /**
    * Lifecycle method called when the unit is attached to the state tree.
@@ -150,8 +151,9 @@ export class Unit<TRoot = unknown> {
     Reflect.defineProperty(this, _attached_, { configurable: true, get: () => true })
   }
 
-  // DETACH
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region DETACH
+  // ============================================================================
 
   /**
    * Lifecycle method called when the unit is detached from the state tree.
@@ -173,8 +175,9 @@ export class Unit<TRoot = unknown> {
     if (is.function(detach)) detach()
   }
 
-  // ROOT GETTER
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region ROOT GETTER
+  // ============================================================================
 
   /**
    * Get the root unit of the current unit's tree.
@@ -185,8 +188,9 @@ export class Unit<TRoot = unknown> {
     return this[_root_]
   }
 
-  // METHODS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region METHODS
+  // ============================================================================
 
   use<T>(id: string) {
     ensure(this, _rpcs_, () => ({}))
@@ -271,10 +275,15 @@ export class Unit<TRoot = unknown> {
 
     return null
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }
 
-// HELPERS
-// ---------------------------------------------------------------------------
+// #endregion
+// #region HELPERS
+// ============================================================================
 
 /**
  * Ensure a property exists on an object, initialize it if it doesn't.
@@ -367,3 +376,7 @@ function createView<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
 
   return View
 }
+
+// #endregion
+// #region
+// ============================================================================

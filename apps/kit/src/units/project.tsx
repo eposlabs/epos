@@ -228,11 +228,19 @@ export class Project extends gl.Unit {
     return Object.keys(this.sourcesInfo).length > 0
   }
 
+  // #endregion
+  // #region View
+  // ===========================================================================
+
   View() {
     if (!this.state.ready) return <this.LoadingView />
     if (!this.state.handle) return <this.NoDirectoryView />
     return <this.MainView />
   }
+
+  // #endregion
+  // #region LoadingView
+  // ===========================================================================
 
   LoadingView() {
     return (
@@ -241,6 +249,10 @@ export class Project extends gl.Unit {
       </div>
     )
   }
+
+  // #endregion
+  // #region NoDirectoryView
+  // ===========================================================================
 
   NoDirectoryView() {
     return (
@@ -275,6 +287,10 @@ export class Project extends gl.Unit {
       </div>
     )
   }
+
+  // #endregion
+  // #region MainView
+  // ===========================================================================
 
   MainView() {
     return (
@@ -514,6 +530,10 @@ export class Project extends gl.Unit {
     )
   }
 
+  // #endregion
+  // #region SpecTabView
+  // ===========================================================================
+
   SpecTabView() {
     return (
       <div className="h-full overflow-hidden">
@@ -526,6 +546,10 @@ export class Project extends gl.Unit {
     )
   }
 
+  // #endregion
+  // #region ManifestTabView
+  // ===========================================================================
+
   ManifestTabView() {
     return (
       <div className="h-full overflow-hidden">
@@ -535,6 +559,10 @@ export class Project extends gl.Unit {
       </div>
     )
   }
+
+  // #endregion
+  // #region AssetsTabView
+  // ===========================================================================
 
   AssetsTabView() {
     return (
@@ -575,6 +603,10 @@ export class Project extends gl.Unit {
     )
   }
 
+  // #endregion
+  // #region SourcesTabView
+  // ===========================================================================
+
   SourcesTabView() {
     return (
       <div className="flex h-full flex-col overflow-hidden">
@@ -614,6 +646,10 @@ export class Project extends gl.Unit {
     )
   }
 
+  // #endregion
+  // #region SidebarView
+  // ===========================================================================
+
   SidebarView() {
     if (this.spec.slug === 'kit') return null
     return (
@@ -627,6 +663,10 @@ export class Project extends gl.Unit {
       </SidebarMenuItem>
     )
   }
+
+  // #endregion
+  // #region Versioner
+  // ============================================================================
 
   static versioner = this.defineVersioner({
     1(this: any) {
@@ -665,4 +705,6 @@ export class Project extends gl.Unit {
     },
     13() {},
   })
+
+  // #endregion
 }

@@ -1,6 +1,6 @@
 // Usage:
 // > npm run release -- [patch|minor|major=patch] [workspace1] [workspace2] ...
-// ---------------------------------------------------------------------------
+// ============================================================================
 
 import { execSync } from 'node:child_process'
 

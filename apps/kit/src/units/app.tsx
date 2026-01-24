@@ -14,7 +14,8 @@ export class App extends gl.Unit {
   libs = new gl.Libs(this)
   utils = new gl.Utils(this)
   idb = new gl.Idb(this)
-  theme = new gl.AppTheme(this)
+
+  theme = new gl.Theme(this)
   projects = new gl.Projects(this)
   learn = new gl.Learn(this)
 
@@ -48,6 +49,10 @@ export class App extends gl.Unit {
     }
   }
 
+  // #endregion
+  // #region View
+  // ============================================================================
+
   View() {
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '21rem' } as React.CSSProperties}>
@@ -57,6 +62,10 @@ export class App extends gl.Unit {
       </SidebarProvider>
     )
   }
+
+  // #endregion
+  // #region SidebarView
+  // ============================================================================
 
   SidebarView() {
     return (
@@ -82,6 +91,10 @@ export class App extends gl.Unit {
     )
   }
 
+  // #endregion
+  // #region ContentView
+  // ============================================================================
+
   ContentView() {
     return (
       <SidebarInset className="overflow-auto">
@@ -89,6 +102,10 @@ export class App extends gl.Unit {
       </SidebarInset>
     )
   }
+
+  // #endregion
+  // #region LogoView
+  // ============================================================================
 
   LogoView() {
     return (
@@ -105,4 +122,23 @@ export class App extends gl.Unit {
       </svg>
     )
   }
+
+  // #endregion
+  // #region Versioner
+  // ============================================================================
+
+  static versioner = this.defineVersioner({
+    1(this: any) {
+      delete this.theme
+      this.theme = new gl.Theme(this)
+    },
+    11(this: any) {
+      delete this.theme
+      this.theme = new gl.Theme(this)
+    },
+  })
+
+  // #endregion
+  // #region
+  // ============================================================================
 }

@@ -4,23 +4,27 @@
 import type { Epos, Spec } from 'epos'
 
 declare global {
-  // BUNDLER VARS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region BUNDLER VARS
+  // ============================================================================
+
   var DEV: boolean
   var PROD: boolean
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'pm' | 'sw' | 'vw'
   var require: any
 
-  // DEV VARS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region DEV VARS
+  // ============================================================================
 
   var $: any // App instance for `cs`, `os`, `sw` and `vw`
   var $epos: any // App instance for `ex`, dev-only
   var install: any
   var remove: any
 
-  // ENGINE VARS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region ENGINE VARS
+  // ============================================================================
 
   // Global variables injected to pages and frames
   interface Window {
@@ -33,8 +37,9 @@ declare global {
     __eposOriginalGlobals?: Record<string, unknown>
   }
 
-  // COMMON TYPES
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region COMMON TYPES
+  // ============================================================================
 
   type Url = string
   type TabInfo = { tabId: number; windowId: number }
@@ -53,8 +58,9 @@ declare global {
     fn: (epos: PartialEpos) => void
   }
 
-  // EXTENDS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region EXTENDS
+  // ============================================================================
 
   interface Node {
     epos?: boolean
@@ -67,4 +73,8 @@ declare global {
   interface ErrorConstructor {
     captureStackTrace(targetObject: object, constructorOpt?: Function): void
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }

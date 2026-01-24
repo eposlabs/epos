@@ -57,8 +57,9 @@ export class Paralayer extends Unit {
     return await readFile(defineJsPath, 'utf-8')
   }
 
-  // HANDLERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HANDLERS
+  // ============================================================================
 
   private onAll = async (event: string, path: string) => {
     // Process only file events
@@ -95,8 +96,9 @@ export class Paralayer extends Unit {
     this.ready$.resolve()
   }
 
-  // BUILD
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region BUILD
+  // ============================================================================
 
   private async build() {
     // Group file paths by layers
@@ -157,8 +159,9 @@ export class Paralayer extends Unit {
     await this.write(defineFile, defineContent)
   }
 
-  // HELPERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
 
   private extractExportedClassNames(content: string) {
     if (content.includes('paralayer-ignore')) return []
@@ -279,6 +282,10 @@ export class Paralayer extends Unit {
     if (content === prevContent) return
     await writeFile(path, content, 'utf-8')
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }
 
 export async function paralayer(options: Options) {

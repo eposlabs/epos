@@ -184,6 +184,11 @@ export class State<T = Obj> extends exSw.Unit {
         }
       }
 
+      // Mark as connected.
+      // It is important to mark as connected before releasing attach queue,
+      // because attach calls may create new objects (with new attach calls).
+      this.connected = true
+
       // Release attach queue
       this.attachQueue.forEach(attach => attach())
       this.attachQueue = []
@@ -192,15 +197,13 @@ export class State<T = Obj> extends exSw.Unit {
       this.initial = null
     })
 
-    // Mark as connected
-    this.connected = true
-
     // Save changes
     this.saveWithDelay()
   }
 
-  // ATTACH / DETACH
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region ATTACH / DETACH
+  // ============================================================================
 
   private attach(value: unknown, parent: Parent) {
     if (value instanceof this.$.libs.yjs.Map) return this.attachYMap(value, parent)
@@ -369,8 +372,9 @@ export class State<T = Obj> extends exSw.Unit {
     }
   }
 
-  // MOBX CHANGE PROCESSING
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region MOBX PROCESSING
+  // ============================================================================
 
   private onMNodeChange = (change: MNodeChange) => {
     // Process 'change' object:
@@ -491,8 +495,9 @@ export class State<T = Obj> extends exSw.Unit {
     return this.$.utils.is.object(change.object)
   }
 
-  // YJS CHANGE PROCESSING
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region YJS PROCESSING
+  // ============================================================================
 
   private onYNodeChange = async (e: YMapEvent<unknown> | YArrayEvent<unknown>) => {
     // Ignore local changes
@@ -557,8 +562,9 @@ export class State<T = Obj> extends exSw.Unit {
     })
   }
 
-  // PERSISTENCE
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region PERSISTENCE
+  // ============================================================================
 
   private async save(force = false) {
     if (this.local) return
@@ -579,8 +585,9 @@ export class State<T = Obj> extends exSw.Unit {
     this.saveTimeout = setTimeout(() => this.save(), this.SAVE_DELAY)
   }
 
-  // HELPERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
 
   private getMeta(target: any): Meta | null {
     return (target?.[_meta_] as Meta) ?? null

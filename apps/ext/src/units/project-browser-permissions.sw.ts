@@ -79,8 +79,9 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return true
   }
 
-  // ORIGIN ACCESS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region ORIGIN ACCESS
+  // ============================================================================
 
   private getOrigins() {
     const requiredOrigins = this.getRequiredOrigins()
@@ -119,8 +120,9 @@ export class ProjectBrowserPermissions extends sw.Unit {
     this.$project.meta.grantedOrigins = nextGrantedOrigins
   }
 
-  // PERMISSION ACCESS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region PERMISSION ACCESS
+  // ============================================================================
 
   getPermissions() {
     const requiredPermissions = this.getRequiredPermissions()
@@ -157,8 +159,9 @@ export class ProjectBrowserPermissions extends sw.Unit {
     this.$project.meta.grantedPermissions = nextGrantedPermissions
   }
 
-  // REQUEST VIA PERSMISSION PAGE
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region REQUEST VIA PERSMISSION PAGE
+  // ============================================================================
 
   private async requestViaPermissionPage(reqId: string, query: PermissionQuery) {
     // Prepare permission url
@@ -183,8 +186,9 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return granted
   }
 
-  // HELPERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
 
   private prepareQuery(query: PermissionQuery) {
     if (!this.$.utils.is.object(query)) throw new Error(`No matching signature`)
@@ -207,4 +211,8 @@ export class ProjectBrowserPermissions extends sw.Unit {
   private isArrayOfStrings(value: unknown) {
     return this.$.utils.is.array(value) && value.every(this.$.utils.is.string)
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }

@@ -2,8 +2,9 @@
 /// <reference types="vite/client" />
 /// <reference types="dropcap/globals" />
 /// <reference types="wicg-file-system-access"/>
-import { Unit } from 'epos-unit'
+
 import './file-system-observer'
+import './unit'
 
 declare global {
   const DEV: boolean
@@ -12,14 +13,4 @@ declare global {
   interface Array<T> {
     remove(value: T): boolean
   }
-}
-
-class UnitGl<T extends gl = gl> extends Unit<T['App']> {}
-gl.Unit = UnitGl
-
-// prettier-ignore
-declare global {
-  interface Gl { Unit: typeof UnitGl }
-  interface gl { Unit: UnitGl }
-  namespace gl { export type Unit = UnitGl }
 }

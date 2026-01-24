@@ -35,8 +35,9 @@ export class BusSerializer extends gl.Unit {
     }
   }
 
-  // SERIALIZE
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region SERIALIZE
+  // ============================================================================
 
   sanitize(data: unknown) {
     const { $ } = this
@@ -67,8 +68,9 @@ export class BusSerializer extends gl.Unit {
     return this.populate(JSON.parse(json), storage)
   }
 
-  // SANITIZE
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region SANITIZE
+  // ============================================================================
 
   serialize(data: unknown) {
     const { $, $bus, blobs } = this
@@ -123,8 +125,9 @@ export class BusSerializer extends gl.Unit {
     })
   }
 
-  // DESERIALIZE
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region DESERIALIZE
+  // ============================================================================
 
   async deserialize(json: string) {
     const storage: Storage = new Map()
@@ -202,8 +205,9 @@ export class BusSerializer extends gl.Unit {
     return this.populate(data, storage)
   }
 
-  // HELPERS
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
 
   async blobIdToObjectUrl(blobId: string) {
     const channel = this.channel
@@ -274,4 +278,8 @@ export class BusSerializer extends gl.Unit {
       channel.postMessage([reqId, url])
     })
   }
+
+  // #endregion
+  // #region
+  // ============================================================================
 }

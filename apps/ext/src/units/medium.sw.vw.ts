@@ -12,8 +12,9 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // TAB
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region TAB
+  // ===========================================================================
 
   async openTab(url: string) {
     // Make sure url ends with '/' when no path is provided,
@@ -28,8 +29,9 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // POPUP
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region POPUP
+  // ===========================================================================
 
   async openPopup(tabId: number, windowId: number) {
     const path = this.$.env.url.view({ locus: 'popup', tabId, windowId })
@@ -46,8 +48,9 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // SIDE PANEL
-  // ---------------------------------------------------------------------------
+  // #endregion
+  // #region SIDE PANEL
+  // ===========================================================================
 
   async openSidePanel(tabId: number, windowId: number) {
     const path = this.$.env.url.view({ locus: 'sidePanel', tabId, windowId })
@@ -66,4 +69,8 @@ export class Medium extends swVw.Unit {
     const wasOpen = await wasOpenPromise
     if (wasOpen) await this.closeSidePanel(tabId)
   }
+
+  // #endregion
+  // #region
+  // ===========================================================================
 }
