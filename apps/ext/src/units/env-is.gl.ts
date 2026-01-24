@@ -7,7 +7,7 @@ export class EnvIs extends gl.Unit {
   cs = BUNDLE === 'cs'
   ex = BUNDLE === 'ex' || BUNDLE === 'ex-mini'
   os = BUNDLE === 'os'
-  sm = BUNDLE === 'sm'
+  pm = BUNDLE === 'pm'
   sw = BUNDLE === 'sw'
   vw = BUNDLE === 'vw'
 

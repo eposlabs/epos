@@ -24,8 +24,6 @@ export class Libs extends ex.Unit {
 
   constructor(parent: ex.Unit) {
     super(parent)
-
-    // Configure MobX
     mobx.configure({ enforceActions: 'never' })
   }
 }

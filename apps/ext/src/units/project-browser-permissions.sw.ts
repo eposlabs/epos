@@ -63,9 +63,9 @@ export class ProjectBrowserPermissions extends sw.Unit {
     const badPermission = permissions.find(permission => !this.isOptionalPermission(permission))
     if (badPermission) throw new Error(`Cannot request '${badPermission}' permission. Ensure it is listed in epos.json.`)
 
-    // Request via system page if not granted yet
+    // Request via permission page if not granted yet
     let granted = await this.$.browser.permissions.contains({ origins, permissions })
-    if (!granted) granted = await this.requestViaSystemPage(reqId, { origins, permissions })
+    if (!granted) granted = await this.requestViaPermissionPage(reqId, { origins, permissions })
 
     // Not granted? -> Return false
     if (!granted) return false
@@ -157,12 +157,12 @@ export class ProjectBrowserPermissions extends sw.Unit {
     this.$project.meta.grantedPermissions = nextGrantedPermissions
   }
 
-  // REQUEST VIA SYSTEM PAGE
+  // REQUEST VIA PERSMISSION PAGE
   // ---------------------------------------------------------------------------
 
-  private async requestViaSystemPage(reqId: string, query: PermissionQuery) {
+  private async requestViaPermissionPage(reqId: string, query: PermissionQuery) {
     // Prepare permission url
-    const url = this.$.browser.runtime.getURL(this.$.env.url.system({ type: 'permission' }))
+    const url = this.$.browser.runtime.getURL(this.$.env.url.permission())
 
     // Close all permission tabs
     const tabs = await this.$.browser.tabs.query({ url })
@@ -170,7 +170,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
 
     // Create new permission tab and wait till it is ready for requesting
     const tab = await this.$.browser.tabs.create({ url, active: false, pinned: true })
-    await this.$.bus.waitSignal('App.ready[system:permission]')
+    await this.$.bus.waitSignal('App.ready[permission]')
 
     // Request permissions
     const granted = await this.$.bus.send<boolean>(`ProjectBrowser.requestPermissions[${reqId}]`, query)

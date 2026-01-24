@@ -289,6 +289,7 @@ export class Project extends sw.Unit {
       // Engine files
       'cs.js': await fetchBlob('/cs.js'),
       'os.js': await fetchBlob('/os.js'),
+      'pm.js': await fetchBlob('/pm.js'),
       'sw.js': await fetchBlob('/sw.js'),
       'vw.js': await fetchBlob('/vw.js'),
       'vw.css': await fetchBlob('/vw.css'),
@@ -297,9 +298,9 @@ export class Project extends sw.Unit {
       'ex-mini.dev.js': await fetchBlob('/ex-mini.dev.js'),
       'ex-mini.prod.js': await fetchBlob('/ex-mini.prod.js'),
       'view.html': await fetchBlob('/view.html'),
-      'system.html': await fetchBlob('/system.html'),
       'project.html': await fetchBlob('/project.html'),
       'offscreen.html': await fetchBlob('/offscreen.html'),
+      'permission.html': await fetchBlob('/permission.html'),
     }
   }
 

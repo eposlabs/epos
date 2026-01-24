@@ -15,8 +15,8 @@ export class BusExtBridge extends gl.Unit {
 
     if (this.$.env.is.sw) {
       this.setupSw()
-    } else if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.sm || this.$.env.is.vw) {
-      this.setupCsTopOsSmVw()
+    } else if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.pm || this.$.env.is.vw) {
+      this.setupCsTopOsPmVw()
     }
   }
 
@@ -149,7 +149,7 @@ export class BusExtBridge extends gl.Unit {
     })
   }
 
-  private setupCsTopOsSmVw() {
+  private setupCsTopOsPmVw() {
     // Remove all proxy actions left from the previous `csTop`.
     // This happens on tab refresh or page navigation.
     if (this.$.env.is.csTop) {

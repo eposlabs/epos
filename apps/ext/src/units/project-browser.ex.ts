@@ -176,11 +176,11 @@ export class ProjectBrowser extends ex.Unit {
         getAll: this.createMethod('permissions.getAll'),
         remove: this.createMethod('permissions.remove'),
         request: async (...args: unknown[]) => {
-          // Sendind `Permissions.request` from `sw` fails with 'gesture' error, but sending from `ex` works.
+          // Sending `App.requestPermissions` from `sw` fails with 'gesture' error, but sending from `ex` works.
           // Here we create a temporary listener to forward request: `sw` -> `ex` -> `sm`.
           const reqId = this.$.utils.id()
           const name = `ProjectBrowser.requestPermissions[${reqId}]`
-          this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('Permissions.request', ...args))
+          this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('App.requestPermissions', ...args))
           setTimeout(() => this.$.bus.off(name), this.$.utils.time('15s'))
 
           return await this.callMethod('permissions.request', reqId, ...args)

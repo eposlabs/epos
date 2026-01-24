@@ -79,7 +79,7 @@ export class Bus extends gl.Unit {
   async send<T>(name: string, ...args: FnArgsOrArr<T>) {
     let result: unknown
 
-    if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.sm || this.$.env.is.sw || this.$.env.is.vw) {
+    if (this.$.env.is.csTop || this.$.env.is.os || this.$.env.is.pm || this.$.env.is.sw || this.$.env.is.vw) {
       result = await this.utils.pick([this.extBridge.send(name, ...args), this.executeProxyActions(name, ...args)])
     } else if (this.$.env.is.csFrame || this.$.env.is.ex) {
       result = await this.pageBridge.sendToTop(name, ...args)

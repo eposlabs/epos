@@ -30,13 +30,11 @@ export class ProjectEpos extends ex.Unit {
 
   private createEposApi() {
     const epos: PartialEpos = {
-      // General
       fetch: this.$.utils.link(this.general, 'fetch'),
       browser: this.general.browser,
       component: this.$.utils.link(this.general, 'component'),
       render: this.$.utils.link(this.general, 'render'),
 
-      // Env
       env: {
         tabId: this.env.tabId,
         windowId: this.env.windowId,
@@ -46,7 +44,6 @@ export class ProjectEpos extends ex.Unit {
         project: this.env.project,
       },
 
-      // Dom
       dom: {
         root: this.dom.root,
         reactRoot: this.dom.reactRoot,
@@ -54,7 +51,6 @@ export class ProjectEpos extends ex.Unit {
         shadowReactRoot: this.dom.shadowReactRoot,
       },
 
-      // Bus
       bus: {
         on: this.$.utils.link(this.bus, 'on'),
         off: this.$.utils.link(this.bus, 'off'),
@@ -69,7 +65,6 @@ export class ProjectEpos extends ex.Unit {
         for: (id: string) => this.$.bus.for(`ProjectEpos[${this.$project.id}][${id}]`),
       },
 
-      // State
       state: {
         connect: this.$.utils.link(this.state, 'connect'),
         disconnect: this.$.utils.link(this.state, 'disconnect'),
@@ -83,7 +78,6 @@ export class ProjectEpos extends ex.Unit {
         DETACH: this.state.DETACH,
       },
 
-      // Storage
       storage: {
         get: this.$.utils.link(this.storage, 'get'),
         set: this.$.utils.link(this.storage, 'set'),
@@ -94,7 +88,6 @@ export class ProjectEpos extends ex.Unit {
         for: this.$.utils.link(this.storage, 'for'),
       },
 
-      // Frames
       frames: {
         create: this.$.utils.link(this.frames, 'create'),
         remove: this.$.utils.link(this.frames, 'remove'),
@@ -102,7 +95,6 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.frames, 'list'),
       },
 
-      // Assets
       assets: {
         url: this.$.utils.link(this.assets, 'url'),
         get: this.$.utils.link(this.assets, 'get'),
@@ -111,7 +103,6 @@ export class ProjectEpos extends ex.Unit {
         unload: this.$.utils.link(this.assets, 'unload'),
       },
 
-      // Project
       ...(this.$project.spec.config.allowProjectsApi && {
         projects: {
           has: this.$.utils.link(this.projects, 'has'),
@@ -126,7 +117,6 @@ export class ProjectEpos extends ex.Unit {
         },
       }),
 
-      // Libs
       libs: {
         mobx: this.libs.mobx,
         mobxReactLite: this.libs.mobxReactLite,

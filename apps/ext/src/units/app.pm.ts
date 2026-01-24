@@ -1,9 +1,15 @@
 import type { PermissionQuery } from 'epos/browser'
 
-export class Permissions extends sm.Unit {
-  constructor(parent: sm.Unit) {
-    super(parent)
-    this.$.bus.on('Permissions.request', this.request, this)
+export class App extends pm.Unit {
+  browser = chrome
+  utils = new pm.Utils(this)
+  env = new gl.Env(this)
+  bus = new gl.Bus(this)
+
+  async init() {
+    self.$ = this
+    this.$.bus.on('App.requestPermissions', this.request, this)
+    this.$.bus.setSignal(`App.ready[permission]`)
   }
 
   private async request(query: PermissionQuery) {

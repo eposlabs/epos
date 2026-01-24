@@ -174,7 +174,7 @@ export type DeclarativeNetRequest = Omit<
    * - This update happens as a single atomic operation: either all specified rules are added and removed, or an error is returned.
    * - These rules are persisted across browser sessions and across extension updates.
    * - Static rules specified as part of the extension package can not be removed using this function.
-   * - {@link MAX_NUMBER_OF_DYNAMIC_RULES} is the maximum number of dynamic rules an extension can add. The number of [unsafe rules](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#safe_rules) must not exceed {@link MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES}.
+   * - {@link chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES} is the maximum number of dynamic rules an extension can add. The number of [unsafe rules](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#safe_rules) must not exceed {@link MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES}.
    *
    * Can return its result via Promise in Manifest V3 or later since Chrome 91.
    *
@@ -190,7 +190,7 @@ export type DeclarativeNetRequest = Omit<
    * - This update happens as a single atomic operation: either all specified rules are added and removed, or an error is returned.
    * - These rules are persisted across browser sessions and across extension updates.
    * - Static rules specified as part of the extension package can not be removed using this function.
-   * - {@link MAX_NUMBER_OF_DYNAMIC_RULES} is the maximum number of dynamic rules an extension can add. The number of [unsafe rules](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#safe_rules) must not exceed {@link MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES}.
+   * - {@link chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES} is the maximum number of dynamic rules an extension can add. The number of [unsafe rules](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#safe_rules) must not exceed {@link MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES}.
    *
    * Can return its result via Promise in Manifest V3 or later since Chrome 91.
    *

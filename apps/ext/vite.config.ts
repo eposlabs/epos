@@ -48,7 +48,7 @@ export default defineConfig(async ({ mode }) => {
         'ex-mini.dev': bundle('ex-mini', 'development'),
         'ex-mini.prod': bundle('ex-mini', 'production'),
         'os': bundle('os'),
-        'sm': bundle('sm'),
+        'pm': bundle('pm'),
         'sw': bundle('sw'),
         'vw': bundle('vw'),
       }),
@@ -61,14 +61,14 @@ export default defineConfig(async ({ mode }) => {
       rolldownOptions: {
         input: {
           'cs': './src/cs.ts', // Content Script
+          'os': './src/os.ts', // Offscreen
+          'pm': './src/pm.ts', // Permission
+          'sw': './src/sw.ts', // Service Worker
+          'vw': './src/vw.ts', // View
           'ex.dev': './src/ex.ts', // Execution with forced NODE_ENV=development
           'ex.prod': './src/ex.ts', // Execution with forced NODE_ENV=production
           'ex-mini.dev': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
           'ex-mini.prod': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
-          'os': './src/os.ts', // Offscreen
-          'sm': './src/sm.ts', // System
-          'sw': './src/sw.ts', // Service Worker
-          'vw': './src/vw.ts', // View
         },
         output: {
           sourcemap: false,

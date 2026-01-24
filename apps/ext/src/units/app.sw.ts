@@ -25,8 +25,8 @@ export class App extends sw.Unit {
   }
 
   private logInfo() {
-    const hasDebugProject = this.projects.list.some(project => project.debug)
-    if (!hasDebugProject) return
+    const hasKitProject = this.projects.list.some(project => project.spec.slug === 'kit')
+    if (!hasKitProject) return
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running | ${docsUrl}`
     const subtitle = `To inspect background processes, open offscreen.html from the extension details page`

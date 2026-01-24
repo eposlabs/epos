@@ -1,6 +1,5 @@
-/// <reference types="epos" />
 import { createLog, is, type Arr, type Cls, type Obj } from 'dropcap/utils'
-import type { Asyncify } from 'epos'
+import { epos, type Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 

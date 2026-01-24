@@ -5,7 +5,8 @@ self.epos = epos
 document.body.style = 'font-family: system-ui; margin: 0;'
 
 window.requestDownloads = async () => {
-  epos.browser.permissions.request({ permissions: ['downloads'] })
+  const granted = await epos.browser.permissions.request({ permissions: ['downloads'] })
+  console.log(granted)
   // setTimeout(() => {
   //   $epos.bus.send('Permissions.request')
   //   // await epos.browser.permissions.request({ permissions: ['downloads'] })

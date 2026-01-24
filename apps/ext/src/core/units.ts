@@ -2,9 +2,9 @@ import { Unit } from 'dropcap/utils'
 
 class UnitCs extends Unit<cs.App> {}
 class UnitEx extends Unit<ex.App> {}
-class UnitGl extends Unit<cs.App | ex.App | os.App | sm.App | sw.App | vw.App> {}
+class UnitGl extends Unit<cs.App | ex.App | os.App | pm.App | sw.App | vw.App> {}
 class UnitOs extends Unit<os.App> {}
-class UnitSm extends Unit<sm.App> {}
+class UnitPm extends Unit<pm.App> {}
 class UnitSw extends Unit<sw.App> {}
 class UnitVw extends Unit<vw.App> {}
 class UnitExOs extends Unit<ex.App | os.App> {}
@@ -17,7 +17,7 @@ cs.Unit = UnitCs
 ex.Unit = UnitEx
 gl.Unit = UnitGl
 os.Unit = UnitOs
-sm.Unit = UnitSm
+pm.Unit = UnitPm
 sw.Unit = UnitSw
 vw.Unit = UnitVw
 exOs.Unit = UnitExOs
@@ -32,7 +32,7 @@ declare global {
   interface Ex { Unit: typeof UnitEx }
   interface Gl { Unit: typeof UnitGl }
   interface Os { Unit: typeof UnitOs }
-  interface Sm { Unit: typeof UnitSm }
+  interface Pm { Unit: typeof UnitPm }
   interface Sw { Unit: typeof UnitSw }
   interface Vw { Unit: typeof UnitVw }
   interface ExOs { Unit: typeof UnitExOs }
@@ -45,7 +45,7 @@ declare global {
   interface ex { Unit: UnitEx }
   interface gl { Unit: UnitGl }
   interface os { Unit: UnitOs }
-  interface sm { Unit: UnitSm }
+  interface pm { Unit: UnitPm }
   interface sw { Unit: UnitSw }
   interface vw { Unit: UnitVw }
   interface exOs { Unit: UnitExOs }
@@ -58,7 +58,7 @@ declare global {
   namespace ex { export type Unit = UnitEx }
   namespace gl { export type Unit = UnitGl }
   namespace os { export type Unit = UnitOs }
-  namespace sm { export type Unit = UnitSm }
+  namespace pm { export type Unit = UnitPm }
   namespace sw { export type Unit = UnitSw }
   namespace vw { export type Unit = UnitVw }
   namespace exOs { export type Unit = UnitExOs }

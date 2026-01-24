@@ -1,7 +1,7 @@
 export class AppTheme extends gl.Unit {
   value: 'light' | 'dark' = this.getSystemTheme()
 
-  get state() {
+  get inert() {
     return {
       systemThemeWatcher: window.matchMedia('(prefers-color-scheme: dark)'),
     }
@@ -9,12 +9,12 @@ export class AppTheme extends gl.Unit {
 
   attach() {
     this.value = this.getSystemTheme()
-    this.state.systemThemeWatcher.addEventListener('change', this.onSystemThemeChange)
+    this.inert.systemThemeWatcher.addEventListener('change', this.onSystemThemeChange)
     this.setDocumentElementClass()
   }
 
   detach() {
-    this.state.systemThemeWatcher.removeEventListener('change', this.onSystemThemeChange)
+    this.inert.systemThemeWatcher.removeEventListener('change', this.onSystemThemeChange)
   }
 
   private setDocumentElementClass() {
@@ -26,7 +26,7 @@ export class AppTheme extends gl.Unit {
   }
 
   private getSystemTheme() {
-    return this.state.systemThemeWatcher.matches ? 'dark' : 'light'
+    return this.inert.systemThemeWatcher.matches ? 'dark' : 'light'
   }
 
   private onSystemThemeChange() {

@@ -3,8 +3,8 @@ export class EnvUrl extends gl.Unit {
     return '/offscreen.html'
   }
 
-  system(params: { type: 'permission' }) {
-    return `/system.html?${this.toSearchParams(params)}`
+  permission() {
+    return '/permission.html'
   }
 
   view(params: { locus: 'popup' | 'sidePanel'; tabId: number; windowId: number }) {

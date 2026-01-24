@@ -8,7 +8,7 @@ declare global {
   // ---------------------------------------------------------------------------
   var DEV: boolean
   var PROD: boolean
-  var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'sm' | 'sw' | 'vw'
+  var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'pm' | 'sw' | 'vw'
   var require: any
 
   // DEV VARS

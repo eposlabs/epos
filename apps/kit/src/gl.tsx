@@ -17,9 +17,7 @@ if (location.pathname === '/@kit') {
   epos.render(<app.learn.View />)
 }
 
-if (DEV) {
-  Object.assign(self, { epos, $: app, gl })
-}
+Object.assign(self, { epos, $: app, gl })
 
 // LOCAL STATE TEST:
 
