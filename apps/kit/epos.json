@@ -1,5 +1,5 @@
 {
-  "$schema": "../../apps/web/public/schema.json",
+  "$schema": "https://epos.dev/schema.json",
   "name": "[epos]",
   "slug": "kit",
   "version": "1.8",

@@ -1,4 +1,4 @@
-import { Separator } from '@ui/components/ui/separator'
+import { Separator } from '@/components/ui/separator'
 import {
   Sidebar,
   SidebarContent,
@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from '@ui/components/ui/sidebar'
+} from '@/components/ui/sidebar'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -55,7 +55,7 @@ export class App extends gl.Unit {
 
   View() {
     return (
-      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '21rem' } as React.CSSProperties}>
+      <SidebarProvider className="h-screen text-lg" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <this.SidebarView />
         <Separator orientation="vertical" />
         <this.ContentView />
@@ -98,7 +98,7 @@ export class App extends gl.Unit {
   ContentView() {
     return (
       <SidebarInset className="overflow-auto">
-        <this.projects.SelectedProjectView />
+        <this.projects.View />
       </SidebarInset>
     )
   }

@@ -160,7 +160,7 @@ export class Paralayer extends Unit {
   }
 
   // #endregion
-  // #region HELPERS
+  // #region MISC
   // ============================================================================
 
   private extractExportedClassNames(content: string) {

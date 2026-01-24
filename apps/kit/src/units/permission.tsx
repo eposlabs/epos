@@ -1,4 +1,4 @@
-import { cn } from '@ui/lib/utils.js'
+import { cn } from '@/lib/utils.js'
 
 export class Permission extends gl.Unit {
   name: chrome.runtime.ManifestPermission

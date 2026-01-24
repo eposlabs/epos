@@ -1,27 +1,34 @@
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge.js'
+import { Button } from '@/components/ui/button'
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.js'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator.js'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 import { IconAlertCircle, IconDownload, IconFolderOpen, IconPointFilled, IconRefresh, IconTrash } from '@tabler/icons-react'
-import { Alert, AlertDescription } from '@ui/components/ui/alert'
-import { Button } from '@ui/components/ui/button'
-import { Label } from '@ui/components/ui/label'
-import { Separator } from '@ui/components/ui/separator.js'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@ui/components/ui/sheet'
-import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
-import { Spinner } from '@ui/components/ui/spinner'
-import { Switch } from '@ui/components/ui/switch'
-import { cn } from '@ui/lib/utils'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
 
 export class Project extends gl.Unit {
-  debug: boolean
-  enabled: boolean
   spec: Spec
   manifest: Manifest
+  debug: boolean
+  enabled: boolean
+
   specText: string | null = null
   assetsInfo: Record<string, { size: number }> = {}
   sourcesInfo: Record<string, { size: number }> = {}
 
+  get $projects() {
+    return this.closest(gl.Projects)!
+  }
+
   get state() {
     return {
-      ready: false,
+      initialized: false,
       updating: false,
       error: null as Error | null,
       handle: null as FileSystemDirectoryHandle | null,
@@ -29,30 +36,6 @@ export class Project extends gl.Unit {
       activeTab: 'spec' as 'spec' | 'manifest' | 'assets' | 'sources',
       showExportDialog: false,
     }
-  }
-
-  constructor(parent: gl.Unit, params: ProjectBase) {
-    super(parent)
-    this.id = params.id
-    this.debug = params.debug
-    this.spec = params.spec
-    this.manifest = params.manifest
-    this.enabled = params.enabled
-  }
-
-  async attach() {
-    this.hydrate = this.$.utils.enqueue(this.hydrate)
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
-    if (handle) await this.setHandle(handle)
-    this.state.ready = true
-  }
-
-  async detach() {
-    await this.setHandle(null)
-  }
-
-  private get $projects() {
-    return this.closest(gl.Projects)!
   }
 
   get selected() {
@@ -65,11 +48,31 @@ export class Project extends gl.Unit {
     return ['epos.json', ...assetPaths, ...resourcePaths]
   }
 
+  constructor(parent: gl.Unit, params: ProjectBase) {
+    super(parent)
+    this.id = params.id
+    this.spec = params.spec
+    this.manifest = params.manifest
+    this.debug = params.debug
+    this.enabled = params.enabled
+  }
+
   update(updates: Omit<ProjectBase, 'id'>) {
-    this.debug = updates.debug
-    this.enabled = updates.enabled
     this.spec = updates.spec
     this.manifest = updates.manifest
+    this.debug = updates.debug
+    this.enabled = updates.enabled
+  }
+
+  async attach() {
+    this.hydrate = this.$.utils.enqueue(this.hydrate)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
+    if (handle) await this.setHandle(handle)
+    this.state.initialized = true
+  }
+
+  async detach() {
+    await this.setHandle(null)
   }
 
   select() {
@@ -233,8 +236,8 @@ export class Project extends gl.Unit {
   // ===========================================================================
 
   View() {
-    if (!this.state.ready) return <this.LoadingView />
-    if (!this.state.handle) return <this.NoDirectoryView />
+    if (!this.state.initialized) return <this.LoadingView />
+    // if (!this.state.handle) return <this.NoDirectoryView />
     return <this.MainView />
   }
 
@@ -289,21 +292,124 @@ export class Project extends gl.Unit {
   }
 
   // #endregion
+  // #region HeaderView
+  // ===========================================================================
+
+  HeaderView() {
+    return (
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-xl">{this.spec.name}</h1>
+          <div className="mt-1.5 flex hidden gap-2">
+            <Badge variant="secondary" className="select-none">
+              {this.spec.slug}
+            </Badge>
+            <Badge variant="secondary" className="select-none">
+              v{this.spec.version}
+            </Badge>
+          </div>
+        </div>
+        <div className="hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => this.remove()}
+            className="text-destructive hover:text-destructive"
+          >
+            <IconTrash className="mr-1 size-4" />
+            Remove
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // #endregion
+  // #region ConnectView
+  // ============================================================================
+
+  ConnectView() {
+    return (
+      <div className="flex grow items-center justify-center">
+        <Card className="w-90">
+          <CardHeader>
+            <CardTitle>Connect Your Project</CardTitle>
+            <CardDescription>To get started, please select the folder where your project files are located.</CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button className="w-full" onClick={this.connectDir}>
+              <IconFolderOpen /> Choose Folder
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  // #endregion
+  // #region ContentView
+  // ============================================================================
+
+  ContentView() {
+    return (
+      <div className="relative mt-6 grow border border-dashed border-border p-6">
+        <div className="absolute top-0 left-0 flex">
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            {this.spec.slug}
+          </div>
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            v{this.spec.version}
+          </div>
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            <IconDownload className="size-3" />
+            Export
+          </div>
+        </div>
+        <div className="absolute top-0 right-0 flex">
+          <div className="flex items-center gap-2 border-b border-l border-dashed border-border p-2 text-xs text-destructive">
+            <IconTrash className="size-3" />
+            Remove
+          </div>
+        </div>
+      </div>
+    )
+
+    if (!this.state.handle) return <this.ConnectView />
+    if (this.state.error) return <this.ErrorView />
+    return <div>CONNECTED AS {this.state.handle.name}</div>
+  }
+
+  // #endregion
+  // #region ErrorView
+  // ============================================================================
+
+  ErrorView() {
+    return (
+      <div className="mt-6">
+        <Alert variant="destructive" className="w-full">
+          <IconAlertCircle className="size-4" />
+          <AlertDescription>Error: {this.state.error?.message}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  // #endregion
   // #region MainView
   // ===========================================================================
 
   MainView() {
     return (
+      <div className="flex h-full flex-col p-6">
+        <this.HeaderView />
+        <this.ContentView />
+      </div>
+    )
+
+    return (
       <div className="flex h-full flex-col gap-4 p-6">
-        {/* Header with Directory Info */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">{this.spec.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {this.spec.slug} • v{this.spec.version}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex hidden! flex-col items-end gap-3">
             <div className="flex items-center gap-2">
               {this.state.error && (
                 <div className="flex items-center gap-1 rounded bg-destructive/10 px-2 py-1 text-xs text-destructive">
@@ -353,179 +459,182 @@ export class Project extends gl.Unit {
           </Alert>
         )}
 
-        {/* Tabs */}
-        <div className="flex gap-2 border-b">
-          {(['spec', 'sources', 'assets', 'manifest'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => (this.state.activeTab = tab)}
-              className={cn(
-                'border-b-2 px-3 py-2 text-sm font-medium transition-colors',
-                this.state.activeTab === tab
-                  ? 'border-primary text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {tab === 'spec' && 'epos.json'}
-              {tab === 'sources' && 'Sources'}
-              {tab === 'assets' && 'Assets'}
-              {tab === 'manifest' && 'Manifest'}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-auto">
-          {this.state.activeTab === 'spec' && <this.SpecTabView />}
-          {this.state.activeTab === 'manifest' && <this.ManifestTabView />}
-          {this.state.activeTab === 'assets' && <this.AssetsTabView />}
-          {this.state.activeTab === 'sources' && <this.SourcesTabView />}
-        </div>
-
-        {/* Footer with controls */}
-        <div className="flex flex-col gap-4 border-t pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
-              {/* Toggles */}
-              <Label className="flex items-center gap-3">
-                <div className="text-sm font-medium">Enabled</div>
-                <Switch checked={this.enabled} onCheckedChange={() => this.toggleEnabled()} />
-              </Label>
-
-              <Separator orientation="vertical" className="h-6" />
-
-              <Label className="flex items-center gap-3">
-                <div className="text-sm font-medium">Debug</div>
-                <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} />
-              </Label>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => (this.state.showExportDialog = true)}>
-                <IconDownload className="mr-1 size-4" />
-                Export
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => this.remove()}
-                className="text-destructive hover:text-destructive"
+        <div className="hidden">
+          {/* Tabs */}
+          <div className="flex gap-2 border-b">
+            {(['spec', 'sources', 'assets', 'manifest'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => (this.state.activeTab = tab)}
+                className={cn(
+                  'border-b-2 px-3 py-2 text-sm font-medium transition-colors',
+                  this.state.activeTab === tab
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                )}
               >
-                <IconTrash className="mr-1 size-4" />
-                Remove
-              </Button>
+                {tab === 'spec' && 'epos.json'}
+                {tab === 'sources' && 'Sources'}
+                {tab === 'assets' && 'Assets'}
+                {tab === 'manifest' && 'Manifest'}
+              </button>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-auto">
+            {this.state.activeTab === 'spec' && <this.SpecTabView />}
+            {this.state.activeTab === 'manifest' && <this.ManifestTabView />}
+            {this.state.activeTab === 'assets' && <this.AssetsTabView />}
+            {this.state.activeTab === 'sources' && <this.SourcesTabView />}
+          </div>
+
+          {/* Footer with controls */}
+          <div className="flex flex-col gap-4 border-t pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-6">
+                {/* Toggles */}
+                <Label className="flex items-center gap-3">
+                  <div className="text-sm font-medium">Enabled</div>
+                  <Switch checked={this.enabled} onCheckedChange={() => this.toggleEnabled()} />
+                </Label>
+
+                <Separator orientation="vertical" className="h-6" />
+
+                <Label className="flex items-center gap-3">
+                  <div className="text-sm font-medium">Debug</div>
+                  <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} />
+                </Label>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => (this.state.showExportDialog = true)}>
+                  <IconDownload className="mr-1 size-4" />
+                  Export
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => this.remove()}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <IconTrash className="mr-1 size-4" />
+                  Remove
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Export Dialog */}
+          <Sheet open={this.state.showExportDialog} onOpenChange={opened => (this.state.showExportDialog = opened)}>
+            <SheetContent side="right" className="flex w-full flex-col overflow-hidden sm:max-w-2xl">
+              <SheetHeader>
+                <SheetTitle>Export Project</SheetTitle>
+                <SheetDescription>
+                  Review the contents before exporting {this.spec.slug}-{this.spec.version}.zip
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex-1 space-y-4 overflow-auto">
+                {/* Unminified sources warning */}
+                {this.hasUnminifiedSources() && (
+                  <Alert className="border-yellow-500/50 bg-yellow-500/5">
+                    <IconAlertCircle className="size-4 text-yellow-600" />
+                    <AlertDescription className="text-yellow-700">
+                      <p className="font-medium">Sources are not minified</p>
+                      <p className="mt-1 text-xs">Consider minifying your sources before exporting for production use.</p>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Manifest */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Manifest</h3>
+                  <pre className="max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
+                    {JSON.stringify(this.manifest, null, 2)}
+                  </pre>
+                </div>
+
+                <Separator />
+
+                {/* Assets */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Assets ({this.spec.assets.length})</h3>
+                  <div className="space-y-1 text-xs">
+                    {this.spec.assets.length === 0 ? (
+                      <p className="text-muted-foreground">No assets</p>
+                    ) : (
+                      <>
+                        {this.spec.assets.map(path => (
+                          <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
+                            <code className="text-muted-foreground">{path}</code>
+                            <span className="font-medium">
+                              {this.assetsInfo[path] ? `${(this.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
+                          <span>Total Assets</span>
+                          <span>
+                            {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Sources */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Sources ({Object.keys(this.sourcesInfo).length})</h3>
+                  <div className="space-y-1 text-xs">
+                    {Object.keys(this.sourcesInfo).length === 0 ? (
+                      <p className="text-muted-foreground">No sources</p>
+                    ) : (
+                      <>
+                        {Object.keys(this.sourcesInfo).map(path => (
+                          <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
+                            <code className="text-muted-foreground">{path}</code>
+                            <span className="font-medium">
+                              {this.sourcesInfo[path] ? `${(this.sourcesInfo[path].size / 1024).toFixed(2)} KB` : '—'}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
+                          <span>Total Sources</span>
+                          <span>
+                            {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)}{' '}
+                            KB
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 border-t pt-4">
+                <Button variant="outline" onClick={() => (this.state.showExportDialog = false)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    this.export()
+                    this.state.showExportDialog = false
+                  }}
+                  className="flex-1"
+                >
+                  <IconDownload className="mr-1 size-4" />
+                  Export Now
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-
-        {/* Export Dialog */}
-        <Sheet open={this.state.showExportDialog} onOpenChange={opened => (this.state.showExportDialog = opened)}>
-          <SheetContent side="right" className="flex w-full flex-col overflow-hidden sm:max-w-2xl">
-            <SheetHeader>
-              <SheetTitle>Export Project</SheetTitle>
-              <SheetDescription>
-                Review the contents before exporting {this.spec.slug}-{this.spec.version}.zip
-              </SheetDescription>
-            </SheetHeader>
-
-            <div className="flex-1 space-y-4 overflow-auto">
-              {/* Unminified sources warning */}
-              {this.hasUnminifiedSources() && (
-                <Alert variant="warning" className="border-yellow-500/50 bg-yellow-500/5">
-                  <IconAlertCircle className="size-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-700">
-                    <p className="font-medium">Sources are not minified</p>
-                    <p className="mt-1 text-xs">Consider minifying your sources before exporting for production use.</p>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Manifest */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Manifest</h3>
-                <pre className="max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
-                  {JSON.stringify(this.manifest, null, 2)}
-                </pre>
-              </div>
-
-              <Separator />
-
-              {/* Assets */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Assets ({this.spec.assets.length})</h3>
-                <div className="space-y-1 text-xs">
-                  {this.spec.assets.length === 0 ? (
-                    <p className="text-muted-foreground">No assets</p>
-                  ) : (
-                    <>
-                      {this.spec.assets.map(path => (
-                        <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
-                          <code className="text-muted-foreground">{path}</code>
-                          <span className="font-medium">
-                            {this.assetsInfo[path] ? `${(this.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
-                        <span>Total Assets</span>
-                        <span>
-                          {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Sources */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Sources ({Object.keys(this.sourcesInfo).length})</h3>
-                <div className="space-y-1 text-xs">
-                  {Object.keys(this.sourcesInfo).length === 0 ? (
-                    <p className="text-muted-foreground">No sources</p>
-                  ) : (
-                    <>
-                      {Object.keys(this.sourcesInfo).map(path => (
-                        <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
-                          <code className="text-muted-foreground">{path}</code>
-                          <span className="font-medium">
-                            {this.sourcesInfo[path] ? `${(this.sourcesInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
-                        <span>Total Sources</span>
-                        <span>
-                          {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 border-t pt-4">
-              <Button variant="outline" onClick={() => (this.state.showExportDialog = false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  this.export()
-                  this.state.showExportDialog = false
-                }}
-                className="flex-1"
-              >
-                <IconDownload className="mr-1 size-4" />
-                Export Now
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
     )
   }
@@ -651,12 +760,17 @@ export class Project extends gl.Unit {
   // ===========================================================================
 
   SidebarView() {
-    if (this.spec.slug === 'kit') return null
+    // if (this.spec.slug === 'kit') return null
     return (
       <SidebarMenuItem>
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
           <IconPointFilled
-            className={cn('text-green-500', this.state.error && 'text-red-500', !this.enabled && 'text-gray-500')}
+            className={cn(
+              'text-green-500',
+              this.state.error && 'text-red-500',
+              !this.enabled && 'text-gray-500',
+              !this.state.handle && 'text-gray-500',
+            )}
           />
           <div className="truncate">{this.spec.name}</div>
         </SidebarMenuButton>

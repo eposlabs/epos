@@ -1,18 +1,26 @@
-import { IconPlus } from '@tabler/icons-react'
+import { Button } from '@/components/ui/button'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/empty.js'
 import {
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-} from '@ui/components/ui/sidebar'
+} from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
+import { IconFolderCode, IconPlus } from '@tabler/icons-react'
 
 export class Projects extends gl.Unit {
-  list: gl.Project[] = []
+  dict: { [projectId: string]: gl.Project } = {}
   selectedProjectId: string | null = null
 
+  get list() {
+    return Object.values(this.dict)
+  }
+
   get selectedProject() {
-    return this.list.find(project => project.id === this.selectedProjectId) ?? null
+    if (!this.selectedProjectId) return null
+    return this.dict[this.selectedProjectId] ?? null
   }
 
   async attach() {
@@ -20,7 +28,8 @@ export class Projects extends gl.Unit {
     await this.refreshProjects()
   }
 
-  async createEmptyProject() {
+  async addEmptyProject() {
+    // Prepare unique project name
     let name = 'New Project'
     let index = 1
     while (this.list.find(project => project.spec.name === name)) {
@@ -28,6 +37,7 @@ export class Projects extends gl.Unit {
       name = `New Project ${index}`
     }
 
+    // Create and select the new project
     this.selectedProjectId = await epos.projects.create({
       spec: this.$.libs.parseSpecObject({ name }),
       sources: {},
@@ -38,41 +48,58 @@ export class Projects extends gl.Unit {
   }
 
   private async refreshProjects() {
-    // Fetch projects from epos
-    let projectsData = await epos.projects.list()
-
-    // Exclude `kit` project
-    // projectsData = projectsData.filter(projectData => projectData.spec.slug !== 'kit')
+    // Get projects data from epos
+    const projectsData = await epos.projects.list({ sources: true })
 
     // Update existing projects and add new ones
-    projectsData.forEach(projectData => {
-      const project = this.list.find(project => project.id === projectData.id)
+    for (const projectData of projectsData) {
+      const project = this.dict[projectData.id]
       if (project) {
         project.update(projectData)
       } else {
-        this.list.push(new gl.Project(this, projectData))
+        this.dict[projectData.id] = new gl.Project(this, projectData)
       }
-    })
+    }
 
     // Remove deleted projects
-    this.list.forEach(project => {
-      const exists = projectsData.find(projectData => projectData.id === project.id)
-      if (!exists) this.list.remove(project)
-    })
+    for (const projectId in this.dict) {
+      const exists = projectsData.find(projectData => projectData.id === projectId)
+      if (!exists) delete this.dict[projectId]
+    }
 
     // Deselect project if it was removed
-    if (!this.list.find(project => project.id === this.selectedProjectId)) {
+    if (this.selectedProjectId && !this.dict[this.selectedProjectId]) {
       this.selectedProjectId = null
     }
   }
 
+  // #endregion
+  // #region View
+  // ============================================================================
+
+  View() {
+    if (this.list.length === 1) return <this.NoProjectsView />
+    if (!this.selectedProject) return null
+    return <this.selectedProject.View />
+  }
+
+  // #endregion
+  // #region SidebarView
+  // ============================================================================
+
   SidebarView() {
+    if (this.list.length === 1) return null
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <SidebarGroupAction title="Add Project" onClick={() => this.createEmptyProject()}>
-          <IconPlus /> <span className="sr-only">Add Project</span>
-        </SidebarGroupAction>
+        <Tooltip delayDuration={400}>
+          <TooltipTrigger asChild>
+            <SidebarGroupAction title="Add Project" onClick={this.addEmptyProject}>
+              <IconPlus /> <span className="sr-only">Add Project</span>
+            </SidebarGroupAction>
+          </TooltipTrigger>
+          <TooltipContent>Add project</TooltipContent>
+        </Tooltip>
         <SidebarGroupContent>
           <SidebarMenu className="gap-1">
             {this.list.map(project => (
@@ -84,17 +111,46 @@ export class Projects extends gl.Unit {
     )
   }
 
-  SelectedProjectView() {
-    if (!this.selectedProject) return null
-    return <this.selectedProject.View />
+  // #endregion
+  // #region NoProjectsView
+  // ============================================================================
+
+  NoProjectsView() {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <IconFolderCode />
+          </EmptyMedia>
+          <EmptyDescription>
+            You haven't created any projects yet. Get started by creating your first project.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className="flex-row justify-center gap-2">
+          <Button onClick={this.addEmptyProject}>Create Project</Button>
+        </EmptyContent>
+      </Empty>
+    )
   }
 
+  // #endregion
+  // #region Versioner
+  // ============================================================================
+
   static versioner = this.defineVersioner({
-    1() {
+    1(this: any) {
       this.list = []
     },
     2() {
       this.selectedProjectId = null
     },
+    4(this: any) {
+      delete this.list
+      this.dict = {}
+    },
   })
+
+  // #endregion
+  // #region
+  // ============================================================================
 }
