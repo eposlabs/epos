@@ -1,4 +1,5 @@
 {
-  "extends": ["../../tsconfig-browser.json", "./tsconfig-paths.json"],
-  "include": ["src"]
+  "extends": "../../tsconfig-browser.json",
+  "include": ["src"],
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } }
 }
