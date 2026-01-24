@@ -1,6 +1,6 @@
 {
   "$schema": "https://epos.dev/schema.json",
-  "name": "Test Project X2",
+  "name": "Test Project x2",
   "slug": "x2",
   "version": "0.0.2",
   "action": "https://epos.dev/@x2",

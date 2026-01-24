@@ -7,7 +7,6 @@ import {
   SidebarMenu,
 } from '@ui/components/ui/sidebar'
 
-// TODO: add projects.orderIds for sorting
 export class Projects extends gl.Unit {
   list: gl.Project[] = []
   selectedProjectId: string | null = null
