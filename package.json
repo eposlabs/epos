@@ -16,7 +16,7 @@
     "reinstall": "rimraf node_modules/ **/node_modules/ package-lock.json && npm install"
   },
   "devDependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260122.3",
+    "@typescript/native-preview": "^7.0.0-dev.20260124.1",
     "npm-check-updates": "^19.3.1",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
