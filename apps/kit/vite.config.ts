@@ -50,8 +50,6 @@ export default defineConfig(async ({ mode }) => {
         output: {
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
-        },
-        experimental: {
           strictExecutionOrder: true,
         },
       },

@@ -33,10 +33,10 @@
     "@vitejs/plugin-react": "^5.1.2",
     "paralayer": "^1.19.0",
     "tailwindcss": "^4.1.18",
-    "vite": "npm:rolldown-vite@^7.3.1",
+    "vite": "^8.0.0-beta.0",
     "vite-plugin-rebundle": "^1.30.0"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@^7.3.1"
+    "vite": "^8.0.0-beta.0"
   }
 }

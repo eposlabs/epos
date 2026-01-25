@@ -13,7 +13,7 @@
     "lint": "npm run lint -w apps -w packages",
     "prettier": "prettier --write ./",
     "release": "node scripts/release.ts",
-    "reinstall": "rimraf node_modules/ **/node_modules/ package-lock.json && npm install"
+    "reinstall": "npx rimraf node_modules/ **/node_modules/ package-lock.json && npm install"
   },
   "devDependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260124.1",
@@ -23,5 +23,8 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "rimraf": "^6.1.2",
     "syncpack": "^13.0.4"
+  },
+  "overrides": {
+    "vite": "^8.0.0-beta.0"
   }
 }

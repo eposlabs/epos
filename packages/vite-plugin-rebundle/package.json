@@ -28,7 +28,10 @@
     "portfinder": "^1.0.38",
     "rolldown": "^1.0.0-rc.1",
     "rollup": "^4.56.0",
-    "vite": "npm:rolldown-vite@^7.3.1",
+    "vite": "^8.0.0-beta.0",
     "ws": "^8.19.0"
+  },
+  "overrides": {
+    "vite": "^8.0.0-beta.0"
   }
 }

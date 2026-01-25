@@ -27,8 +27,6 @@ export default defineConfig(({ mode }) => ({
       output: {
         entryFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
-      },
-      experimental: {
         strictExecutionOrder: true,
       },
     },

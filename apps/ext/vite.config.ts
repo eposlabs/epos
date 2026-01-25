@@ -74,8 +74,6 @@ export default defineConfig(async ({ mode }) => {
           sourcemap: false,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
-        },
-        experimental: {
           strictExecutionOrder: true,
         },
       },
