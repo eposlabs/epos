@@ -94,11 +94,13 @@ export class ProjectTarget extends sw.Unit {
 
   /**
    * Examples:
+   * - <all_urls> -> null
    * - https://sub.example.com/path -> example.com
    * - https://example.co.uk/path -> co.uk
    * - https://localhost/path -> localhost
    */
   private getApexDomain(url: Url) {
+    if (url === '<all_urls>') return null
     const { host } = new URL(url)
     return host.split('.').slice(-2).join('.')
   }

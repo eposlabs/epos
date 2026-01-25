@@ -12,10 +12,6 @@ import { cn } from '@/lib/utils'
 import { IconAlertCircle, IconDownload, IconFolderOpen, IconPointFilled, IconRefresh, IconTrash } from '@tabler/icons-react'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
 
-// TODO:
-// - describe to AI what is wanted (which actions, create from template)
-// - attach basic unit princeples
-
 export class Project extends gl.Unit {
   spec: Spec
   manifest: Manifest

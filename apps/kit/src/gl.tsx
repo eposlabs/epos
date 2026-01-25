@@ -11,7 +11,7 @@ if (!app['@']) {
   app = await epos.state.connect(new gl.App(null))
 }
 
-if (location.host === 'app.epos.dev') {
+if (location.host === 'app.epos.dev' || true) {
   epos.render(<app.View />)
 } else if (location.pathname === '/@learn') {
   epos.render(<app.learn.View />)

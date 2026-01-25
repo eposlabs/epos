@@ -12,6 +12,10 @@
         color-scheme: light dark;
       }
     </style>
+
+    <script>
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'))
+    </script>
   </head>
   <body></body>
 </html>
