@@ -10,9 +10,9 @@
     "lint": "tsgo --build --noEmit"
   },
   "dependencies": {
-    "dropcap": "^1.17.0",
-    "epos": "^1.52.0",
-    "epos-spec": "^1.12.0",
+    "dropcap": "^1.18.0",
+    "epos": "^1.53.0",
+    "epos-spec": "^1.13.0",
     "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
@@ -31,10 +31,10 @@
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "paralayer": "^1.19.0",
+    "paralayer": "^1.20.0",
     "tailwindcss": "^4.1.18",
     "vite": "^8.0.0-beta.0",
-    "vite-plugin-rebundle": "^1.30.0"
+    "vite-plugin-rebundle": "^1.31.0"
   },
   "overrides": {
     "vite": "^8.0.0-beta.0"

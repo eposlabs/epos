@@ -10,10 +10,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "dropcap": "^1.17.0",
-    "epos": "^1.52.0",
-    "epos-unit": "^1.23.0",
-    "paralayer": "^1.19.0"
+    "dropcap": "^1.18.0",
+    "epos": "^1.53.0",
+    "epos-unit": "^1.24.0",
+    "paralayer": "^1.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -31,7 +31,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1",
     "vite": "^8.0.0-beta.0",
-    "vite-plugin-rebundle": "^1.30.0"
+    "vite-plugin-rebundle": "^1.31.0"
   },
   "overrides": {
     "vite": "^8.0.0-beta.0"
