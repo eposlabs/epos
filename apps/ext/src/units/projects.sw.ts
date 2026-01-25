@@ -258,15 +258,8 @@ export class Projects extends sw.Unit {
       }
     }
 
-    // Has `kit` package? -> Open `@kit` page
-    if (this.list.some(project => project.spec.slug === 'kit')) {
-      const kitTab = (await this.$.browser.tabs.query({ url: 'https://epos.dev/@kit' }))[0]
-      if (kitTab) {
-        await this.$.browser.tabs.update(kitTab.id, { active: true })
-      } else {
-        await this.$.browser.tabs.create({ url: 'https://epos.dev/@kit', active: true })
-      }
-    }
+    // Process action by `kit`
+    await this.$.kit.processAction()
   }
 
   private async loadEx() {

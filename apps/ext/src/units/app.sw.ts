@@ -8,6 +8,7 @@ export class App extends sw.Unit {
   alive = new sw.Alive(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
+  kit = new sw.Kit(this)
   medium = new swVw.Medium(this)
   net = new sw.Net(this)
   peer = new sw.Peer(this)
@@ -21,7 +22,7 @@ export class App extends sw.Unit {
     this.initGlobalMethods()
     await this.setupContentScript()
     await this.createOffscreen()
-    await this.reloadKitTabs()
+    await this.kit.reloadTabs()
   }
 
   private logInfo() {
@@ -71,16 +72,5 @@ export class App extends sw.Unit {
       reasons: ['BLOBS'],
       justification: 'URL.createObjectURL',
     })
-  }
-
-  private async reloadKitTabs() {
-    // Get kit tabs
-    let tabs = await this.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
-    tabs = tabs.filter(tab => (tab.url ? new URL(tab.url).pathname === '/@kit' : false))
-
-    for (const tab of tabs) {
-      if (!tab.id) continue
-      this.browser.tabs.reload(tab.id)
-    }
   }
 }

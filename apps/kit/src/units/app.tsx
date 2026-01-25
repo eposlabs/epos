@@ -30,11 +30,9 @@ export class App extends gl.Unit {
   }
 
   private async ensureSinglePinnedTab() {
-    let tabs = await epos.browser.tabs.query({ url: 'https://epos.dev/@kit*' })
-    tabs = tabs.filter(tab => tab.url && new URL(tab.url).pathname === '/@kit')
-
-    if (tabs.length === 1) {
-      const tab = tabs[0]
+    const kitTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
+    if (kitTabs.length === 1) {
+      const tab = kitTabs[0]
       if (!tab) throw this.never()
       if (tab.pinned) return
       await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
@@ -42,7 +40,7 @@ export class App extends gl.Unit {
     } else {
       await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-      for (const tab of tabs) {
+      for (const tab of kitTabs) {
         if (!tab.id || tab.id === epos.env.tabId) continue
         await epos.browser.tabs.remove(tab.id)
       }

@@ -2,6 +2,7 @@ import { Alive, type Alive as AliveType } from '../units/alive.sw.js'
 import { App, type App as AppType } from '../units/app.sw.js'
 import { Fetcher, type Fetcher as FetcherType } from '../units/fetcher.sw.js'
 import { Idb, type Idb as IdbType } from '../units/idb.sw.js'
+import { Kit, type Kit as KitType } from '../units/kit.sw.js'
 import { Libs, type Libs as LibsType } from '../units/libs.sw.js'
 import { Net, type Net as NetType } from '../units/net.sw.js'
 import { Peer, type Peer as PeerType } from '../units/peer.sw.js'
@@ -24,6 +25,7 @@ Object.assign(sw, {
   App,
   Fetcher,
   Idb,
+  Kit,
   Libs,
   Net,
   Peer,
@@ -50,6 +52,7 @@ declare global {
     App: typeof App
     Fetcher: typeof Fetcher
     Idb: typeof Idb
+    Kit: typeof Kit
     Libs: typeof Libs
     Net: typeof Net
     Peer: typeof Peer
@@ -73,6 +76,7 @@ declare global {
     App: App
     Fetcher: Fetcher
     Idb: Idb
+    Kit: Kit
     Libs: Libs
     Net: Net
     Peer: Peer
@@ -96,6 +100,7 @@ declare global {
     export type App = AppType
     export type Fetcher = FetcherType
     export type Idb = IdbType
+    export type Kit = KitType
     export type Libs = LibsType
     export type Net = NetType
     export type Peer = PeerType

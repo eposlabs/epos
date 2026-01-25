@@ -6,7 +6,8 @@
   "description": "Build browser extensions.",
   "config": { "allowProjectsApi": true, "allowMissingModels": true },
   "assets": ["public/icon.svg", "public/icon.png"],
-  "matches": ["https://epos.dev/@kit", "https://epos.dev/@learn"],
+
+  "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
   "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"],
 
   // Override manifest to include `<all_urls>` and `sidePanel` permissions

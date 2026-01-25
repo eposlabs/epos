@@ -78,16 +78,28 @@ export class ProjectTarget extends sw.Unit {
   }
 
   private testPattern(pattern: MatchPattern, url: Url) {
-    const { origin } = new URL(url)
-
     // Do not match extension pages
+    const { origin } = new URL(url)
     const isExtensionPage = origin === location.origin
     if (isExtensionPage) return false
 
-    // Do not match hub pages (`epos.dev/@`) unless explicitly specified
-    if (url.startsWith('https://epos.dev/@') && !pattern.includes('epos.dev/@')) return false
+    // Do not match epos.dev pages unless explicitly specified
+    const apexDomain = this.getApexDomain(url)
+    const patternApexDomain = this.getApexDomain(pattern.replaceAll('*', 'wildcard--'))
+    if (apexDomain === 'epos.dev' && patternApexDomain !== 'epos.dev') return false
 
     const matcher = this.$.libs.matchPattern(pattern)
     return matcher.assertValid().match(url)
+  }
+
+  /**
+   * Examples:
+   * - https://sub.example.com/path -> example.com
+   * - https://example.co.uk/path -> co.uk
+   * - https://localhost/path -> localhost
+   */
+  private getApexDomain(url: Url) {
+    const { host } = new URL(url)
+    return host.split('.').slice(-2).join('.')
   }
 }
