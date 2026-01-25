@@ -233,7 +233,7 @@ export class Paralayer extends Unit {
       imports.unshift(`import './layer.${this.options.globalLayerName}.js'`)
     }
 
-    return [...imports].join('\n')
+    return [...imports, ''].join('\n')
   }
 
   private generateDefineContent(allLayers: string[]) {
@@ -248,7 +248,7 @@ export class Paralayer extends Unit {
       return `const ${layerName} = {}`
     })
 
-    return [...vars].join('\n')
+    return [...vars, ''].join('\n')
   }
 
   private getLayer(path: string) {
