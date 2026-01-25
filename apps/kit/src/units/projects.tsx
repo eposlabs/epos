@@ -8,11 +8,18 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { IconFolderCode, IconPlus } from '@tabler/icons-react'
 
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
   selectedProjectId: string | null = null
+  creation = new gl.ProjectsCreation(this)
 
   get list() {
     return Object.values(this.dict)
@@ -92,14 +99,26 @@ export class Projects extends gl.Unit {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <Tooltip delayDuration={400}>
-          <TooltipTrigger asChild>
-            <SidebarGroupAction title="Add Project" onClick={this.addEmptyProject}>
-              <IconPlus /> <span className="sr-only">Add Project</span>
-            </SidebarGroupAction>
-          </TooltipTrigger>
-          <TooltipContent>Add project</TooltipContent>
-        </Tooltip>
+        <DropdownMenu>
+          <Tooltip delayDuration={400}>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <SidebarGroupAction title="Add Project">
+                  <IconPlus /> <span className="sr-only">Add Project</span>
+                </SidebarGroupAction>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Add project</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => this.creation.openCreate()}>
+              Create new project
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => this.creation.openConnect()}>
+              Connect existing project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <SidebarGroupContent>
           <SidebarMenu className="gap-1">
             {this.list.map(project => (
@@ -147,6 +166,9 @@ export class Projects extends gl.Unit {
     4(this: any) {
       delete this.list
       this.dict = {}
+    },
+    5() {
+      this.creation = new gl.ProjectsCreation(this)
     },
   })
 

@@ -57,6 +57,7 @@ export class App extends gl.Unit {
         <this.SidebarView />
         <Separator orientation="vertical" />
         <this.ContentView />
+        <this.projects.creation.View />
       </SidebarProvider>
     )
   }
