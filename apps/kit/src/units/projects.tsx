@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/empty.js'
 import {
   SidebarGroup,
@@ -8,13 +9,7 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { IconFolderCode, IconPlus } from '@tabler/icons-react'
+import { IconFolder, IconFolderCode, IconPlus } from '@tabler/icons-react'
 
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
@@ -110,11 +105,13 @@ export class Projects extends gl.Unit {
             </TooltipTrigger>
             <TooltipContent>Add project</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => this.creation.openCreate()}>
-              Create new project
+          <DropdownMenuContent align="end" className="w-max">
+            <DropdownMenuItem onClick={() => this.creation.openCreate()} className="whitespace-nowrap">
+              <IconPlus />
+              New project
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => this.creation.openConnect()}>
+            <DropdownMenuItem onClick={() => this.creation.openConnect()} className="whitespace-nowrap">
+              <IconFolder />
               Connect existing project
             </DropdownMenuItem>
           </DropdownMenuContent>

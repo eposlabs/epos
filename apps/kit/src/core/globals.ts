@@ -9,6 +9,8 @@ import './unit'
 declare global {
   const DEV: boolean
   const PROD: boolean
+  const ai: any
+  const AI: any
 
   interface Array<T> {
     remove(value: T): boolean

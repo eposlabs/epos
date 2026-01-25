@@ -3,20 +3,8 @@ import './gl.css'
 import './layers/index.gl'
 
 epos.state.register({ ...gl })
-let app = await epos.state.connect(new gl.App(null))
-
-// Migrate old state
-if (!app['@']) {
-  await epos.state.remove()
-  app = await epos.state.connect(new gl.App(null))
-}
-
-if (location.host === 'app.epos.dev' || true) {
-  epos.render(<app.View />)
-} else if (location.pathname === '/@learn') {
-  epos.render(<app.learn.View />)
-}
-
+const app = await epos.state.connect(new gl.App(null))
+epos.render(<app.View />)
 Object.assign(self, { epos, $: app, gl })
 
 // LOCAL STATE TEST:

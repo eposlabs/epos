@@ -17,9 +17,10 @@ export class App extends gl.Unit {
 
   theme = new gl.Theme(this)
   projects = new gl.Projects(this)
-  learn = new gl.Learn(this)
+  permissions = new gl.Permissions(this)
 
   async attach() {
+    this.removeUrlPath()
     await this.ensureSinglePinnedTab()
   }
 
@@ -27,6 +28,11 @@ export class App extends gl.Unit {
     const project = this.projects.list.find(project => project.spec.slug === 'kit')
     if (!project) return
     await project.export()
+  }
+
+  private removeUrlPath() {
+    if (location.host !== 'app.epos.dev') return
+    history.replaceState(null, '', '/')
   }
 
   private async ensureSinglePinnedTab() {
@@ -52,8 +58,9 @@ export class App extends gl.Unit {
   // ============================================================================
 
   View() {
+    if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
-      <SidebarProvider className="h-screen text-lg" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <this.SidebarView />
         <Separator orientation="vertical" />
         <this.ContentView />
@@ -126,16 +133,9 @@ export class App extends gl.Unit {
   // #region Versioner
   // ============================================================================
 
-  static versioner = this.defineVersioner({
-    1(this: any) {
-      delete this.theme
-      this.theme = new gl.Theme(this)
-    },
-    11(this: any) {
-      delete this.theme
-      this.theme = new gl.Theme(this)
-    },
-  })
+  static versioner: any = {
+    13() {},
+  }
 
   // #endregion
   // #region

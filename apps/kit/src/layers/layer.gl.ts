@@ -1,8 +1,7 @@
 import { App, type App as AppType } from '../units/app.js'
 import { Idb, type Idb as IdbType } from '../units/idb.js'
-import { Learn, type Learn as LearnType } from '../units/learn.js'
 import { Libs, type Libs as LibsType } from '../units/libs.js'
-import { Permission, type Permission as PermissionType } from '../units/permission.js'
+import { Permissions, type Permissions as PermissionsType } from '../units/permissions.js'
 import { Project, type Project as ProjectType } from '../units/project.js'
 import { ProjectsCreation, type ProjectsCreation as ProjectsCreationType } from '../units/projects-creation.js'
 import { Projects, type Projects as ProjectsType } from '../units/projects.js'
@@ -12,9 +11,8 @@ import { Utils, type Utils as UtilsType } from '../units/utils.js'
 Object.assign(gl, {
   App,
   Idb,
-  Learn,
   Libs,
-  Permission,
+  Permissions,
   Project,
   ProjectsCreation,
   Projects,
@@ -28,9 +26,8 @@ declare global {
   interface Gl {
     App: typeof App
     Idb: typeof Idb
-    Learn: typeof Learn
     Libs: typeof Libs
-    Permission: typeof Permission
+    Permissions: typeof Permissions
     Project: typeof Project
     ProjectsCreation: typeof ProjectsCreation
     Projects: typeof Projects
@@ -41,9 +38,8 @@ declare global {
   interface gl {
     App: App
     Idb: Idb
-    Learn: Learn
     Libs: Libs
-    Permission: Permission
+    Permissions: Permissions
     Project: Project
     ProjectsCreation: ProjectsCreation
     Projects: Projects
@@ -54,9 +50,8 @@ declare global {
   namespace gl {
     export type App = AppType
     export type Idb = IdbType
-    export type Learn = LearnType
     export type Libs = LibsType
-    export type Permission = PermissionType
+    export type Permissions = PermissionsType
     export type Project = ProjectType
     export type ProjectsCreation = ProjectsCreationType
     export type Projects = ProjectsType
