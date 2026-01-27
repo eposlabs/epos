@@ -1,4 +1,4 @@
-import { get, is, safe } from '../../../../packages/utils/dist/utils.js'
+import { get, is, safe } from '@eposlabs/utils'
 import { cn } from './utils-cn.js'
 import { id } from './utils-id.js'
 import { normalizeUrl } from './utils-normalize-url.js'

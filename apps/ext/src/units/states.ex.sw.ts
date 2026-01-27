@@ -1,4 +1,4 @@
-import type { DbName, DbStoreName } from '../../../../packages/utils/dist/idb'
+import type { DbName, DbStoreName } from '@eposlabs/idb'
 import type { Initial, Root, Versioner } from './state.ex.sw'
 
 export type Models = Record<string, Cls>

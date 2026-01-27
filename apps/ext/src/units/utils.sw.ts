@@ -1,15 +1,4 @@
-import {
-  colorHash,
-  enqueue,
-  ensureArray,
-  get,
-  is,
-  link,
-  Queue,
-  safe,
-  safeSync,
-  unique,
-} from '../../../../packages/utils/dist/utils.js'
+import { colorHash, enqueue, ensureArray, get, is, link, Queue, safe, safeSync, unique } from '@eposlabs/utils'
 import { hash } from './utils-hash.js'
 import { id } from './utils-id.js'
 import { info } from './utils-info.js'

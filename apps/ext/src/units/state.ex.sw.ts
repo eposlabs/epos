@@ -1,6 +1,6 @@
+import type { DbName, DbStoreKey, DbStoreName } from '@eposlabs/idb'
 import type { IArrayWillChange, IArrayWillSplice, IObjectWillChange } from 'mobx'
 import type { YArrayEvent, YMapEvent, Array as YjsArray, Map as YjsMap } from 'yjs'
-import type { DbName, DbStoreKey, DbStoreName } from '../../../../packages/utils/dist/idb'
 
 export const _meta_ = Symbol('meta')
 export const _parent_ = Symbol('parent')

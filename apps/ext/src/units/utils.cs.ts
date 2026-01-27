@@ -1,4 +1,4 @@
-import { get, is, safe } from '../../../../packages/utils/dist/utils'
+import { get, is, safe } from '@eposlabs/utils'
 import { executeFn } from './utils-execute-fn'
 import { executeJs } from './utils-execute-js'
 import { id } from './utils-id'

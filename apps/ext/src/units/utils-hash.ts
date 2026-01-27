@@ -1,4 +1,4 @@
-import { is } from '../../../../packages/utils/dist/utils'
+import { is } from '@eposlabs/utils'
 
 export async function hash(value: unknown) {
   const str = await stringify(value)
