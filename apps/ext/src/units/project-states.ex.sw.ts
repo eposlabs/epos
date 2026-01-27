@@ -1,6 +1,6 @@
 import type { Initial, Root, Versioner } from './project-state.ex.sw'
 
-export type Models = Record<string, Constructor>
+export type Models = Record<string, Ctor>
 export type Config = { allowMissingModels?: boolean }
 
 export class ProjectStates extends exSw.Unit {

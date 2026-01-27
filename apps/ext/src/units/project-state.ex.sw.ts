@@ -631,7 +631,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     throw new Error(`${message}. ${tip1}. ${tip2}.`)
   }
 
-  private getModelName(Model: Constructor) {
+  private getModelName(Model: Ctor) {
     const registeredModelNames = Object.keys(this.$states.models)
     return registeredModelNames.find(name => this.$states.models[name] === Model) ?? null
   }

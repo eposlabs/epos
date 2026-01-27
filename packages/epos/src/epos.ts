@@ -1,4 +1,4 @@
-import type { Arr, Constructor, Fn, Obj } from '@eposlabs/utils'
+import type { Arr, Ctor, Fn, Obj } from '@eposlabs/utils'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'
@@ -139,7 +139,7 @@ export interface Epos {
     /** Remove state and all its data. */
     remove(name?: string): Promise<void>
     /** Register models that can be used by all states. */
-    register(models: Record<string, Constructor>): void
+    register(models: Record<string, Ctor>): void
     PARENT: symbol
     ATTACH: symbol
     DETACH: symbol

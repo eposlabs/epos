@@ -233,7 +233,7 @@ export class Project extends gl.Unit {
   // #region Versioner
   // ============================================================================
 
-  static versioner = this.defineVersioner({
+  static versioner: any = {
     1(this: any) {
       this.fs = {}
       this.handleId = null
@@ -272,7 +272,5 @@ export class Project extends gl.Unit {
     14() {
       this.ui = new gl.ProjectUi(this)
     },
-  })
-
-  // #endregion
+  }
 }

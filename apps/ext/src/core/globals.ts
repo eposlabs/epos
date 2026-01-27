@@ -4,29 +4,15 @@
 import type { Epos, Spec } from 'epos'
 
 declare global {
-  // #endregion
-  // #region BUNDLER VARS
-  // ============================================================================
-
   var DEV: boolean
   var PROD: boolean
   var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'pm' | 'sw' | 'vw'
   var require: any
-
-  // #endregion
-  // #region DEV VARS
-  // ============================================================================
-
   var $: any // App instance for `cs`, `os`, `sw` and `vw`
   var $epos: any // App instance for `ex`, dev-only
   var install: any
   var remove: any
 
-  // #endregion
-  // #region ENGINE VARS
-  // ============================================================================
-
-  // Global variables injected to pages and frames
   interface Window {
     __eposIsTop?: boolean
     __eposTabId?: number
@@ -37,16 +23,9 @@ declare global {
     __eposOriginalGlobals?: Record<string, unknown>
   }
 
-  // #endregion
-  // #region COMMON TYPES
-  // ============================================================================
-
   type Url = string
   type TabInfo = { tabId: number; windowId: number }
-
-  type PartialEpos = Omit<Epos, 'projects'> & {
-    projects?: Epos['projects']
-  }
+  type PartialEpos = Omit<Epos, 'projects'> & { projects?: Epos['projects'] }
 
   type ProjectDef = {
     id: string
@@ -57,10 +36,6 @@ declare global {
     shadowCss: string
     fn: (epos: PartialEpos) => void
   }
-
-  // #endregion
-  // #region EXTENDS
-  // ============================================================================
 
   interface Node {
     epos?: boolean
@@ -73,8 +48,4 @@ declare global {
   interface ErrorConstructor {
     captureStackTrace(targetObject: object, constructorOpt?: Function): void
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }

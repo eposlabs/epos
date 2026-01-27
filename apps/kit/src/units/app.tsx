@@ -56,6 +56,7 @@ export class App extends gl.Unit {
   }
 
   View() {
+    return <this.ui.View />
     if (location.href.includes('ui')) return <this.ui.View />
     const dev = this[gl.Unit.DEV] as any
     return <dev.View />

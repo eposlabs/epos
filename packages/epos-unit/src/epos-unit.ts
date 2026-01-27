@@ -1,4 +1,4 @@
-import { createLog, is, type Arr, type Constructor, type Obj } from '@eposlabs/utils'
+import { createLog, is, type Arr, type Ctor, type Obj } from '@eposlabs/utils'
 import { epos, type Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
@@ -9,7 +9,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _attachQueue_ = Symbol('pendingAttachHooks')
+export const _attachQueue_ = Symbol('attachQueue')
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10)
 
 export type Node<T> = Unit<T> | Obj | Arr
@@ -20,15 +20,15 @@ export class Unit<TRoot = unknown> {
   declare id: string
   declare log: ReturnType<typeof createLog>;
   declare [':version']?: number;
-  declare [_root_]?: TRoot;
-  declare [_rpcs_]?: Record<string, unknown>;
-  declare [_parent_]?: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
-  declare [_attached_]?: boolean;
-  declare [_disposers_]?: Set<() => void>;
-  declare [_ancestors_]?: Map<Constructor, unknown>;
+  declare [_root_]: TRoot | null;
+  declare [_rpcs_]: Record<string, unknown>;
+  declare [_parent_]: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
+  declare [_attached_]: boolean;
+  declare [_disposers_]: Set<() => void>;
+  declare [_ancestors_]: Map<Ctor, unknown>;
   declare [_attachQueue_]?: (() => void)[]
 
-  static defineVersioner<T extends Unit>(this: Constructor<T>, versioner: Versioner<T>) {
+  static defineVersioner<T extends Unit>(this: Ctor<T>, versioner: Versioner<T>) {
     return versioner
   }
 
@@ -41,13 +41,17 @@ export class Unit<TRoot = unknown> {
   // #region ATTACH
   // ============================================================================
 
-  /**
-   * Lifecycle method called when the unit is attached to the state tree.
-   */
   [epos.state.ATTACH]() {
+    // Initialize internal properties
+    defineAccessor(this, _root_, null)
+    defineAccessor(this, _rpcs_, {})
+    defineAccessor(this, _attached_, false)
+    defineAccessor(this, _disposers_, new Set())
+    defineAccessor(this, _ancestors_, new Map())
+
     // Setup logger
-    let log = createLog(this['@'])
-    Reflect.defineProperty(this, 'log', { configurable: true, get: () => log, set: v => (log = v) })
+    const log = createLog(this['@'])
+    defineAccessor(this, 'log', log)
 
     // Apply versioner
     void (() => {
@@ -74,11 +78,10 @@ export class Unit<TRoot = unknown> {
       const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
       if (!descriptor || !descriptor.get) return
       const value: unknown = descriptor.get.call(this)
-      if (!is.object(value)) throw new Error(`'state' getter return an object`)
+      if (!is.object(value)) throw new Error(`'state' getter must return an object`)
       const state = epos.state.create(value)
-      // It is important to have `state` and `inert` non-enumerable to avoid issues when unit is added to state
-      Reflect.defineProperty(state, epos.state.PARENT, { configurable: true, value: this })
-      Reflect.defineProperty(this, 'state', { enumerable: false, get: () => state })
+      Reflect.defineProperty(this, 'state', { get: () => state })
+      Reflect.defineProperty(state, epos.state.PARENT, { get: () => this })
     })()
 
     // Setup inert
@@ -86,8 +89,8 @@ export class Unit<TRoot = unknown> {
       const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'inert')
       if (!descriptor || !descriptor.get) return
       const value: unknown = descriptor.get.call(this)
-      if (!is.object(value)) throw new Error(`'inert' getter return an object`)
-      Reflect.defineProperty(this, 'inert', { enumerable: false, get: () => value })
+      if (!is.object(value)) throw new Error(`'inert' getter must return an object`)
+      Reflect.defineProperty(this, 'inert', { get: () => value })
     })()
 
     // Prepare properties for the whole prototype chain:
@@ -103,42 +106,33 @@ export class Unit<TRoot = unknown> {
 
         // Create components for methods ending with `View`
         if (is.function(descriptor.value) && key.endsWith('View')) {
-          let View = createView(this, key, descriptor.value.bind(this) as FC<unknown>)
+          let View = createComponent(this, key, descriptor.value.bind(this) as FC<unknown>)
           Reflect.defineProperty(this, key, { configurable: true, get: () => View, set: v => (View = v) })
         }
 
         // Bind all other methods to the unit instance
         else if (is.function(descriptor.value)) {
           let method = descriptor.value.bind(this)
-          Reflect.defineProperty(this, key, {
-            configurable: true,
-            get: () => method,
-            set: v => (method = v),
-          })
+          Reflect.defineProperty(this, key, { configurable: true, get: () => method, set: v => (method = v) })
         }
 
         // Turn getters into MobX computed properties
         else if (descriptor.get) {
           const getter = descriptor.get
           const computed = epos.libs.mobx.computed(() => getter.call(this))
-          Reflect.defineProperty(this, key, {
-            configurable: true,
-            get: () => computed.get(),
-            set: descriptor.set,
-          })
+          Reflect.defineProperty(this, key, { configurable: true, get: () => computed.get(), set: descriptor.set })
         }
       }
     }
 
-    // Queue attach method.
-    // Do not execute `attach` methods immediately, but rather queue them on the highest unattached ancestor.
+    // Queue `attach` methods on the highest unattached ancestor (might be self), do not call them immediately.
     // This way `attach` methods are called after all versioners have been applied in the entire subtree.
     const attach = Reflect.get(this, 'attach')
     if (is.function(attach)) {
       const head = findUnattachedRoot(this)
       if (!head) throw this.never()
-      ensure(head, _attachQueue_, () => [])
-      head[_attachQueue_].push(() => attach.call(this))
+      const attachQueue = ensureAccessor(head, _attachQueue_, [])
+      attachQueue.push(() => attach.call(this))
     }
 
     // Release attach queue
@@ -148,35 +142,24 @@ export class Unit<TRoot = unknown> {
     }
 
     // Mark as attached
-    Reflect.defineProperty(this, _attached_, { configurable: true, get: () => true })
+    this[_attached_] = true
   }
 
   // #endregion
   // #region DETACH
   // ============================================================================
 
-  /**
-   * Lifecycle method called when the unit is detached from the state tree.
-   */
   [epos.state.DETACH]() {
-    // Run and clear disposers
-    if (this[_disposers_]) {
-      this[_disposers_].forEach(disposer => disposer())
-      this[_disposers_].clear()
-    }
+    // Run disposers
+    this[_disposers_].forEach(disposer => disposer())
 
-    // Clear ancestors cache
-    if (this[_ancestors_]) {
-      this[_ancestors_].clear()
-    }
-
-    // Call detach method
+    // Run detach method
     const detach = Reflect.get(this, 'detach')
     if (is.function(detach)) detach()
   }
 
   // #endregion
-  // #region ROOT GETTER
+  // #region GETTERS & METHODS
   // ============================================================================
 
   /**
@@ -184,42 +167,40 @@ export class Unit<TRoot = unknown> {
    * The result is cached for subsequent calls.
    */
   get $() {
-    ensure(this, _root_, () => findRoot(this))
+    this[_root_] ??= findRoot(this)
     return this[_root_]
   }
 
-  // #endregion
-  // #region METHODS
-  // ============================================================================
-
-  use<T>(id: string) {
-    ensure(this, _rpcs_, () => ({}))
-    this[_rpcs_][id] ??= epos.bus.use<T>(`${this['@']}.${id}[${this.id}]`)
-    return this[_rpcs_][id] as Asyncify<T>
-  }
-
-  expose(id: string) {
-    epos.bus.register(`${this['@']}.${id}[${this.id}]`, this)
-    ensure(this, _disposers_, () => new Set())
-    this[_disposers_].add(() => epos.bus.unregister(`${this['@']}.${id}[${this.id}]`))
+  /**
+   * Get access to this unit running by other application instances (tabs, popup, background, etc).
+   */
+  use<T>(name: string) {
+    this[_rpcs_][name] ??= epos.bus.use<T>(`${this['@']}[${this.id}][${name}]`)
+    return this[_rpcs_][name] as Asyncify<T>
   }
 
   /**
-   * A wrapper around MobX's `autorun` that automatically disposes the reaction when the unit is detached.
+   * Expose this unit to be used by other application instances (tabs, popup, background, etc).
+   */
+  expose(name: string) {
+    epos.bus.register(`${this['@']}[${this.id}][${name}]`, this)
+    this[_disposers_].add(() => epos.bus.unregister(`${this['@']}[${this.id}][${name}]`))
+  }
+
+  /**
+   * A wrapper around MobX's `autorun` that automatically disposes itself when the unit is detached.
    */
   autorun(...args: Parameters<typeof epos.libs.mobx.autorun>) {
     const disposer = epos.libs.mobx.autorun(...args)
-    ensure(this, _disposers_, () => new Set())
     this[_disposers_].add(disposer)
     return disposer
   }
 
   /**
-   * A wrapper around MobX's `reaction` that automatically disposes the reaction when the unit is detached.
+   * A wrapper around MobX's `reaction` that automatically disposes itself when the unit is detached.
    */
   reaction(...args: Parameters<typeof epos.libs.mobx.reaction>) {
     const disposer = epos.libs.mobx.reaction(...args)
-    ensure(this, _disposers_, () => new Set())
     this[_disposers_].add(disposer)
     return disposer
   }
@@ -229,7 +210,6 @@ export class Unit<TRoot = unknown> {
    */
   setTimeout(...args: Parameters<typeof setTimeout>) {
     const id = setTimeout(...args)
-    ensure(this, _disposers_, () => new Set())
     this[_disposers_].add(() => clearTimeout(id))
     return id
   }
@@ -239,7 +219,6 @@ export class Unit<TRoot = unknown> {
    */
   setInterval(...args: Parameters<typeof setInterval>) {
     const id = setInterval(...args)
-    ensure(this, _disposers_, () => new Set())
     this[_disposers_].add(() => clearInterval(id))
     return id
   }
@@ -258,10 +237,11 @@ export class Unit<TRoot = unknown> {
    * Find the closest ancestor unit of a given type.
    * The result is cached for subsequent calls.
    */
-  closest<T extends Unit>(Ancestor: Constructor<T>) {
+  closest<T extends Unit>(Ancestor: Ctor<T>) {
     // Has cached value? -> Return it
-    ensure(this, _ancestors_, () => new Map())
-    if (this[_ancestors_].has(Ancestor)) return this[_ancestors_].get(Ancestor) as T
+    if (this[_ancestors_].has(Ancestor)) {
+      return this[_ancestors_].get(Ancestor) as T
+    }
 
     // Find the closest ancestor and cache it
     let cursor: Node<TRoot> | null = this
@@ -275,27 +255,21 @@ export class Unit<TRoot = unknown> {
 
     return null
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }
 
 // #endregion
 // #region HELPERS
 // ============================================================================
 
-/**
- * Ensure a property exists on an object, initialize it if it doesn't.
- */
-function ensure<T extends object, K extends PropertyKey, V>(
-  object: T,
-  key: K,
-  getInitialValue: () => V,
-): asserts object is T & { [key in K]: V } {
-  if (key in object) return
-  const value = getInitialValue()
-  Reflect.defineProperty(object, key, { configurable: true, get: () => value })
+function defineAccessor<T extends object, K extends keyof T>(target: T, key: K, value: T[K]) {
+  Reflect.defineProperty(target, key, { configurable: true, get: () => value, set: v => (value = v) })
+  return value
+}
+
+function ensureAccessor<T extends object, K extends keyof T>(target: T, key: K, defaultValue: T[K]) {
+  if (!(key in target)) defineAccessor(target, key, defaultValue)
+  if (!target[key]) throw new Error(`Failed to ensure accessor for '${String(key)}'`)
+  return target[key]
 }
 
 /**
@@ -346,12 +320,12 @@ function getParent<T>(node: Node<T>) {
 }
 
 /**
- * Create view component for the unit.
+ * Create component for the unit.
  */
-function createView<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
+function createComponent<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
   const fullName = `${unit['@']}.${name}`
 
-  const View = epos.component((props: unknown) => {
+  const Component = epos.component((props: unknown) => {
     try {
       return render(props)
     } catch (error) {
@@ -372,11 +346,7 @@ function createView<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
     }
   })
 
-  View.displayName = fullName
+  Component.displayName = fullName
 
-  return View
+  return Component
 }
-
-// #endregion
-// #region
-// ============================================================================
