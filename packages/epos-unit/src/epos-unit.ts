@@ -1,8 +1,9 @@
-import { createLog, is, type Arr, type Ctor, type Obj } from '@eposlabs/utils'
+import { createLog, is, type Arr, type Ctor, type Log, type Obj } from '@eposlabs/utils'
 import { epos, type Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 
+export const _log_ = Symbol('log')
 export const _root_ = Symbol('root')
 export const _rpcs_ = Symbol('rpcs')
 export const _parent_ = Symbol('parent')
@@ -17,9 +18,9 @@ export type Versioner<T> = { [version: number]: (this: T) => void }
 
 export class Unit<TRoot = unknown> {
   declare '@': string
-  declare id: string
-  declare log: ReturnType<typeof createLog>;
+  declare id: string;
   declare [':version']?: number;
+  declare [_log_]: Log | null;
   declare [_root_]: TRoot | null;
   declare [_rpcs_]: Record<string, unknown>;
   declare [_parent_]: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
@@ -37,117 +38,14 @@ export class Unit<TRoot = unknown> {
     this[_parent_] = parent
   }
 
-  // #endregion
-  // #region ATTACH
-  // ============================================================================
-
   [epos.state.ATTACH]() {
-    // Initialize internal properties
-    defineAccessor(this, _root_, null)
-    defineAccessor(this, _rpcs_, {})
-    defineAccessor(this, _attached_, false)
-    defineAccessor(this, _disposers_, new Set())
-    defineAccessor(this, _ancestors_, new Map())
-
-    // Setup logger
-    const log = createLog(this['@'])
-    defineAccessor(this, 'log', log)
-
-    // Apply versioner
-    void (() => {
-      const versioner: unknown = Reflect.get(this.constructor, 'versioner')
-      if (!is.object(versioner)) return
-
-      const asc = (v1: number, v2: number) => v1 - v2
-      const versions = Object.keys(versioner).filter(is.numeric).map(Number).sort(asc)
-      if (versions.length === 0) return
-
-      epos.state.transaction(() => {
-        for (const version of versions) {
-          if (is.number(this[':version']) && this[':version'] >= version) continue
-          const versionFn = versioner[version]
-          if (!is.function(versionFn)) continue
-          versionFn.call(this)
-          this[':version'] = version
-        }
-      })
-    })()
-
-    // Setup state
-    void (() => {
-      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'state')
-      if (!descriptor || !descriptor.get) return
-      const value: unknown = descriptor.get.call(this)
-      if (!is.object(value)) throw new Error(`'state' getter must return an object`)
-      const state = epos.state.create(value)
-      Reflect.defineProperty(this, 'state', { get: () => state })
-      Reflect.defineProperty(state, epos.state.PARENT, { get: () => this })
-    })()
-
-    // Setup inert
-    void (() => {
-      const descriptor = Reflect.getOwnPropertyDescriptor(this.constructor.prototype, 'inert')
-      if (!descriptor || !descriptor.get) return
-      const value: unknown = descriptor.get.call(this)
-      if (!is.object(value)) throw new Error(`'inert' getter must return an object`)
-      Reflect.defineProperty(this, 'inert', { get: () => value })
-    })()
-
-    // Prepare properties for the whole prototype chain:
-    // - Create components for methods ending with `View`
-    // - Bind all other methods to the unit instance
-    // - Turn getters into MobX computed properties
-    for (const prototype of getPrototypes(this)) {
-      const descriptors = Object.getOwnPropertyDescriptors(prototype)
-      for (const [key, descriptor] of Object.entries(descriptors)) {
-        // Skip constructor and already defined properties
-        if (key === 'constructor') continue
-        if (this.hasOwnProperty(key)) continue
-
-        // Create components for methods ending with `View`
-        if (is.function(descriptor.value) && key.endsWith('View')) {
-          let View = createComponent(this, key, descriptor.value.bind(this) as FC<unknown>)
-          Reflect.defineProperty(this, key, { configurable: true, get: () => View, set: v => (View = v) })
-        }
-
-        // Bind all other methods to the unit instance
-        else if (is.function(descriptor.value)) {
-          let method = descriptor.value.bind(this)
-          Reflect.defineProperty(this, key, { configurable: true, get: () => method, set: v => (method = v) })
-        }
-
-        // Turn getters into MobX computed properties
-        else if (descriptor.get) {
-          const getter = descriptor.get
-          const computed = epos.libs.mobx.computed(() => getter.call(this))
-          Reflect.defineProperty(this, key, { configurable: true, get: () => computed.get(), set: descriptor.set })
-        }
-      }
-    }
-
-    // Queue `attach` methods on the highest unattached ancestor (might be self), do not call them immediately.
-    // This way `attach` methods are called after all versioners have been applied in the entire subtree.
-    const attach = Reflect.get(this, 'attach')
-    if (is.function(attach)) {
-      const head = findUnattachedRoot(this)
-      if (!head) throw this.never()
-      const attachQueue = ensureAccessor(head, _attachQueue_, [])
-      attachQueue.push(() => attach.call(this))
-    }
-
-    // Release attach queue
-    if (this[_attachQueue_]) {
-      this[_attachQueue_].forEach(attach => attach())
-      delete this[_attachQueue_]
-    }
-
-    // Mark as attached
-    this[_attached_] = true
+    initInternals(this)
+    initVersioner(this)
+    initState(this)
+    initInert(this)
+    enhancePrototype(this)
+    triggerAttachLifecycle(this)
   }
-
-  // #endregion
-  // #region DETACH
-  // ============================================================================
 
   [epos.state.DETACH]() {
     // Run disposers
@@ -158,10 +56,6 @@ export class Unit<TRoot = unknown> {
     if (is.function(detach)) detach()
   }
 
-  // #endregion
-  // #region GETTERS & METHODS
-  // ============================================================================
-
   /**
    * Get the root unit of the current unit's tree.
    * The result is cached for subsequent calls.
@@ -169,6 +63,14 @@ export class Unit<TRoot = unknown> {
   get $() {
     this[_root_] ??= findRoot(this)
     return this[_root_]
+  }
+
+  /**
+   * Alternative to `console.*` methods that prefixes all log messages with the unit's name.
+   */
+  get log() {
+    this[_log_] ??= createLog(this['@'])
+    return this[_log_]
   }
 
   /**
@@ -255,6 +157,105 @@ export class Unit<TRoot = unknown> {
 
     return null
   }
+}
+
+// #endregion
+// #region INITIALIZATION
+// ============================================================================
+
+function initInternals<T>(unit: Unit<T>) {
+  defineAccessor(unit, _log_, null)
+  defineAccessor(unit, _root_, null)
+  defineAccessor(unit, _rpcs_, {})
+  defineAccessor(unit, _attached_, false)
+  defineAccessor(unit, _disposers_, new Set())
+  defineAccessor(unit, _ancestors_, new Map())
+}
+
+function initVersioner<T>(unit: Unit<T>) {
+  const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
+  if (!is.object(versioner)) return
+
+  const asc = (v1: number, v2: number) => v1 - v2
+  const versions = Object.keys(versioner).filter(is.numeric).map(Number).sort(asc)
+  if (versions.length === 0) return
+
+  epos.state.transaction(() => {
+    for (const version of versions) {
+      if (is.number(unit[':version']) && unit[':version'] >= version) continue
+      const versionFn = (versioner as any)[version]
+      if (!is.function(versionFn)) continue
+      versionFn.call(unit)
+      unit[':version'] = version
+    }
+  })
+}
+
+function initState<T>(unit: Unit<T>) {
+  const descriptor = Reflect.getOwnPropertyDescriptor(unit.constructor.prototype, 'state')
+  if (!descriptor || !descriptor.get) return
+  const value: unknown = descriptor.get.call(unit)
+  if (!is.object(value)) throw new Error(`'state' getter must return an object`)
+  const state = epos.state.create(value)
+  Reflect.defineProperty(unit, 'state', { get: () => state })
+  Reflect.defineProperty(state, epos.state.PARENT, { get: () => unit })
+}
+
+function initInert<T>(unit: Unit<T>) {
+  const descriptor = Reflect.getOwnPropertyDescriptor(unit.constructor.prototype, 'inert')
+  if (!descriptor || !descriptor.get) return
+  const value: unknown = descriptor.get.call(unit)
+  if (!is.object(value)) throw new Error(`'inert' getter must return an object`)
+  Reflect.defineProperty(unit, 'inert', { get: () => value })
+}
+
+/**
+ * Prepare properties for the whole prototype chain:
+ * - Create components for methods ending with `View`
+ * - Bind all other methods to the unit instance
+ * - Turn getters into MobX computed properties
+ */
+function enhancePrototype<T>(unit: Unit<T>) {
+  for (const prototype of getPrototypes(unit)) {
+    const descriptors = Object.getOwnPropertyDescriptors(prototype)
+    for (const [key, descriptor] of Object.entries(descriptors)) {
+      if (key === 'constructor') continue
+      if (unit.hasOwnProperty(key)) continue
+
+      if (is.function(descriptor.value) && key.endsWith('View')) {
+        let View = createComponent(unit, key, descriptor.value.bind(unit) as FC<unknown>)
+        Reflect.defineProperty(unit, key, { configurable: true, get: () => View, set: v => (View = v) })
+      } else if (is.function(descriptor.value)) {
+        let method = descriptor.value.bind(unit)
+        Reflect.defineProperty(unit, key, { configurable: true, get: () => method, set: v => (method = v) })
+      } else if (descriptor.get) {
+        const getter = descriptor.get
+        const computed = epos.libs.mobx.computed(() => getter.call(unit))
+        Reflect.defineProperty(unit, key, { configurable: true, get: () => computed.get(), set: descriptor.set })
+      }
+    }
+  }
+}
+
+function triggerAttachLifecycle(unit: Unit<any>) {
+  // Queue `attach` methods on the highest unattached ancestor (might be self).
+  // This way `attach` methods are called after all versioners have been applied in the entire subtree.
+  const attach = Reflect.get(unit, 'attach')
+  if (is.function(attach)) {
+    const head = findUnattachedRoot(unit)
+    if (!head) throw unit.never()
+    const attachQueue = ensureAccessor(head, _attachQueue_, [])
+    attachQueue.push(() => attach.call(unit))
+  }
+
+  // Release attach queue
+  if (unit[_attachQueue_]) {
+    unit[_attachQueue_].forEach(attach => attach())
+    delete unit[_attachQueue_]
+  }
+
+  // Mark as attached
+  unit[_attached_] = true
 }
 
 // #endregion
