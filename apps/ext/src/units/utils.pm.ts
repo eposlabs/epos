@@ -1,5 +1,4 @@
-import { is, safe } from 'dropcap/utils'
-import { get } from './utils-get.js'
+import { get, is, safe } from 'dropcap/utils'
 import { id } from './utils-id.js'
 
 export class Utils extends pm.Unit {

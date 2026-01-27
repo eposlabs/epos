@@ -414,6 +414,7 @@ export class State<T = Obj> extends exSw.Unit {
     if (this.$.utils.is.symbol(change.name)) return
 
     // Skip getters
+    if (change.name === 'ABC') console.warn(change)
     if (change.newValue === undefined && !change.object.hasOwnProperty(change.name)) return
 
     // Skip if value didn't change

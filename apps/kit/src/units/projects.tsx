@@ -1,19 +1,7 @@
-import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/empty.js'
-import {
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-} from '@/components/ui/sidebar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
-import { IconFolder, IconFolderCode, IconPlus } from '@tabler/icons-react'
-
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
   selectedProjectId: string | null = null
+  ui = new gl.ProjectsUi(this)
   creation = new gl.ProjectsCreation(this)
 
   get list() {
@@ -75,85 +63,15 @@ export class Projects extends gl.Unit {
     }
   }
 
-  // #endregion
-  // #region View
-  // ============================================================================
-
   View() {
-    if (this.list.length === 1) return <this.NoProjectsView />
-    if (!this.selectedProject) return null
-    return <this.selectedProject.View />
+    return <this.ui.View/>
   }
-
-  // #endregion
-  // #region SidebarView
-  // ============================================================================
 
   SidebarView() {
-    if (this.list.length === 1) return null
-    return (
-      <SidebarGroup>
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <DropdownMenu>
-          <Tooltip delayDuration={400}>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <SidebarGroupAction title="Add Project">
-                  <IconPlus /> <span className="sr-only">Add Project</span>
-                </SidebarGroupAction>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>Add project</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="end" className="w-max">
-            <DropdownMenuItem onClick={() => this.creation.openCreate()} className="whitespace-nowrap">
-              <IconPlus />
-              New project
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => this.creation.openConnect()} className="whitespace-nowrap">
-              <IconFolder />
-              Connect existing project
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <SidebarGroupContent>
-          <SidebarMenu className="gap-1">
-            {this.list.map(project => (
-              <project.SidebarView key={project.id} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    )
+    return <this.ui.SidebarView/>
   }
 
-  // #endregion
-  // #region NoProjectsView
-  // ============================================================================
-
-  NoProjectsView() {
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia>
-            <IconFolderCode />
-          </EmptyMedia>
-          <EmptyDescription>
-            You haven't created any projects yet. Get started by creating your first project.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent className="flex-row justify-center gap-2">
-          <Button onClick={this.addEmptyProject}>Create Project</Button>
-        </EmptyContent>
-      </Empty>
-    )
-  }
-
-  // #endregion
-  // #region Versioner
-  // ============================================================================
-
-  static versioner = this.defineVersioner({
+  static versioner: any = {
     1(this: any) {
       this.list = []
     },
@@ -167,9 +85,16 @@ export class Projects extends gl.Unit {
     5() {
       this.creation = new gl.ProjectsCreation(this)
     },
-  })
-
-  // #endregion
-  // #region
-  // ============================================================================
+    6() {
+      this.ui = new gl.ProjectsUi(this)
+    },
+    7() {
+      this.ui = new gl.ProjectsUi(this)
+      this.actions = {}
+    },
+    8() {
+      this.ui = new gl.ProjectsUi(this)
+      delete this.actions
+    }
+  }
 }

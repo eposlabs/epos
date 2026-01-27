@@ -1,4 +1,5 @@
-/** This is a patched version of https://github.com/nico-martin/file-system-observer-types. */
+// This is a patched version of https://github.com/nico-martin/file-system-observer-types
+// ============================================================================
 
 declare global {
   type FileSystemObserverCallback = (records: FileSystemChangeRecord[], observer: FileSystemObserver) => void

@@ -1,3 +1,20 @@
+function ui(params: any) {
+  return (target: any, key: string) => {
+    target.constructor.uiConfig ??= {}
+    target.constructor.uiConfig[key] = params
+  }
+}
+
+// function override(target: any, key: string) {}
+
+// class Data {
+//   @override
+//   value = 3
+// }
+
+// self.data = new Data()
+// console.warn(self.data.value)
+
 export class Theme extends gl.Unit {
   value: 'light' | 'dark' = this.getSystemTheme()
 

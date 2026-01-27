@@ -1,4 +1,4 @@
-import './core/globals'
+import './core/core'
 import './gl.css'
 import './layers/index.gl'
 

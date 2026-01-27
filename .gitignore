@@ -1,5 +1,6 @@
 .DS_Store
 .env
 .netlify
+.vscode
 dist
 node_modules

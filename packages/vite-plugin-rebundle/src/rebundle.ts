@@ -51,6 +51,10 @@ export class RebundleVite {
     }
   }
 
+  // #endregion
+  // #region VITE HOOKS
+  // ============================================================================
+
   private onConfig = async (config: UserConfig) => {
     if (config.build?.watch) {
       this.port = await getPort({ port: 3100 })
@@ -154,6 +158,10 @@ export class RebundleVite {
     }
   }
 
+  // #endregion
+  // #region HELPERS
+  // ============================================================================
+
   private get dist() {
     if (!this.config) throw 'never'
     return this.config.build.outDir
@@ -190,6 +198,10 @@ export class RebundleVite {
     return result
   }
 }
+
+// #endregion
+// #region EXPORT
+// ============================================================================
 
 export function rebundle(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
   return new RebundleVite(commonOptions, bundleOptions).plugin

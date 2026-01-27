@@ -282,11 +282,11 @@ export class Paralayer extends Unit {
     if (content === prevContent) return
     await writeFile(path, content, 'utf-8')
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }
+
+// #endregion
+// #region EXPORT
+// ============================================================================
 
 export async function paralayer(options: Options) {
   const defineLayersJs = await new Paralayer(options).start()
