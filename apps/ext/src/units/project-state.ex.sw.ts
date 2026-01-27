@@ -202,8 +202,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     this.saveWithDelay()
   }
 
-  // #endregion
-  // #region ATTACH / DETACH
+  // MARK: Attach / Detach
   // ============================================================================
 
   private attach(value: unknown, parent: Parent) {
@@ -373,8 +372,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     }
   }
 
-  // #endregion
-  // #region MOBX PROCESSING
+  // MARK: MobX Processing
   // ============================================================================
 
   private onMNodeChange = (change: MNodeChange) => {
@@ -497,8 +495,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     return this.$.utils.is.object(change.object)
   }
 
-  // #endregion
-  // #region YJS PROCESSING
+  // MARK: Yjs Processing
   // ============================================================================
 
   private onYNodeChange = async (e: YMapEvent<unknown> | YArrayEvent<unknown>) => {
@@ -564,8 +561,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     })
   }
 
-  // #endregion
-  // #region PERSISTENCE
+  // MARK: Persistence
   // ============================================================================
 
   private async save(force = false) {
@@ -587,8 +583,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     this.saveTimeout = setTimeout(() => this.save(), this.SAVE_DELAY)
   }
 
-  // #endregion
-  // #region HELPERS
+  // MARK: Helpers
   // ============================================================================
 
   private getMeta(target: any): Meta | null {

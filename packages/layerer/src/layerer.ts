@@ -57,8 +57,7 @@ export class Layerer extends Unit {
     return await readFile(defineJsPath, 'utf-8')
   }
 
-  // #endregion
-  // #region HANDLERS
+  // MARK: Handlers
   // ============================================================================
 
   private onAll = async (event: string, path: string) => {
@@ -96,8 +95,7 @@ export class Layerer extends Unit {
     this.ready$.resolve()
   }
 
-  // #endregion
-  // #region BUILD
+  // MARK: Build
   // ============================================================================
 
   private async build() {
@@ -159,8 +157,7 @@ export class Layerer extends Unit {
     await this.write(defineFile, defineContent)
   }
 
-  // #endregion
-  // #region MISC
+  // MARK: Misc
   // ============================================================================
 
   private extractExportedClassNames(content: string) {
@@ -284,8 +281,7 @@ export class Layerer extends Unit {
   }
 }
 
-// #endregion
-// #region EXPORT
+// MARK: Export
 // ============================================================================
 
 export async function layerer(options: Options) {

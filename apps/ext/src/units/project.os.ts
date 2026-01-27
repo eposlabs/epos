@@ -55,8 +55,7 @@ export class Project extends os.Unit {
     this.removeBackground()
   }
 
-  // #endregion
-  // #region BACKGROUND MANAGEMENT
+  // MARK: Background
   // ============================================================================
 
   private createBackground(silent = false) {
@@ -123,8 +122,7 @@ export class Project extends os.Unit {
     return this.$.env.url.project({ id: this.id, locus: 'background', debug: this.debug })
   }
 
-  // #endregion
-  // #region FRAME MANAGEMENT
+  // MARK: Frames
   // ============================================================================
 
   private getFrames(): Frame[] {
@@ -229,8 +227,7 @@ export class Project extends os.Unit {
     }
   }
 
-  // #endregion
-  // #region HELPERS
+  // MARK: Helpers
   // ============================================================================
 
   private info(params: { title: string; subtitle?: string }) {
@@ -242,8 +239,4 @@ export class Project extends os.Unit {
       timestamp: true,
     })
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }

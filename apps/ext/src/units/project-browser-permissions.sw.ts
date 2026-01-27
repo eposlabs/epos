@@ -79,8 +79,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return true
   }
 
-  // #endregion
-  // #region ORIGIN ACCESS
+  // MARK: Origin Access
   // ============================================================================
 
   private getOrigins() {
@@ -120,8 +119,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     this.$project.meta.grantedOrigins = nextGrantedOrigins
   }
 
-  // #endregion
-  // #region PERMISSION ACCESS
+  // MARK: Permission Access
   // ============================================================================
 
   getPermissions() {
@@ -159,8 +157,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     this.$project.meta.grantedPermissions = nextGrantedPermissions
   }
 
-  // #endregion
-  // #region REQUEST VIA PERSMISSION PAGE
+  // MARK: Permission Request
   // ============================================================================
 
   private async requestViaPermissionPage(reqId: string, query: PermissionQuery) {
@@ -186,8 +183,7 @@ export class ProjectBrowserPermissions extends sw.Unit {
     return granted
   }
 
-  // #endregion
-  // #region HELPERS
+  // MARK: Helpers
   // ============================================================================
 
   private prepareQuery(query: PermissionQuery) {
@@ -211,8 +207,4 @@ export class ProjectBrowserPermissions extends sw.Unit {
   private isArrayOfStrings(value: unknown) {
     return this.$.utils.is.array(value) && value.every(this.$.utils.is.string)
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }

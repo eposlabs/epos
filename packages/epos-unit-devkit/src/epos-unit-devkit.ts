@@ -37,8 +37,7 @@ export class Unit<TRoot = unknown> {
     this[_parent_] = parent
   }
 
-  // #endregion
-  // #region ATTACH
+  // MARK: Attach
   // ============================================================================
 
   /**
@@ -151,8 +150,7 @@ export class Unit<TRoot = unknown> {
     Reflect.defineProperty(this, _attached_, { configurable: true, get: () => true })
   }
 
-  // #endregion
-  // #region DETACH
+  // MARK: Detach
   // ============================================================================
 
   /**
@@ -175,8 +173,7 @@ export class Unit<TRoot = unknown> {
     if (is.function(detach)) detach()
   }
 
-  // #endregion
-  // #region ROOT GETTER
+  // MARK: Root Getter
   // ============================================================================
 
   /**
@@ -188,8 +185,7 @@ export class Unit<TRoot = unknown> {
     return this[_root_]
   }
 
-  // #endregion
-  // #region METHODS
+  // MARK: Methods
   // ============================================================================
 
   use<T>(id: string) {
@@ -275,14 +271,9 @@ export class Unit<TRoot = unknown> {
 
     return null
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }
 
-// #endregion
-// #region HELPERS
+// MARK: Helpers
 // ============================================================================
 
 /**
@@ -376,7 +367,3 @@ function createView<T>(unit: Unit<T>, name: string, render: FC<unknown>) {
 
   return View
 }
-
-// #endregion
-// #region
-// ============================================================================

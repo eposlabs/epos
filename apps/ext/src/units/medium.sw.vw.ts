@@ -12,8 +12,7 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // #endregion
-  // #region TAB
+  // MARK: Tab
   // ===========================================================================
 
   async openTab(url: string) {
@@ -29,8 +28,7 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // #endregion
-  // #region POPUP
+  // MARK: Popup
   // ===========================================================================
 
   async openPopup(tabId: number, windowId: number) {
@@ -48,8 +46,7 @@ export class Medium extends swVw.Unit {
     }
   }
 
-  // #endregion
-  // #region SIDE PANEL
+  // MARK: Side Panel
   // ===========================================================================
 
   async openSidePanel(tabId: number, windowId: number) {
@@ -69,8 +66,4 @@ export class Medium extends swVw.Unit {
     const wasOpen = await wasOpenPromise
     if (wasOpen) await this.closeSidePanel(tabId)
   }
-
-  // #endregion
-  // #region
-  // ===========================================================================
 }

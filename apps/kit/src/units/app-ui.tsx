@@ -15,8 +15,7 @@ export class AppUi extends gl.Unit {
     return this.closest(gl.App)!
   }
 
-  // #endregion
-  // #region VIEW
+  // MARK: View
   // ============================================================================
 
   View() {
@@ -31,8 +30,7 @@ export class AppUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region SIDEBAR VIEW
+  // MARK: SidebarView
   // ============================================================================
 
   SidebarView() {
@@ -59,8 +57,7 @@ export class AppUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region CONTENT VIEW
+  // MARK: ContentView
   // ============================================================================
 
   ContentView() {
@@ -71,8 +68,7 @@ export class AppUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region LOGO VIEW
+  // MARK: LogoView
   // ============================================================================
 
   LogoView() {

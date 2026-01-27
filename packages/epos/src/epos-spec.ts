@@ -74,6 +74,9 @@ export type Permission =
   | 'notifications'
   | 'storage'
 
+// MARK: Schema
+// ============================================================================
+
 const schema = {
   keys: [
     '$schema',
@@ -124,6 +127,9 @@ const schema = {
     'optional:storage',
   ],
 }
+
+// MARK: Parsers
+// ============================================================================
 
 export function parseSpecJson(json: string): Spec {
   if (!is.string(json)) throw new Error(`Failed to parse JSON: input is not a string`)
@@ -417,19 +423,8 @@ function parseManifest(spec: Obj): Manifest | null {
   return spec.manifest
 }
 
-// HELPERS
-// ---------------------------------------------------------------------------
-
-function isArrayOfStrings(value: unknown) {
-  return is.array(value) && value.every(is.string)
-}
-
-function isValidUrl(value: unknown) {
-  if (!is.string(value)) return false
-  return URL.canParse(value)
-}
-
 /**
+ * Validate and normalize path:
  * - 'path/to' -> 'path/to'
  * - 'path/to/' -> 'path/to'
  * - '/path/to' -> 'path/to'
@@ -444,10 +439,20 @@ function parsePath(path: string) {
     .split('/')
     .filter(path => path && path !== '.')
     .join('/')
-
   if (normalizedPath.startsWith('..')) throw new Error(`External paths are not allowed: '${path}'`)
-
   return normalizedPath
+}
+
+// MARK: Helpers
+// ============================================================================
+
+function isValidUrl(value: unknown) {
+  if (!is.string(value)) return false
+  return URL.canParse(value)
+}
+
+function isArrayOfStrings(value: unknown) {
+  return is.array(value) && value.every(is.string)
 }
 
 function slugify(text: string) {

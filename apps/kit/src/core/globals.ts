@@ -11,8 +11,7 @@ declare global {
   }
 }
 
-// #endregion
-// #region UNIT
+// MARK: Unit
 // ============================================================================
 
 import { Unit } from '../../../../packages/epos-unit/src/epos-unit.js'

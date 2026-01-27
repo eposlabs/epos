@@ -23,7 +23,7 @@ export type BundleOptions = {
   [bundleName: string]: RolldownOptions
 }
 
-export class RebundleVite {
+export class Rebundle {
   private commonOptions: RolldownOptions
   private bundleOptions: BundleOptions
   private config: ResolvedConfig | null = null
@@ -51,8 +51,7 @@ export class RebundleVite {
     }
   }
 
-  // #endregion
-  // #region VITE HOOKS
+  // MARK: Vite Hooks
   // ============================================================================
 
   private onConfig = async (config: UserConfig) => {
@@ -158,8 +157,7 @@ export class RebundleVite {
     }
   }
 
-  // #endregion
-  // #region HELPERS
+  // MARK: Helpers
   // ============================================================================
 
   private get dist() {
@@ -199,12 +197,11 @@ export class RebundleVite {
   }
 }
 
-// #endregion
-// #region EXPORT
+// MARK: Export
 // ============================================================================
 
 export function rebundle(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
-  return new RebundleVite(commonOptions, bundleOptions).plugin
+  return new Rebundle(commonOptions, bundleOptions).plugin
 }
 
 export default rebundle

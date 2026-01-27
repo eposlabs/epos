@@ -16,8 +16,7 @@ export class ProjectUi extends gl.Unit {
     return this.closest(gl.Project)!
   }
 
-  // #endregion
-  // #region View
+  // MARK: View
   // ===========================================================================
 
   View() {
@@ -26,8 +25,7 @@ export class ProjectUi extends gl.Unit {
     return <this.MainView />
   }
 
-  // #endregion
-  // #region LoadingView
+  // MARK: Loadingview
   // ===========================================================================
 
   LoadingView() {
@@ -38,8 +36,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region NoDirectoryView
+  // MARK: Nodirectoryview
   // ===========================================================================
 
   NoDirectoryView() {
@@ -76,8 +73,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region HeaderView
+  // MARK: Headerview
   // ===========================================================================
 
   HeaderView() {
@@ -109,8 +105,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region ConnectView
+  // MARK: Connectview
   // ============================================================================
 
   ConnectView() {
@@ -131,8 +126,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region CONTENT
+  // MARK: Content
   // ============================================================================
 
   ContentView() {
@@ -164,8 +158,7 @@ export class ProjectUi extends gl.Unit {
     return <div>CONNECTED AS {this.self.state.handle?.name}</div>
   }
 
-  // #endregion
-  // #region ERROR VIEW
+  // MARK: Error View
   // ============================================================================
 
   ErrorView() {
@@ -179,8 +172,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region MAIN VIEW
+  // MARK: Main View
   // ===========================================================================
 
   MainView() {
@@ -436,8 +428,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region SpecTabView
+  // MARK: Spectabview
   // ===========================================================================
 
   SpecTabView() {
@@ -452,8 +443,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region ManifestTabView
+  // MARK: Manifesttabview
   // ===========================================================================
 
   ManifestTabView() {
@@ -466,8 +456,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region AssetsTabView
+  // MARK: Assetstabview
   // ===========================================================================
 
   AssetsTabView() {
@@ -509,8 +498,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region SourcesTabView
+  // MARK: Sourcestabview
   // ===========================================================================
 
   SourcesTabView() {
@@ -552,8 +540,7 @@ export class ProjectUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region SidebarView
+  // MARK: Sidebarview
   // ===========================================================================
 
   SidebarView() {

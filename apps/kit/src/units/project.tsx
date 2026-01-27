@@ -229,8 +229,7 @@ export class Project extends gl.Unit {
     return <this.ui.SidebarView />
   }
 
-  // #endregion
-  // #region Versioner
+  // MARK: Versioner
   // ============================================================================
 
   static versioner: any = {

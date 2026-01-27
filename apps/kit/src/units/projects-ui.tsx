@@ -15,8 +15,7 @@ export class ProjectsUi extends gl.Unit {
     return this.closest(gl.Projects)!
   }
 
-  // #endregion
-  // #region View
+  // MARK: View
   // ============================================================================
 
   View() {
@@ -25,8 +24,7 @@ export class ProjectsUi extends gl.Unit {
     return <this.self.selectedProject.View />
   }
 
-  // #endregion
-  // #region SidebarView
+  // MARK: SidebarView
   // ============================================================================
 
   SidebarView() {
@@ -53,8 +51,7 @@ export class ProjectsUi extends gl.Unit {
     )
   }
 
-  // #endregion
-  // #region NoProjectsView
+  // MARK: NoProjectsView
   // ============================================================================
 
   private NoProjectsView() {
@@ -74,8 +71,4 @@ export class ProjectsUi extends gl.Unit {
       </Empty>
     )
   }
-
-  // #endregion
-  // #region
-  // ============================================================================
 }

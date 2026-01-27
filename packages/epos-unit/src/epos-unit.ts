@@ -159,8 +159,7 @@ export class Unit<TRoot = unknown> {
   }
 }
 
-// #endregion
-// #region INITIALIZATION
+// MARK: Initialization
 // ============================================================================
 
 function initInternals<T>(unit: Unit<T>) {
@@ -258,8 +257,7 @@ function triggerAttachLifecycle(unit: Unit<any>) {
   unit[_attached_] = true
 }
 
-// #endregion
-// #region HELPERS
+// MARK: Helpers
 // ============================================================================
 
 function defineAccessor<T extends object, K extends keyof T>(target: T, key: K, value: T[K]) {
