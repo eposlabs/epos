@@ -8,7 +8,7 @@ export class ProjectStates extends exSw.Unit {
   dict: Record<string, exSw.ProjectState> = {}
   config: Config
   models: Models = {}
-  $project: ex.Project | sw.Project
+  private $project = this.closest<ex.Project | sw.Project>('Project')!
   private bus: ReturnType<gl.Bus['for']>
   private queue = new this.$.utils.Queue()
   private autoDisconnectInterval = -1 // For `sw`
@@ -20,7 +20,6 @@ export class ProjectStates extends exSw.Unit {
 
   constructor(parent: exSw.Unit, config?: Config) {
     super(parent)
-    this.$project = parent as ex.Project | sw.Project
     this.id = `ProjectStates[${this.$project.id}]`
     this.config = config ?? { allowMissingModels: false }
     this.bus = this.$.bus.for(`ProjectStates[${this.$project.id}]`)

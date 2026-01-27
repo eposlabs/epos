@@ -48,7 +48,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   name: string
   root: Root<T> = {} as Root<T>
   private $states = this.closest(exSw.ProjectStates)!
-  private $project = this.$states.$project
+  private $project = this.closest<ex.Project | sw.Project>('Project')!
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
   private initial: Initial<T> | null = null

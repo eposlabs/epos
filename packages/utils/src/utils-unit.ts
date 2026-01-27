@@ -1,4 +1,5 @@
 import { createLog } from './utils-create-log.js'
+import { is } from './utils-is.js'
 import type { Ctor } from './utils-types.js'
 
 export class Unit<TRoot = unknown> {
@@ -11,12 +12,17 @@ export class Unit<TRoot = unknown> {
     this.#parent = parent ?? null
   }
 
-  closest<T extends Unit<TRoot>>(Ancestor: Ctor<T>): T | null {
+  closest<T extends Unit<TRoot>>(lookup: Ctor<T> | string): T | null {
+    const isTarget = is.string(lookup)
+      ? (unit: Unit<TRoot>) => unit.constructor.name === lookup
+      : (unit: Unit<TRoot>) => unit instanceof lookup
+
     let cursor = this.#parent
     while (cursor) {
-      if (cursor instanceof Ancestor) return cursor as T
+      if (isTarget(cursor)) return cursor as T
       cursor = cursor.#parent
     }
+
     return null
   }
 

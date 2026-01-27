@@ -25,6 +25,7 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     output: {
+      keepNames: true,
       banner: `(async () => {\n${defineLayersJs}\n`,
       footer: '})()',
       minify: (forceMode ?? mode) !== 'development',
