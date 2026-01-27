@@ -1,4 +1,4 @@
-import { Unit } from 'dropcap/utils'
+import { Unit } from '../../../../packages/utils/dist/utils'
 
 class UnitCs extends Unit<cs.App> {}
 class UnitEx extends Unit<ex.App> {}

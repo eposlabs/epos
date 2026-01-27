@@ -1,12 +1,12 @@
+import { layerer } from '@eposlabs/layerer'
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
-import { paralayer } from 'paralayer'
 import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
 // https://vite.dev/config/
 export default defineConfig(async ({ mode }) => {
-  const defineLayersJs = await paralayer({
+  const defineLayersJs = await layerer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',

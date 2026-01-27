@@ -1,6 +1,6 @@
 /// <reference types="epos" />
 /// <reference types="vite/client" />
-/// <reference types="dropcap/globals" />
+/// <reference types="@eposlabs/types" />
 import { Unit } from 'epos-unit'
 
 class UnitGl<T extends gl = gl> extends Unit<T['App']> {}

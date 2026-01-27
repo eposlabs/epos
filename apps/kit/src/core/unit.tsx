@@ -1,4 +1,4 @@
-import { createLog, get, is, set, type Arr, type Cls, type Obj } from 'dropcap/utils'
+import { createLog, get, is, set, type Arr, type Cls, type Obj } from '@eposlabs/utils'
 import { epos, type Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 

@@ -1,5 +1,5 @@
+import { Queue, Unit, is, safe } from '@eposlabs/utils'
 import { watch, type FSWatcher } from 'chokidar'
-import { Queue, Unit, is, safe } from 'dropcap/utils'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
 
@@ -22,7 +22,7 @@ export type Options = {
   defaultLayerName?: string | null
 }
 
-export class Paralayer extends Unit {
+export class Layerer extends Unit {
   private files: { [path: string]: File | null } = {}
   private options: Options
   private started = false
@@ -164,7 +164,7 @@ export class Paralayer extends Unit {
   // ============================================================================
 
   private extractExportedClassNames(content: string) {
-    if (content.includes('paralayer-ignore')) return []
+    if (content.includes('layerer-ignore')) return []
     return content
       .split(/^export class /m)
       .slice(1)
@@ -288,9 +288,9 @@ export class Paralayer extends Unit {
 // #region EXPORT
 // ============================================================================
 
-export async function paralayer(options: Options) {
-  const defineLayersJs = await new Paralayer(options).start()
+export async function layerer(options: Options) {
+  const defineLayersJs = await new Layerer(options).start()
   return defineLayersJs
 }
 
-export default paralayer
+export default layerer

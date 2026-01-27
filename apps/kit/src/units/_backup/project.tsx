@@ -13,7 +13,7 @@
 // import { SidebarMenuButton, SidebarMenuItem } from '@ui/components/ui/sidebar'
 // import { cn } from '@ui/lib/utils'
 // import type { Bundle } from 'epos'
-// import type { Spec } from 'epos-spec'
+// import type { Spec } from 'epos/spec'
 
 // class _Project_ extends gl.Unit {
 //   name: string | null = null

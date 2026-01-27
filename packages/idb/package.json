@@ -1,26 +1,25 @@
 {
-  "name": "epos-unit",
-  "version": "1.25.0",
+  "name": "@eposlabs/idb",
+  "version": "1.21.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
-  "keywords": [],
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/epos-unit.js"
+    ".": "./dist/idb.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.20.0",
-    "epos": "^1.55.0",
-    "nanoid": "^5.1.6"
+    "@eposlabs/utils": "^1.20.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

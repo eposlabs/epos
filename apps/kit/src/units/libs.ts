@@ -1,4 +1,4 @@
-import { parseSpecJson, parseSpecObject } from 'epos-spec'
+import { parseSpecJson, parseSpecObject } from 'epos/spec'
 import { nanoid } from 'nanoid'
 import stripJsonComments from 'strip-json-comments'
 

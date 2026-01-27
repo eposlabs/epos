@@ -1,6 +1,6 @@
 /// <reference types="chrome"/>
 /// <reference types="vite/client" />
-/// <reference types="dropcap/globals"/>
+/// <reference types="@eposlabs/types"/>
 import type { Epos, Spec } from 'epos'
 
 declare global {

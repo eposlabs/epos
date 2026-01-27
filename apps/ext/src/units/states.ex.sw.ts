@@ -1,4 +1,4 @@
-import type { DbName, DbStoreName } from 'dropcap/idb'
+import type { DbName, DbStoreName } from '../../../../packages/utils/dist/idb'
 import type { Initial, Root, Versioner } from './state.ex.sw'
 
 export type Models = Record<string, Cls>

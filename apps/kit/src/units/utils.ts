@@ -1,4 +1,4 @@
-import { enqueue, is, link, Queue, safe, safeSync, wait } from 'dropcap/utils'
+import { enqueue, is, link, Queue, safe, safeSync, wait } from '@eposlabs/utils'
 import { zip } from './utils-zip.js'
 
 export class Utils extends gl.Unit {

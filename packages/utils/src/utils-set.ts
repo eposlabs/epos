@@ -1,4 +1,4 @@
-import { is } from 'dropcap/utils'
+import { is } from './utils-is.js'
 
 export function set(target: unknown, path: PropertyKey[], value: unknown) {
   const [key, ...rest] = path

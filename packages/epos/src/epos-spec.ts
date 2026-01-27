@@ -1,5 +1,5 @@
+import { ensureArray, is, safeSync, unique, type Obj } from '@eposlabs/utils'
 import { matchPattern } from 'browser-extension-url-match'
-import { ensureArray, is, safeSync, unique, type Obj } from 'dropcap/utils'
 import stripJsonComments from 'strip-json-comments'
 
 export type Action = true | string

@@ -1,4 +1,4 @@
-import { is } from 'dropcap/utils'
+import { is } from '../../../../packages/utils/dist/utils'
 
 export async function hash(value: unknown) {
   const str = await stringify(value)

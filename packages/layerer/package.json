@@ -1,6 +1,6 @@
 {
-  "name": "paralayer",
-  "version": "1.20.0",
+  "name": "@eposlabs/layerer",
+  "version": "1.23.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -15,20 +15,23 @@
     "lint": "tsgo --build --noEmit"
   },
   "bin": {
-    "paralayer": "./src/bin.js"
+    "layerer": "./src/bin.js"
   },
   "exports": {
-    ".": "./dist/paralayer.js"
+    ".": "./dist/layerer.js"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
+    "@eposlabs/utils": "^1.20.0",
     "chokidar": "^5.0.0",
-    "dropcap": "^1.18.0",
     "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

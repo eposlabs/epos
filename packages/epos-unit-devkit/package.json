@@ -1,21 +1,25 @@
 {
-  "name": "dropcap",
-  "version": "1.18.0",
+  "name": "epos-unit-devkit",
+  "version": "1.25.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
+  "keywords": [],
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    "./idb": "./dist/idb.js",
-    "./utils": "./dist/utils.js",
-    "./globals": "./dist/globals.js"
+    ".": "./dist/epos-unit-devkit.js"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@eposlabs/utils": "^1.20.0",
+    "epos": "^1.55.0"
+  }
 }

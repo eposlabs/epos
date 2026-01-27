@@ -1,4 +1,4 @@
-import { enqueue, get, is, link, Queue, safe, safeSync } from 'dropcap/utils'
+import { enqueue, get, is, link, Queue, safe, safeSync } from '../../../../packages/utils/dist/utils.js'
 import { id } from './utils-id.js'
 import { time } from './utils-time.js'
 

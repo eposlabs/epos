@@ -1,4 +1,4 @@
-import { idb } from 'dropcap/idb'
+import { idb } from '@eposlabs/idb'
 
 export class Idb extends gl.Unit {
   declare get: (typeof idb)['get']

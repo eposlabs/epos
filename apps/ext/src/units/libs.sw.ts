@@ -1,6 +1,6 @@
+import { idb } from '@eposlabs/idb'
 import { matchPattern } from 'browser-extension-url-match'
-import { idb } from 'dropcap/idb'
-import { parseSpecJson } from 'epos-spec'
+import { parseSpecJson } from 'epos/spec'
 import { compressToBase64 } from 'lz-string'
 import * as mobx from 'mobx'
 import stripJsonComments from 'strip-json-comments'

@@ -1,4 +1,4 @@
-import { Queue, is, type AsyncFn } from './utils.js'
+import { Queue, is, type AsyncFn } from '@eposlabs/utils'
 
 export const _dispose_ = Symbol('dispose')
 

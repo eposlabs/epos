@@ -1,4 +1,3 @@
-import type { Spec } from 'epos-spec'
 import type * as mobx from 'mobx'
 import type * as mobxReactLite from 'mobx-react-lite'
 import type * as react from 'react'
@@ -7,6 +6,7 @@ import type * as reactDomClient from 'react-dom/client'
 import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
 import type { Browser } from './epos-browser.js'
+import type { Spec } from './epos-spec.js'
 
 // Common types
 export type Fn = (...args: any[]) => unknown

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import minimist from 'minimist'
-import { paralayer } from './paralayer.js'
+import { layerer } from './layerer.js'
 
 const argv = minimist(process.argv.slice(2), {
   string: ['defaultLayerName'],
@@ -14,16 +14,16 @@ const input = paths.slice(0, -1)
 const output = paths.at(-1)
 
 if (input.length === 0) {
-  console.error('[paralayer] Input directory is not provided')
+  console.error('Input directory not provided')
   process.exit(1)
 }
 
 if (!output) {
-  console.error('[paralayer] Output directory is not provided')
+  console.error('Output directory not provided')
   process.exit(1)
 }
 
-await paralayer({
+await layerer({
   input: input,
   output: output,
   watch: argv.watch,

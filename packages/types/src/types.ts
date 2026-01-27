@@ -1,4 +1,4 @@
-import * as types from './utils-types.js'
+import * as types from '@eposlabs/utils'
 
 declare global {
   type Obj<T = unknown> = types.Obj<T>

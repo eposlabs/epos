@@ -1,6 +1,6 @@
+import { layerer } from '@eposlabs/layerer'
 import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
-import { paralayer } from 'paralayer'
 import { defineConfig } from 'vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 
@@ -8,7 +8,7 @@ export default defineConfig(async ({ mode }) => {
   if (mode !== 'development' && mode !== 'production' && mode !== 'preview') throw new Error('Invalid mode')
   const env = mode === 'development' ? 'development' : 'production'
 
-  const defineLayersJs = await paralayer({
+  const defineLayersJs = await layerer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',

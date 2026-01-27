@@ -1,25 +1,25 @@
 {
-  "name": "epos-spec",
-  "version": "1.13.0",
+  "name": "@eposlabs/types",
+  "version": "1.20.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
-  "keywords": [],
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/epos-spec.js"
+    ".": "./dist/types.js"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
-    "browser-extension-url-match": "^1.2.0",
-    "dropcap": "^1.18.0",
-    "strip-json-comments": "^5.0.3"
+    "@eposlabs/utils": "^1.20.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
