@@ -368,9 +368,9 @@ export class ProjectUi extends gl.Unit {
                         <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
                           <span>Total Assets</span>
                           <span>
-                            {(
-                              Object.values(this.self.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024
-                            ).toFixed(2)}{' '}
+                            {(Object.values(this.self.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
+                              2,
+                            )}{' '}
                             KB
                           </span>
                         </div>
@@ -402,9 +402,9 @@ export class ProjectUi extends gl.Unit {
                         <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
                           <span>Total Sources</span>
                           <span>
-                            {(
-                              Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024
-                            ).toFixed(2)}{' '}
+                            {(Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
+                              2,
+                            )}{' '}
                             KB
                           </span>
                         </div>
@@ -489,9 +489,7 @@ export class ProjectUi extends gl.Unit {
                   <tr key={path} className="border-b border-border/50 transition-colors hover:bg-muted/30">
                     <td className="px-4 py-2 font-mono text-xs text-foreground">{path}</td>
                     <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                      {this.self.assetsInfo[path]
-                        ? `${(this.self.assetsInfo[path].size / 1024).toFixed(2)} KB`
-                        : '—'}
+                      {this.self.assetsInfo[path] ? `${(this.self.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
                     </td>
                   </tr>
                 ))}
@@ -500,8 +498,7 @@ export class ProjectUi extends gl.Unit {
                 <tr>
                   <td className="px-4 py-2 text-xs font-medium">Total Assets</td>
                   <td className="px-4 py-2 text-right text-xs font-medium">
-                    {(Object.values(this.self.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)}{' '}
-                    KB
+                    {(Object.values(this.self.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
                   </td>
                 </tr>
               </tfoot>
@@ -535,9 +532,7 @@ export class ProjectUi extends gl.Unit {
                   <tr key={path} className="border-b border-border/50 transition-colors hover:bg-muted/30">
                     <td className="px-4 py-2 font-mono text-xs text-foreground">{path}</td>
                     <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                      {this.self.sourcesInfo[path]
-                        ? `${(this.self.sourcesInfo[path].size / 1024).toFixed(2)} KB`
-                        : '—'}
+                      {this.self.sourcesInfo[path] ? `${(this.self.sourcesInfo[path].size / 1024).toFixed(2)} KB` : '—'}
                     </td>
                   </tr>
                 ))}
@@ -546,8 +541,7 @@ export class ProjectUi extends gl.Unit {
                 <tr>
                   <td className="px-4 py-2 text-xs font-medium">Total Sources</td>
                   <td className="px-4 py-2 text-right text-xs font-medium">
-                    {(Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)}{' '}
-                    KB
+                    {(Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
                   </td>
                 </tr>
               </tfoot>

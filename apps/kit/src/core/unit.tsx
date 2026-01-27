@@ -1,4 +1,4 @@
-import { createLog, get, is, set, type Arr, type Cls, type Obj } from '@eposlabs/utils'
+import { createLog, get, is, set, type Arr, type Constructor, type Obj } from '@eposlabs/utils'
 import { epos, type Asyncify } from 'epos'
 import { customAlphabet } from 'nanoid'
 
@@ -27,11 +27,11 @@ export class Unit<TRoot = unknown> {
   declare [_parent_]?: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
   declare [_attached_]?: boolean;
   declare [_disposers_]?: Set<() => void>;
-  declare [_ancestors_]?: Map<Cls, unknown>;
+  declare [_ancestors_]?: Map<Constructor, unknown>;
   declare [_attachQueue_]?: (() => void)[]
   static DEV = _dev_
 
-  static defineVersioner<T extends Unit>(this: Cls<T>, versioner: Versioner<T>) {
+  static defineVersioner<T extends Unit>(this: Constructor<T>, versioner: Versioner<T>) {
     return versioner
   }
 
@@ -269,7 +269,7 @@ export class Unit<TRoot = unknown> {
    * Find the closest ancestor unit of a given type.
    * The result is cached for subsequent calls.
    */
-  closest<T extends Unit>(Ancestor: Cls<T>) {
+  closest<T extends Unit>(Ancestor: Constructor<T>) {
     // Has cached value? -> Return it
     ensure(this, _ancestors_, () => new Map())
     if (this[_ancestors_].has(Ancestor)) return this[_ancestors_].get(Ancestor) as T

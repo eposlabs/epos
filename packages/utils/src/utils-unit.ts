@@ -1,5 +1,5 @@
 import { createLog } from './utils-create-log.js'
-import type { Cls } from './utils-types.js'
+import type { Constructor } from './utils-types.js'
 
 export class Unit<TRoot = unknown> {
   $: TRoot
@@ -11,7 +11,7 @@ export class Unit<TRoot = unknown> {
     this.#parent = parent ?? null
   }
 
-  closest<T extends Unit<TRoot>>(Ancestor: Cls<T>): T | null {
+  closest<T extends Unit<TRoot>>(Ancestor: Constructor<T>): T | null {
     let cursor = this.#parent
     while (cursor) {
       if (cursor instanceof Ancestor) return cursor as T

@@ -64,11 +64,11 @@ export class Projects extends gl.Unit {
   }
 
   View() {
-    return <this.ui.View/>
+    return <this.ui.View />
   }
 
   SidebarView() {
-    return <this.ui.SidebarView/>
+    return <this.ui.SidebarView />
   }
 
   static versioner: any = {
@@ -95,6 +95,6 @@ export class Projects extends gl.Unit {
     8() {
       this.ui = new gl.ProjectsUi(this)
       delete this.actions
-    }
+    },
   }
 }
