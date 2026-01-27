@@ -55,7 +55,7 @@ export class BusSerializer extends gl.Unit {
         $.utils.is.uint8Array(value) ||
         $.utils.is.undefined(value)
       ) {
-        const key = $.utils.id()
+        const key = $.utils.generateId()
         storage.set(key, value)
         return { [STORAGE_KEY]: key } as StorageLink
       }
@@ -79,7 +79,7 @@ export class BusSerializer extends gl.Unit {
       // Blob
       if ($.utils.is.blob(value)) {
         if ($.env.is.sw) {
-          const blobId = $.utils.id()
+          const blobId = $.utils.generateId()
           blobs.set(blobId, value)
           setTimeout(() => blobs.delete(blobId), 60_000)
           return { [REF]: 'blobId', id: blobId } satisfies BlobIdRef
@@ -141,7 +141,7 @@ export class BusSerializer extends gl.Unit {
 
       // Deserialize blob by id
       if (value[REF] === 'blobId') {
-        const key = this.$.utils.id()
+        const key = this.$.utils.generateId()
         const promise = (async () => {
           const url = await this.$bus.extBridge.send('Bus.blobIdToObjectUrl', value.id)
           if (!this.$.utils.is.string(url)) throw this.never()
@@ -154,7 +154,7 @@ export class BusSerializer extends gl.Unit {
 
       // Deserialize blob by url
       if (value[REF] === 'blobUrl') {
-        const key = this.$.utils.id()
+        const key = this.$.utils.generateId()
         const promise = (async () => {
           const blob = await fetch(value.url).then(r => r.blob())
           storage.set(key, blob)
@@ -172,7 +172,7 @@ export class BusSerializer extends gl.Unit {
 
       // Deserialize undefined
       if (value[REF] === 'undefined') {
-        const key = this.$.utils.id()
+        const key = this.$.utils.generateId()
         storage.set(key, undefined)
         return { [STORAGE_KEY]: key }
       }
@@ -212,7 +212,7 @@ export class BusSerializer extends gl.Unit {
     const blob = this.blobs.get(blobId)
     this.blobs.delete(blobId)
 
-    const reqId = this.$.utils.id()
+    const reqId = this.$.utils.generateId()
     const url$ = Promise.withResolvers<string>()
 
     const onMessage = (e: MessageEvent) => {

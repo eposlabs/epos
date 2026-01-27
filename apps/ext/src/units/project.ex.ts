@@ -22,7 +22,7 @@ export class Project extends ex.Unit {
     this.manifest = def.manifest
     this.shadowCss = def.shadowCss
     this.fn = def.fn
-    this.os = this.$.bus.use<os.Project>(`Project[${this.id}][os]`)
+    this.os = this.use<os.Project>('os', this.id)
     this.browser = new ex.ProjectBrowser(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.config.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)

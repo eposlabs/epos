@@ -1,11 +1,11 @@
 import { enqueue, get, is, link, Queue, safe, safeSync } from '@eposlabs/utils'
-import { id } from './utils-id.js'
+import { generateId } from './utils-generate-id.js'
 import { time } from './utils-time.js'
 
 export class Utils extends ex.Unit {
   enqueue = enqueue
+  generateId = generateId
   get = get
-  id = id
   is = is
   link = link
   Queue = Queue

@@ -1,5 +1,5 @@
 export class Peer extends exOs.Unit {
-  id = this.$.utils.id()
+  id = this.$.utils.generateId()
 
   constructor(parent: exOs.Unit) {
     super(parent)

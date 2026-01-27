@@ -1,4 +1,4 @@
-import type { Rpc } from 'epos'
+import type { Rpc, RpcTarget } from 'epos'
 import type { Target } from './bus-action.gl'
 
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
@@ -6,7 +6,7 @@ export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 export type CsTabInfo = TabInfo & { pageToken: string | null }
 
 export class Bus extends gl.Unit {
-  peerId = this.$.utils.id()
+  peerId = this.$.utils.generateId()
   pageToken: string | null = null // For secure `cs` <-> `ex` communication
   actions: gl.BusAction[] = [] // Registered actions
   utils = new gl.BusUtils(this)
@@ -20,7 +20,7 @@ export class Bus extends gl.Unit {
     if (!isCsOrEx) throw this.never()
 
     if (this.$.env.is.csTop) {
-      this.pageToken = this.$.utils.id()
+      this.pageToken = this.$.utils.generateId()
     } else if (this.$.env.is.csFrame) {
       this.pageToken = await this.extBridge.send<string | null>('Bus.getPageToken')
     } else if (this.$.env.is.ex && !this.$.env.is.exExtension) {
@@ -140,7 +140,7 @@ export class Bus extends gl.Unit {
     return result as T | null
   }
 
-  register(name: string, api: Obj<any>) {
+  register(name: string, api: RpcTarget) {
     if (this.rpcNames.has(name)) return
     this.rpcNames.add(name)
 
@@ -157,7 +157,7 @@ export class Bus extends gl.Unit {
     this.off(`Bus.rpc[${name}]`)
   }
 
-  use<T extends Obj<any>>(name: string) {
+  use<T extends RpcTarget>(name: string) {
     const target = {}
     return new Proxy(target, {
       get: (_, key: string) => {
@@ -200,7 +200,7 @@ export class Bus extends gl.Unit {
         if (disposed) return null
         return await this.waitSignal<T>(prefixed(name), timeout)
       },
-      register: (id: string, api: Obj<any>) => {
+      register: (id: string, api: RpcTarget) => {
         if (disposed) return
         this.register(prefixed(id), api)
       },
@@ -208,7 +208,7 @@ export class Bus extends gl.Unit {
         if (disposed) return
         this.unregister(prefixed(id))
       },
-      use: <T extends Obj<any>>(id: string) => {
+      use: <T extends RpcTarget>(id: string) => {
         if (disposed) throw new Error('Cannot call `use` on disposed Bus')
         return this.use<T>(prefixed(id))
       },

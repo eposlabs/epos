@@ -1,9 +1,9 @@
 import { get, is, safe } from '@eposlabs/utils'
-import { id } from './utils-id.js'
+import { generateId } from './utils-generate-id.js'
 
 export class Utils extends pm.Unit {
+  generateId = generateId
   get = get
-  id = id
   is = is
   safe = safe
 }

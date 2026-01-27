@@ -250,7 +250,7 @@ export type Project<T extends ProjectQuery = {}> = ProjectBase &
   (T extends { sources: true } ? { sources: Sources } : {}) &
   (T extends { assets: true } ? { assets: Assets } : {})
 
-export type Rpc<T extends Obj<any>> = {
+export type Rpc<T extends RpcTarget> = {
   [K in keyof T]: T[K] extends Fn ? (...args: Parameters<T[K]>) => Promise<Awaited<ReturnType<T[K]>>> : never
 }
 

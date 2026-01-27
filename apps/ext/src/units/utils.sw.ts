@@ -1,21 +1,21 @@
 import { colorHash, enqueue, ensureArray, get, is, link, Queue, safe, safeSync, unique } from '@eposlabs/utils'
+import { generateId } from './utils-generate-id.js'
 import { hash } from './utils-hash.js'
-import { id } from './utils-id.js'
 import { info } from './utils-info.js'
 import { normalizeUrl } from './utils-normalize-url.js'
 import { time } from './utils-time.js'
 
 export class Utils extends sw.Unit {
   get os() {
-    return this.$.bus.use<Omit<os.Utils, '$'>>('Utils[os]')
+    return this.use<os.Utils>('os')
   }
 
   colorHash = colorHash
   enqueue = enqueue
   ensureArray = ensureArray
+  generateId = generateId
   get = get
   hash = hash
-  id = id
   info = info
   is = is
   link = link

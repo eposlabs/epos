@@ -31,7 +31,7 @@ export class ProjectBrowserNotifications extends sw.Unit {
   async create(...args: unknown[]) {
     const [id, options] = this.$.utils.is.string(args[0])
       ? [this.$browser.prefix(args[0]), args[1] as NotificationCreateOptions]
-      : [this.$browser.prefix(this.$.utils.id()), args[0] as NotificationCreateOptions]
+      : [this.$browser.prefix(this.$.utils.generateId()), args[0] as NotificationCreateOptions]
 
     // `chrome.notifications.create` does not throw, so we use callback syntax to catch errors
     return await new Promise((resolve, reject) => {

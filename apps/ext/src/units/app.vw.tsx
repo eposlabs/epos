@@ -21,13 +21,13 @@ export class App extends vw.Unit {
 
   rerender() {
     if (!this.setRenderId) return
-    this.setRenderId(this.$.utils.id())
+    this.setRenderId(this.$.utils.generateId())
   }
 
   private render() {
     const root = document.getElementById('root')
     if (!root) throw this.never()
-    const context = this.$.libs.preact.createContext<string>(this.$.utils.id())
+    const context = this.$.libs.preact.createContext<string>(this.$.utils.generateId())
     this.$.libs.preact.render(<this.View context={context} />, root)
   }
 
@@ -40,7 +40,7 @@ export class App extends vw.Unit {
   }
 
   private View = (props: { context: Context<string> }) => {
-    const [renderId, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.id())
+    const [renderId, setRenderId] = this.$.libs.preact.useState<string>(this.$.utils.generateId())
     this.setRenderId = setRenderId
 
     return (

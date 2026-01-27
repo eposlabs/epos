@@ -110,7 +110,7 @@ export class Project extends sw.Unit {
     params: Omit<Bundle, 'assets'> & Partial<ProjectSettings & { id: string; main: boolean; meta: Meta }>,
   ) {
     super(parent)
-    this.id = params.id ?? this.$.utils.id()
+    this.id = params.id ?? this.$.utils.generateId()
     this.main = params.main ?? false
     this.debug = params.debug ?? false
     this.enabled = params.enabled ?? true
@@ -121,7 +121,7 @@ export class Project extends sw.Unit {
     this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: true })
-    this.$.bus.register(`Project[${this.id}][sw]`, this)
+    this.expose(this.id)
   }
 
   private async init() {
@@ -130,7 +130,7 @@ export class Project extends sw.Unit {
   }
 
   async dispose() {
-    this.$.bus.unregister(`Project[${this.id}][sw]`)
+    this.unexpose(this.id)
     await this.browser.dispose()
     await this.states.dispose()
     await this.removeSystemRules()

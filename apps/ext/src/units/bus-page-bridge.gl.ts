@@ -222,7 +222,7 @@ export class BusPageBridge extends gl.Unit {
   private createRequest(name: string, args: unknown[]): PageRequest {
     return {
       type: PAGE_REQUEST,
-      id: this.$.utils.id(),
+      id: this.$.utils.generateId(),
       name: name,
       args: this.$bus.serializer.sanitize(args) as unknown[],
       peerId: this.$bus.peerId,

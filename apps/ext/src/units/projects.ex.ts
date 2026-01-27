@@ -4,7 +4,7 @@ export class Projects extends ex.Unit {
   dict: { [id: string]: ex.Project } = {}
   tabInfo = this.getTabInfo()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
-  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+  sw = this.use<sw.Projects>('sw')
   bus = this.$.bus.for('Projects')
 
   get list() {

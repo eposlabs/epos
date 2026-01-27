@@ -15,12 +15,17 @@ export default defineConfig(async ({ mode }) => {
     globalLayerName: 'gl',
   })
 
-  const bundle = (name: string, forceMode?: 'development' | 'production'): RolldownOptions => ({
+  const bundle = (
+    name: string,
+    forceMode?: 'development' | 'production',
+    define: Record<string, string> = {},
+  ): RolldownOptions => ({
     input: {
       transform: {
         define: {
           'BUNDLE': JSON.stringify(name),
           'process.env.NODE_ENV': forceMode ? JSON.stringify(forceMode) : JSON.stringify(env),
+          ...define,
         },
       },
     },
@@ -48,10 +53,10 @@ export default defineConfig(async ({ mode }) => {
         'pm': bundle('pm'),
         'sw': bundle('sw'),
         'vw': bundle('vw'),
-        'exd': bundle('ex', 'development'),
-        'exp': bundle('ex', 'production'),
-        'exd-mini': bundle('ex-mini', 'development'),
-        'exp-mini': bundle('ex-mini', 'production'),
+        'exd': bundle('ex', 'development', { EX_MINI: 'false' }),
+        'exp': bundle('ex', 'production', { EX_MINI: 'false' }),
+        'exd-mini': bundle('ex', 'development', { EX_MINI: 'true' }),
+        'exp-mini': bundle('ex', 'production', { EX_MINI: 'true' }),
       }),
     ],
 
@@ -72,6 +77,7 @@ export default defineConfig(async ({ mode }) => {
           'exp-mini': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
         },
         output: {
+          keepNames: true,
           sourcemap: false,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',

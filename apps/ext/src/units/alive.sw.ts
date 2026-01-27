@@ -1,7 +1,7 @@
 export class Alive extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.register('Alive[sw]', this)
+    this.expose('sw')
     void this.initAlarm()
   }
 

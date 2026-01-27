@@ -1,5 +1,5 @@
 export class Idb extends ex.Unit {
-  private sw = this.$.bus.use<sw.Idb>('Idb[sw]')
+  sw = this.use<sw.Idb>('sw')
   get = this.sw.get as sw.Idb['get']
   has = this.sw.has as sw.Idb['has']
   set = this.sw.set as sw.Idb['set']

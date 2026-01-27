@@ -7,11 +7,11 @@ export class ProjectBrowser extends sw.Unit {
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
   private declarativeNetRequest = new sw.ProjectBrowserDeclarativeNetRequest(this)
-  ex = this.$.bus.use<ex.ProjectBrowser>(`ProjectBrowser[${this.$project.id}][ex]`)
+  ex = this.use<ex.ProjectBrowser>('ex', this.$project.id)
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.register(`ProjectBrowser[${this.$project.id}][sw]`, this)
+    this.expose(this.$project.id)
   }
 
   async init() {
@@ -19,7 +19,7 @@ export class ProjectBrowser extends sw.Unit {
   }
 
   async dispose() {
-    this.$.bus.unregister(`ProjectBrowser[${this.$project.id}][sw]`)
+    this.unexpose(this.$project.id)
     Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
     await this.storage.dispose()

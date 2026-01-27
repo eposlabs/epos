@@ -1,5 +1,5 @@
 export class Alive extends os.Unit {
-  private sw = this.$.bus.use<sw.Alive>('Alive[sw]')
+  sw = this.use<sw.Alive>('sw')
 
   constructor(parent: os.Unit) {
     super(parent)

@@ -1,12 +1,12 @@
 import { get, is, safe } from '@eposlabs/utils'
 import { cn } from './utils-cn.js'
-import { id } from './utils-id.js'
+import { generateId } from './utils-generate-id.js'
 import { normalizeUrl } from './utils-normalize-url.js'
 
 export class Utils extends vw.Unit {
   cn = cn
+  generateId = generateId
   get = get
-  id = id
   is = is
   normalizeUrl = normalizeUrl
   safe = safe

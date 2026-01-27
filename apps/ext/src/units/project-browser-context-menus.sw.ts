@@ -25,7 +25,7 @@ export class ProjectBrowserContextMenus extends sw.Unit {
   }
 
   async create(props: CreateProperties) {
-    const id = this.$browser.prefix(props.id ?? this.$.utils.id())
+    const id = this.$browser.prefix(props.id ?? this.$.utils.generateId())
     const existingMenu = this.menus.find(menu => menu.id === id)
     if (existingMenu) return this.$browser.unprefix(existingMenu.id)
 

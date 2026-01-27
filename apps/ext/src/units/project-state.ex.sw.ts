@@ -66,7 +66,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
   constructor(parent: exSw.Unit, name: string | null, initial?: Initial<T>, versioner?: Versioner<T>) {
     super(parent)
-    this.name = name ?? `local:${this.$.utils.id()}`
+    this.name = name ?? `local:${this.$.utils.generateId()}`
     this.initial = initial ?? ({} as Initial<T>)
     this.versioner = versioner ?? {}
     this.local = name === null

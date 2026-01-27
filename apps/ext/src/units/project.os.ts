@@ -17,8 +17,8 @@ export class Project extends os.Unit {
     this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
-    this.sw = this.$.bus.use<sw.Project>(`Project[${this.id}][sw]`)
-    this.$.bus.register(`Project[${this.id}][os]`, this)
+    this.sw = this.use<sw.Project>(this.id)
+    this.expose(this.id)
     if (this.hash) this.createBackground()
   }
 
@@ -48,7 +48,7 @@ export class Project extends os.Unit {
   }
 
   dispose() {
-    this.$.bus.unregister(`Project[${this.id}][os]`)
+    this.unexpose(this.id)
     this.removeAllFrames()
     this.removeBackground()
   }

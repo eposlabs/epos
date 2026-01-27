@@ -3,7 +3,7 @@ import type { WatcherData } from './projects-watcher.ex.os.vw'
 export class Projects extends os.Unit {
   dict: { [id: string]: os.Project } = {}
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
-  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+  sw = this.use<sw.Projects>('sw')
   bus = this.$.bus.for('Projects')
 
   async init() {

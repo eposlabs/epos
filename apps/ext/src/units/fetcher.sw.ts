@@ -29,13 +29,13 @@ export class Fetcher extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.register('Fetcher[sw]', this)
+    this.expose()
   }
 
   async fetch(url: string | URL, init?: ReqInit): Promise<ResData | Error> {
     try {
       const res = await fetch(url, init)
-      const id = `res-${this.$.utils.id()}`
+      const id = `res-${this.$.utils.generateId()}`
 
       // Save response
       this.responses[id] = res

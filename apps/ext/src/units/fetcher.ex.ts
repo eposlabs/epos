@@ -14,7 +14,7 @@ export type Res = {
 }
 
 export class Fetcher extends ex.Unit {
-  private sw = this.$.bus.use<sw.Fetcher>('Fetcher[sw]')
+  private sw = this.use<sw.Fetcher>('sw')
 
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
     const href = new URL(String(url), location.href).href

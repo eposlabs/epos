@@ -11,6 +11,6 @@ export class Idb extends sw.Unit {
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.$.bus.register('Idb[sw]', this)
+    this.expose()
   }
 }

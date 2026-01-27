@@ -6,7 +6,8 @@ import type { Epos, Spec } from 'epos'
 declare global {
   var DEV: boolean
   var PROD: boolean
-  var BUNDLE: 'cs' | 'ex' | 'ex-mini' | 'os' | 'pm' | 'sw' | 'vw'
+  var BUNDLE: 'cs' | 'ex' | 'os' | 'pm' | 'sw' | 'vw'
+  var EX_MINI: boolean
   var require: any
   var $: any // App instance for `cs`, `os`, `sw` and `vw`
   var $epos: any // App instance for `ex`, dev-only

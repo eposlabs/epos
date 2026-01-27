@@ -41,7 +41,7 @@ export class ProjectBrowser extends ex.Unit {
   #api: Obj = {}
   private callbacks: Record<string, Fn> = {}
   static _cbId_ = _cbId_
-  sw = this.$.bus.use<sw.ProjectBrowser>(`ProjectBrowser[${this.$project.id}][sw]`)
+  sw = this.use<sw.ProjectBrowser>('sw', this.$project.id)
 
   get api() {
     if (!this.#api) throw this.never()
@@ -49,7 +49,7 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   async init() {
-    this.$.bus.register(`ProjectBrowser[${this.$project.id}][ex]`, this)
+    this.expose(this.$project.id)
     await this.resetApi()
   }
 
@@ -73,7 +73,7 @@ export class ProjectBrowser extends ex.Unit {
 
   private addListener(path: string, cb?: Callback) {
     if (!cb) return
-    cb[_cbId_] ??= this.$.utils.id()
+    cb[_cbId_] ??= this.$.utils.generateId()
     const listenerId = this.buildListenerId(path, cb)
     if (this.callbacks[listenerId]) return
     this.callbacks[listenerId] = cb
@@ -179,7 +179,7 @@ export class ProjectBrowser extends ex.Unit {
         request: async (...args: unknown[]) => {
           // Sending `App.requestPermissions` from `sw` fails with 'gesture' error, but sending from `ex` works.
           // Here we create a temporary listener to forward request: `sw` -> `ex` -> `sm`.
-          const reqId = this.$.utils.id()
+          const reqId = this.$.utils.generateId()
           const name = `ProjectBrowser.requestPermissions[${reqId}]`
           this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('App.requestPermissions', ...args))
           setTimeout(() => this.$.bus.off(name), this.$.utils.time('15s'))

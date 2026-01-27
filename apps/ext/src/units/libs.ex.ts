@@ -7,12 +7,11 @@ export type ReactDom = typeof import('react-dom')
 export type ReactDomClient = typeof import('react-dom/client')
 export type ReactJsxRuntime = typeof import('react/jsx-runtime')
 
-const mobxReactLite: MobxReactLite = BUNDLE === 'ex-mini' ? null : require('mobx-react-lite')
-const react: React = BUNDLE === 'ex-mini' ? null : require('react')
-const reactDom: ReactDom = BUNDLE === 'ex-mini' ? null : require('react-dom')
-const reactDomClient: ReactDomClient = BUNDLE === 'ex-mini' ? null : require('react-dom/client')
-const reactJsxRuntime: ReactJsxRuntime = BUNDLE === 'ex-mini' ? null : require('react/jsx-runtime')
-
+const mobxReactLite: MobxReactLite = EX_MINI ? null : require('mobx-react-lite')
+const react: React = EX_MINI ? null : require('react')
+const reactDom: ReactDom = EX_MINI ? null : require('react-dom')
+const reactDomClient: ReactDomClient = EX_MINI ? null : require('react-dom/client')
+const reactJsxRuntime: ReactJsxRuntime = EX_MINI ? null : require('react/jsx-runtime')
 export class Libs extends ex.Unit {
   mobx = mobx
   mobxReactLite = mobxReactLite

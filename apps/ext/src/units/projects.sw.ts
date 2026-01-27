@@ -27,7 +27,7 @@ export class Projects extends sw.Unit {
   }
 
   async init() {
-    this.$.bus.register('Projects[sw]', this)
+    this.expose()
 
     const queue = new this.$.utils.Queue()
     this.create = queue.wrap(this.create, this)

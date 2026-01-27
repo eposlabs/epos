@@ -3,7 +3,7 @@ import defineEposElementJs from './projects-define-epos-element.cs?raw'
 import tamperInterceptGlobalsJs from './projects-tamper-intercept-globals.cs?raw'
 
 export class Projects extends cs.Unit {
-  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+  sw = this.use<sw.Projects>('sw')
 
   async init() {
     this.$.utils.executeJs(defineEposElementJs)

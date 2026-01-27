@@ -1,8 +1,26 @@
-import { Unit } from '@eposlabs/utils'
+import { Unit as BaseUnit } from '@eposlabs/utils'
+import type { RpcTarget } from 'epos'
 
+class Unit<T extends cs.App | ex.App | os.App | pm.App | sw.App | vw.App> extends BaseUnit<T> {
+  use<T extends RpcTarget>(name: string, id?: string) {
+    const idPart = id ? `[${id}]` : ''
+    return this.$.bus.use<T>(`${this.constructor.name}${idPart}[${name}]`)
+  }
+
+  expose(id?: string) {
+    const idPart = id ? `[${id}]` : ''
+    this.$.bus.register(`${this.constructor.name}${idPart}[${BUNDLE}]`, this)
+  }
+
+  unexpose(id?: string) {
+    const idPart = id ? `[${id}]` : ''
+    this.$.bus.unregister(`${this.constructor.name}${idPart}[${BUNDLE}]`)
+  }
+}
+
+class UnitGl extends Unit<cs.App | ex.App | os.App | pm.App | sw.App | vw.App> {}
 class UnitCs extends Unit<cs.App> {}
 class UnitEx extends Unit<ex.App> {}
-class UnitGl extends Unit<cs.App | ex.App | os.App | pm.App | sw.App | vw.App> {}
 class UnitOs extends Unit<os.App> {}
 class UnitPm extends Unit<pm.App> {}
 class UnitSw extends Unit<sw.App> {}
