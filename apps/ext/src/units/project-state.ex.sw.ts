@@ -86,11 +86,9 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   }
 
   private initLocal() {
-    const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-    if (!this.$.utils.is.object(initial)) throw new Error('State must be an object')
+    const initial = this.getInitialState()
     this.root = this.attach(initial, null) as Root<T>
-    this.attachQueue.forEach(attach => attach())
-    this.attachQueue = []
+    this.flushAttachQueue()
     this.connected = true
   }
 
@@ -148,15 +146,13 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
     // Start local changes broadcaster
     this.doc.on('update', async (update: Uint8Array, origin: Origin) => {
-      const isLocalUpdate = origin === null
-      if (!isLocalUpdate) return
-      await this.bus.send('update', update)
+      if (origin === null) await this.bus.send('update', update)
     })
 
     // Finalize setup:
     // - Set initial state
     // - Apply versioner
-    // - Release attach queue
+    // - Flush attach queue
     this.transaction(() => {
       if (!this.$.utils.is.object(this.root)) throw this.never()
 
@@ -166,8 +162,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
       // Empty state? -> Set initial state
       if (Object.keys(this.root).length === 0) {
-        const initial = this.$.utils.is.function(this.initial) ? this.initial() : this.initial
-        if (!this.$.utils.is.object(initial)) throw new Error('Initial state must be an object')
+        const initial = this.getInitialState()
         this.detach(this.root) // Detach empty root to remove yRoot observer
         this.root = this.attach(initial, null) as Root<T>
         if (!this.$.utils.is.object(this.root)) throw this.never()
@@ -186,13 +181,12 @@ export class ProjectState<T = Obj> extends exSw.Unit {
       }
 
       // Mark as connected.
-      // It is important to mark as connected before releasing attach queue,
-      // because attach calls may create new objects (with new attach calls).
+      // It is important to mark as connected before running attach handlers,
+      // because attach calls may create new state objects (with new attach calls).
       this.connected = true
 
-      // Release attach queue
-      this.attachQueue.forEach(attach => attach())
-      this.attachQueue = []
+      // Flush attach queue
+      this.flushAttachQueue()
 
       // Free up memory
       this.initial = null
@@ -372,6 +366,11 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     }
   }
 
+  private flushAttachQueue() {
+    this.attachQueue.forEach(attach => attach())
+    this.attachQueue = []
+  }
+
   // MARK: MobX Processing
   // ============================================================================
 
@@ -413,7 +412,6 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     if (this.$.utils.is.symbol(change.name)) return
 
     // Skip getters
-    if (change.name === 'ABC') console.warn(change)
     if (change.newValue === undefined && !change.object.hasOwnProperty(change.name)) return
 
     // Skip if value didn't change
@@ -445,7 +443,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     // Update corresponding Yjs node
     if (!this.local && !this.applyingYjsToMobx) {
       this.doc.transact(() => {
-        const yMap = this.getYNode(change.object)!
+        const yMap = this.getYNode(change.object)
         if (!yMap) throw this.never()
         yMap.delete(String(change.name))
       })
@@ -615,8 +613,8 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
   private getModelByInstance(instance: Obj) {
     if (instance.constructor === Object) return null
-    const regisretedModels = Object.values(this.$states.models)
-    const Model = regisretedModels.find(Model => instance.constructor === Model) ?? null
+    const registeredModels = Object.values(this.$states.models)
+    const Model = registeredModels.find(Model => instance.constructor === Model) ?? null
     if (Model) return Model
     const allowMissingModels = this.$.env.is.sw || this.$states.config.allowMissingModels
     if (allowMissingModels) return null
@@ -624,6 +622,11 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     const tip1 = `Make sure you registered it via epos.state.register()`
     const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
     throw new Error(`${message}. ${tip1}. ${tip2}.`)
+  }
+
+  private getInitialState() {
+    if (!this.$.utils.is.object(this.initial)) throw new Error('Initial state must be an object')
+    return this.initial
   }
 
   private getModelName(Model: Ctor) {
