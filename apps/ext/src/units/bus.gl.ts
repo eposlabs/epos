@@ -1,4 +1,4 @@
-import type { Asyncify } from 'epos'
+import type { Rpc } from 'epos'
 import type { Target } from './bus-action.gl'
 
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
@@ -53,7 +53,7 @@ export class Bus extends gl.Unit {
     this.actions.push(action)
   }
 
-  off<T extends Fn>(name?: string, fn?: T | null, target?: Target) {
+  off<T extends Fn>(name: string, fn?: T | null, target?: Target) {
     // Remove matching actions
     this.actions = this.actions.filter(action => {
       const nameMatches = action.name === name
@@ -140,18 +140,14 @@ export class Bus extends gl.Unit {
     return result as T | null
   }
 
-  register(name: string, api: unknown) {
+  register(name: string, api: Obj<any>) {
     if (this.rpcNames.has(name)) return
     this.rpcNames.add(name)
 
-    this.on(`Bus.rpc[${name}]`, (path: string[], ...args: unknown[]) => {
-      const targetPath = path.slice(0, -1)
-      const key = path.at(-1)
-      if (!key) throw new Error('Method not provided')
-      const target = this.$.utils.get(api, targetPath)
-      if (!this.$.utils.is.object(target)) throw new Error(`Method not found: '${path.join('.')}'`)
-      if (!this.$.utils.is.function(target[key])) throw new Error(`Method not found: '${path.join('.')}'`)
-      return target[key].call(target, ...args)
+    this.on(`Bus.rpc[${name}]`, (key: string, ...args: unknown[]) => {
+      const fn: unknown = api[key]
+      if (!this.$.utils.is.function(fn)) throw new Error(`Method not found: '${key}'`)
+      return fn.call(api, ...args)
     })
   }
 
@@ -161,62 +157,66 @@ export class Bus extends gl.Unit {
     this.off(`Bus.rpc[${name}]`)
   }
 
-  use<T>(name: string) {
-    const createProxy = (path: string[] = []): unknown => {
-      return new Proxy(() => {}, {
-        get: (_target, key: string) => {
-          if (key === 'then') return undefined // Handle async/await check
-          return createProxy([...path, key])
-        },
-        apply: async (_target, _thisArg, args) => {
-          return await this.send(`Bus.rpc[${name}]`, path, ...args)
-        },
-      })
-    }
-
-    return createProxy() as Asyncify<T>
+  use<T extends Obj<any>>(name: string) {
+    const target = {}
+    return new Proxy(target, {
+      get: (_, key: string) => {
+        return (...args: unknown[]) => this.send(`Bus.rpc[${name}]`, key, ...args)
+      },
+    }) as Rpc<T>
   }
 
   for(namespace: string) {
-    const prefix = `@${namespace}::`
+    const prefix = `@${namespace}_`
     const prefixed = (name: string) => `${prefix}${name}`
-
-    const offAll = () => {
-      const prefixedActions = this.actions.filter(action => action.name.startsWith(prefix))
-      prefixedActions.forEach(action => this.off(action.name, action.fn, action.target))
-    }
+    let disposed = false
 
     return {
       on: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
+        if (disposed) return
         this.on<T>(prefixed(name), fn, thisArg)
       },
-      off: <T extends Fn>(name?: string, fn?: T) => {
-        if (this.$.utils.is.undefined(name)) return offAll()
+      off: <T extends Fn>(name: string, fn?: T) => {
+        if (disposed) return
         this.off<T>(prefixed(name), fn)
       },
       send: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
+        if (disposed) return null
         return await this.send<T>(prefixed(name), ...args)
       },
       emit: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
+        if (disposed) return null
         return await this.emit<T>(prefixed(name), ...args)
       },
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
+        if (disposed) return
         this.once<T>(prefixed(name), fn, thisArg)
       },
       setSignal: (name: string, ...args: unknown[]) => {
+        if (disposed) return
         this.setSignal(prefixed(name), ...args)
       },
       waitSignal: async <T>(name: string, timeout?: number) => {
+        if (disposed) return null
         return await this.waitSignal<T>(prefixed(name), timeout)
       },
-      register: (id: string, api: unknown) => {
+      register: (id: string, api: Obj<any>) => {
+        if (disposed) return
         this.register(prefixed(id), api)
       },
       unregister: (id: string) => {
+        if (disposed) return
         this.unregister(prefixed(id))
       },
-      use: <T>(id: string) => {
+      use: <T extends Obj<any>>(id: string) => {
+        if (disposed) throw new Error('Cannot call `use` on disposed Bus')
         return this.use<T>(prefixed(id))
+      },
+      dispose: () => {
+        if (disposed) return
+        disposed = true
+        const actions = this.actions.filter(action => action.name.startsWith(prefix))
+        actions.forEach(action => this.off(action.name, action.fn, action.target))
       },
     }
   }

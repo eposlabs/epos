@@ -4,6 +4,8 @@ export class Projects extends vw.Unit {
   dict: { [id: string]: vw.Project } = {}
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
   selectedProjectId = localStorage.getItem('Projects.selectedProjectId')
+  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+  bus = this.$.bus.for('Projects')
 
   get list() {
     return Object.values(this.dict)

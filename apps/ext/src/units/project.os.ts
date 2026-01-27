@@ -1,3 +1,4 @@
+import type { Rpc } from 'epos'
 import type { Entry } from './project.sw'
 
 export type Attrs = Record<string, string | number>
@@ -8,7 +9,7 @@ export class Project extends os.Unit {
   debug: Entry['debug']
   spec: Entry['spec']
   hash: Entry['hash']
-  bus: ReturnType<gl.Bus['for']>
+  sw: Rpc<sw.Project>
 
   constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'debug' | 'spec' | 'hash'>) {
     super(parent)
@@ -16,12 +17,9 @@ export class Project extends os.Unit {
     this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
-    this.bus = this.$.bus.for(`Project[${this.id}]`)
+    this.sw = this.$.bus.use<sw.Project>(`Project[${this.id}][sw]`)
+    this.$.bus.register(`Project[${this.id}][os]`, this)
     if (this.hash) this.createBackground()
-
-    this.bus.on('getFrames', this.getFrames, this)
-    this.bus.on('createFrame', this.createFrame, this)
-    this.bus.on('removeFrame', this.removeFrame, this)
   }
 
   update(updates: Pick<Entry, 'debug' | 'spec' | 'hash'>) {
@@ -50,7 +48,7 @@ export class Project extends os.Unit {
   }
 
   dispose() {
-    this.bus.off()
+    this.$.bus.unregister(`Project[${this.id}][os]`)
     this.removeAllFrames()
     this.removeBackground()
   }
@@ -125,7 +123,7 @@ export class Project extends os.Unit {
   // MARK: Frames
   // ============================================================================
 
-  private getFrames(): Frame[] {
+  getFrames(): Frame[] {
     const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
     const iframes = [...document.querySelectorAll<HTMLIFrameElement>(selector)]
 
@@ -136,11 +134,11 @@ export class Project extends os.Unit {
     })
   }
 
-  private async createFrame(url: string, attrs: Attrs = {}) {
+  async createFrame(url: string, attrs: Attrs = {}) {
     const id = this.generateFrameId(url)
 
-    // Remove `X-Frame-Options` header for the iframe's url
-    const ruleId = await this.bus.send<sw.Project['addSystemRule']>('addSystemRule', {
+    // Remove `X-Frame-Options` header for the iframe's domain
+    const ruleId = await this.sw.addSystemRule({
       condition: {
         // Allow for the whole domain to support redirects (example.com -> www.example.com)
         requestDomains: [new URL(url).hostname],
@@ -182,7 +180,7 @@ export class Project extends os.Unit {
     return id
   }
 
-  private removeFrame(id: string) {
+  removeFrame(id: string) {
     // No iframe? -> Ignore
     const selector = `iframe[data-type="frame"][data-project-id="${this.id}"][data-frame-id="${id}"]`
     const iframe = document.querySelector<HTMLIFrameElement>(selector)
@@ -190,7 +188,7 @@ export class Project extends os.Unit {
 
     // Remove network rule
     const ruleId = Number(iframe.getAttribute('data-net-rule-id'))
-    void this.$.bus.send<sw.Project['removeSystemRule']>('removeSystemRule', ruleId)
+    void this.sw.removeSystemRule(ruleId)
 
     // Remove iframe
     iframe.remove()

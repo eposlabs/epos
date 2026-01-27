@@ -51,7 +51,7 @@ export class Medium extends swVw.Unit {
 
   async openSidePanel(tabId: number, windowId: number) {
     const path = this.$.env.url.view({ locus: 'sidePanel', tabId, windowId })
-    // It is important to call this async, because `sidePanel.open` must be called on user gesture (action)
+    // It is important to call `setOptions` w/o await, because `sidePanel.open` must be called on user gesture (action)
     void this.$.browser.sidePanel.setOptions({ tabId, path, enabled: true })
     await this.$.browser.sidePanel.open({ tabId })
   }

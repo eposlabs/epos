@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { createLog, is, type Arr, type Ctor, type Obj } from '@eposlabs/utils'
-import { epos, type Asyncify } from 'epos'
+import { epos } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 

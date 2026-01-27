@@ -11,6 +11,7 @@ export class Projects extends sw.Unit {
   dict: { [id: string]: sw.Project } = {}
   private cspFixTabIds = new Set<number>()
   private cspProtectedOrigins = new Set<string>()
+  private bus = this.$.bus.for('Projects')
 
   private ex = {
     full: { dev: '', prod: '' },
@@ -26,23 +27,12 @@ export class Projects extends sw.Unit {
   }
 
   async init() {
+    this.$.bus.register('Projects[sw]', this)
+
     const queue = new this.$.utils.Queue()
     this.create = queue.wrap(this.create, this)
     this.update = queue.wrap(this.update, this)
     this.remove = queue.wrap(this.remove, this)
-
-    this.$.bus.on('Projects.get', this.get, this)
-    this.$.bus.on('Projects.has', this.has, this)
-    this.$.bus.on('Projects.all', this.all, this)
-    this.$.bus.on('Projects.fetch', this.fetch, this)
-    this.$.bus.on('Projects.create', this.create, this)
-    this.$.bus.on('Projects.update', this.update, this)
-    this.$.bus.on('Projects.remove', this.remove, this)
-    this.$.bus.on('Projects.export', this.export, this)
-    this.$.bus.on('Projects.getJs', this.getJs, this)
-    this.$.bus.on('Projects.getCss', this.getCss, this)
-    this.$.bus.on('Projects.getLiteJs', this.getLiteJs, this)
-    this.$.bus.on('Projects.getEntries', this.getEntries, this)
 
     await this.loadEx()
     await this.loadProjects()
@@ -62,7 +52,7 @@ export class Projects extends sw.Unit {
     }
   }
 
-  private async get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null> {
+  async get<T extends ProjectQuery>(id: string, query?: T): Promise<Project<T> | null> {
     const project = this.dict[id]
     if (!project) return null
 
@@ -77,11 +67,11 @@ export class Projects extends sw.Unit {
     } as Project<T>
   }
 
-  private has(id: string) {
+  has(id: string) {
     return !!this.dict[id]
   }
 
-  private async all<T extends ProjectQuery>(query?: T) {
+  async all<T extends ProjectQuery>(query?: T) {
     const projects: Project<T>[] = []
     for (const id in this.dict) {
       const project = await this.get(id, query)
@@ -92,7 +82,7 @@ export class Projects extends sw.Unit {
     return projects
   }
 
-  private async fetch(specUrl: string): Promise<Bundle> {
+  async fetch(specUrl: string): Promise<Bundle> {
     // Check if URL is valid
     if (!URL.parse(specUrl)) throw new Error(`Invalid URL: '${specUrl}'`)
 
@@ -142,19 +132,19 @@ export class Projects extends sw.Unit {
     return { spec, sources, assets }
   }
 
-  private async create<T extends string>(params: Bundle & Partial<{ id: T; main: boolean } & ProjectSettings>): Promise<T> {
+  async create<T extends string>(params: Bundle & Partial<{ id: T; main: boolean } & ProjectSettings>): Promise<T> {
     if (params.id && this.dict[params.id]) throw new Error(`Project with id '${params.id}' already exists`)
     const project = await sw.Project.new(this, { ...params })
     this.dict[project.id] = project
-    await this.$.bus.send('Projects.changed')
+    await this.bus.send('changes')
     return project.id as T
   }
 
-  private async update(id: string, updates: Partial<Bundle & ProjectSettings>) {
+  async update(id: string, updates: Partial<Bundle & ProjectSettings>) {
     const project = this.dict[id]
     if (!project) throw new Error(`Project with id '${id}' does not exist`)
     await project.update(updates)
-    await this.$.bus.send('Projects.changed')
+    await this.bus.send('changes')
   }
 
   async remove(id: string) {
@@ -163,7 +153,7 @@ export class Projects extends sw.Unit {
     if (project.main) throw new Error(`Main project cannot be removed`)
     await project.dispose()
     delete this.dict[id]
-    await this.$.bus.send('Projects.changed')
+    await this.bus.send('changes')
   }
 
   async export(id: string) {
@@ -172,7 +162,7 @@ export class Projects extends sw.Unit {
     return await project.export()
   }
 
-  private getJs(address?: Address, csTabInfo?: CsTabInfo) {
+  getJs(address?: Address, csTabInfo?: CsTabInfo) {
     const projects = this.listEnabled.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
@@ -201,19 +191,19 @@ export class Projects extends sw.Unit {
     ].join('\n')
   }
 
-  private getCss(address?: Address) {
+  getCss(address?: Address) {
     const cssList = this.listEnabled.map(project => project.getCss(address)).filter(this.$.utils.is.present)
     if (cssList.length === 0) return null
     return cssList.join('\n').trim()
   }
 
-  private getLiteJs(address?: Address) {
+  getLiteJs(address?: Address) {
     const liteJsList = this.listEnabled.map(project => project.getLiteJs(address)).filter(this.$.utils.is.present)
     if (liteJsList.length === 0) return null
     return liteJsList.join(';\n').trim()
   }
 
-  private async getEntries(address?: Address) {
+  async getEntries(address?: Address) {
     const entries: Entries = {}
 
     for (const project of this.listEnabled) {

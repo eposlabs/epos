@@ -1,5 +1,5 @@
 import { createLog, is, type Arr, type Ctor, type Log, type Obj } from '@eposlabs/utils'
-import { epos, type Asyncify } from 'epos'
+import { epos, type Rpc, type RpcTarget } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 
@@ -22,7 +22,7 @@ export class Unit<TRoot = unknown> {
   declare [':version']?: number;
   declare [_log_]: Log | null;
   declare [_root_]: TRoot | null;
-  declare [_rpcs_]: Record<string, unknown>;
+  declare [_rpcs_]: Record<string, Rpc<RpcTarget>>;
   declare [_parent_]: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
   declare [_attached_]: boolean;
   declare [_disposers_]: Set<() => void>;
@@ -76,9 +76,9 @@ export class Unit<TRoot = unknown> {
   /**
    * Get access to this unit running by other application instances (tabs, popup, background, etc).
    */
-  use<T>(name: string) {
+  use<T extends RpcTarget>(name: string): Rpc<T> {
     this[_rpcs_][name] ??= epos.bus.use<T>(`${this['@']}[${this.id}][${name}]`)
-    return this[_rpcs_][name] as Asyncify<T>
+    return this[_rpcs_][name]
   }
 
   /**
@@ -126,16 +126,6 @@ export class Unit<TRoot = unknown> {
   }
 
   /**
-   * Create an error for code paths that are logically unreachable.
-   */
-  never(message = 'This should never happen') {
-    const details = message ? `: ${message}` : ''
-    const error = new Error(`[${this['@']}] This should never happen${details}`)
-    Error.captureStackTrace(error, this.never)
-    return error
-  }
-
-  /**
    * Find the closest ancestor unit of a given type.
    * The result is cached for subsequent calls.
    */
@@ -156,6 +146,16 @@ export class Unit<TRoot = unknown> {
     }
 
     return null
+  }
+
+  /**
+   * Create an error for code paths that are logically unreachable and should never happen.
+   */
+  never(message?: string) {
+    const details = message ? `: ${message}` : ''
+    const error = new Error(`[${this['@']}] SYSTEM FAILURE${details}`)
+    Error.captureStackTrace(error, this.never)
+    return error
   }
 }
 

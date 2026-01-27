@@ -1,3 +1,5 @@
+import type { Rpc } from 'epos'
+
 export class Project extends ex.Unit {
   id: ProjectDef['id']
   debug: ProjectDef['debug']
@@ -6,10 +8,10 @@ export class Project extends ex.Unit {
   manifest: ProjectDef['manifest']
   shadowCss: ProjectDef['shadowCss']
   fn: ProjectDef['fn'] | null = null
-  bus: ReturnType<gl.Bus['for']>
   browser: ex.ProjectBrowser
   states: exSw.ProjectStates
   epos: ex.ProjectEpos
+  os: Rpc<os.Project>
 
   constructor(parent: ex.Unit, def: ProjectDef) {
     super(parent)
@@ -20,7 +22,7 @@ export class Project extends ex.Unit {
     this.manifest = def.manifest
     this.shadowCss = def.shadowCss
     this.fn = def.fn
-    this.bus = this.$.bus.for(`Project[${this.id}]`)
+    this.os = this.$.bus.use<os.Project>(`Project[${this.id}][os]`)
     this.browser = new ex.ProjectBrowser(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.config.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)

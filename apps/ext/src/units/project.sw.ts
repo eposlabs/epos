@@ -44,7 +44,6 @@ export class Project extends sw.Unit {
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
   states: exSw.ProjectStates
-  bus: ReturnType<gl.Bus['for']>
   private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
@@ -122,9 +121,7 @@ export class Project extends sw.Unit {
     this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: true })
-    this.bus = this.$.bus.for(`Project[${this.id}]`)
-    this.bus.on('addSystemRule', this.addSystemRule, this)
-    this.bus.on('removeSystemRule', this.removeSystemRule, this)
+    this.$.bus.register(`Project[${this.id}][sw]`, this)
   }
 
   private async init() {
@@ -133,6 +130,7 @@ export class Project extends sw.Unit {
   }
 
   async dispose() {
+    this.$.bus.unregister(`Project[${this.id}][sw]`)
     await this.browser.dispose()
     await this.states.dispose()
     await this.removeSystemRules()
@@ -347,7 +345,7 @@ export class Project extends sw.Unit {
     }
   }
 
-  private async addSystemRule(rule: RuleNoId) {
+  async addSystemRule(rule: RuleNoId) {
     const addedRule = (await this.$.net.updateDynamicRules({ addRules: [rule] }))[0]
     if (!addedRule) throw this.never()
     this.meta.systemRuleIds.push(addedRule.id)
@@ -355,7 +353,7 @@ export class Project extends sw.Unit {
     return addedRule.id
   }
 
-  private async removeSystemRule(ruleId: number) {
+  async removeSystemRule(ruleId: number) {
     if (!this.meta.systemRuleIds.includes(ruleId)) return
     await this.$.net.updateDynamicRules({ removeRuleIds: [ruleId] })
     this.meta.systemRuleIds = this.meta.systemRuleIds.filter(id => id !== ruleId)

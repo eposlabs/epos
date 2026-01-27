@@ -39,9 +39,9 @@ export type LooseBrowser = {
 export class ProjectBrowser extends ex.Unit {
   private $project = this.closest(ex.Project)!
   #api: Obj = {}
-  private bus = this.$.bus.for(`ProjectBrowser[${this.$project.id}]`)
-  private listenerIds = new Set<string>()
+  private callbacks: Record<string, Fn> = {}
   static _cbId_ = _cbId_
+  sw = this.$.bus.use<sw.ProjectBrowser>(`ProjectBrowser[${this.$project.id}][sw]`)
 
   get api() {
     if (!this.#api) throw this.never()
@@ -49,7 +49,7 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   async init() {
-    this.bus.on('resetApi', this.resetApi, this)
+    this.$.bus.register(`ProjectBrowser[${this.$project.id}][ex]`, this)
     await this.resetApi()
   }
 
@@ -68,51 +68,52 @@ export class ProjectBrowser extends ex.Unit {
   }
 
   private async callMethod(path: string, ...args: unknown[]) {
-    return await this.bus.send<sw.ProjectBrowser['callMethod']>('callMethod', path, ...args)
+    return await this.sw.callMethod(path, ...args)
   }
 
   private addListener(path: string, cb?: Callback) {
     if (!cb) return
     cb[_cbId_] ??= this.$.utils.id()
     const listenerId = this.buildListenerId(path, cb)
-    if (this.listenerIds.has(listenerId)) return
-    this.listenerIds.add(listenerId)
-    this.bus.on(`listenerCallback[${listenerId}]`, cb)
-    void this.bus.send('addListener', path, this.$.peer.id, listenerId)
+    if (this.callbacks[listenerId]) return
+    this.callbacks[listenerId] = cb
+    void this.sw.addListener(path, this.$.peer.id, listenerId)
   }
 
   private hasListener(path: string, cb: Callback) {
     if (!cb || !cb[_cbId_]) return false
     const listenerId = this.buildListenerId(path, cb)
-    return this.listenerIds.has(listenerId)
+    return listenerId in this.callbacks
   }
 
   private hasListeners(path: string) {
-    return [...this.listenerIds].some(id => id.startsWith(`${path}[`))
+    return Object.keys(this.callbacks).some(id => id.startsWith(`${path}[`))
   }
 
   private removeListener(path: string, cb: Callback) {
     if (!cb || !cb[_cbId_]) return
     const listenerId = this.buildListenerId(path, cb)
-    if (!this.listenerIds.has(listenerId)) return
-    this.bus.off(`listenerCallback[${listenerId}]`)
-    this.listenerIds.delete(listenerId)
-    void this.bus.send('removeListener', listenerId)
+    if (!(listenerId in this.callbacks)) return
+    delete this.callbacks[listenerId]
+    void this.sw.removeListener(listenerId)
+  }
+
+  async executeListenerCallback(listenerId: string, ...args: unknown[]) {
+    const cb = this.callbacks[listenerId]
+    if (!cb) return
+    return await cb(...args)
   }
 
   private buildListenerId(path: string, cb: Callback) {
     return `${path}[${cb[_cbId_]}]`
   }
 
-  private async resetApi() {
-    const tree = await this.bus.send<Obj<any>>('getApiTree')
-    if (!tree) throw this.never()
-
+  async resetApi() {
     const manifest = await this.callMethod('runtime.getManifest')
     if (!this.$.utils.is.object(manifest)) throw this.never()
 
-    const permissions = await this.bus.send<sw.ProjectBrowser['getPermissions']>('getPermissions')
-    if (this.$.utils.is.absent(permissions)) throw this.never()
+    const tree = (await this.sw.getApiTree()) as Obj<any>
+    const permissions = await this.sw.getPermissions()
     const hasPermission = (permission: chrome.runtime.ManifestPermission) => permissions.includes(permission)
 
     const api: LooseBrowser = {

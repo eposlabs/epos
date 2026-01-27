@@ -4,6 +4,8 @@ export class Projects extends ex.Unit {
   dict: { [id: string]: ex.Project } = {}
   tabInfo = this.getTabInfo()
   watcher = new exOsVw.ProjectsWatcher(this, this.onWatcherData.bind(this))
+  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+  bus = this.$.bus.for('Projects')
 
   get list() {
     return Object.values(this.dict)
@@ -36,15 +38,15 @@ export class Projects extends ex.Unit {
 
   private async injectProjects() {
     // Inject lite JS
-    const liteJs = await this.$.bus.send<sw.Projects['getLiteJs']>('Projects.getLiteJs', location.href)
+    const liteJs = await this.sw.getLiteJs(location.href)
     if (liteJs) await this.injectJs(liteJs)
 
     // Inject CSS
-    const css = await this.$.bus.send<sw.Projects['getCss']>('Projects.getCss', location.href)
+    const css = await this.sw.getCss(location.href)
     if (css) this.injectCss(css)
 
     // Inject JS
-    const js = await this.$.bus.send<sw.Projects['getJs']>('Projects.getJs', location.href)
+    const js = await this.sw.getJs(location.href)
     if (js) await this.injectJs(js)
   }
 

@@ -106,7 +106,7 @@ export class ProjectStates extends exSw.Unit {
   }
 
   async dispose() {
-    this.bus.off()
+    this.bus.dispose()
     clearInterval(this.autoDisconnectInterval)
     for (const name in this.dict) await this.disconnect(name)
     await this.$.idb.deleteStore(this.$project.id, ':state')

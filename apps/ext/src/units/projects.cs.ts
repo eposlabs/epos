@@ -3,6 +3,8 @@ import defineEposElementJs from './projects-define-epos-element.cs?raw'
 import tamperInterceptGlobalsJs from './projects-tamper-intercept-globals.cs?raw'
 
 export class Projects extends cs.Unit {
+  sw = this.$.bus.use<sw.Projects>('Projects[sw]')
+
   async init() {
     this.$.utils.executeJs(defineEposElementJs)
     this.$.utils.executeJs(tamperInterceptGlobalsJs)
@@ -38,12 +40,12 @@ export class Projects extends cs.Unit {
     const address: Address = self.top === self ? location.href : `frame:${location.href}`
 
     // Inject CSS
-    const css = await this.$.bus.send<sw.Projects['getCss']>('Projects.getCss', address)
+    const css = await this.sw.getCss(address)
     if (css) this.injectCss(css)
 
     // Inject JS
     const csTabInfo = await this.$.bus.csGetTabInfo()
-    const js = await this.$.bus.send<sw.Projects['getJs']>('Projects.getJs', address, csTabInfo)
+    const js = await this.sw.getJs(address, csTabInfo)
     if (js) this.injectJs(js)
   }
 

@@ -13,6 +13,7 @@ export type WatcherData = {
 export class ProjectsWatcher extends exOsVw.Unit {
   private onData: OnData
   private entries: Entries = {}
+  private $projects = this.closest<ex.Projects | os.Projects | vw.Projects>('Projects')!
 
   constructor(parent: exOsVw.Unit, onData: OnData) {
     super(parent)
@@ -20,12 +21,12 @@ export class ProjectsWatcher extends exOsVw.Unit {
   }
 
   async init() {
-    this.$.bus.on('Projects.changed', () => this.refetch())
-    await this.refetch()
+    this.$projects.bus.on('changes', () => this.refresh())
+    await this.refresh()
   }
 
-  private async refetch() {
-    const entries = await this.$.bus.send<sw.Projects['getEntries']>('Projects.getEntries', location.href)
+  private async refresh() {
+    const entries = await this.$projects.sw.getEntries(location.href)
     if (!entries) throw this.never()
 
     const e1 = this.entries

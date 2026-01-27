@@ -1,6 +1,5 @@
 export class ProjectBrowser extends sw.Unit {
   private $project = this.closest(sw.Project)!
-  private bus: ReturnType<gl.Bus['for']>
   private listenerDisposers: { [listenerId: string]: Fn } = {}
   private alarms = new sw.ProjectBrowserAlarms(this)
   private storage = new sw.ProjectBrowserStorage(this)
@@ -8,27 +7,19 @@ export class ProjectBrowser extends sw.Unit {
   private contextMenus = new sw.ProjectBrowserContextMenus(this)
   private notifications = new sw.ProjectBrowserNotifications(this)
   private declarativeNetRequest = new sw.ProjectBrowserDeclarativeNetRequest(this)
+  ex = this.$.bus.use<ex.ProjectBrowser>(`ProjectBrowser[${this.$project.id}][ex]`)
 
   constructor(parent: sw.Unit) {
     super(parent)
-    this.bus = this.$.bus.for(`ProjectBrowser[${this.$project.id}]`)
-    this.bus.on('getApiTree', this.getApiTree, this)
-    this.bus.on('callMethod', this.callMethod, this)
-    this.bus.on('addListener', this.addListener, this)
-    this.bus.on('removeListener', this.removeListener, this)
-    this.bus.on('getPermissions', this.getPermissions, this)
+    this.$.bus.register(`ProjectBrowser[${this.$project.id}][sw]`, this)
   }
 
   async init() {
     await this.alarms.init()
   }
 
-  async resetExApi() {
-    await this.bus.send<ex.ProjectBrowser['resetApi']>('resetApi')
-  }
-
   async dispose() {
-    this.bus.off()
+    this.$.bus.unregister(`ProjectBrowser[${this.$project.id}][sw]`)
     Object.values(this.listenerDisposers).forEach(dispose => dispose())
     await this.alarms.dispose()
     await this.storage.dispose()
@@ -37,7 +28,7 @@ export class ProjectBrowser extends sw.Unit {
     await this.declarativeNetRequest.dispose()
   }
 
-  private getApiTree(node: unknown = this.$.browser) {
+  getApiTree(node: unknown = this.$.browser) {
     if (this.$.utils.is.object(node)) {
       if (node.addListener) return '<event>'
       const subtree: Obj = {}
@@ -52,7 +43,7 @@ export class ProjectBrowser extends sw.Unit {
     return node
   }
 
-  private async callMethod(getter: string, ...args: unknown[]) {
+  async callMethod(getter: string, ...args: unknown[]) {
     // Has method interceptor? -> Call it instead of the browser method
     const interceptor = this.getInterceptor(getter)
     if (interceptor) return await interceptor(...args)
@@ -74,7 +65,7 @@ export class ProjectBrowser extends sw.Unit {
     return await method.call(api, ...args)
   }
 
-  private addListener(getter: string, peerId: string, listenerId: string) {
+  addListener(getter: string, peerId: string, listenerId: string) {
     // Get api object
     const api = this.$.utils.get(this.$.browser, getter.split('.'))
     if (!this.$.utils.is.object(api)) throw this.never()
@@ -87,7 +78,7 @@ export class ProjectBrowser extends sw.Unit {
         if (!this.$.utils.is.array(patchedArgs)) return
         args = patchedArgs
       }
-      return await this.bus.send(`listenerCallback[${listenerId}]`, ...args)
+      return await this.ex.executeListenerCallback(listenerId, ...args)
     }
 
     // Add listener
@@ -110,11 +101,11 @@ export class ProjectBrowser extends sw.Unit {
     }, this.$.utils.time('5m'))
   }
 
-  private removeListener(listenerId: string) {
+  removeListener(listenerId: string) {
     this.listenerDisposers[listenerId]?.()
   }
 
-  private getPermissions() {
+  getPermissions() {
     return this.permissions.getPermissions()
   }
 

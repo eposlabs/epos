@@ -60,10 +60,6 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   private saveTimeout = -1
   private SAVE_DELAY = 300
 
-  get id() {
-    return `${this.$project.id}/${this.name}`
-  }
-
   get location(): Location {
     return [this.$project.id, ':state', this.name]
   }
@@ -74,14 +70,14 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     this.initial = initial ?? ({} as Initial<T>)
     this.versioner = versioner ?? {}
     this.local = name === null
-    this.bus = this.$.bus.for(`State[${this.id}]`)
+    this.bus = this.$.bus.for(`ProjectState[${this.$project.id}][${this.name}]`)
     this.save = this.$.utils.enqueue(this.save, this)
     if (this.local) this.initLocal()
   }
 
   async init() {
     if (this.local) throw this.never()
-    await this.$.peer.mutex(`State.setup[${this.id}]`, () => this.setup())
+    await this.$.peer.mutex(`ProjectState.setup[${this.$project.id}][${this.name}]`, () => this.setup())
     this.bus.on('connected', () => true)
   }
 
@@ -96,7 +92,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     if (this.local) return
     if (!this.connected) return
     this.connected = false
-    this.bus.off()
+    this.bus.dispose()
     this.doc.destroy()
     await this.save(true)
   }
