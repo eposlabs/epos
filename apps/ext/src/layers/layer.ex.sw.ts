@@ -1,26 +1,26 @@
-import { State, type State as StateType } from '../units/state.ex.sw.js'
-import { States, type States as StatesType } from '../units/states.ex.sw.js'
+import { ProjectState, type ProjectState as ProjectStateType } from '../units/project-state.ex.sw.js'
+import { ProjectStates, type ProjectStates as ProjectStatesType } from '../units/project-states.ex.sw.js'
 
 Object.assign(exSw, {
-  State,
-  States,
+  ProjectState,
+  ProjectStates,
 })
 
 declare global {
   const exSw: ExSw
 
   interface ExSw extends Gl {
-    State: typeof State
-    States: typeof States
+    ProjectState: typeof ProjectState
+    ProjectStates: typeof ProjectStates
   }
 
   interface exSw extends gl {
-    State: State
-    States: States
+    ProjectState: ProjectState
+    ProjectStates: ProjectStates
   }
 
   namespace exSw {
-    export type State = StateType
-    export type States = StatesType
+    export type ProjectState = ProjectStateType
+    export type ProjectStates = ProjectStatesType
   }
 }

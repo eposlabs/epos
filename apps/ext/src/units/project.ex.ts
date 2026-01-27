@@ -8,7 +8,7 @@ export class Project extends ex.Unit {
   fn: ProjectDef['fn'] | null = null
   bus: ReturnType<gl.Bus['for']>
   browser: ex.ProjectBrowser
-  states: exSw.States
+  states: exSw.ProjectStates
   epos: ex.ProjectEpos
 
   constructor(parent: ex.Unit, def: ProjectDef) {
@@ -22,7 +22,7 @@ export class Project extends ex.Unit {
     this.fn = def.fn
     this.bus = this.$.bus.for(`Project[${this.id}]`)
     this.browser = new ex.ProjectBrowser(this)
-    this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: this.spec.config.allowMissingModels })
+    this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.config.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)
   }
 

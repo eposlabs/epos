@@ -1,5 +1,5 @@
-import type { Initial, Root, Versioner } from './state.ex.sw'
-import type { Models } from './states.ex.sw'
+import type { Initial, Root, Versioner } from './project-state.ex.sw'
+import type { Models } from './project-states.ex.sw'
 
 export const DEFAULT_NAME = ':default'
 
@@ -7,9 +7,9 @@ export class ProjectEposState extends ex.Unit {
   private $project = this.closest(ex.Project)!
   static DEFAULT_NAME = DEFAULT_NAME
 
-  PARENT = exSw.State._parent_
-  ATTACH = exSw.State._attach_
-  DETACH = exSw.State._detach_
+  PARENT = exSw.ProjectState._parent_
+  ATTACH = exSw.ProjectState._attach_
+  DETACH = exSw.ProjectState._detach_
 
   async connect<T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>
   async connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>

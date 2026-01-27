@@ -39,7 +39,7 @@ export type MNodeChange = MObjectSetChange | MObjectRemoveChange | MArrayUpdateC
  * #### How Sync Works
  * MobX → Local Yjs → (bus) → Remote Yjs → MobX
  */
-export class State<T = Obj> extends exSw.Unit {
+export class ProjectState<T = Obj> extends exSw.Unit {
   static _meta_ = _meta_
   static _parent_ = _parent_
   static _attach_ = _attach_
@@ -47,7 +47,8 @@ export class State<T = Obj> extends exSw.Unit {
 
   name: string
   root: Root<T> = {} as Root<T>
-  private $states = this.closest(exSw.States)!
+  private $states = this.closest(exSw.ProjectStates)!
+  private $project = this.$states.$project
   private doc = new this.$.libs.yjs.Doc()
   private local: boolean
   private initial: Initial<T> | null = null
@@ -60,11 +61,11 @@ export class State<T = Obj> extends exSw.Unit {
   private SAVE_DELAY = 300
 
   get id() {
-    return `${this.$states.dbName}/${this.$states.dbStoreName}/${this.name}`
+    return `${this.$project.id}/${this.name}`
   }
 
   get location(): Location {
-    return [this.$states.dbName, this.$states.dbStoreName, this.name]
+    return [this.$project.id, ':state', this.name]
   }
 
   constructor(parent: exSw.Unit, name: string | null, initial?: Initial<T>, versioner?: Versioner<T>) {

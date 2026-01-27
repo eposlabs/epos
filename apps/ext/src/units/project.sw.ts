@@ -43,7 +43,7 @@ export class Project extends sw.Unit {
   manifest: chrome.runtime.ManifestV3
   targets: sw.ProjectTarget[] = []
   browser: sw.ProjectBrowser
-  states: exSw.States
+  states: exSw.ProjectStates
   bus: ReturnType<gl.Bus['for']>
   private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
@@ -121,7 +121,7 @@ export class Project extends sw.Unit {
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     this.manifest = this.$projects.generateManifest(this.spec)
     this.browser = new sw.ProjectBrowser(this)
-    this.states = new exSw.States(this, this.id, ':state', { allowMissingModels: true })
+    this.states = new exSw.ProjectStates(this, { allowMissingModels: true })
     this.bus = this.$.bus.for(`Project[${this.id}]`)
     this.bus.on('addSystemRule', this.addSystemRule, this)
     this.bus.on('removeSystemRule', this.removeSystemRule, this)

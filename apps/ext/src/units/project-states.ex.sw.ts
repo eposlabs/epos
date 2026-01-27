@@ -1,16 +1,14 @@
-import type { DbName, DbStoreName } from '@eposlabs/idb'
-import type { Initial, Root, Versioner } from './state.ex.sw'
+import type { Initial, Root, Versioner } from './project-state.ex.sw'
 
 export type Models = Record<string, Cls>
 export type Config = { allowMissingModels?: boolean }
 
-export class States extends exSw.Unit {
+export class ProjectStates extends exSw.Unit {
   id: string
-  dict: Record<string, exSw.State> = {}
-  dbName: DbName
-  dbStoreName: DbStoreName
+  dict: Record<string, exSw.ProjectState> = {}
   config: Config
   models: Models = {}
+  $project: ex.Project | sw.Project
   private bus: ReturnType<gl.Bus['for']>
   private queue = new this.$.utils.Queue()
   private autoDisconnectInterval = -1 // For `sw`
@@ -20,20 +18,18 @@ export class States extends exSw.Unit {
     return Object.values(this.dict)
   }
 
-  constructor(parent: exSw.Unit, dbName: DbName, dbStoreName: DbStoreName, config?: Config) {
+  constructor(parent: exSw.Unit, config?: Config) {
     super(parent)
-
-    this.id = `States[${dbName}/${dbStoreName}]`
-    this.dbName = dbName
-    this.dbStoreName = dbStoreName
+    this.$project = parent as ex.Project | sw.Project
+    this.id = `ProjectStates[${this.$project.id}]`
     this.config = config ?? { allowMissingModels: false }
-    this.bus = this.$.bus.for(`States[${dbName}/${dbStoreName}]`)
+    this.bus = this.$.bus.for(`ProjectStates[${this.$project.id}]`)
     this.connect = this.queue.wrap(this.connect, this)
     this.disconnect = this.queue.wrap(this.disconnect, this)
 
     // Do not allow multiple instances for the same db store
-    if (States.instanceIds.has(this.id)) throw this.never()
-    States.instanceIds.add(this.id)
+    if (ProjectStates.instanceIds.has(this.id)) throw this.never()
+    ProjectStates.instanceIds.add(this.id)
 
     // Setup `ex`
     if (this.$.env.is.ex) {
@@ -56,7 +52,7 @@ export class States extends exSw.Unit {
     if (this.$.env.is.ex) await this.bus.send('swConnect', name)
 
     // Create and initialize state
-    const state = new exSw.State(this, name, initial, versioner)
+    const state = new exSw.ProjectState(this, name, initial, versioner)
     await state.init()
     this.dict[name] = state as any
 
@@ -80,12 +76,12 @@ export class States extends exSw.Unit {
     } else if (this.$.env.is.sw) {
       await this.disconnect(name)
       await this.bus.send('exDisconnect', name)
-      await this.$.idb.delete(this.dbName, this.dbStoreName, name)
+      await this.$.idb.delete(this.$project.id, ':state', name)
     }
   }
 
   create<T>(initial?: Initial<T>) {
-    const state = new exSw.State(this, null, initial)
+    const state = new exSw.ProjectState(this, null, initial)
     return state.root
   }
 
@@ -114,8 +110,8 @@ export class States extends exSw.Unit {
     this.bus.off()
     clearInterval(this.autoDisconnectInterval)
     for (const name in this.dict) await this.disconnect(name)
-    await this.$.idb.deleteStore(this.dbName, this.dbStoreName)
-    States.instanceIds.delete(this.id)
+    await this.$.idb.deleteStore(this.$project.id, ':state')
+    ProjectStates.instanceIds.delete(this.id)
   }
 
   /** Automatically disconnect `sw` state if there are no `ex` connections to it. */
