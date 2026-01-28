@@ -14,15 +14,31 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/docs/01' },
+      { text: 'Documentation', link: '/docs/intro-what-is-epos' },
     ],
 
     sidebar: [
       {
         text: 'Introduction',
+        items: [{ text: 'What is Epos?', link: '/docs/intro-what-is-epos' }],
+      },
+      {
+        text: 'Configuration',
+        items: [{ text: 'epos.json Spec', link: '/docs/spec' }],
+      },
+      {
+        text: 'API Reference',
         items: [
-          { text: 'What is Epos?', link: '/docs/01' },
-          { text: 'Getting Started', link: '/docs/02' },
+          { text: 'General', link: '/docs/api-general' },
+          { text: 'Environment', link: '/docs/api-env' },
+          { text: 'DOM', link: '/docs/api-dom' },
+          { text: 'Bus', link: '/docs/api-bus' },
+          { text: 'State', link: '/docs/api-state' },
+          { text: 'Storage', link: '/docs/api-storage' },
+          { text: 'Frames', link: '/docs/api-frames' },
+          { text: 'Assets', link: '/docs/api-assets' },
+          { text: 'Projects', link: '/docs/api-projects' },
+          { text: 'Libraries', link: '/docs/api-libs' },
         ],
       },
     ],

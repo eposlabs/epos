@@ -12,5 +12,5 @@ hero:
       link: https://get.epos.dev
     - theme: alt
       text: Documentation
-      link: /docs/01
+      link: /docs/intro-what-is-epos
 ---

@@ -1,3 +1,19 @@
+:root {
+  --vp-c-brand-1: oklch(0.56 0.14 117.75);
+
+  --vp-button-brand-bg: #e5fc00;
+  --vp-button-brand-hover-bg: #e5fc00;
+  --vp-button-brand-active-bg: #e5fc00;
+
+  --vp-button-brand-text: black;
+  --vp-button-brand-hover-text: black;
+  --vp-button-brand-active-text: black;
+
+  &.dark {
+    --vp-c-brand-1: #e5fc00;
+  }
+}
+
 DISABLE:root {
   --vp-button-brand-bg: #e9ff01;
   --vp-button-brand-hover-bg: #e9ff01;
