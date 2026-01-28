@@ -44,7 +44,7 @@ export class Unit<TRoot = unknown> {
     initState(this)
     initInert(this)
     enhancePrototype(this)
-    triggerAttachLifecycle(this)
+    scheduleAndFlushAttach(this)
   }
 
   [epos.state.DETACH]() {
@@ -236,7 +236,7 @@ function enhancePrototype<T>(unit: Unit<T>) {
   }
 }
 
-function triggerAttachLifecycle(unit: Unit<any>) {
+function scheduleAndFlushAttach<T>(unit: Unit<T>) {
   // Queue `attach` methods on the highest unattached ancestor (might be self).
   // This way `attach` methods are called after all versioners have been applied in the entire subtree.
   const attach = Reflect.get(unit, 'attach')

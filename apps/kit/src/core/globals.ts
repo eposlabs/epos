@@ -14,7 +14,7 @@ declare global {
 // MARK: Unit
 // ============================================================================
 
-import { Unit } from '../../../../packages/epos-unit/src/epos-unit.js'
+import { Unit } from 'epos-unit'
 
 class UnitGl<T extends gl = gl> extends Unit<T['App']> {}
 gl.Unit = UnitGl

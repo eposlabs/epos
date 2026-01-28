@@ -1,5 +1,5 @@
 {
-  "name": "epos-unit-devkit",
+  "name": "epos-devkit",
   "version": "1.25.0",
   "type": "module",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/epos-unit-devkit.js"
+    ".": "./dist/epos-devkit.js"
   },
   "files": [
     "dist",
@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.20.0",
-    "epos": "^1.55.0"
+    "epos": "^1.55.0",
+    "epos-unit": "^1.25.0"
   }
 }

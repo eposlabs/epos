@@ -1,3 +1,7 @@
+import { Devkit } from 'epos-devkit'
+
+epos.state.register({ Devkit })
+
 function action(target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {}
 
 export class App extends gl.Unit {
@@ -9,6 +13,7 @@ export class App extends gl.Unit {
   theme = new gl.Theme(this)
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
+  devkit = new Devkit(this)
 
   get state() {
     return {
@@ -56,16 +61,21 @@ export class App extends gl.Unit {
   }
 
   View() {
-    return <this.ui.View />
     if (location.href.includes('ui')) return <this.ui.View />
-    const dev = this[gl.Unit.DEV] as any
-    return <dev.View />
+    return <this.devkit.View />
+    // return <this.permissions.View />
   }
 
   static versioner: any = {
     13() {},
     14() {
       this.ui = new gl.AppUi(this)
+    },
+    15() {
+      this.devkit = new Devkit(this)
+    },
+    16() {
+      this.devkit = new Devkit(this)
     },
   }
 }
