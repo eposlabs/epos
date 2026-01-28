@@ -2,34 +2,31 @@
 outline: [2, 3]
 ---
 
-# General API
+# General APIs
 
-The general API provides core functionality for working with web extensions, including custom fetch, browser API access, React rendering, and component creation.
+Most Epos APIs are categorized and available under `epos.<category>.*`. However, some general-purpose tools live under `epos.*` directly. This section covers these APIs.
 
 ## epos.fetch()
 
-A CORS-bypassing fetch function that works like the standard `fetch` but without CORS restrictions. Note that it does not support streams.
+This method is the same as the standard `fetch`, but it bypasses CORS (Cross-Origin Resource Sharing) restrictions. This allows you to fetch `https://some.website` while your extension is running on `https://another.website`. A normal `fetch` would fail due to CORS policies, but `epos.fetch` will work.
 
 ```ts
 epos.fetch(url: string | URL, init?: RequestInit): Promise<Response>
 ```
 
-### Parameters
+#### Parameters
 
 - `url` - The URL to fetch
 - `init` - Optional fetch configuration (body, headers, method, etc.)
 
-### Returns
+#### Returns
 
-A Promise that resolves to a Response-like object with properties:
+A Promise that resolves with a `Response`-like object.
 
-- `ok`, `url`, `type`, `status`, `statusText`, `redirected`, `headers`
-- Methods: `text()`, `json()`, `blob()`
-
-### Example
+#### Example
 
 ```ts
-// Fetch data without CORS restrictions
+// Fetch JSON data
 const response = await epos.fetch('https://api.example.com/data')
 const data = await response.json()
 
@@ -37,31 +34,27 @@ const data = await response.json()
 const response = await epos.fetch('https://api.example.com/submit', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ name: 'John' }),
+  body: JSON.stringify({ value: 15 }),
 })
 ```
 
+#### How it works
+
+This is achieved by **proxying** the request through the extension's **service worker**, which is not subject to the CORS restrictions.
+
+#### Limitations
+
+This API does not support **streaming responses**. Some fields of `Response` and `RequestInit` objects are also missing in `epos.fetch`. All available fields and methods are provided with TypeScript types.
+
 ## epos.browser
 
-Access to the WebExtensions API (like `chrome.*`), but works in any context - background, content scripts, popup, side panel, and even in iframes.
+This is a **WebExtensions API** (`chrome.*`) that works in any context. Standard Chrome APIs are restricted to the service worker and extension pages, but Epos makes these APIs available in all contexts, including code running on web pages.
 
-```ts
-epos.browser: Browser
-```
-
-### Example
+#### Example
 
 ```ts
 // Get all tabs
 const tabs = await epos.browser.tabs.query({})
-
-// Create a notification
-await epos.browser.notifications.create({
-  type: 'basic',
-  title: 'Hello',
-  message: 'World',
-  iconUrl: 'icon.png',
-})
 
 // Listen for tab updates
 epos.browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -69,23 +62,35 @@ epos.browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 ```
 
+#### How it works
+
+This is achieved by **proxying** the API calls through the extension's **service worker**, which has access to the full WebExtensions API. For each listener callback, a unique ID is generated which tells the service worker which callback to invoke when an event occurs. If your app registers listeners on a web page and that page is then closed, Epos will automatically clean up all the listeners associated with that page.
+
+#### Limitations
+
+Only a limited number of WebExtensions APIs are supported. All APIs are declared with TypeScript types. As with the standard WebExtensions API, some of these require specific permissions.
+
 ## epos.render()
 
-Render a React node into the DOM. By default, it uses the appropriate root element based on your project's configuration (shadow DOM or regular DOM).
+Renders a React node into the DOM.
+
+Epos pre-creates an element structure for your app, and `epos.render` renders there by default. To know more about pre-created elements, see the [DOM API](api-dom.md).
 
 ```ts
 epos.render(node: ReactNode, container?: Container): void
 ```
 
-### Parameters
+#### Parameters
 
 - `node` - The React element to render
-- `container` - Optional container element. If not provided, uses the default root based on your shadow CSS configuration
+- `container` - Optional container element. If not provided, uses the default root element.
 
-### Example
+#### Example
 
-```ts
-import { App } from './App'
+```tsx
+function App() {
+  return <div>APP</div>
+}
 
 // Render into default container
 epos.render(<App />)
@@ -97,39 +102,48 @@ epos.render(<App />, customRoot)
 
 ## epos.component()
 
-Make a React component reactive to Epos state changes. This is a wrapper around MobX's `observer` that makes your component automatically re-render when any observable state it uses changes.
+Makes a React component reactive. If the component uses an Epos state, it will automatically re-render when that state changes.
 
 ```ts
 epos.component<T>(Component: React.FC<T>): React.FC<T>
 ```
 
-### Parameters
+#### Parameters
 
 - `Component` - The React functional component to make reactive
 
-### Returns
+#### Returns
 
-A reactive version of the component that will automatically re-render when state changes
+A reactive version of the component that will automatically re-render when the state changes.
 
-### Example
+#### Example
 
-```ts
-// Define a regular component
-const Counter: React.FC = () => {
-  const state = epos.state.connect({ count: 0 })
+```tsx
+import { useState } from 'react'
 
+// Connect to epos state
+const state = await epos.state.connect({ count: 0 })
+
+// Counter will re-render when `state.count` changes
+const Counter = epos.component(() => {
   return (
     <div>
-      <p>Count: {state.count}</p>
+      <div>Count: {state.count}</div>
       <button onClick={() => state.count++}>Increment</button>
     </div>
   )
-}
+})
 
-// Make it reactive to state changes
-export default epos.component(Counter)
+// Props and hooks work as usual
+const App = epos.component(props => {
+  const [text, setText] = useState('Hello')
+  return (
+    <div>
+      <div>
+        {props.name} | {state.count} | {text}
+      </div>
+      <input value={text} onChange={e => setText(e.target.value)} />
+    </div>
+  )
+})
 ```
-
-::: tip
-You only need to use `epos.component()` on components that directly access state. Child components that receive props don't need to be wrapped.
-:::

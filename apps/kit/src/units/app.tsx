@@ -1,8 +1,4 @@
-import { Devkit } from 'epos-devkit'
-
-epos.state.register({ Devkit })
-
-function action(target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {}
+import { devkit } from 'epos-devkit'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -13,7 +9,7 @@ export class App extends gl.Unit {
   theme = new gl.Theme(this)
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
-  devkit = new Devkit(this)
+  title = 'abc'
 
   get state() {
     return {
@@ -21,7 +17,6 @@ export class App extends gl.Unit {
     }
   }
 
-  @action
   alert(value: number) {
     alert(value)
   }
@@ -61,8 +56,8 @@ export class App extends gl.Unit {
   }
 
   View() {
+    return devkit.render(this)
     if (location.href.includes('ui')) return <this.ui.View />
-    return <this.devkit.View />
     // return <this.permissions.View />
   }
 
@@ -72,10 +67,16 @@ export class App extends gl.Unit {
       this.ui = new gl.AppUi(this)
     },
     15() {
-      this.devkit = new Devkit(this)
+      this.devkit = {}
     },
     16() {
-      this.devkit = new Devkit(this)
+      this.devkit = {}
+    },
+    17() {
+      this.devkit = {}
+    },
+    18() {
+      delete this.devkit
     },
   }
 }

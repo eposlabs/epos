@@ -114,7 +114,9 @@ export class ProjectUi extends gl.Unit {
         <Card className="w-90">
           <CardHeader>
             <CardTitle>Connect Your Project</CardTitle>
-            <CardDescription>To get started, please select the folder where your project files are located.</CardDescription>
+            <CardDescription>
+              To get started, please select the folder where your project files are located.
+            </CardDescription>
           </CardHeader>
           <CardFooter>
             <Button className="w-full" onClick={this.self.connectDir}>
@@ -394,9 +396,9 @@ export class ProjectUi extends gl.Unit {
                         <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
                           <span>Total Sources</span>
                           <span>
-                            {(Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(
-                              2,
-                            )}{' '}
+                            {(
+                              Object.values(this.self.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024
+                            ).toFixed(2)}{' '}
                             KB
                           </span>
                         </div>

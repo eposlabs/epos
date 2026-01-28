@@ -2,7 +2,7 @@
 outline: [2, 3]
 ---
 
-# Environment API
+# Env API
 
 The environment API provides information about the current execution context, including tab and window identifiers, context type, and project information.
 
