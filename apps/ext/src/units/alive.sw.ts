@@ -1,7 +1,7 @@
 export class Alive extends sw.Unit {
   constructor(parent: sw.Unit) {
     super(parent)
-    this.expose('sw')
+    this.expose()
     void this.initAlarm()
   }
 

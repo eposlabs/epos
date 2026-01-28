@@ -2,9 +2,9 @@ import { Unit as BaseUnit } from '@eposlabs/utils'
 import type { RpcTarget } from 'epos'
 
 class Unit<T extends cs.App | ex.App | os.App | pm.App | sw.App | vw.App> extends BaseUnit<T> {
-  use<T extends RpcTarget>(name: string, id?: string) {
+  use<T extends RpcTarget>(bundle: string, id?: string) {
     const idPart = id ? `[${id}]` : ''
-    return this.$.bus.use<T>(`${this.constructor.name}${idPart}[${name}]`)
+    return this.$.bus.use<T>(`${this.constructor.name}${idPart}[${bundle}]`)
   }
 
   expose(id?: string) {

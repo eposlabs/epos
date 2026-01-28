@@ -6,7 +6,7 @@ import { toPng } from './utils-to-png.js'
 
 export class Utils extends os.Unit {
   init() {
-    this.expose('os')
+    this.expose()
   }
 
   colorHash = colorHash
