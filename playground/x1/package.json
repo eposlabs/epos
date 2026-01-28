@@ -2,6 +2,6 @@
   "name": "x1",
   "type": "module",
   "dependencies": {
-    "epos": "^1.55.0"
+    "epos": "^1.57.0"
   }
 }

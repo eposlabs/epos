@@ -28,9 +28,10 @@ export default defineConfig({
       },
       {
         text: 'API Reference',
+        link: '/docs/api',
         items: [
           { text: 'General', link: '/docs/api-general' },
-          { text: 'Environment', link: '/docs/api-env' },
+          { text: 'Env', link: '/docs/api-env' },
           { text: 'DOM', link: '/docs/api-dom' },
           { text: 'Bus', link: '/docs/api-bus' },
           { text: 'State', link: '/docs/api-state' },
@@ -38,7 +39,7 @@ export default defineConfig({
           { text: 'Frames', link: '/docs/api-frames' },
           { text: 'Assets', link: '/docs/api-assets' },
           { text: 'Projects', link: '/docs/api-projects' },
-          { text: 'Libraries', link: '/docs/api-libs' },
+          { text: 'Libs', link: '/docs/api-libs' },
         ],
       },
     ],

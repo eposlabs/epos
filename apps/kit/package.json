@@ -10,24 +10,24 @@
     "shadcn": "node scripts/shadcn.ts"
   },
   "dependencies": {
-    "@eposlabs/idb": "^1.21.0",
-    "@eposlabs/types": "^1.20.0",
-    "@eposlabs/utils": "^1.20.0",
+    "@eposlabs/idb": "^1.23.0",
+    "@eposlabs/types": "^1.22.0",
+    "@eposlabs/utils": "^1.22.0",
     "@tabler/icons-react": "^3.36.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "epos": "^1.55.0",
-    "epos-devkit": "^1.25.0",
-    "epos-unit": "^1.25.0",
+    "epos": "^1.57.0",
+    "epos-devkit": "^1.2.0",
+    "epos-unit": "^1.27.0",
     "fflate": "^0.8.2",
     "input-otp": "^1.4.2",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react-day-picker": "^9.13.0",
-    "react-resizable-panels": "^4.5.2",
+    "react-resizable-panels": "^4.5.3",
     "recharts": "^3.7.0",
     "sonner": "^2.0.7",
     "strip-json-comments": "^5.0.3",
@@ -36,14 +36,14 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@eposlabs/layerer": "^1.23.0",
+    "@eposlabs/layerer": "^1.25.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.36",
     "@types/wicg-file-system-access": "^2023.10.7",
     "shadcn": "^3.7.0",
     "tailwindcss": "^4.1.18",
     "vite": "^8.0.0-beta.0",
-    "vite-plugin-rebundle": "^1.32.0"
+    "vite-plugin-rebundle": "^1.34.0"
   },
   "overrides": {
     "vite": "^8.0.0-beta.0"
