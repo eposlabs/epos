@@ -153,7 +153,7 @@ export class Unit<TRoot = unknown> {
    */
   never(message?: string) {
     const details = message ? `: ${message}` : ''
-    const error = new Error(`[${this['@']}] SYSTEM FAILURE${details}`)
+    const error = new Error(`[${this['@']}] CRITICAL${details}`)
     Error.captureStackTrace(error, this.never)
     return error
   }

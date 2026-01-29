@@ -37,26 +37,27 @@ export class App extends gl.Unit {
     history.replaceState(null, '', `/${location.search}`)
   }
 
-  private async ensureSinglePinnedTab() {
-    const kitTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
-    if (kitTabs.length === 1) {
-      const tab = kitTabs[0]
-      if (!tab) throw this.never()
-      if (tab.pinned) return
-      await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
-      await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-    } else {
-      await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
-      await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-      for (const tab of kitTabs) {
-        if (!tab.id || tab.id === epos.env.tabId) continue
-        await epos.browser.tabs.remove(tab.id)
-      }
-    }
-  }
+  // private async ensureSinglePinnedTab() {
+  //   const kitTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
+  //   if (kitTabs.length === 1) {
+  //     const tab = kitTabs[0]
+  //     if (!tab) throw this.never()
+  //     if (tab.pinned) return
+  //     await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
+  //     await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
+  //   } else {
+  //     await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
+  //     await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
+  //     for (const tab of kitTabs) {
+  //       if (!tab.id || tab.id === epos.env.tabId) continue
+  //       await epos.browser.tabs.remove(tab.id)
+  //     }
+  //   }
+  // }
 
   View() {
-    return <Explorer target={this} />
+    return <div>ok</div>
+    // return <Explorer target={this} />
     if (location.href.includes('ui')) return <this.ui.View />
     // return <this.permissions.View />
   }

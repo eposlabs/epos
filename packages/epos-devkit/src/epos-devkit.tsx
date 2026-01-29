@@ -1,24 +1,75 @@
 /// <reference types="vite/client" />
-import type { Obj } from '@eposlabs/utils'
+import { is, type Obj } from '@eposlabs/utils'
 import 'epos'
+import { Unit } from 'epos-unit'
 import css from './epos-devkit.css?inline'
 
-// import { Unit } from 'epos-unit'
+const devkits = new WeakMap<Obj<any>, Devkit>()
 
-// export const devkit = {
-//   render(state: Obj<any>) {
-//     const keys = Object.keys(unit)
-//     return (
-//       <div>
-//         {keys.map(key => (
-//           <div key={key}>
-//             {key}: {String(unit[key])}
-//           </div>
-//         ))}
-//       </div>
-//     )
-//   },
-// }
+class Devkit extends Unit {
+  get state() {
+    return {
+      target: null as Obj<any> | null,
+    }
+  }
+
+  get inert() {
+    return {
+      target: null as Obj<any> | null,
+    }
+  }
+
+  get target() {
+    if (!this.inert.target) throw this.never()
+    return this.inert.target
+  }
+
+  init(target: Obj<any>) {
+    this.inert.target = target
+  }
+
+  private getPrototypes(object: object): object[] {
+    const prototype = Reflect.getPrototypeOf(object)
+    if (!prototype || prototype === Object.prototype) return []
+    return [prototype, ...this.getPrototypes(prototype)]
+  }
+
+  WidgetView({ name }: { name: string }) {
+    return <div>{name}</div>
+  }
+
+  View() {
+    const keys = Object.keys(this.target)
+    const descriptors = Object.getOwnPropertyDescriptors(this.target)
+
+    return (
+      <div>
+        <div className="dk:flex dk:flex-col dk:gap-3">
+          {Object.entries(descriptors).map(([key, descriptor]) => {
+            // return <FieldView key={key} property={key} descriptor={descriptor} target={this.target} />
+          })}
+        </div>
+      </div>
+    )
+  }
+}
+
+class Field extends Unit {}
+
+epos.state.register({ _Devkit: Devkit })
+
+export const devkit = (target: Obj<any>) => {
+  let devkit: Devkit
+  if (devkits.has(target)) {
+    devkit = devkits.get(target)!
+  } else {
+    devkit = epos.state.create(new Devkit(null))
+    devkit.init(target)
+    devkits.set(target, devkit)
+  }
+
+  return <devkit.View />
+}
 
 export function getPrototypes(object: object): object[] {
   const prototype = Reflect.getPrototypeOf(object)
@@ -32,30 +83,23 @@ declare global {
   }
 }
 
+let stylesInjected = false
+function ensureStyles() {
+  if (stylesInjected) return
+  stylesInjected = true
+  const eposElement = document.querySelector('epos')
+  if (!eposElement) return
+  const styleElement = document.createElement('style')
+  styleElement.setAttribute('data-epos-devkit', '')
+  styleElement.textContent = css
+  styleElement.epos = true
+  eposElement.append(styleElement)
+}
+
 export const Explorer = epos.component((props: { target: Obj<any> }) => {
-  // const [state] = epos.libs.react.useState(() => epos.state.create())
+  ensureStyles()
 
-  epos.libs.react.useEffect(() => {
-    const styleId = 'epos-devkit-styles'
-    const eposElement = document.querySelector('epos')
-    if (!eposElement) return
-
-    if (!document.getElementById(styleId)) {
-      const styleElement = document.createElement('style')
-      styleElement.id = styleId
-      styleElement.textContent = css
-      styleElement.epos = true
-      eposElement.appendChild(styleElement)
-    }
-
-    return () => {
-      const styleElement = document.getElementById(styleId)
-      if (styleElement) {
-        eposElement.removeChild(styleElement)
-      }
-    }
-  }, [])
-
+  const [state] = epos.libs.react.useState(() => epos.state.create())
   const keys = Object.keys(props.target)
   const prototypes = getPrototypes(props.target)
 
@@ -64,27 +108,58 @@ export const Explorer = epos.component((props: { target: Obj<any> }) => {
       <div className="dk:flex dk:flex-col dk:gap-3">
         {keys.map(key => {
           return (
-            <div key={key}>
-              {key}: {String(props.target[key])}
-            </div>
+            <Widget
+              key={key}
+              property={key}
+              descriptor={Object.getOwnPropertyDescriptor(props.target, key)!}
+              target={props.target}
+            />
           )
         })}
         <hr />
         {prototypes.map(prototype => {
+          if (prototype === Unit.prototype) return null
           const descriptors = Object.getOwnPropertyDescriptors(prototype)
-          return Object.entries(descriptors).map(([key]) => {
+          return Object.entries(descriptors).map(([key, descriptor]) => {
+            if (props.target instanceof Unit && ['$', 'log'].includes(key)) return null
             if (key === 'constructor') return null
-            return (
-              <div key={key}>
-                {key}: {String(props.target[key])}
-              </div>
-            )
+            return <Widget key={key} property={key} descriptor={descriptor} target={props.target} />
           })
         })}
       </div>
     </div>
   )
 })
+
+function Widget(props: { property: string; descriptor: PropertyDescriptor; target: Obj<any> }) {
+  const value = props.descriptor.get?.call(props.target) ?? props.descriptor.value
+
+  if (value && is.string(value)) {
+    return <TextWidget {...props} />
+  }
+
+  return (
+    <div>
+      <strong>{props.property}</strong>: {String(props.descriptor.value)} ({props.descriptor.get ? 'getter' : 'value'})
+    </div>
+  )
+}
+
+function TextWidget(props: { property: string; descriptor: PropertyDescriptor; target: Obj<any> }) {
+  return (
+    <div>
+      <div className="dk:font-bold">{props.property}</div>
+      <input
+        className="dk:border dk-border-black dk-p-2"
+        type="text"
+        value={String(props.target[props.property])}
+        onInput={e => {
+          props.target[props.property] = e.currentTarget.value
+        }}
+      />
+    </div>
+  )
+}
 
 // const _widgets_ = Symbol('widgets')
 // const widgets: any = {}

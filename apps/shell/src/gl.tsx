@@ -1,14 +1,9 @@
 import { epos } from 'epos'
-import { Explorer } from 'epos-devkit'
+import { devkit, Explorer } from 'epos-devkit'
 
-import './core/core'
+import './core/index.js'
 import './gl.css'
-import './layers/index.gl'
-
-epos.state.register({ ...gl })
-const app = await epos.state.connect(new gl.App(null))
-// epos.render(<app.View />)
-Object.assign(self, { epos, $: app, gl })
+import './layers/index.gl.js'
 
 // MARK: Test
 // ============================================================================
@@ -31,16 +26,20 @@ epos.state.register({ Header })
 
 const header = epos.state.create(new Header())
 
+epos.state.register({ ...gl })
+const app = await epos.state.connect(new gl.App(null))
+// epos.render(<app.View />)
+Object.assign(self, { epos, $: app, gl })
+
 epos.render(
   <div className="flex flex-col items-start gap-3 p-3">
-    <div className="border border-black p-3">
-      <Explorer target={header} />
-    </div>
-    <div className="border border-black p-3">
-      <Explorer target={app} />
-    </div>
+    <div className="border border-black p-3">{devkit(header)}</div>
+    <div className="border border-black p-3">{devkit(app)}</div>
   </div>,
 )
+
+// MARK:
+// ============================================================================
 
 // LOCAL STATE TEST:
 
