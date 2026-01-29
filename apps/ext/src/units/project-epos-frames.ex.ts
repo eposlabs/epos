@@ -1,4 +1,4 @@
-import type { Attrs, Frame } from './project.os'
+import type { Attrs } from './project.os'
 
 export class ProjectEposFrames extends ex.Unit {
   private $project = this.closest(ex.Project)!
@@ -18,9 +18,9 @@ export class ProjectEposFrames extends ex.Unit {
     return frames.some(frame => frame.id === id)
   }
 
-  async list(): Promise<Frame[]> {
+  async list() {
     const frames = await this.$project.os.getFrames()
     if (!frames) throw this.never()
-    return frames
+    return frames.map(frame => ({ id: frame.id, name: frame.name, url: frame.url }))
   }
 }

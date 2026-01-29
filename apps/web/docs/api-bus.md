@@ -2,69 +2,77 @@
 outline: [2, 3]
 ---
 
+::: danger TODO
+
+- Supported data types
+- Generator for epos.bus.send
+
+:::
+
 # Bus API
 
-The event bus enables cross-context communication in your extension. It allows you to send messages between popup, side panel, background, content scripts, and iframes seamlessly.
+A **messaging system** that allows for cross-context communication in your app. It provides a simple interface for sending messages from any context to any other context (popup, side panel, background, web page, iframe).
+
+#### Why “bus”?
+
+[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a 🚌 vehicle, but a communication system that transfers data between different components. It acts as a centralized hub for exchanging messages.
 
 ## epos.bus.on()
 
-Register an event listener.
+Registers an event listener.
 
 ```ts
-epos.bus.on<T extends Function>(
-  name: string,
-  callback: T,
-  thisArg?: unknown
-): void
+epos.bus.on(name: string, callback: Function, thisArg?: unknown): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Event name
 - `callback` - Function to call when event is triggered
 - `thisArg` - Optional `this` context for the callback
 
-### Example
+#### Example
 
 ```ts
-// Listen for a custom event
+// Listen for an event
 epos.bus.on('user:login', (userId: string) => {
-  console.log('User logged in:', userId)
+  console.log(`User logged in: ${userId}`)
 })
 
-// With this context
-class MyClass {
-  handleLogin(userId: string) {
-    console.log('User logged in:', userId)
-  }
+// With `this` context
+const auth = {
+  label: 'auth',
 
   init() {
+    // Pass `this` as third argument
     epos.bus.on('user:login', this.handleLogin, this)
-  }
+  },
+
+  handleLogin(userId: string) {
+    // `this` refers to the `auth` object
+    console.log(`[${this.label}] User logged in: ${userId}`)
+  },
 }
 ```
 
 ## epos.bus.off()
 
-Remove an event listener.
+Removes an event listener.
 
 ```ts
-epos.bus.off<T extends Function>(
-  name: string,
-  callback?: T
-): void
+epos.bus.off(name: string, callback?: Function): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Event name
-- `callback` - Optional specific callback to remove. If not provided, removes all listeners for this event
+- `callback` - Callback to remove. If not provided, removes all listeners for this event
 
-### Example
+#### Example
 
 ```ts
 const handler = (data: string) => {
-  console.log('Data:', data)
+  console.log(`Data: ${data}`)
 }
 
 // Register
@@ -79,23 +87,19 @@ epos.bus.off('data:update')
 
 ## epos.bus.once()
 
-Register a one-time event listener that automatically removes itself after being called.
+Registers a one-time event listener that automatically removes itself after being called. same as `epos.bus.on()`, but only triggers once.
 
 ```ts
-epos.bus.once<T extends Function>(
-  name: string,
-  callback: T,
-  thisArg?: unknown
-): void
+epos.bus.once(name: string, callback: Function, thisArg?: unknown): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Event name
 - `callback` - Function to call once when event is triggered
 - `thisArg` - Optional `this` context for the callback
 
-### Example
+#### Example
 
 ```ts
 // Listen once for initialization
@@ -107,36 +111,54 @@ epos.bus.once('app:ready', () => {
 
 ## epos.bus.send()
 
-Send an event to all remote listeners across all contexts. This is the primary method for cross-context communication.
+Sends a message to all remote listeners across all contexts. Does not trigger local listeners.
 
 ```ts
-epos.bus.send<T>(
-  name: string,
-  ...args: any[]
-): Promise<T | null>
+epos.bus.send<T>(name: string, ...args: any[]): Promise<T | null>
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Event name
 - `args` - Arguments to pass to the listeners
 
-### Returns
+#### Returns
 
-A Promise that resolves to the result from the first listener that returns a value, or `null` if no listener returns anything.
+A Promise that resolves to the result from the first listener that returns a value, or `null` if there are no listeners.
 
-### Example
+#### Example
 
 ```ts
-// Send from popup to background
-await epos.bus.send('fetch:data', 'https://api.example.com')
+// --- background.ts ---
+epos.bus.on('sum', (a: number, b: number) => {
+  return a + b
+})
 
-// Get response from background
-const data = await epos.bus.send<{ users: User[] }>('get:users')
-console.log(data.users)
+// --- popup.ts ---
+const result = await epos.bus.send<number>('sum', 5, 10)
+```
 
-// Send with multiple arguments
-await epos.bus.send('log:action', 'click', 'button', { id: 123 })
+::: tip PRO Tip
+You can pass function type for epos.bus.send generic to get arguments type checking as well:
+
+```ts
+// --- background.ts ---
+export const sum = (a: number, b: number) => a + b
+epos.bus.on('sum', sum)
+
+// --- popup.ts ---
+import type { sum } from './background'
+const result = await epos.bus.send<typeof sum>('sum', 5, 10) // Full type safety
+```
+
+:::
+
+#### Advanced
+
+Alternatively
+
+```ts
+
 ```
 
 ## epos.bus.emit()
@@ -144,22 +166,19 @@ await epos.bus.send('log:action', 'click', 'button', { id: 123 })
 Call local listeners for an event. Unlike `send()`, this only triggers listeners in the current context.
 
 ```ts
-epos.bus.emit<T>(
-  name: string,
-  ...args: any[]
-): Promise<T | null>
+epos.bus.emit<T>(name: string, ...args: any[]): Promise<T | null>
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Event name
 - `args` - Arguments to pass to the listeners
 
-### Returns
+#### Returns
 
-A Promise that resolves to the result from the first listener that returns a value, or `null`.
+A Promise that resolves to the result from the first listener that returns a value, or `null` if there are no listeners.
 
-### Example
+#### Example
 
 ```ts
 // Register local listener
@@ -179,12 +198,12 @@ Set a signal with an optional value. Signals are useful for synchronization acro
 epos.bus.setSignal(name: string, value?: unknown): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Signal name
 - `value` - Optional value to associate with the signal (defaults to `true`)
 
-### Example
+#### Example
 
 ```ts
 // Signal that initialization is complete
@@ -199,22 +218,19 @@ epos.bus.setSignal('config:loaded', { theme: 'dark', language: 'en' })
 Wait for a signal to be set. Useful for synchronization.
 
 ```ts
-epos.bus.waitSignal<T>(
-  name: string,
-  timeout?: number
-): Promise<T | null>
+epos.bus.waitSignal<T>(name: string, timeout?: number): Promise<T | null>
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - Signal name to wait for
 - `timeout` - Optional timeout in milliseconds
 
-### Returns
+#### Returns
 
-A Promise that resolves to the signal value when the signal is set, or `null` if the timeout is reached.
+A Promise that resolves to the signal value when the signal is set, or `null` if the timeout is reached or there are no listeners.
 
-### Example
+#### Example
 
 ```ts
 // Wait for initialization
@@ -238,12 +254,12 @@ Register an RPC (Remote Procedure Call) API that can be called from other contex
 epos.bus.register(name: string, api: Record<string, any>): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - API name
 - `api` - Object with methods to expose
 
-### Example
+#### Example
 
 ```ts
 // In background script
@@ -268,11 +284,11 @@ Unregister an RPC API.
 epos.bus.unregister(name: string): void
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - API name to unregister
 
-### Example
+#### Example
 
 ```ts
 epos.bus.unregister('user')
@@ -286,15 +302,15 @@ Get a typed proxy for calling a remote RPC API. All methods return Promises.
 epos.bus.use<T>(name: string): Rpc<T>
 ```
 
-### Parameters
+#### Parameters
 
 - `name` - API name to use
 
-### Returns
+#### Returns
 
 A proxy object where all methods are async versions of the registered API methods.
 
-### Example
+#### Example
 
 ```ts
 // Define API type
@@ -331,15 +347,15 @@ epos.bus.for(namespace: string): {
 }
 ```
 
-### Parameters
+#### Parameters
 
 - `namespace` - Namespace for the bus instance
 
-### Returns
+#### Returns
 
 A namespaced bus with all standard methods plus a `dispose()` method.
 
-### Example
+#### Example
 
 ```ts
 // Create namespaced bus
@@ -356,9 +372,10 @@ chatBus.send('message', 'Hello!')
 chatBus.dispose()
 ```
 
+<!--
 ## Communication Patterns
 
-### Request-Response Pattern
+#### Request-Response Pattern
 
 ```ts
 // Background script
@@ -371,7 +388,7 @@ epos.bus.on('fetch:url', async (url: string) => {
 const data = await epos.bus.send('fetch:url', 'https://api.example.com')
 ```
 
-### RPC Pattern
+#### RPC Pattern
 
 ```ts
 // Background script
@@ -394,7 +411,7 @@ await api.setData({ foo: 'bar' })
 const result = await api.getData()
 ```
 
-### Signal Pattern
+#### Signal Pattern
 
 ```ts
 // Wait for initialization in popup
@@ -409,3 +426,4 @@ epos.bus.setSignal('background:ready')
 ::: tip
 Use `epos.bus.for()` to create isolated namespaces for different features or modules to avoid event name conflicts.
 :::
+-->

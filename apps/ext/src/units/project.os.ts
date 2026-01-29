@@ -2,7 +2,6 @@ import type { Rpc } from 'epos'
 import type { Entry } from './project.sw'
 
 export type Attrs = Record<string, string | number>
-export type Frame = { id: string; url: string }
 
 export class Project extends os.Unit {
   id: Entry['id']
@@ -17,7 +16,7 @@ export class Project extends os.Unit {
     this.debug = params.debug
     this.spec = params.spec
     this.hash = params.hash
-    this.sw = this.use<sw.Project>(this.id)
+    this.sw = this.use<sw.Project>('sw', this.id)
     this.expose(this.id)
     if (this.hash) this.createBackground()
   }
@@ -123,19 +122,20 @@ export class Project extends os.Unit {
   // MARK: Frames
   // ============================================================================
 
-  getFrames(): Frame[] {
+  getFrames() {
     const selector = `iframe[data-type="frame"][data-project-id="${this.id}"]`
     const iframes = [...document.querySelectorAll<HTMLIFrameElement>(selector)]
 
     return iframes.map(iframe => {
       const frameId = iframe.getAttribute('data-frame-id')
       if (!frameId) throw this.never()
-      return { id: frameId, url: iframe.src }
+      return { id: frameId, name: iframe.name, url: iframe.src }
     })
   }
 
   async createFrame(url: string, attrs: Attrs = {}) {
-    const id = this.generateFrameId(url)
+    const id = this.$.utils.generateId()
+    const name = this.generateFrameName(url)
 
     // Remove `X-Frame-Options` header for the iframe's domain
     const ruleId = await this.sw.addSystemRule({
@@ -153,7 +153,7 @@ export class Project extends os.Unit {
 
     // Prepare iframe attributes
     attrs = {
-      'name': `${this.spec.slug}:${id}`,
+      'name': name,
       'data-type': 'frame',
       'data-project-id': this.id,
       'data-frame-id': id,
@@ -173,8 +173,8 @@ export class Project extends os.Unit {
     document.body.append(iframe)
 
     // Log info
-    const title = `Frame created: ${url}`
-    const subtitle = `Listed in the context dropdown as '${this.spec.slug}:${id}'`
+    const title = `Frame created: '${id}' ${url}`
+    const subtitle = `Listed in the context dropdown as '${name}'`
     this.info({ title, subtitle })
 
     return id
@@ -194,7 +194,7 @@ export class Project extends os.Unit {
     iframe.remove()
 
     // Log info
-    const title = `Frame removed: ${iframe.src}`
+    const title = `Frame removed: '${id}' ${iframe.src}`
     this.info({ title })
   }
 
@@ -209,18 +209,21 @@ export class Project extends os.Unit {
     }
   }
 
-  private generateFrameId(url: string): string {
-    let id: string
+  private generateFrameName(url: string): string {
+    let name: string
     let index = 1
-    const frames = this.getFrames()
+
+    // Extract domain
     const hostnameParts = new URL(url).hostname.split('.')
     const domain = hostnameParts.length === 1 ? hostnameParts[0] : hostnameParts.at(-2)
     if (!domain) throw this.never()
 
+    // Generate unique name
+    const frames = this.getFrames()
     while (true) {
-      id = `${domain}${index > 1 ? `-${index}` : ''}`
-      const exists = frames.find(frame => frame.id === id)
-      if (!exists) return id
+      name = `${this.spec.slug}:${domain}${index > 1 ? `-${index}` : ''}`
+      const exists = frames.find(frame => frame.name === name)
+      if (!exists) return name
       index += 1
     }
   }

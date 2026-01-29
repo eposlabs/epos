@@ -4,43 +4,51 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 
-export default defineConfig(async ({ mode }) => {
-  if (mode !== 'development' && mode !== 'production' && mode !== 'preview') throw new Error('Invalid mode')
-  const env = mode === 'development' ? 'development' : 'production'
+export type Env = 'development' | 'production'
+export type Define = Record<string, string>
 
-  const defineLayersJs = await layerer({
+export default defineConfig(async ({ mode }) => {
+  const modeOk = mode === 'development' || mode === 'production' || mode === 'preview'
+  if (!modeOk) throw new Error('Invalid mode')
+
+  const layers = await layerer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
-    globalLayerName: 'gl',
+    baseLayer: 'gl',
   })
 
-  const bundle = (
-    name: string,
-    forceMode?: 'development' | 'production',
-    define: Record<string, string> = {},
-  ): RolldownOptions => ({
-    input: {
-      transform: {
-        define: {
-          'BUNDLE': JSON.stringify(name),
-          'process.env.NODE_ENV': forceMode ? JSON.stringify(forceMode) : JSON.stringify(env),
-          ...define,
+  const bundle = (name: string, params: { env?: Env; define?: Define } = {}): RolldownOptions => {
+    const env = params.env ?? (mode === 'development' ? 'development' : 'production')
+    return {
+      input: {
+        transform: {
+          define: {
+            'DEV': JSON.stringify(env === 'development'),
+            'PROD': JSON.stringify(env === 'production'),
+            'BUNDLE': JSON.stringify(name),
+            'import.meta.env.DEV': JSON.stringify(env === 'development'),
+            'import.meta.env.PROD': JSON.stringify(env === 'production'),
+            'import.meta.env.MODE': JSON.stringify(env),
+            'process.env.NODE_ENV': JSON.stringify(env),
+            ...params.define,
+          },
         },
       },
-    },
-    output: {
-      keepNames: true,
-      banner: `(async () => {\n${defineLayersJs}\n`,
-      footer: '})()',
-      minify: (forceMode ?? mode) !== 'development',
-    },
-  })
+      output: {
+        keepNames: true,
+        banner: `(async () => {\n${layers}\n`,
+        footer: '})()',
+        minify: env === 'production',
+      },
+    }
+  }
 
   return {
     define: {
-      'DEV': JSON.stringify(mode === 'development'),
-      'PROD': JSON.stringify(mode !== 'development'),
+      'import.meta.env.DEV': 'import.meta.env.DEV',
+      'import.meta.env.PROD': 'import.meta.env.PROD',
+      'import.meta.env.MODE': 'import.meta.env.MODE',
       'process.env.NODE_ENV': 'process.env.NODE_ENV',
     },
 
@@ -53,10 +61,10 @@ export default defineConfig(async ({ mode }) => {
         'pm': bundle('pm'),
         'sw': bundle('sw'),
         'vw': bundle('vw'),
-        'exd': bundle('ex', 'development', { EX_MINI: 'false' }),
-        'exp': bundle('ex', 'production', { EX_MINI: 'false' }),
-        'exd-mini': bundle('ex', 'development', { EX_MINI: 'true' }),
-        'exp-mini': bundle('ex', 'production', { EX_MINI: 'true' }),
+        'exd': bundle('ex', { env: 'development', define: { EX_MINI: 'false' } }),
+        'exp': bundle('ex', { env: 'production', define: { EX_MINI: 'false' } }),
+        'exd-mini': bundle('ex', { env: 'development', define: { EX_MINI: 'true' } }),
+        'exp-mini': bundle('ex', { env: 'production', define: { EX_MINI: 'true' } }),
       }),
     ],
 
@@ -66,15 +74,15 @@ export default defineConfig(async ({ mode }) => {
       reportCompressedSize: false,
       rolldownOptions: {
         input: {
-          'cs': './src/cs.ts', // Content Script
+          'cs': './src/cs.ts', // Content script
           'os': './src/os.ts', // Offscreen
           'pm': './src/pm.ts', // Permission
-          'sw': './src/sw.ts', // Service Worker
+          'sw': './src/sw.ts', // Service worker
           'vw': './src/vw.ts', // View
-          'exd': './src/ex.ts', // Execution with forced NODE_ENV=development
-          'exp': './src/ex.ts', // Execution with forced NODE_ENV=production
-          'exd-mini': './src/ex.ts', // Execution without React, with forced NODE_ENV=development
-          'exp-mini': './src/ex.ts', // Execution without React, with forced NODE_ENV=production
+          'exd': './src/ex.ts', // Execution with forced 'development' environment
+          'exp': './src/ex.ts', // Execution with forced 'production' environment
+          'exd-mini': './src/ex.ts', // Execution without React, with forced 'development' environment
+          'exp-mini': './src/ex.ts', // Execution without React, with forced 'production' environment
         },
         output: {
           keepNames: true,

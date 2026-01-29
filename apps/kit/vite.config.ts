@@ -1,25 +1,22 @@
 import { layerer } from '@eposlabs/layerer'
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
-import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
-  const defineLayersJs = await layerer({
+  const layers = await layerer({
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
-    defaultLayerName: 'gl',
+    defaultLayer: 'gl',
   })
 
   return {
     resolve: {
-      alias: {
-        '@': resolve(import.meta.dirname, './src'),
-      },
+      tsconfigPaths: true,
     },
 
     define: {
@@ -34,7 +31,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: defineLayersJs,
+          banner: layers,
         },
       }),
     ],

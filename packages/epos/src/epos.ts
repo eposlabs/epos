@@ -163,7 +163,7 @@ export interface EposFrames {
   /** Check if background frame with the given id exists. */
   has(id?: string): Promise<boolean>
   /** Get list of all open background frames. */
-  list(): Promise<{ id: string; url: string }[]>
+  list(): Promise<{ id: string; name: string; url: string }[]>
 }
 
 export interface EposAssets {

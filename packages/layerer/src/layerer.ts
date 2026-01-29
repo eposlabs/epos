@@ -15,11 +15,11 @@ export type Options = {
   output: DirPath
   watch?: boolean
   /** Whether the layer variables should be exposed globally. */
-  globalize?: boolean
-  /** If provided, other layers will extend this layer. */
-  globalLayerName?: string | null
-  /** If a file name does not have any layer tags, default layer name will be used. */
-  defaultLayerName?: string | null
+  expose?: boolean
+  /** If provided, other layers will extend this base layer. */
+  baseLayer?: string | null
+  /** If a file name does not have any layer tags, it will be assigned to this default layer. */
+  defaultLayer?: string | null
 }
 
 export class Layerer extends Unit {
@@ -191,9 +191,9 @@ export class Layerer extends Unit {
 
     let extendPascal = ''
     let extendCamel = ''
-    if (this.options.globalLayerName && layer !== this.options.globalLayerName) {
-      extendPascal = `extends ${this.getLayerName(this.options.globalLayerName, 'Pascal')} `
-      extendCamel = `extends ${this.getLayerName(this.options.globalLayerName, 'camel')} `
+    if (this.options.baseLayer && layer !== this.options.baseLayer) {
+      extendPascal = `extends ${this.getLayerName(this.options.baseLayer, 'Pascal')} `
+      extendCamel = `extends ${this.getLayerName(this.options.baseLayer, 'camel')} `
     }
 
     const globals = [
@@ -226,8 +226,8 @@ export class Layerer extends Unit {
       })
       .map(layer => `import './layer.${layer}.js'`)
 
-    if (this.options.globalLayerName && topLayer !== this.options.globalLayerName) {
-      imports.unshift(`import './layer.${this.options.globalLayerName}.js'`)
+    if (this.options.baseLayer && topLayer !== this.options.baseLayer) {
+      imports.unshift(`import './layer.${this.options.baseLayer}.js'`)
     }
 
     return [...imports, ''].join('\n')
@@ -241,7 +241,7 @@ export class Layerer extends Unit {
 
     const vars = layers.map(layer => {
       const layerName = this.getLayerName(layer, 'camel')
-      if (this.options.globalize) return `globalThis.${layerName} = {}`
+      if (this.options.expose) return `globalThis.${layerName} = {}`
       return `const ${layerName} = {}`
     })
 
@@ -252,7 +252,7 @@ export class Layerer extends Unit {
     const name = basename(path)
     const layer = name.split('.').slice(1, -1).sort().join('.')
     if (layer) return layer
-    return this.options.defaultLayerName ?? ''
+    return this.options.defaultLayer ?? ''
   }
 
   private getLayerName(layer: string, style: 'camel' | 'Pascal') {

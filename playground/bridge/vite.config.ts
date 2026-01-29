@@ -10,7 +10,7 @@ export default defineConfig(async ({ mode }) => {
     input: './src/units',
     output: './src/layers',
     watch: mode !== 'production',
-    globalLayerName: 'gl',
+    baseLayer: 'gl',
   })
 
   return {

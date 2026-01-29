@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: epos
-  text: Extension Engine
+  text: Web Extension Engine
   tagline: A Crafted Toolset for Rapid & Fun Development
   actions:
     - theme: brand

@@ -14,7 +14,7 @@ The identifier of the current tab. Returns `-1` for background context and ifram
 epos.env.tabId: number | -1
 ```
 
-### Example
+#### Example
 
 ```ts
 if (epos.env.tabId !== -1) {
@@ -32,7 +32,7 @@ The identifier of the current window. Returns `-1` for background context and if
 epos.env.windowId: number | -1
 ```
 
-### Example
+#### Example
 
 ```ts
 if (epos.env.windowId !== -1) {
@@ -48,7 +48,7 @@ Indicates if the code is running in the popup context.
 epos.env.isPopup: boolean
 ```
 
-### Example
+#### Example
 
 ```ts
 if (epos.env.isPopup) {
@@ -64,7 +64,7 @@ Indicates if the code is running in the side panel context.
 epos.env.isSidePanel: boolean
 ```
 
-### Example
+#### Example
 
 ```ts
 if (epos.env.isSidePanel) {
@@ -80,7 +80,7 @@ Indicates if the code is running in the background service worker context.
 epos.env.isBackground: boolean
 ```
 
-### Example
+#### Example
 
 ```ts
 if (epos.env.isBackground) {
@@ -103,7 +103,7 @@ epos.env.project: {
 }
 ```
 
-### Properties
+#### Properties
 
 - `id` - Unique project identifier
 - `debug` - Whether the project is in debug mode
@@ -111,7 +111,7 @@ epos.env.project: {
 - `spec` - The project's Epos specification from `epos.json`
 - `manifest` - The generated Chrome extension manifest
 
-### Example
+#### Example
 
 ```ts
 console.log('Project name:', epos.env.project.spec.name)

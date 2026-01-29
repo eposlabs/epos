@@ -21,7 +21,7 @@ epos.fetch(url: string | URL, init?: RequestInit): Promise<Response>
 
 #### Returns
 
-A Promise that resolves with a `Response`-like object.
+A Promise that resolves to a `Response`-like object.
 
 #### Example
 
@@ -48,7 +48,13 @@ This API does not support **streaming responses**. Some fields of `Response` and
 
 ## epos.browser
 
-This is a **WebExtensions API** (`chrome.*`) that works in any context. Standard Chrome APIs are restricted to the service worker and extension pages, but Epos makes these APIs available in all contexts, including code running on web pages.
+::: danger TODO
+
+- Provide link to Chrome Extension API docs:
+  https://developer.chrome.com/docs/extensions/reference/api
+  :::
+
+This is a **WebExtensions API** (`chrome.*`) that works in any context. Standard Chrome APIs are restricted to the service worker and extension pages, but Epos makes these APIs available in all contexts, including regular web pages.
 
 #### Example
 

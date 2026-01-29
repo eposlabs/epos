@@ -18,7 +18,7 @@ export class BusUtils extends gl.Unit {
     return this.$.utils.is.object(value) && THROW in value
   }
 
-  /** Resolves with the first present result, catches errors as Throw object. */
+  /** Resolves to the first present result, catches errors as Throw object. */
   async pick(promises: (Promise<unknown> | null)[]) {
     if (promises.length === 0) return null
 
@@ -32,12 +32,12 @@ export class BusUtils extends gl.Unit {
         const [result, error] = await this.$.utils.safe(promise)
         processed += 1
 
-        // Result is not null / undefined? -> Resolve with it
+        // Result is not null / undefined? -> Resolve to it
         if (this.$.utils.is.present(result)) {
           result$.resolve(result)
         }
 
-        // Error was thrown? -> Resolve with a special `Throw` object
+        // Error was thrown? -> Resolve to a special `Throw` object
         else if (error) {
           const message = error?.message ?? 'Unexpected error'
           const throwObject: Throw = { [THROW]: true, message }
@@ -45,7 +45,7 @@ export class BusUtils extends gl.Unit {
           throw error
         }
 
-        // All promises are processed and no result found? -> Resolve with null
+        // All promises are processed and no result found? -> Resolve to null
         else if (processed === promises.length) {
           result$.resolve(null)
         }

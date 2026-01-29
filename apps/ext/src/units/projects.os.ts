@@ -6,6 +6,10 @@ export class Projects extends os.Unit {
   sw = this.use<sw.Projects>('sw')
   bus = this.$.bus.for('Projects')
 
+  get list() {
+    return Object.values(this.dict)
+  }
+
   async init() {
     await this.watcher.init()
   }
