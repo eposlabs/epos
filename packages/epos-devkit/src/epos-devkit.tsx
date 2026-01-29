@@ -3,8 +3,6 @@ import type { Obj } from '@eposlabs/utils'
 import 'epos'
 import css from './epos-devkit.css?inline'
 
-console.warn(css)
-
 // import { Unit } from 'epos-unit'
 
 // export const devkit = {
@@ -28,15 +26,42 @@ export function getPrototypes(object: object): object[] {
   return [prototype, ...getPrototypes(prototype)]
 }
 
+declare global {
+  interface Node {
+    epos?: boolean
+  }
+}
+
 export const Explorer = epos.component((props: { target: Obj<any> }) => {
   // const [state] = epos.libs.react.useState(() => epos.state.create())
+
+  epos.libs.react.useEffect(() => {
+    const styleId = 'epos-devkit-styles'
+    const eposElement = document.querySelector('epos')
+    if (!eposElement) return
+
+    if (!document.getElementById(styleId)) {
+      const styleElement = document.createElement('style')
+      styleElement.id = styleId
+      styleElement.textContent = css
+      styleElement.epos = true
+      eposElement.appendChild(styleElement)
+    }
+
+    return () => {
+      const styleElement = document.getElementById(styleId)
+      if (styleElement) {
+        eposElement.removeChild(styleElement)
+      }
+    }
+  }, [])
 
   const keys = Object.keys(props.target)
   const prototypes = getPrototypes(props.target)
 
   return (
     <div>
-      <div className="devkit-flex devkit-flex-col devkit-bg-[#040]">
+      <div className="dk:flex dk:flex-col dk:gap-3">
         {keys.map(key => {
           return (
             <div key={key}>
@@ -47,7 +72,6 @@ export const Explorer = epos.component((props: { target: Obj<any> }) => {
         <hr />
         {prototypes.map(prototype => {
           const descriptors = Object.getOwnPropertyDescriptors(prototype)
-          console.warn(descriptors)
           return Object.entries(descriptors).map(([key]) => {
             if (key === 'constructor') return null
             return (
