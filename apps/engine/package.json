@@ -1,5 +1,5 @@
 {
-  "name": "ext",
+  "name": "engine",
   "version": "*",
   "private": true,
   "type": "module",

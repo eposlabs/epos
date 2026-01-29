@@ -1,7 +1,7 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "[epos]",
-  "slug": "kit",
+  "slug": "epos-shell",
   "version": "1.8",
   "description": "Build browser extensions.",
   "config": { "allowProjectsApi": true, "allowMissingModels": true },

@@ -56,7 +56,7 @@ export class Project extends gl.Unit {
 
   async attach() {
     this.hydrate = this.$.utils.enqueue(this.hydrate)
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('kit', 'handles', this.id)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
     if (handle) await this.setHandle(handle)
     this.state.initialized = true
   }
@@ -93,12 +93,12 @@ export class Project extends gl.Unit {
 
   private async setHandle(handle: FileSystemDirectoryHandle | null) {
     if (handle) {
-      await this.$.idb.set('kit', 'handles', this.id, handle)
+      await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
       await this.hydrate()
       this.observe()
     } else {
-      await this.$.idb.delete('kit', 'handles', this.id)
+      await this.$.idb.delete('epos-shell', 'handles', this.id)
       this.state.handle = null
       this.unobserve()
     }

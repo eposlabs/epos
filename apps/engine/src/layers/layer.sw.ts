@@ -2,7 +2,6 @@ import { Alive, type Alive as AliveType } from '../units/alive.sw.js'
 import { App, type App as AppType } from '../units/app.sw.js'
 import { Fetcher, type Fetcher as FetcherType } from '../units/fetcher.sw.js'
 import { Idb, type Idb as IdbType } from '../units/idb.sw.js'
-import { Kit, type Kit as KitType } from '../units/kit.sw.js'
 import { Libs, type Libs as LibsType } from '../units/libs.sw.js'
 import { Net, type Net as NetType } from '../units/net.sw.js'
 import { Peer, type Peer as PeerType } from '../units/peer.sw.js'
@@ -17,6 +16,7 @@ import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../un
 import { ProjectTarget, type ProjectTarget as ProjectTargetType } from '../units/project-target.sw.js'
 import { Project, type Project as ProjectType } from '../units/project.sw.js'
 import { Projects, type Projects as ProjectsType } from '../units/projects.sw.js'
+import { Shell, type Shell as ShellType } from '../units/shell.sw.js'
 import { UtilsOrigins, type UtilsOrigins as UtilsOriginsType } from '../units/utils-origins.sw.js'
 import { Utils, type Utils as UtilsType } from '../units/utils.sw.js'
 
@@ -25,7 +25,6 @@ Object.assign(sw, {
   App,
   Fetcher,
   Idb,
-  Kit,
   Libs,
   Net,
   Peer,
@@ -40,6 +39,7 @@ Object.assign(sw, {
   ProjectTarget,
   Project,
   Projects,
+  Shell,
   UtilsOrigins,
   Utils,
 })
@@ -52,7 +52,6 @@ declare global {
     App: typeof App
     Fetcher: typeof Fetcher
     Idb: typeof Idb
-    Kit: typeof Kit
     Libs: typeof Libs
     Net: typeof Net
     Peer: typeof Peer
@@ -67,6 +66,7 @@ declare global {
     ProjectTarget: typeof ProjectTarget
     Project: typeof Project
     Projects: typeof Projects
+    Shell: typeof Shell
     UtilsOrigins: typeof UtilsOrigins
     Utils: typeof Utils
   }
@@ -76,7 +76,6 @@ declare global {
     App: App
     Fetcher: Fetcher
     Idb: Idb
-    Kit: Kit
     Libs: Libs
     Net: Net
     Peer: Peer
@@ -91,6 +90,7 @@ declare global {
     ProjectTarget: ProjectTarget
     Project: Project
     Projects: Projects
+    Shell: Shell
     UtilsOrigins: UtilsOrigins
     Utils: Utils
   }
@@ -100,7 +100,6 @@ declare global {
     export type App = AppType
     export type Fetcher = FetcherType
     export type Idb = IdbType
-    export type Kit = KitType
     export type Libs = LibsType
     export type Net = NetType
     export type Peer = PeerType
@@ -115,6 +114,7 @@ declare global {
     export type ProjectTarget = ProjectTargetType
     export type Project = ProjectType
     export type Projects = ProjectsType
+    export type Shell = ShellType
     export type UtilsOrigins = UtilsOriginsType
     export type Utils = UtilsType
   }

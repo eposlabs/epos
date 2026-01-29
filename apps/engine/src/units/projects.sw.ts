@@ -1,7 +1,7 @@
 import type { Assets, Bundle, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
 import type { CsTabInfo } from './bus.gl.js'
-import type { Address } from './project-target.sw'
-import type { Entry, Snapshot } from './project.sw'
+import type { Address } from './project-target.sw.js'
+import type { Entry, Snapshot } from './project.sw.js'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
@@ -248,8 +248,8 @@ export class Projects extends sw.Unit {
       }
     }
 
-    // Process action by `kit`
-    await this.$.kit.processAction()
+    // Process action by `epos-shell` if installed
+    await this.$.shell.processAction()
   }
 
   private async loadEx() {

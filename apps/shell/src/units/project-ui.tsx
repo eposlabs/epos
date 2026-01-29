@@ -546,7 +546,7 @@ export class ProjectUi extends gl.Unit {
   // ===========================================================================
 
   SidebarView() {
-    // if (this.self.spec.slug === 'kit') return null
+    // if (this.self.spec.slug === 'shell') return null
     return (
       <SidebarMenuItem>
         <SidebarMenuButton isActive={this.self.selected} onClick={() => this.self.select()}>

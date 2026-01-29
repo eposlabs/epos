@@ -8,11 +8,11 @@ export class App extends sw.Unit {
   alive = new sw.Alive(this)
   fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
-  kit = new sw.Kit(this)
   medium = new swVw.Medium(this)
   net = new sw.Net(this)
   peer = new sw.Peer(this)
   projects = new sw.Projects(this)
+  shell = new sw.Shell(this)
 
   async init() {
     self.$ = this
@@ -22,12 +22,11 @@ export class App extends sw.Unit {
     this.initGlobalMethods()
     await this.setupContentScript()
     await this.createOffscreen()
-    await this.kit.reloadTabs()
+    await this.shell.reloadTabs()
   }
 
   private logInfo() {
-    const hasKitProject = this.projects.list.some(project => project.spec.slug === 'kit')
-    if (!hasKitProject) return
+    if (!this.shell.isInstalled()) return
     const docsUrl = 'https://epos.dev/docs/api'
     const title = `ᛃ epos is running | ${docsUrl}`
     const subtitle = `To inspect background processes, open offscreen.html from the extension details page`
