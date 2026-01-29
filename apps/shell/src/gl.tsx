@@ -1,11 +1,46 @@
+import { epos } from 'epos'
+import { Explorer } from 'epos-devkit'
+
 import './core/core'
 import './gl.css'
 import './layers/index.gl'
 
 epos.state.register({ ...gl })
 const app = await epos.state.connect(new gl.App(null))
-epos.render(<app.View />)
+// epos.render(<app.View />)
 Object.assign(self, { epos, $: app, gl })
+
+// MARK: Test
+// ============================================================================
+
+class Base {
+  show() {
+    return 'show'
+  }
+}
+
+class Header extends Base {
+  title = 'Epos Shell App'
+
+  move() {
+    console.log('move header')
+  }
+}
+
+epos.state.register({ Header })
+
+const header = epos.state.create(new Header())
+
+epos.render(
+  <div className="flex flex-col items-start gap-3 p-3">
+    <div className="border border-black p-3">
+      <Explorer target={header} />
+    </div>
+    <div className="border border-black p-3">
+      <Explorer target={app} />
+    </div>
+  </div>,
+)
 
 // LOCAL STATE TEST:
 

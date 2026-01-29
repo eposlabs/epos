@@ -110,7 +110,7 @@ export class Projects extends sw.Unit {
         const url = new URL(resource.path, specUrl).href
         if (resource.type === 'lite-js') resource.path = `min:${resource.path}`
         if (resource.path in sources) continue
-        const [res] = await this.$.utils.safe(fetch(url))
+        const [res] = await this.$.utils.safe(fetch(url, { cache: 'no-store' }))
         if (!res?.ok) throw new Error(`Failed to fetch: ${url}`)
         const [text] = await this.$.utils.safe(res.text())
         if (!text) throw new Error(`Failed to fetch: ${url}`)

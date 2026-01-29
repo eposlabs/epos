@@ -105,7 +105,7 @@ export interface EposState {
   /** Run state changes in a batch. */
   transaction: (fn: () => void) => void
   /** Create local state (no sync). */
-  create<T>(initial?: Initial<T>): T
+  create<T extends {}>(initial?: Initial<T>): T
   /** Get list of all state names. */
   list(filter?: { connected?: boolean }): Promise<{ name: string | null; connected: boolean }[]>
   /** Remove state and all its data. */

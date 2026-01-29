@@ -1,4 +1,4 @@
-import { devkit } from 'epos-devkit'
+import { Explorer } from 'epos-devkit'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -56,7 +56,7 @@ export class App extends gl.Unit {
   }
 
   View() {
-    return devkit.render(this)
+    return <Explorer target={this} />
     if (location.href.includes('ui')) return <this.ui.View />
     // return <this.permissions.View />
   }

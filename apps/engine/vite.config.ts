@@ -70,7 +70,6 @@ export default defineConfig(async ({ mode }) => {
 
     build: {
       watch: mode === 'production' ? null : {},
-      minify: false,
       reportCompressedSize: false,
       rolldownOptions: {
         input: {
@@ -85,10 +84,9 @@ export default defineConfig(async ({ mode }) => {
           'exp-mini': './src/ex.ts', // Execution without React, with forced 'production' environment
         },
         output: {
-          keepNames: true,
-          sourcemap: false,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
+          keepNames: true,
           strictExecutionOrder: true,
         },
       },

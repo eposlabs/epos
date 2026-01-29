@@ -20,14 +20,20 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
-        items: [{ text: 'What is Epos?', link: '/docs/intro-what-is-epos' }],
+        items: [
+          { text: 'What is Epos?', link: '/docs/intro-what-is-epos' },
+          { text: 'Getting Started', link: '/docs/intro-getting-started' },
+        ],
       },
       {
-        text: 'Configuration',
-        items: [{ text: 'epos.json Spec', link: '/docs/spec' }],
+        text: 'Guide',
+        items: [
+          { text: 'Your First Extension', link: '/docs/guide-your-first-extension' },
+          { text: 'Configuration (epos.json)', link: '/docs/guide-configuration' },
+        ],
       },
       {
-        text: 'API Reference',
+        text: 'APIs',
         link: '/docs/api',
         items: [
           { text: 'General', link: '/docs/api-general' },

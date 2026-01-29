@@ -1,20 +1,66 @@
-import type { Ctor, Obj } from '@eposlabs/utils'
-import { Unit } from 'epos-unit'
+/// <reference types="vite/client" />
+import type { Obj } from '@eposlabs/utils'
+import 'epos'
+import css from './epos-devkit.css?inline'
 
-export const devkit = {
-  render(unit: Obj<any>) {
-    const keys = Object.keys(unit)
-    return (
-      <div>
-        {keys.map(key => (
-          <div key={key}>
-            {key}: {String(unit[key])}
-          </div>
-        ))}
-      </div>
-    )
-  },
+console.warn(css)
+
+// import { Unit } from 'epos-unit'
+
+// export const devkit = {
+//   render(state: Obj<any>) {
+//     const keys = Object.keys(unit)
+//     return (
+//       <div>
+//         {keys.map(key => (
+//           <div key={key}>
+//             {key}: {String(unit[key])}
+//           </div>
+//         ))}
+//       </div>
+//     )
+//   },
+// }
+
+export function getPrototypes(object: object): object[] {
+  const prototype = Reflect.getPrototypeOf(object)
+  if (!prototype || prototype === Object.prototype) return []
+  return [prototype, ...getPrototypes(prototype)]
 }
+
+export const Explorer = epos.component((props: { target: Obj<any> }) => {
+  // const [state] = epos.libs.react.useState(() => epos.state.create())
+
+  const keys = Object.keys(props.target)
+  const prototypes = getPrototypes(props.target)
+
+  return (
+    <div>
+      <div className="devkit-flex devkit-flex-col devkit-bg-[#040]">
+        {keys.map(key => {
+          return (
+            <div key={key}>
+              {key}: {String(props.target[key])}
+            </div>
+          )
+        })}
+        <hr />
+        {prototypes.map(prototype => {
+          const descriptors = Object.getOwnPropertyDescriptors(prototype)
+          console.warn(descriptors)
+          return Object.entries(descriptors).map(([key]) => {
+            if (key === 'constructor') return null
+            return (
+              <div key={key}>
+                {key}: {String(props.target[key])}
+              </div>
+            )
+          })
+        })}
+      </div>
+    </div>
+  )
+})
 
 // const _widgets_ = Symbol('widgets')
 // const widgets: any = {}

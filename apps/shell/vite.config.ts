@@ -38,7 +38,6 @@ export default defineConfig(async ({ mode }) => {
 
     build: {
       watch: mode === 'production' ? null : {},
-      minify: false,
       reportCompressedSize: false,
       rolldownOptions: {
         input: {
