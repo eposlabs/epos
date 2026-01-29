@@ -10,8 +10,10 @@
     "deploy": "npm run build && netlify deploy --dir apps/web/dist --site 0a55e18d-3914-4207-84ca-6cc2869ea828 --prod"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "netlify-cli": "^23.14.0",
     "oxc-minify": "^0.111.0",
+    "tailwindcss": "^4.1.18",
     "vite": "^8.0.0-beta.0",
     "vitepress": "^2.0.0-alpha.12"
   },

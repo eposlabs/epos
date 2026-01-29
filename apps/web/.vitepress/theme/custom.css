@@ -1,3 +1,5 @@
+@import 'tailwindcss';
+
 :root {
   --vp-c-brand-1: oklch(0.56 0.14 117.75);
 
@@ -8,38 +10,9 @@
   --vp-button-brand-text: black;
   --vp-button-brand-hover-text: black;
   --vp-button-brand-active-text: black;
-
-  &.dark {
-    --vp-c-brand-1: #e5fc00;
-  }
 }
 
-DISABLE:root {
-  --vp-button-brand-bg: #e9ff01;
-  --vp-button-brand-hover-bg: #e9ff01;
-  --vp-button-brand-active-bg: #e9ff01;
-  --vp-button-brand-text: black;
-  --vp-button-brand-hover-text: black;
-  --vp-button-brand-active-text: black;
-
-  --vp-home-hero-name-color: black;
-  --vp-c-brand-1: black;
-
-  &.dark {
-    --vp-home-hero-name-color: #e9ff01;
-    --vp-c-brand-1: white;
-  }
+.dark {
+  --vp-c-brand-1: #e5fc00;
 }
 
-/* .dark {
-    --vp-home-hero-name-color: #e9ff01;
-  } */
-/* --vp-button-brand-bg: #e9ff01; */
-/* --vp-button-brand-hover-bg: #e9ff01;
-  --vp-button-brand-text: black;
-  --vp-button-brand-hover-text: black;
-  --vp-c-brand-1: oklch(0.8 0.23 128.76);
-  --vp-c-brand-1: #cad741;
-  --vp-c-brand-1: #959f27;
-  --vp-home-hero-image-filter: blur(56px);
-  --vp-home-hero-image-background-image: linear-gradient(45deg, #e1ff05, #f1ff03); */

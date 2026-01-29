@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
@@ -6,6 +7,9 @@ export default defineConfig({
   description: 'Browser Extension Engine',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
   outDir: 'dist',
+  vite: {
+    plugins: [tailwindcss()],
+  },
   themeConfig: {
     outline: {
       level: 4, // show both h2 and h3
