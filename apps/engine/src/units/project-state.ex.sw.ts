@@ -379,7 +379,8 @@ export class ProjectState<T = Obj> extends exSw.Unit {
       // - object[newKey] = value (add)
       // - object[existingKey] = value (update)
       if (change.type === 'add' || change.type === 'update') {
-        this.processMObjectSet(change)
+        const prevent = this.processMObjectSet(change)
+        if (prevent) return
       }
       // - delete object[key]
       else if (change.type === 'remove') {
@@ -404,6 +405,19 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   }
 
   private processMObjectSet(change: MObjectSetChange) {
+    // Setter is defined on prototype chain? -> Call it, prevent default change processing
+    const isSetter = change.name in change.object && !Reflect.getOwnPropertyDescriptor(change.object, change.name)
+    if (isSetter) {
+      const prototypes = this.$.utils.getPrototypes(change.object)
+      for (const prototype of prototypes) {
+        const descriptor = Reflect.getOwnPropertyDescriptor(prototype, change.name)
+        if (!descriptor) continue
+        if (!this.$.utils.is.function(descriptor.set)) continue
+        descriptor.set.call(change.object, change.newValue)
+        return true
+      }
+    }
+
     // Skip symbols
     if (this.$.utils.is.symbol(change.name)) return
 

@@ -2,6 +2,7 @@ import { colorHash } from './utils-color-hash.js'
 import { createLog, type Log } from './utils-create-log.js'
 import { enqueue } from './utils-enqueue.js'
 import { ensureArray } from './utils-ensure-array.js'
+import { getPrototypes } from './utils-get-prototypes.js'
 import { get } from './utils-get.js'
 import { is } from './utils-is.js'
 import { link } from './utils-link.js'
@@ -15,4 +16,20 @@ import { wait } from './utils-wait.js'
 
 export type { Arr, AsyncFn, Ctor, Fn, Log, Obj }
 
-export { colorHash, createLog, enqueue, ensureArray, get, is, link, Queue, safe, safeSync, set, unique, Unit, wait }
+export {
+  colorHash,
+  createLog,
+  enqueue,
+  ensureArray,
+  get,
+  getPrototypes,
+  is,
+  link,
+  Queue,
+  safe,
+  safeSync,
+  set,
+  unique,
+  Unit,
+  wait,
+}

@@ -3,7 +3,7 @@
   "name": "[epos]",
   "slug": "epos-shell",
   "version": "1.8",
-  "description": "Build browser extensions.",
+  "description": "Build web extensions.",
   "config": { "allowProjectsApi": true, "allowMissingModels": true },
   "assets": ["public/icon.svg", "public/icon.png"],
 

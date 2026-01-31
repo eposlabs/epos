@@ -1,4 +1,4 @@
-import { createLog, is, type Arr, type Ctor, type Log, type Obj } from '@eposlabs/utils'
+import { createLog, getPrototypes, is, type Arr, type Ctor, type Log, type Obj } from '@eposlabs/utils'
 import { epos, type Rpc, type RpcTarget } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
@@ -269,15 +269,6 @@ function ensureAccessor<T extends object, K extends keyof T>(target: T, key: K, 
   if (!(key in target)) defineAccessor(target, key, defaultValue)
   if (!target[key]) throw new Error(`Failed to ensure accessor for '${String(key)}'`)
   return target[key]
-}
-
-/**
- * Get all prototypes of an object up to `Object.prototype`.
- */
-function getPrototypes(object: object): object[] {
-  const prototype = Reflect.getPrototypeOf(object)
-  if (!prototype || prototype === Object.prototype) return []
-  return [prototype, ...getPrototypes(prototype)]
 }
 
 /**

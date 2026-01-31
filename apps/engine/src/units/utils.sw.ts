@@ -1,4 +1,4 @@
-import { colorHash, enqueue, ensureArray, get, is, link, Queue, safe, safeSync, unique } from '@eposlabs/utils'
+import { colorHash, enqueue, ensureArray, get, getPrototypes, is, link, Queue, safe, unique } from '@eposlabs/utils'
 import { generateId } from './utils-generate-id.js'
 import { hash } from './utils-hash.js'
 import { info } from './utils-info.js'
@@ -15,6 +15,7 @@ export class Utils extends sw.Unit {
   ensureArray = ensureArray
   generateId = generateId
   get = get
+  getPrototypes = getPrototypes
   hash = hash
   info = info
   is = is
@@ -23,7 +24,6 @@ export class Utils extends sw.Unit {
   origins = new sw.UtilsOrigins(this)
   Queue = Queue
   safe = safe
-  safeSync = safeSync
   time = time
   unique = unique
 }
