@@ -39,7 +39,7 @@ export class Layerer extends Unit {
   }
 
   async start() {
-    if (this.started) return
+    if (this.started) throw new Error('Layerer has already been started')
     this.started = true
 
     await safe(rm(this.options.output, { recursive: true }))
