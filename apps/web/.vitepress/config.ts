@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: 'epos',
-  description: 'Browser Extension Engine',
+  description: 'Build Web Extensions',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
   outDir: 'dist',
   vite: {
@@ -33,7 +33,7 @@ export default defineConfig({
         text: 'Guide',
         items: [
           { text: 'Your First Extension', link: '/docs/guide-your-first-extension' },
-          { text: 'Configuration (epos.json)', link: '/docs/guide-configuration' },
+          { text: 'epos.json', link: '/docs/guide-configuration' },
         ],
       },
       {

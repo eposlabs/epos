@@ -3,6 +3,6 @@
 /// <reference types="@eposlabs/types" />
 /// <reference types="wicg-file-system-access"/>
 
-import './file-system-observer.js'
-import './globals.js'
-import './unit.js'
+import './core-file-system-observer.js'
+import './core-globals.js'
+import './core-unit.js'

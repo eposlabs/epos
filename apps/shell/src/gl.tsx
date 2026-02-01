@@ -1,7 +1,7 @@
 import { epos } from 'epos'
-import { devkit, Explorer } from 'epos-devkit'
+import { Devkit, dk, SelectWidget } from 'epos-devkit'
 
-import './core/index.js'
+import './core/core.js'
 import './gl.css'
 import './layers/index.gl.js'
 
@@ -9,32 +9,85 @@ import './layers/index.gl.js'
 // ============================================================================
 
 class Base {
+  @dk.text({ color: 'purple' })
+  get uppercased() {
+    return this.title.toUpperCase()
+  }
+  set uppercased(value: string) {
+    this.title = value.toLowerCase()
+  }
+
   show() {
     return 'show'
   }
 }
 
+const Cmp = (props: WidgetProps) => {
+  return (
+    <div>
+      !!![CUSTOM CMP] - {props.name}: {String(props.target[props.name])}
+    </div>
+  )
+}
+
+// TODO: provide all possible variants of data (get/set/value/method/computed/etc + extends)
+// and check what are visible with getOwnPropertyDescriptors / prototypes
 class Header extends Base {
+  @dk.text({ color: 'blue' })
   title = 'Epos Shell App'
 
-  move() {
-    console.log('move header')
+  @dk.select({ options: ['light', 'dark', 'system'], color: 'purple' })
+  theme = 'dark'
+
+  @dk.custom(props => {
+    return (
+      <div>
+        GETTER {props.name} {props.target[props.name]}
+      </div>
+    )
+  })
+  get getter() {
+    return `AAA [${this.title}]`
+  }
+
+  @dk.text({ color: 'green' })
+  get x() {
+    return this.title
+  }
+  set x(value: string) {
+    this.title = value
+  }
+
+  @dk.auto()
+  move(value: number) {
+    console.log('move header', value)
   }
 }
 
-epos.state.register({ Header })
+epos.state.register({ Base, Header })
 
-const header = epos.state.create(new Header())
+const header = await epos.state.connect('header', new Header(), {
+  1() {
+    this.theme = 'light'
+  },
+})
+self.header = header
 
 epos.state.register({ ...gl })
 const app = await epos.state.connect(new gl.App(null))
 // epos.render(<app.View />)
 Object.assign(self, { epos, $: app, gl })
 
+self.Header = Header
+
 epos.render(
   <div className="flex flex-col items-start gap-3 p-3">
-    <div className="border border-black p-3">{devkit(header)}</div>
-    <div className="border border-black p-3">{devkit(app)}</div>
+    <div className="border border-black p-3 dark:border-gray-400">
+      <Devkit target={header} />
+    </div>
+    <div className="border border-black p-3 dark:border-gray-400">
+      <Devkit target={app} />
+    </div>
   </div>,
 )
 

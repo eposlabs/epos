@@ -6,13 +6,18 @@ import pkg from './package.json'
 
 export default defineConfig(({ mode }) => {
   return {
+    resolve: {
+      tsconfigPaths: true,
+    },
+
     plugins: [dts({ tsconfigPath: './tsconfig-src.json' }), epos(), tailwindcss()],
+
     build: {
       watch: mode === 'production' ? null : {},
       sourcemap: true,
       reportCompressedSize: false,
       lib: {
-        entry: './src/epos-devkit.tsx',
+        entry: { devkit: './src/devkit.tsx' },
         formats: ['es'],
       },
       rolldownOptions: {

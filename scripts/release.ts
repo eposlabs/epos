@@ -2,7 +2,7 @@
 // > npm run release -- [patch|minor|major] [workspace1] [workspace2] ...
 // ============================================================================
 
-import { execSync } from 'node:child_process'
+import { run } from './utils/run.ts'
 
 void (() => {
   const { version, targets } = parseArgs()
@@ -21,8 +21,4 @@ function parseArgs() {
   } else {
     return { version: null, targets: args }
   }
-}
-
-function run(command: string) {
-  execSync(command, { stdio: 'inherit', cwd: process.cwd(), env: process.env })
 }

@@ -2,6 +2,7 @@
   "extends": "../../tsconfig-browser.json",
   "include": ["src"],
   "compilerOptions": {
+    "experimentalDecorators": true,
     "paths": {
       "@/*": ["./src/*"]
     }

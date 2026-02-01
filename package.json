@@ -1,5 +1,5 @@
 {
-  "name": "eposlabs-epos",
+  "name": "monorepo",
   "version": "*",
   "private": true,
   "type": "module",

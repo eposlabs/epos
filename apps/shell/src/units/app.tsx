@@ -1,5 +1,3 @@
-import { Explorer } from 'epos-devkit'
-
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
   utils = new gl.Utils(this)
