@@ -405,15 +405,14 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   }
 
   private processMObjectSet(change: MObjectSetChange) {
-    // Setter is defined on prototype chain? -> Call it, prevent default change processing
-    const isSetter = change.name in change.object && !Reflect.getOwnPropertyDescriptor(change.object, change.name)
-    if (isSetter) {
+    // Has getter/setter on a prototype? -> Call setter if defined and prevent default processing
+    const isInherited = change.name in change.object && !Object.hasOwn(change.object, change.name)
+    if (isInherited) {
       const prototypes = this.$.utils.getPrototypes(change.object)
-      for (const prototype of prototypes) {
-        const descriptor = Reflect.getOwnPropertyDescriptor(prototype, change.name)
-        if (!descriptor) continue
-        if (!this.$.utils.is.function(descriptor.set)) continue
-        descriptor.set.call(change.object, change.newValue)
+      const owner = prototypes.find(prototype => Object.hasOwn(prototype, change.name))
+      const descriptor = owner ? Reflect.getOwnPropertyDescriptor(owner, change.name) : null
+      if (descriptor && (descriptor.get || descriptor.set)) {
+        if (descriptor.set) descriptor.set.call(change.object, change.newValue)
         return true
       }
     }
@@ -421,8 +420,8 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     // Skip symbols
     if (this.$.utils.is.symbol(change.name)) return
 
-    // Skip getters
-    if (change.newValue === undefined && !change.object.hasOwnProperty(change.name)) return
+    // Skip `defineProperty` calls
+    if (change.newValue === undefined && !Object.hasOwn(change.object, change.name)) return
 
     // Skip if value didn't change
     if (change.newValue === change.object[change.name]) return
