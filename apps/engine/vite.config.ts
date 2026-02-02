@@ -12,7 +12,7 @@ export default defineConfig(async ({ mode }) => {
   if (!modeOk) throw new Error('Invalid mode')
 
   const layers = await layerer({
-    input: './src/units',
+    input: './src',
     output: './src/layers',
     watch: mode !== 'production',
     baseLayer: 'gl',

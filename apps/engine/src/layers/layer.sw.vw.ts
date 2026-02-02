@@ -1,4 +1,4 @@
-import { Medium, type Medium as MediumType } from '../units/medium.sw.vw.js'
+import { Medium, type Medium as MediumType } from '../medium/medium.sw.vw.js'
 
 Object.assign(swVw, {
   Medium,

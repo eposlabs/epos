@@ -1,5 +1,5 @@
-import { ProjectState, type ProjectState as ProjectStateType } from '../units/project-state.ex.sw.js'
-import { ProjectStates, type ProjectStates as ProjectStatesType } from '../units/project-states.ex.sw.js'
+import { ProjectState, type ProjectState as ProjectStateType } from '../project/project-state.ex.sw.js'
+import { ProjectStates, type ProjectStates as ProjectStatesType } from '../project/project-states.ex.sw.js'
 
 Object.assign(exSw, {
   ProjectState,

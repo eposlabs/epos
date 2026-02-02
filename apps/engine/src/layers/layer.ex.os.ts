@@ -1,4 +1,4 @@
-import { Peer, type Peer as PeerType } from '../units/peer.ex.os.js'
+import { Peer, type Peer as PeerType } from '../peer/peer.ex.os.js'
 
 Object.assign(exOs, {
   Peer,

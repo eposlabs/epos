@@ -1,5 +1,5 @@
 import type { Assets, Bundle, ProjectSettings, Sources, Spec } from 'epos'
-import type { RuleNoId } from './net.sw.js'
+import type { RuleNoId } from '../net/net.sw.js'
 import type { Address } from './project-target.sw.js'
 
 // Data saved to IndexedDB

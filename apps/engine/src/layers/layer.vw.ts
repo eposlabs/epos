@@ -1,7 +1,7 @@
-import { App, type App as AppType } from '../units/app.vw.js'
-import { Project, type Project as ProjectType } from '../units/project.vw.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.vw.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.vw.js'
+import { App, type App as AppType } from '../app/app.vw.js'
+import { Project, type Project as ProjectType } from '../project/project.vw.js'
+import { Projects, type Projects as ProjectsType } from '../projects/projects.vw.js'
+import { Utils, type Utils as UtilsType } from '../utils/utils.vw.js'
 
 Object.assign(vw, {
   App,

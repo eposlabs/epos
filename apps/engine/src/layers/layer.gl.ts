@@ -1,12 +1,12 @@
-import { BusAction, type BusAction as BusActionType } from '../units/bus-action.gl.js'
-import { BusExtBridge, type BusExtBridge as BusExtBridgeType } from '../units/bus-ext-bridge.gl.js'
-import { BusPageBridge, type BusPageBridge as BusPageBridgeType } from '../units/bus-page-bridge.gl.js'
-import { BusSerializer, type BusSerializer as BusSerializerType } from '../units/bus-serializer.gl.js'
-import { BusUtils, type BusUtils as BusUtilsType } from '../units/bus-utils.gl.js'
-import { Bus, type Bus as BusType } from '../units/bus.gl.js'
-import { EnvIs, type EnvIs as EnvIsType } from '../units/env-is.gl.js'
-import { EnvUrl, type EnvUrl as EnvUrlType } from '../units/env-url.gl.js'
-import { Env, type Env as EnvType } from '../units/env.gl.js'
+import { BusAction, type BusAction as BusActionType } from '../bus/bus-action.gl.js'
+import { BusExtBridge, type BusExtBridge as BusExtBridgeType } from '../bus/bus-ext-bridge.gl.js'
+import { BusPageBridge, type BusPageBridge as BusPageBridgeType } from '../bus/bus-page-bridge.gl.js'
+import { BusSerializer, type BusSerializer as BusSerializerType } from '../bus/bus-serializer.gl.js'
+import { BusUtils, type BusUtils as BusUtilsType } from '../bus/bus-utils.gl.js'
+import { Bus, type Bus as BusType } from '../bus/bus.gl.js'
+import { EnvIs, type EnvIs as EnvIsType } from '../env/env-is.gl.js'
+import { EnvUrl, type EnvUrl as EnvUrlType } from '../env/env-url.gl.js'
+import { Env, type Env as EnvType } from '../env/env.gl.js'
 
 Object.assign(gl, {
   BusAction,

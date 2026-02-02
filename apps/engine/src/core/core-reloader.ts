@@ -1,4 +1,4 @@
-if (DEV) {
+if (DEV && BUNDLE === 'sw') {
   let ws: WebSocket | null = null
   void reconnect(0)
 
