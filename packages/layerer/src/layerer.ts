@@ -4,6 +4,8 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
 
 export type DirPath = string
+export type Input = DirPath | DirPath[]
+export type Output = DirPath
 
 export type File = {
   content: string
@@ -11,20 +13,20 @@ export type File = {
 }
 
 export type Options = {
-  input: DirPath | DirPath[]
-  output: DirPath
+  input?: Input
+  output?: Output
   watch?: boolean
   /** Whether the layer variables should be exposed globally. */
   expose?: boolean
-  /** If provided, other layers will extend this base layer. */
-  baseLayer?: string | null
+  /** Layer available everywhere. If provided, other layers will extend this global layer. */
+  globalLayer?: string | null
   /** If a file name does not have any layer tags, it will be assigned to this default layer. */
   defaultLayer?: string | null
 }
 
 export class Layerer extends Unit {
   private files: { [path: string]: File | null } = {}
-  private options: Options
+  private options: Omit<Options, 'input' | 'output'> & { input: Input; output: Output }
   private started = false
   private ready = false
   private ready$ = Promise.withResolvers<void>()
@@ -35,7 +37,11 @@ export class Layerer extends Unit {
 
   constructor(options: Options) {
     super()
-    this.options = options
+    this.options = {
+      ...options,
+      input: options.input ?? './src',
+      output: options.output ?? './src/layers',
+    }
   }
 
   async start() {
@@ -191,9 +197,9 @@ export class Layerer extends Unit {
 
     let extendPascal = ''
     let extendCamel = ''
-    if (this.options.baseLayer && layer !== this.options.baseLayer) {
-      extendPascal = `extends ${this.getLayerName(this.options.baseLayer, 'Pascal')} `
-      extendCamel = `extends ${this.getLayerName(this.options.baseLayer, 'camel')} `
+    if (this.options.globalLayer && layer !== this.options.globalLayer) {
+      extendPascal = `extends ${this.getLayerName(this.options.globalLayer, 'Pascal')} `
+      extendCamel = `extends ${this.getLayerName(this.options.globalLayer, 'camel')} `
     }
 
     const globals = [
@@ -226,8 +232,8 @@ export class Layerer extends Unit {
       })
       .map(layer => `import './layer.${layer}.js'`)
 
-    if (this.options.baseLayer && topLayer !== this.options.baseLayer) {
-      imports.unshift(`import './layer.${this.options.baseLayer}.js'`)
+    if (this.options.globalLayer && topLayer !== this.options.globalLayer) {
+      imports.unshift(`import './layer.${this.options.globalLayer}.js'`)
     }
 
     return [...imports, ''].join('\n')

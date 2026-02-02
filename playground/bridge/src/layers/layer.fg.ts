@@ -1,4 +1,4 @@
-import { App, type App as AppType } from '../units/app.fg.js'
+import { App, type App as AppType } from '../app/app.fg.js'
 
 Object.assign(fg, {
   App,

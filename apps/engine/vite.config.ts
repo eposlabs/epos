@@ -12,10 +12,8 @@ export default defineConfig(async ({ mode }) => {
   if (!modeOk) throw new Error('Invalid mode')
 
   const layers = await layerer({
-    input: './src',
-    output: './src/layers',
     watch: mode !== 'production',
-    baseLayer: 'gl',
+    globalLayer: 'gl',
   })
 
   const bundle = (name: string, params: { env?: Env; define?: Define } = {}): RolldownOptions => {

@@ -1,3 +1,8 @@
+// TOOD:
+
+- why not npm package?
+- for zero-config experience, engine that runs your code SOMEHOW, not a building schema to build in a specific way. It has pros and cons. It already setups service worker, offscreen, content scripts, knows how to inject code to pages and iframes and handle messaging between all of them. Each context can use chrome.\* APIs without limitations.
+
 # Getting Started
 
 ## What is Epos?

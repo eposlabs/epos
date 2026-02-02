@@ -4,13 +4,10 @@ import { epos } from 'epos/vite'
 import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
-// https://vite.dev/config/
 export default defineConfig(async ({ mode }) => {
-  const defineLayersJs = await layerer({
-    input: './src/units',
-    output: './src/layers',
+  const layers = await layerer({
     watch: mode !== 'production',
-    baseLayer: 'gl',
+    globalLayer: 'gl',
   })
 
   return {
@@ -20,7 +17,7 @@ export default defineConfig(async ({ mode }) => {
       rebundle({
         output: {
           minify: mode !== 'development',
-          banner: defineLayersJs,
+          banner: layers,
         },
       }),
     ],

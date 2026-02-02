@@ -1,3 +1,8 @@
+/// <reference types="epos" />
+/// <reference types="vite/client" />
+/// <reference types="@eposlabs/types" />
+/// <reference types="wicg-file-system-access"/>
+
 declare global {
   const DEV: boolean
   const PROD: boolean

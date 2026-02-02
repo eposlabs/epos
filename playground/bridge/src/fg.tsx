@@ -1,4 +1,4 @@
-import './core/globals.js'
+import './core/core.js'
 import './fg.css'
 import './layers/index.fg.js'
 

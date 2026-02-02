@@ -1,5 +1,5 @@
-import { App, type App as AppType } from '../units/app.gl.js'
-import { Project, type Project as ProjectType } from '../units/project.gl.js'
+import { App, type App as AppType } from '../app/app.gl.js'
+import { Project, type Project as ProjectType } from '../project/project.gl.js'
 
 Object.assign(gl, {
   App,

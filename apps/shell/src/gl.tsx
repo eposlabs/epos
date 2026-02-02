@@ -1,5 +1,5 @@
 import { epos } from 'epos'
-import { Devkit, dk, SelectWidget } from 'epos-devkit'
+import { Devkit, widget } from 'epos-devkit'
 
 import './core/core.js'
 import './gl.css'
@@ -9,7 +9,7 @@ import './layers/index.gl.js'
 // ============================================================================
 
 class Base {
-  @dk.text({ color: 'purple' })
+  @widget.text({ multiline: true })
   get uppercased() {
     return this.title.toUpperCase()
   }
@@ -33,24 +33,18 @@ const Cmp = (props: WidgetProps) => {
 // TODO: provide all possible variants of data (get/set/value/method/computed/etc + extends)
 // and check what are visible with getOwnPropertyDescriptors / prototypes
 class Header extends Base {
-  @dk.text({ color: 'blue' })
+  // @widget.text({})
   title = 'Epos Shell App'
 
-  @dk.select({ options: ['light', 'dark', 'system'], color: 'purple' })
+  // @widget.select({ options: ['light', 'dark', 'system'] })
   theme = 'dark'
 
-  @dk.custom(props => {
-    return (
-      <div>
-        GETTER {props.name} {props.target[props.name]}
-      </div>
-    )
-  })
-  get getter() {
-    return `AAA [${this.title}]`
+  visible = false
+
+  get uppercasedTitle() {
+    return `[${this.title.toUpperCase()}]`
   }
 
-  @dk.text({ color: 'green' })
   get x() {
     return this.title
   }
@@ -58,7 +52,7 @@ class Header extends Base {
     this.title = value
   }
 
-  @dk.auto()
+  @widget.default()
   move(value: number) {
     console.log('move header', value)
   }
@@ -69,6 +63,9 @@ epos.state.register({ Base, Header })
 const header = await epos.state.connect('header', new Header(), {
   1() {
     this.theme = 'light'
+  },
+  2() {
+    this.visible = false
   },
 })
 self.header = header
@@ -81,13 +78,8 @@ Object.assign(self, { epos, $: app, gl })
 self.Header = Header
 
 epos.render(
-  <div className="flex flex-col items-start gap-3 p-3">
-    <div className="border border-black p-3 dark:border-gray-400">
-      <Devkit target={header} />
-    </div>
-    <div className="border border-black p-3 dark:border-gray-400">
-      <Devkit target={app} />
-    </div>
+  <div className="p-4">
+    <Devkit target={header} />
   </div>,
 )
 

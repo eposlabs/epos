@@ -1,108 +1,86 @@
 import './core/core.js'
 import './devkit.css'
 
-import { getPrototypes, is, type Obj } from '@eposlabs/utils'
+import { Card, CardContent } from '@/components/ui/card.js'
+import { getPrototypes, type Obj } from '@eposlabs/utils'
 import { useEffect, type FC } from 'react'
-import { Button } from './components/ui/button.js'
+import { FieldGroup } from './components/ui/field.js'
 import css from './devkit.css?inline'
+import { DefaultWidget } from './widgets/default-widget.js'
+import { SelectWidget, type SelectWidgetConfig } from './widgets/select-widget.js'
+import { TextWidget, type TextWidgetConfig } from './widgets/text-widget.js'
 
-export const _widgets_ = Symbol('widgets')
-export type Widgets = Record<string, FC<WidgetProps>>
-export type WidgetProps = { target: Obj<any>; name: string; descriptor: PropertyDescriptor }
-let cssInjected = false
+export const widget = {
+  default: () => registerWidget(props => <DefaultWidget {...props} />),
+  custom: (CustomWidget: FC<WidgetProps>) => registerWidget(CustomWidget),
+  select: (config: SelectWidgetConfig) => registerWidget(props => <SelectWidget {...props} config={config} />),
+  text: (config: TextWidgetConfig) => registerWidget(props => <TextWidget {...props} config={config} />),
+}
 
 export const Devkit = epos.component((props: { target: Obj<any> }) => {
   useEffect(() => {
-    if (cssInjected) return
-    cssInjected = true
+    const injected = !!document.querySelector('style[data-epos-devkit]')
+    if (injected) return
+
     const eposElement = document.querySelector('epos')
     if (!eposElement) return
-    const styleElement = document.createElement('style')
-    styleElement.setAttribute('data-epos-devkit', '')
-    styleElement.textContent = css
-    styleElement.epos = true
-    eposElement.append(styleElement)
+
+    // Inject devkit css
+    const style = document.createElement('style')
+    style.setAttribute('data-epos-devkit', '')
+    style.textContent = css
+    style.epos = true
+    eposElement.append(style)
+
+    // Inject Inter font
+    const link = document.createElement('link')
+    link.setAttribute('data-epos-devkit-inter', '')
+    link.rel = 'stylesheet'
+    link.href = `https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap`
+    link.epos = true
+    eposElement.append(link)
   }, [])
 
   return (
-    <div className="dk:flex dk:flex-col dk:gap-3 dk:font-sans">
-      <Button>CLICK ME</Button>
-      {Object.entries(getAllDescriptors(props.target)).map(([key, descriptor]) => {
-        const widgets = ensureWidgets(props.target)
-        const Widget = widgets[key] ?? DefaultWidget
-        return <Widget key={key} target={props.target} name={key} descriptor={descriptor} />
-      })}
-    </div>
-  )
-})
-
-export const DefaultWidget = epos.component(({ target, name }: WidgetProps) => {
-  const value = target[name]
-  const valueDisplay = is.function(value) ? `ƒ ${value.length}` : JSON.stringify(value)
-  return (
     <div>
-      AUTO [{name}]: {valueDisplay}
+      <div className="dk:grid dk:w-100 dk:grid-cols-[auto_1fr] dk:gap-x-2 dk:gap-y-4 dk:border dk:border-border">
+        <div className="dk:contents">
+          <div>label</div>
+          <div>value asjkdasjkd jsak jskdjsad</div>
+        </div>
+        <div className="dk:contents">
+          <div>label</div>
+          <div>value</div>
+        </div>
+      </div>
+      <Card className="dk:w-100 dk:font-sans">
+        <CardContent>
+          <FieldGroup className="*:w-full">
+            {Object.entries(getAllDescriptors(props.target)).map(([key, descriptor]) => {
+              if (key === 'constructor') return null
+              const widgets = ensureWidgets(props.target)
+              const Widget = widgets[key] ?? DefaultWidget
+              return <Widget key={key} target={props.target} name={key} descriptor={descriptor} />
+            })}
+          </FieldGroup>
+        </CardContent>
+      </Card>
+      <div className="devkit-portal" />
     </div>
   )
 })
 
-export const devkit = {
-  custom: (Cmp: FC<WidgetProps>) => widget(Cmp),
-  auto: () => widget(props => <DefaultWidget {...props} />),
-  select: (config: SelectWidgetConfig) => widget(props => SelectWidget({ ...props, config })),
-  text: (config: TextWidgetConfig) => widget(props => TextWidget({ ...props, config })),
-}
+// MARK: Helpers
+// ============================================================================
 
-export type TextWidgetConfig = {
-  color: string
-}
-
-// TODO: if not epos.component here, then we can't use <TextWidget/>, only TextWidget()
-// meaning that dk.custom(props => <TextWidget .../>) won't work
-export const TextWidget = ({ target, name, config }: WidgetProps & { config: TextWidgetConfig }) => {
-  return (
-    <div className="dk:flex dk:items-center dk:gap-2" style={{ color: config.color }}>
-      <div className="dk:font-bold">{name}</div>
-      <input
-        className="dk:grow dk:border dk:border-gray-400 dk:px-2 dk:py-1"
-        value={target[name]}
-        onInput={e => (target[name] = e.currentTarget.value)}
-      />
-    </div>
-  )
-}
-
-export type SelectWidgetConfig = {
-  options: string[]
-  color?: string
-}
-
-export function SelectWidget({ target, name, config }: WidgetProps & { config: SelectWidgetConfig }) {
-  return (
-    <div className="dk:flex dk:items-center dk:gap-2" style={{ color: config.color }}>
-      <div className="dk:font-bold">{name}</div>
-      <select
-        className="dk:grow dk:border dk:border-gray-400 dk:px-2 dk:py-1"
-        value={target[name]}
-        onChange={e => (target[name] = e.currentTarget.value)}
-      >
-        {config.options.map(option => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-}
-
-export function widget(Widget: FC<WidgetProps>) {
+function registerWidget(Widget: FC<WidgetProps>) {
   return function (target: object, key: string) {
     const widgets = ensureWidgets(target)
     widgets[key] = epos.component(Widget)
   }
 }
 
+const _widgets_ = Symbol('widgets')
 function ensureWidgets(target: object & { [_widgets_]?: Widgets }) {
   if (target[_widgets_]) return target[_widgets_]
   const widgets: Widgets = {}
@@ -116,11 +94,11 @@ function getAllDescriptors(target: object) {
 
   const descriptors: Record<string, PropertyDescriptor> = {}
   for (const [key, descriptor] of entries) {
-    if (key in descriptors) continue
+    if (Object.hasOwn(descriptors, key)) continue
     descriptors[key] = descriptor
   }
 
+  console.warn(descriptors)
+
   return descriptors
 }
-
-export { devkit as dk }

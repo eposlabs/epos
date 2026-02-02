@@ -8,8 +8,6 @@ export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
   const layers = await layerer({
-    input: './src/units',
-    output: './src/layers',
     watch: mode !== 'production',
     defaultLayer: 'gl',
   })

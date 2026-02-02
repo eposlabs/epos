@@ -4,12 +4,12 @@ import minimist from 'minimist'
 import { layerer } from './layerer.js'
 
 const argv = minimist(process.argv.slice(2), {
-  string: ['baseLayer', 'defaultLayer'],
+  string: ['globalLayer', 'defaultLayer'],
   boolean: ['watch', 'expose'],
   default: {
     watch: false,
     expose: false,
-    baseLayer: null,
+    globalLayer: null,
     defaultLayer: null,
   },
 })
@@ -33,6 +33,6 @@ await layerer({
   output: output,
   watch: argv.watch,
   expose: argv.expose,
-  baseLayer: argv.baseLayer,
+  globalLayer: argv.globalLayer,
   defaultLayer: argv.defaultLayer,
 })

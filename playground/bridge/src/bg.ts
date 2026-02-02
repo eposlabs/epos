@@ -1,4 +1,4 @@
-import './core/globals.js'
+import './core/core.js'
 import './layers/index.bg.js'
 
 epos.state.register({ ...gl, ...bg })
