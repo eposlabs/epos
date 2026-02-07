@@ -12,7 +12,7 @@
   - [epos.env.isSidePanel](/docs/api-env#epos-env-issidepanel)
   - [epos.env.isBackground](/docs/api-env#epos-env-isbackground)
   - [epos.env.project](/docs/api-env#epos-env-project)
-- **Dom**
+- **DOM**
   - [epos.dom.root](/docs/api-dom#epos-dom-root)
   - [epos.dom.reactRoot](/docs/api-dom#epos-dom-reactroot)
   - [epos.dom.shadowRoot](/docs/api-dom#epos-dom-shadowroot)

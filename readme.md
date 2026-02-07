@@ -14,7 +14,7 @@
   - epos.env.isSidePanel
   - epos.env.isBackground
   - epos.env.project
-- **Dom**
+- **DOM**
   - epos.dom.root
   - epos.dom.reactRoot
   - epos.dom.shadowRoot

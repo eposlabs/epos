@@ -1,0 +1,36 @@
+disable:root {
+  /*
+  --vp-c-brand-1: oklch(0.56 0.14 117.75);
+  --vp-c-brand-1: oklch(0.69 0.26 141.74);
+  --vp-c-brand-1: #4b8500;
+  --vp-c-brand-1: #16a25b;
+  --vp-c-brand-1: #376c3b;
+  --vp-c-brand-1: #576000;
+  --vp-c-brand-1: #667500;
+  --vp-c-brand-1: #4d5900;
+  --vp-c-brand-1: hsl(65 100% 20%);
+  --vp-sidebar-bg-color: transparent;
+  .VPSidebar {
+    border-right: 1px solid var(--vp-c-divider);
+  }
+  */
+}
+
+disable:root:not(.dark) {
+  .vp-doc a {
+    /* color: black; */
+    /* text-underline-offset: 2px;
+    text-decoration-color: #e5fc00;
+    text-decoration-skip-ink: none;
+    text-decoration-thickness: 4px; */
+  }
+
+  .vp-doc :where(p, li) code {
+    color: hsl(65 100% 16%);
+    background: hsl(65 31% 93%);
+
+    /* color: black; */
+    /* background: #e5fc00; */
+    /* background: hsl(65 30% 90% / 1); */
+  }
+}

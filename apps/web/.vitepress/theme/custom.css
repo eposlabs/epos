@@ -1,52 +1,93 @@
 @import 'tailwindcss';
 
-disable:root {
-  --vp-c-brand-1: oklch(0.56 0.14 117.75);
-  --vp-c-brand-1: oklch(0.69 0.26 141.74);
-  --vp-c-brand-1: #4b8500;
-  --vp-c-brand-1: #16a25b;
-  --vp-c-brand-1: #376c3b;
-  --vp-c-brand-1: #576000;
-  --vp-c-brand-1: #667500;
-  --vp-c-brand-1: #4d5900;
-  --vp-c-brand-1: hsl(65 100% 20%);
+:root {
+  --color-brand: hsl(65 100% 49%);
+  --color-accent: oklch(0.61 0.08 140.5 / 1);
+  --vp-button-brand-active-bg: var(--color-brand);
+  --vp-button-brand-active-text: black;
+  --vp-button-brand-bg: var(--color-brand);
+  --vp-button-brand-hover-bg: var(--color-brand);
+  --vp-button-brand-hover-text: black;
+  --vp-button-brand-text: black;
+  --vp-c-brand-1: var(--color-accent);
+  --vp-c-brand-2: var(--color-accent);
+  --vp-c-brand-3: var(--color-accent);
+  --vp-c-gutter: var(--vp-c-divider);
+  --vp-sidebar-bg-color: var(--vp-c-bg);
+}
 
-  --vp-sidebar-bg-color: transparent;
+.dark {
+  --color-accent: var(--color-brand);
+  --vp-c-bg: #16171d;
+  --vp-c-divider: #202333;
+}
+
+/* Overrides */
+:root {
+  .VPNavBarTitle.has-sidebar .title {
+    @apply border-b-0;
+  }
 
   .VPSidebar {
-    border-right: 1px solid var(--vp-c-divider);
+    @apply mt-16 border-r border-(--vp-c-divider) pt-4.5 shadow-none;
   }
 
-  --brand: hsl(65 100% 49%);
-
-  --vp-button-brand-bg: #e5fc00;
-  --vp-button-brand-hover-bg: #e5fc00;
-  --vp-button-brand-active-bg: #e5fc00;
-
-  --vp-button-brand-text: black;
-  --vp-button-brand-hover-text: black;
-  --vp-button-brand-active-text: black;
-}
-
-disable:root:not(.dark) {
-  .vp-doc a {
-    /* color: black; */
-    /* text-underline-offset: 2px;
-    text-decoration-color: #e5fc00;
-    text-decoration-skip-ink: none;
-    text-decoration-thickness: 4px; */
+  .VPNavBar.has-sidebar .divider {
+    @apply pl-0;
   }
 
-  .vp-doc :where(p, li) code {
-    color: hsl(65 100% 16%);
-    background: hsl(65 31% 93%);
-
-    /* color: black; */
-    /* background: #e5fc00; */
-    /* background: hsl(65 30% 90% / 1); */
+  .VPDoc .aside-container {
+    @apply border-l border-(--vp-c-divider);
   }
-}
 
-disable.dark {
-  --vp-c-brand-1: #e5fc00;
+  .VPDocAside .content {
+    @apply border-l-0 pl-8;
+  }
+
+  .aside-container {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 28px);
+  }
+
+  .VPFeatures .item {
+    @apply p-0;
+  }
+  .VPFeature {
+    @apply rounded-none border-(--vp-c-divider) bg-(--vp-c-bg);
+  }
+  .VPFeatures .item:nth-child(1) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(2) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(3) .VPFeature {
+    @apply border-b-0;
+  }
+  .VPFeatures .item:nth-child(4) .VPFeature {
+    @apply border-r-0;
+  }
+  .VPFeatures .item:nth-child(5) .VPFeature {
+    @apply border-r-0;
+  }
+
+  .vp-code-group .tabs label:first-of-type:last-child {
+    &::after {
+      @apply bg-black;
+    }
+    .dark &::after {
+      @apply bg-white/50;
+    }
+  }
+
+  .vp-code-group .tabs {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
+
+  pre.shiki {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
 }

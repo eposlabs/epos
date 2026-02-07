@@ -1,9 +1,10 @@
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
+import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'epos',
+  title: 'Epos',
   description: 'Build Web Extensions',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
   outDir: 'dist',
@@ -18,28 +19,36 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/docs/intro-what-is-epos' },
+      { text: 'Documentation', link: '/docs' },
     ],
 
     sidebar: [
       {
         text: 'Introduction',
         items: [
-          { text: 'What is Epos?', link: '/docs/intro-what-is-epos' },
-          { text: 'Getting Started', link: '/docs/intro-getting-started' },
+          { text: 'Getting Started', link: '/docs/' },
+          { text: 'Features', link: '/docs/features' },
         ],
       },
       {
         text: 'Guide',
         items: [
-          { text: 'Your First Extension', link: '/docs/guide-your-first-extension' },
-          { text: 'epos.json', link: '/docs/guide-configuration' },
+          { text: 'Basics', link: '/docs/basics' },
+          { text: 'Vite Setup', link: '/docs/vite-setup' },
+          { text: 'Rendering', link: '/docs/rendering' },
+          { text: 'Environment', link: '/docs/environment' },
+          { text: 'Messaging', link: '/docs/messaging' },
+          { text: 'State Management', link: '/docs/state-management' },
+          { text: 'Storage', link: '/docs/storage' },
+          { text: 'Assets', link: '/docs/assets' },
+          { text: 'Libs', link: '/docs/libs' },
+          { text: 'epos.json', link: '/docs/epos-json' },
         ],
       },
       {
         text: 'APIs',
-        link: '/docs/api',
         items: [
+          { text: 'Overview', link: '/docs/api-overview' },
           { text: 'General', link: '/docs/api-general' },
           { text: 'Env', link: '/docs/api-env' },
           { text: 'DOM', link: '/docs/api-dom' },

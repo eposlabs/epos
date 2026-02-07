@@ -1,4 +1,4 @@
-# epos.json Specification
+# epos.json
 
 The `epos.json` file is the configuration file for your Epos extension. It defines what your extension does, where to load code, what permissions it needs, and how it should behave.
 
