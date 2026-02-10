@@ -28,8 +28,8 @@ export const Devkit = epos.component((props: { target: Obj<any> }) => {
     // Inject devkit css
     const style = document.createElement('style')
     style.setAttribute('data-epos-devkit', '')
+    style.setAttribute('data-epos', '')
     style.textContent = css
-    style.epos = true
     eposElement.append(style)
 
     // Inject Inter font
@@ -37,7 +37,7 @@ export const Devkit = epos.component((props: { target: Obj<any> }) => {
     link.setAttribute('data-epos-devkit-inter', '')
     link.rel = 'stylesheet'
     link.href = `https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap`
-    link.epos = true
+    link.setAttribute('data-epos', '')
     eposElement.append(link)
   }, [])
 

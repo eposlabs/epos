@@ -38,10 +38,6 @@ declare global {
     fn: (epos: PartialEpos) => void
   }
 
-  interface Node {
-    epos?: boolean
-  }
-
   interface RegExpConstructor {
     escape(str: string): string
   }

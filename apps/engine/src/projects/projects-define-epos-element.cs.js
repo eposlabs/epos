@@ -45,9 +45,9 @@ const ensureEposElement = () => {
   const eposObserver = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       for (const addedNode of mutation.addedNodes) {
-        if (addedNode.epos) continue
-        const root = document.head ?? document.documentElement
+        if (addedNode instanceof HTMLElement && addedNode.hasAttribute('data-epos')) continue
         if (!addedNode.isConnected) continue
+        const root = document.head ?? document.documentElement
         root.moveBefore(addedNode, null)
       }
     }

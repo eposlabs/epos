@@ -1,17 +1,17 @@
 export class ProjectEposDom extends ex.Unit {
   private $project = this.closest(ex.Project)!
   root: HTMLDivElement
-  reactRoot: HTMLDivElement
+  view: HTMLDivElement
   shadowRoot: ShadowRoot
-  shadowReactRoot: HTMLDivElement
+  shadowView: HTMLDivElement
 
   constructor(parent: ex.Unit) {
     super(parent)
-    const { root, reactRoot, shadowRoot, shadowReactRoot } = this.init()
+    const { root, view, shadowRoot, shadowView } = this.init()
     this.root = root
-    this.reactRoot = reactRoot
+    this.view = view
     this.shadowRoot = shadowRoot
-    this.shadowReactRoot = shadowReactRoot
+    this.shadowView = shadowView
   }
 
   private init() {
@@ -19,25 +19,27 @@ export class ProjectEposDom extends ex.Unit {
     const eposElement = document.querySelector('epos')
     if (!eposElement) throw this.never()
 
-    // Create <div> container for the project
+    // Create root project container
     const root = document.createElement('div')
-    root.epos = true
     root.setAttribute('data-project-name', this.$project.spec.name)
     root.setAttribute('data-project-id', this.$project.id)
+    root.setAttribute('data-epos', '')
     eposElement.append(root)
 
-    // Create [data-root] element
-    const reactRoot = document.createElement('div')
-    reactRoot.setAttribute('data-react-root', '')
-    root.append(reactRoot)
+    // Create [data-view] element
+    const view = document.createElement('div')
+    view.setAttribute('data-view', '')
+    root.append(view)
 
-    // Create [data-shadow] element with [data-root] element inside
+    // Create shadow DOM
     const shadow = document.createElement('div')
     shadow.setAttribute('data-shadow', '')
     const shadowRoot = shadow.attachShadow({ mode: 'open' })
-    const shadowReactRoot = document.createElement('div')
-    shadowReactRoot.setAttribute('data-react-root', '')
-    shadowRoot.append(shadowReactRoot)
+
+    // Create [data-shadow-view] element inside shadow DOM
+    const shadowView = document.createElement('div')
+    shadowView.setAttribute('data-shadow-view', '')
+    shadowRoot.append(shadowView)
     root.append(shadow)
 
     // Add shadow CSS if present
@@ -52,10 +54,10 @@ export class ProjectEposDom extends ex.Unit {
         const propertyRulesCss = propertyRules.map(rule => rule.cssText).join('\n')
         const blob = new Blob([propertyRulesCss], { type: 'text/css' })
         const link = document.createElement('link')
-        link.epos = true
         link.rel = 'stylesheet'
         link.href = URL.createObjectURL(blob)
         link.setAttribute('data-hoisted-property-rules', '')
+        link.setAttribute('data-epos', '')
         root.prepend(link)
       }
 
@@ -64,14 +66,15 @@ export class ProjectEposDom extends ex.Unit {
       const link = document.createElement('link')
       link.rel = 'stylesheet'
       link.href = URL.createObjectURL(blob)
+      link.setAttribute('data-epos', '')
       shadowRoot.append(link)
     }
 
     return {
       root,
+      view,
       shadowRoot,
-      reactRoot,
-      shadowReactRoot,
+      shadowView,
     }
   }
 }

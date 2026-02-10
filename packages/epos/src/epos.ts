@@ -58,12 +58,12 @@ export interface EposEnv {
 export interface EposDom {
   /** Project's root element. */
   root: HTMLDivElement
-  /** Pre-created element for React rendering. */
-  reactRoot: HTMLDivElement
+  /** Pre-created element used as default container for React. */
+  view: HTMLDivElement
   /** Pre-created shadow DOM. */
   shadowRoot: ShadowRoot
-  /** Pre-created element inside shadow DOM for React rendering. */
-  shadowReactRoot: HTMLDivElement
+  /** Pre-created element inside shadow DOM used as default container for React. */
+  shadowView: HTMLDivElement
 }
 
 export interface EposBus {

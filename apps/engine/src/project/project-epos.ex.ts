@@ -46,9 +46,9 @@ export class ProjectEpos extends ex.Unit {
 
       dom: {
         root: this.dom.root,
-        reactRoot: this.dom.reactRoot,
+        view: this.dom.view,
         shadowRoot: this.dom.shadowRoot,
-        shadowReactRoot: this.dom.shadowReactRoot,
+        shadowView: this.dom.shadowView,
       },
 
       bus: {

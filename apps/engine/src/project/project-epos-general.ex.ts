@@ -17,7 +17,7 @@ export class ProjectEposGeneral extends ex.Unit {
   }
 
   private getReactRoot(): Element {
-    if (this.$project.shadowCss) return this.$project.epos.dom.shadowReactRoot
-    return this.$project.epos.dom.reactRoot
+    if (this.$project.shadowCss) return this.$project.epos.dom.shadowView
+    return this.$project.epos.dom.view
   }
 }

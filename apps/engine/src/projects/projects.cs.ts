@@ -56,8 +56,8 @@ export class Projects extends cs.Unit {
     this.$.utils.executeFn(
       url => {
         const script = document.createElement('script')
-        script.epos = true
         script.src = url
+        script.setAttribute('data-epos', '')
         script.onload = () => URL.revokeObjectURL(url)
 
         const eposElement = self.__eposElement
@@ -75,9 +75,9 @@ export class Projects extends cs.Unit {
     this.$.utils.executeFn(
       url => {
         const link = document.createElement('link')
-        link.epos = true
         link.rel = 'stylesheet'
         link.href = url
+        link.setAttribute('data-epos', '')
         link.onload = () => URL.revokeObjectURL(url)
 
         const eposElement = self.__eposElement

@@ -14,9 +14,9 @@
   - [epos.env.project](/docs/api-env#epos-env-project)
 - **DOM**
   - [epos.dom.root](/docs/api-dom#epos-dom-root)
-  - [epos.dom.reactRoot](/docs/api-dom#epos-dom-reactroot)
+  - [epos.dom.view](/docs/api-dom#epos-dom-view)
   - [epos.dom.shadowRoot](/docs/api-dom#epos-dom-shadowroot)
-  - [epos.dom.shadowReactRoot](/docs/api-dom#epos-dom-shadowreactroot)
+  - [epos.dom.shadowView](/docs/api-dom#epos-dom-shadowview)
 - **Bus**
   - [epos.bus.on](/docs/api-bus#epos-bus-on)
   - [epos.bus.off](/docs/api-bus#epos-bus-off)

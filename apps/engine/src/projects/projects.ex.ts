@@ -99,8 +99,8 @@ export class Projects extends ex.Unit {
     const ready$ = Promise.withResolvers()
     const blob = new Blob([js], { type: 'application/javascript' })
     const script = document.createElement('script')
-    script.epos = true
     script.src = URL.createObjectURL(blob)
+    script.setAttribute('data-epos', '')
     script.onload = () => ready$.resolve(true)
     self.__eposElement.prepend(script)
     await ready$.promise
@@ -110,9 +110,9 @@ export class Projects extends ex.Unit {
     if (!self.__eposElement) throw this.never()
     const blob = new Blob([css], { type: 'text/css' })
     const link = document.createElement('link')
-    link.epos = true
     link.rel = 'stylesheet'
     link.href = URL.createObjectURL(blob)
+    link.setAttribute('data-epos', '')
     self.__eposElement.prepend(link)
   }
 }

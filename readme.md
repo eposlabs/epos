@@ -16,9 +16,9 @@
   - epos.env.project
 - **DOM**
   - epos.dom.root
-  - epos.dom.reactRoot
+  - epos.dom.view
   - epos.dom.shadowRoot
-  - epos.dom.shadowReactRoot
+  - epos.dom.shadowView
 - **Bus**
   - epos.bus.on
   - epos.bus.off
