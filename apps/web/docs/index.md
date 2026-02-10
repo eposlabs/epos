@@ -6,9 +6,13 @@ outline: [2, 3]
 
 ## Overview
 
-Epos (**ἔπος**, “epic story”; pronounced **EH-poss**), is an opinionated engine designed to simplify browser extension development. It supports all Chromium-based browsers, including Chrome, Edge, and Brave. Firefox and Safari are not supported.
+Epos (**ἔπος**, “epic story”; pronounced **EH-poss**) is a highly opinionated engine designed to simplify browser extension development. It supports all Chromium-based browsers, including Chrome, Edge, and Brave. Firefox and Safari are not supported.
 
 While frameworks like [WXT](https://wxt.dev/) or [Plasmo](https://www.plasmo.com/) offer broad flexibility, Epos focuses on a **zero-config experience**. It provides a unique set of high-level features that "just work".
+
+<!--
+While frameworks like [WXT](https://wxt.dev/) or [Plasmo](https://www.plasmo.com/) offer broad flexibility, Epos focuses on a **zero-config experience**. It provides a unique set of high-level features that "just work".
+-->
 
 <!--
 ## Technologies
@@ -22,21 +26,19 @@ You can opt out of these technologies, but doing so means giving up the core fea
 
 Epos is not an NPM package. Instead, the engine itself is a browser extension that you install directly from the [Chrome Web Store](https://get.epos.dev).
 
+## Workflow
+
 Once installed, the workflow is simple:
 
-1. **Connect** your local project directory to Epos via the extension interface.
-2. **Develop:** Epos will execute its code within the browser.
-3. **Export:** When ready, click the EXPORT button in the Epos interface. This generates a production-ready ZIP file for publishing to the Chrome Web Store.
-
-Once the extension is installed, you **link your local project directory** to the Epos. The engine then executes your code within the browser environment. Epos can run any number of projects simultaneously.
-
-When you are ready to distribute your extension, click the **EXPORT** button within the Epos interface. This generates a standard extension ZIP file, packaged and optimized for submission to the Chrome Web Store.
+1. **Connect:** Link your local project directory to Epos via the engine interface. Epos uses the [File System API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to maintain direct access to your code.
+2. **Develop:** Epos executes your code directly within the browser environment. Any changes you make are picked up automatically.
+3. **Export:** When you are ready to ship, click the **EXPORT** button to generate a production-ready ZIP file, ready for submission to the Chrome Web Store.
 
 ## Constraints
 
 Epos is not a universal framework. It deliberately strips away the noise and doubles down on a specific tech stack to provide a developer experience that wouldn't be possible otherwise.
 
-The engine prioritizes ease of use for the **95% of common use cases**, even if that means sacrificing granular flexibility in others. Epos isn't for everyone — but if you embrace its constraints, you get an incredibly powerful toolset in return.
+The engine prioritizes ease of use for the **95% of common use cases**, even if that means sacrificing flexibility. Epos isn't for everyone — but if you embrace its constraints, you get an incredibly powerful toolset in return.
 
 #### Core Limitations:
 
@@ -45,7 +47,7 @@ The engine prioritizes ease of use for the **95% of common use cases**, even if 
 - **Chrome APIs:** Only essential APIs are available; niche APIs are not supported.
 - **Manifest V3:** No support for the legacy Manifest V2.
 - **No HMR:** Hot Module Replacement is not supported, though live-reload is available.
-- **No Source Maps:** Since Epos injects your code with its own engine runtime, source maps do not function as expected and thus, they are not supported. The support may appear in future releases.
+- **No Source Maps:** Since Epos injects your code with its own engine runtime, source maps do not function. The support may appear in future releases.
 - **Permissions:** Certain manifest permissions are required for the engine to function and cannot be omitted.
 
-Even if you have doubts about whether Epos is the right fit for your project, at least give it a try. The installation and setup process is quick, and you may find that the streamlined workflow significantly accelerates your development process.
+These limitations are intentional trade-offs that enable the specialized features that Epos provides. You can learn more about these in the [Features Overview](/docs/features) section.

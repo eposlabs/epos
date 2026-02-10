@@ -483,11 +483,11 @@ export class Projects extends sw.Unit {
     const permissions2 = [...requiredPermissions2, ...optionalPermissions2]
 
     // Every `requiredOrigins1` should be covered by some `requiredOrigins2`
-    const badRequiredOrigin = requiredOrigins1.find(o1 => !requiredOrigins2.some(o2 => this.$.utils.origins.covers(o1, o2)))
+    const badRequiredOrigin = requiredOrigins1.find(o1 => !requiredOrigins2.some(o2 => this.$.utils.origins.covers(o2, o1)))
     if (badRequiredOrigin) throw new Error(`Not compatible '${badRequiredOrigin}' origin`)
 
     // Every `optionalOrigins1` should be covered by some `origins2`
-    const badOptionalOrigin = optionalOrigins1.find(o1 => !origins2.some(o2 => this.$.utils.origins.covers(o1, o2)))
+    const badOptionalOrigin = optionalOrigins1.find(o1 => !origins2.some(o2 => this.$.utils.origins.covers(o2, o1)))
     if (badOptionalOrigin) throw new Error(`Not compatible '${badOptionalOrigin}' origin`)
 
     // Every `requiredPermissions1` should be in `requiredPermissions2`

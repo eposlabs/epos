@@ -6,6 +6,8 @@ This section assumes you have three targets in your application: `content`, `pop
 
 ## DOM Structure
 
+TODO: _Anatomy_ of DOM structure.
+
 In the previous section we used 'react-dom' to render out React app into the DOM. However, Epos provides a simpler api for rendering. Basically, just call `epos.render(<App/>)` and epos will render your application.
 
 But where will it render the app? Good question! For this, let's take a look at DOM structure that Epos precreates for your project:
@@ -19,10 +21,10 @@ But where will it render the app? Good question! For this, let's take a look at 
     <script src="..."></script>
 
     <div data-project-name="My Extension" data-project-id="...">
-      <div data-react-root></div>
+      <div data-view></div>
       <div data-shadow>
         #shadow-root (open)
-          <div data-shadow-react-root></div>
+          <div data-shadow-view></div>
       </div>
     </div>
   </epos>
@@ -72,13 +74,13 @@ For accessing DOM elements created by Epos, you can use the following epos API:
 epos.dom.root
 
 // This is the default container used for rendering (div with data-react-root)
-epos.dom.reactRoot
+epos.dom.view
 
 // Shadow root element (#shadow-root inside data-shadow element)
 epos.dom.shadowRoot
 
 // This is the default container used for rendering if you render inside shadow root (div with data-shadow-react-root)
-epos.dom.shadowReactRoot
+epos.dom.shadowView
 ```
 
 Usually you won't need to access these elements directly, because `epos.render` will automatically render your app into the correct container. But if you have custom logic, they may come in handy.

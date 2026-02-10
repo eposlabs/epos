@@ -2,9 +2,11 @@
 
 Epos provides a simple and powerful event bus system that allows for cross-context communication in your app. It provides a simple interface for sending messages from any context to any other context (popup, side panel, background, web page, iframe).
 
-#### Why “bus”?
+::: info Why “bus”?
 
-[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a 🚌 vehicle, but a communication system that transfers data between different components. It acts as a centralized hub for exchanging messages.
+[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a vehicle 🚌, but a communication system that transfers data between different components. It acts as a centralized hub for exchanging messages.
+
+:::
 
 ```ts
 // popup.js

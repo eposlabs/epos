@@ -4,7 +4,7 @@ outline: [2, 3]
 
 # DOM API
 
-The DOM API provides access to pre-created DOM elements that Epos sets up for your project. These elements are useful for rendering content on web pages with proper isolation.
+The DOM API provides access to pre-created DOM nodes that Epos sets up for your project. These elements are useful for rendering content on web pages with proper isolation.
 
 ## epos.dom.root
 

@@ -2,7 +2,7 @@
 outline: [2]
 ---
 
-# Features
+# Features Overview
 
 Epos is packed with built-in features designed to streamline the extension development lifecycle. Each feature is pre-configured to function across all execution contexts without additional setup.
 

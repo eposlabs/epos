@@ -12,9 +12,9 @@ first, https://example.com, then tell that you can use match pattern (link). So 
 Call scripts on web pages content scripts, describe that epos does not provide 'isolated', explain that it has extension api available in the regular content scripts.
 :::
 
-In this section, we cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action immediately without needing a build step.
+In this section, we will cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
 
-Once you are comfortable with the basics, we will walk through how to set up a development environment using [Vite, TypeScript, and React](/docs/vite-setup).
+Once you are comfortable with the basics, we will walk through how to [set up a development environment](/docs/vite-setup) using **Vite, TypeScript, and React**.
 
 ## Installation
 
@@ -78,6 +78,8 @@ body {
 
 Next, tell Epos to apply this style to `example.com` by adding the `matches` and `load` fields to your `epos.json`:
 
+TODO: explain that matches describes "where" your code should be run. And "load" describes "what" should be run.
+
 ::: code-group
 
 ```json [epos.json]
@@ -111,6 +113,18 @@ TODO
 Changing styles is a great start, but let's add some logic. Create a file named `example.js` in your project directory (we'll stick to plain JavaScript for now to keep things build-step free):
 
 ::: code-group
+
+TODO: use:
+
+```
+document.documentElement.innerHTML = `
+  <div style="padding: 20px; font-family: sans-serif;">
+    Hello from Epos extension!
+  </div>
+`
+```
+
+TODO: Also change exmaple.js -> main.js (and example.css -> main.css).
 
 ```js [example.js]
 console.log('Hello from Epos extension!')
@@ -280,6 +294,10 @@ To get access to DevTools for the background iframe, follow these steps:
 2. Click the `Details` button on the Epos extension card.
 3. Locate the `Inspect views` section and click on `offscreen.html`. This will open the DevTools window where you can already see the logs from your background script.
 4. To switch to your background context, select your project in the JavaScript Context dropdown (the "top" dropdown in the Console tab).
+
+## TODO
+
+Add icon + description + Export to see standalone ZIP
 
 <!--
 
