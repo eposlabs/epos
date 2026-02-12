@@ -2,13 +2,11 @@
 outline: [2, 3]
 ---
 
-# Getting Started
-
-## Overview
+# Overview
 
 Epos (**ἔπος**, “epic story”; pronounced **EH-poss**) is a highly opinionated engine designed to simplify browser extension development. It supports all Chromium-based browsers, including Chrome, Edge, and Brave. Firefox and Safari are not supported.
 
-While frameworks like [WXT](https://wxt.dev/) or [Plasmo](https://www.plasmo.com/) offer broad flexibility, Epos focuses on a **zero-config experience**. It provides a unique set of high-level features that "just work".
+While frameworks like [WXT](https://wxt.dev/) or [Plasmo](https://www.plasmo.com/) offer broad flexibility, Epos focuses on a **zero-config experience**, and provides a unique set of high-level features that "just work".
 
 <!--
 While frameworks like [WXT](https://wxt.dev/) or [Plasmo](https://www.plasmo.com/) offer broad flexibility, Epos focuses on a **zero-config experience**. It provides a unique set of high-level features that "just work".
@@ -24,7 +22,7 @@ You can opt out of these technologies, but doing so means giving up the core fea
 
 ## Installation
 
-Epos is not an NPM package. Instead, the engine itself is a browser extension that you install directly from the [Chrome Web Store](https://get.epos.dev).
+Epos is not provided as an NPM package. Instead, the engine itself is a browser extension that you install directly from the [Chrome Web Store](https://get.epos.dev).
 
 ## Workflow
 

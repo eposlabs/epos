@@ -44,9 +44,9 @@ Then follow the prompts.
 
 1. For framework, select **Vanilla** as Epos already contains React and you don't need two React copies.
 2. For variant, select what you prefer: JavaScript or TypeScript
-3. On the third step, it is highly recommened to use `rolldown-vite`. At the moment of writing (February 2026), `rolldown-vite` is currently in beta, but the build speed is much faster than the default rollup version specially when your project grows.
+3. On the third step, it is highly recommened to use `rolldown-vite`. At the moment of writing (February 2026), `rolldown` is in RC state (release candidate), it will soon replace rollup in Vite 8. It has significantly better performance, so if you have a choice, select `rolldown-vite` as your bundler.
 
-After finishing with Vite initialization, open your project in your code editor and create vite.config.ts file with the following content:
+First, after finishing with Vite initialization, open your project in your code editor and create `vite.config.ts` file with the following content:
 
 ::: code-group
 
@@ -69,9 +69,11 @@ export default defineConfig(({ mode }) => ({
 }))
 ```
 
+Here we configured Vite to run in watch mode in development. Also we configured one entry point for our application - `src/app.tsx`. You can have multiple entry points if you want, just add them to the `input` object. We also configured the output file names to be the same as the entry point names, without hashes. This is important, because Epos needs to load specific files, and if the file names will contain hashes, we won't be able to predict them and tell Epos to load them.
+
 :::
 
-And update scripts in `package.json`:
+Then, update scripts in `package.json`:
 
 ::: code-group
 
@@ -94,7 +96,7 @@ And update scripts in `package.json`:
 
 This setup allows us to use Vite as bundler and generate files in the `dist` folder.
 
-Now install `epos` package from NPM. This package provides TypeScript definition for the epos API and proviedes vite plugin.
+Now install `epos` package from NPM. This package no the engine itself, but only TypeScript definitions for the epos API and also it includes plugin for vite. This plugin is necessary to ensure that every imports from 'react', 'react-dom' and other libraries that are already provided by Epos are not bundled again and they will use the existing copies from Epos runtime. You can see the full list of provided libraries in the [Libs API](https://docs.epos.dev/guide/epos-api#libraries) section of the documentation.
 
 ::: code-group
 
@@ -120,7 +122,7 @@ deno add npm:epos
 
 :::
 
-Add epos plugin for `vite.config.ts`:
+Now add `epos` plugin inside `vite.config.ts`:
 
 ::: code-group
 
@@ -146,8 +148,6 @@ export default defineConfig(({ mode }) => ({
 ```
 
 :::
-
-What this pugin does? It ensures that every imports from 'react', 'react-dom', 'mobx' and other libraries that are already provided by Epos are not bundled again and they will use the existing copies from Epos runtime. You can see the full list of provided libraries in the [Libs API](https://docs.epos.dev/guide/epos-api#libraries) section of the documentation.
 
 ## SRC
 

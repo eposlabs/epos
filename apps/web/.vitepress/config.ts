@@ -26,8 +26,8 @@ export default defineConfig({
       {
         text: 'Introduction',
         items: [
-          { text: 'Getting Started', link: '/docs/' },
-          { text: 'Features Overview', link: '/docs/features-overview' },
+          { text: 'Overview', link: '/docs/' },
+          { text: 'Features', link: '/docs/features-overview' },
         ],
       },
       {
@@ -55,8 +55,8 @@ export default defineConfig({
           { text: 'epos.bus.*', link: '/docs/api-bus' },
           { text: 'epos.state.*', link: '/docs/api-state' },
           { text: 'epos.storage.*', link: '/docs/api-storage' },
-          { text: 'epos.frames.*', link: '/docs/api-frames' },
           { text: 'epos.assets.*', link: '/docs/api-assets' },
+          { text: 'epos.frames.*', link: '/docs/api-frames' },
           { text: 'epos.projects.*', link: '/docs/api-projects' },
           { text: 'epos.libs.*', link: '/docs/api-libs' },
         ],

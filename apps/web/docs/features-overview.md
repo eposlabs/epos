@@ -2,30 +2,54 @@
 outline: [2]
 ---
 
-# Features Overview
+# Features
 
-Epos is packed with built-in features designed to streamline the extension development lifecycle. Each feature is pre-configured to function across all execution contexts without additional setup.
+Epos is packed with built-in tools designed to streamline the extension development lifecycle. Each tool is pre-configured to function across all execution contexts without additional setup.
 
-## Universal Messaging
+Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/docs/api.html).
 
-Epos provides an out-of-the-box messaging system that "just works". It's like `chrome.runtime.sendMessage`, but **10x better**.
+## Messaging System
 
-Simply call `epos.bus.send` from any context, and Epos will deliver the message to all `epos.bus.on` listeners — no matter where they are. You don't need to worry about tracking tab IDs or proxying messages with `window.postMessage`; the engine handles the routing automatically across the entire extension.
+Epos provides an out-of-the-box messaging system called `bus`, it can send messages from any context to any other context. It's like `chrome.runtime.sendMessage`, but **10x better**.
 
-## Auto-Sync State
+Simply call `epos.bus.send` from any context, and Epos will deliver the message to all `epos.bus.on` listeners — no matter where they are. You don't need to worry about tracking tab IDs or proxying messages with `window.postMessage`; the engine handles the **routing automatically** across the entire extension.
 
-Define and modify your state as a standard JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. When the state updates, your React components re-render automatically.
+Beside this, `bus` also supports sending Blob objects which means you can easily transfer files, images, or any binary data between your extension contexts. This is can't be done with the standard `chrome.runtime.sendMessage` API.
+
+::: code-group
 
 ```ts
-// Connect to the state using { value: 10 } as the initial value
-const state = await epos.state.connect({ value: 10 })
+// background.js
+epos.bus.on('getUserData', userId => {
+  // ... some logic to get user data
+  return userData
+})
 
-// Update like a regular JS object; all changes are automatically
-// persisted and synced across all contexts
-state.value = 20
+// popup.js
+const user = await epos.bus.send('getUserData', userId)
 ```
 
-## Chrome API, Everywhere
+:::
+
+## State Management
+
+With `epos.state` API you can connect to the state and work with it like a regular JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. And react components with also react to any changes and keep your UI in sync with the state.
+
+TODO: mention IDB for persistence.
+
+Epos provides state management which allows you to work with a state like with a regular JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. When the state updates, your React components re-render automatically.
+
+```ts
+// Connect to the state using { value: 10, items: [] } as the initial value
+const state = await epos.state.connect({ value: 10, items: [] })
+
+// Update like a regular JS object.
+// Every change is automatically persisted and synced across all contexts!
+state.value = 20
+state.items.push({ id: 1, name: 'Item 1' })
+```
+
+## Chrome API
 
 Standard `chrome.*` APIs are restricted to specific extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
 
@@ -37,7 +61,7 @@ Epos provides a built-in storage system for files and data. It acts as a smart w
 // popup.js
 await epos.storage.set('my-image', image)
 
-// injection.js
+// content-script.js
 const image = await epos.storage.get('my-image')
 ```
 
@@ -53,7 +77,7 @@ Just tell Epos **what** files to load and **where** — it handles the rest. Epo
   "targets": [
     {
       "matches": "*://*.example.com/*",
-      "load": ["injection.js", "injection.css"]
+      "load": ["content-script.js", "content-script.css"]
     },
     {
       "matches": "<popup>",
@@ -69,7 +93,9 @@ Just tell Epos **what** files to load and **where** — it handles the rest. Epo
 
 :::
 
-## And More
+## More
+
+Beside these highlighted features, Epos also provides a variety of other built-in utilities.
 
 Epos includes a variety of built-in utilities designed to streamline the extension development lifecycle. Each feature is pre-configured to function across all execution contexts without additional setup.
 
