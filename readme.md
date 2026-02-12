@@ -50,17 +50,17 @@
   - epos.storage.list
   - epos.storage.remove
   - epos.storage.for
-- **Frames**
-  - epos.frames.create
-  - epos.frames.remove
-  - epos.frames.has
-  - epos.frames.list
 - **Assets**
   - epos.assets.url
   - epos.assets.get
   - epos.assets.list
   - epos.assets.load
   - epos.assets.unload
+- **Frames**
+  - epos.frames.create
+  - epos.frames.remove
+  - epos.frames.has
+  - epos.frames.list
 - **Projects**
   - epos.projects.has
   - epos.projects.get

@@ -88,19 +88,19 @@ export class ProjectEpos extends ex.Unit {
         for: this.$.utils.link(this.storage, 'for'),
       },
 
-      frames: {
-        create: this.$.utils.link(this.frames, 'create'),
-        remove: this.$.utils.link(this.frames, 'remove'),
-        has: this.$.utils.link(this.frames, 'has'),
-        list: this.$.utils.link(this.frames, 'list'),
-      },
-
       assets: {
         url: this.$.utils.link(this.assets, 'url'),
         get: this.$.utils.link(this.assets, 'get'),
         list: this.$.utils.link(this.assets, 'list'),
         load: this.$.utils.link(this.assets, 'load'),
         unload: this.$.utils.link(this.assets, 'unload'),
+      },
+
+      frames: {
+        create: this.$.utils.link(this.frames, 'create'),
+        remove: this.$.utils.link(this.frames, 'remove'),
+        has: this.$.utils.link(this.frames, 'has'),
+        list: this.$.utils.link(this.frames, 'list'),
       },
 
       ...(this.$project.spec.config.allowProjectsApi && {

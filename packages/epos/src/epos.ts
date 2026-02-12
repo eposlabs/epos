@@ -28,10 +28,10 @@ export interface Epos {
   state: EposState
   /** Storage management. */
   storage: EposStorage
-  /** Background frames management. */
-  frames: EposFrames
   /** Asset management. */
   assets: EposAssets
+  /** Background frames management. */
+  frames: EposFrames
   /** Project management. */
   projects: EposProjects
   /** Third party libraries used by Epos. */
@@ -155,17 +155,6 @@ export interface EposStorage {
   }
 }
 
-export interface EposFrames {
-  /** Open background frame. */
-  create(url: string, attrs?: Attrs): Promise<string>
-  /** Remove background frame. */
-  remove(id?: string): Promise<void>
-  /** Check if background frame with the given id exists. */
-  has(id?: string): Promise<boolean>
-  /** Get list of all open background frames. */
-  list(): Promise<{ id: string; name: string; url: string }[]>
-}
-
 export interface EposAssets {
   /** Get asset URL.*/
   url(path: string): string
@@ -187,6 +176,17 @@ export interface EposAssets {
     /** Unload specified asset. */
     (path: string): void
   }
+}
+
+export interface EposFrames {
+  /** Open background frame. */
+  create(url: string, attrs?: Attrs): Promise<string>
+  /** Remove background frame. */
+  remove(id?: string): Promise<void>
+  /** Check if background frame with the given id exists. */
+  has(id?: string): Promise<boolean>
+  /** Get list of all open background frames. */
+  list(): Promise<{ id: string; name: string; url: string }[]>
 }
 
 export interface EposProjects {

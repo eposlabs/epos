@@ -34,7 +34,7 @@ export class App extends sw.Unit {
   }
 
   private initGlobalMethods() {
-    self.install = (url: Url) => this.projects.install(url)
+    self.install = (url: Url, debug = false) => this.projects.install(url, debug)
     self.remove = (id: string) => this.projects.remove(id)
   }
 
