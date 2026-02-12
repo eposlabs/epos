@@ -30,6 +30,7 @@ export default defineConfig(async ({ mode }) => {
         output: {
           minify: mode !== 'development',
           banner: layers,
+          keepNames: true,
         },
       }),
     ],
@@ -42,6 +43,7 @@ export default defineConfig(async ({ mode }) => {
           gl: './src/gl.tsx',
         },
         output: {
+          keepNames: true,
           entryFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
           strictExecutionOrder: true,

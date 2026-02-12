@@ -43,7 +43,7 @@ export class Unit<TRoot = unknown> {
     initVersioner(this)
     initState(this)
     initInert(this)
-    enhancePrototype(this)
+    initPrototypeProperties(this)
     scheduleAndFlushAttach(this)
   }
 
@@ -191,9 +191,9 @@ function initVersioner<T>(unit: Unit<T>) {
 }
 
 function initState<T>(unit: Unit<T>) {
-  const descriptor = Reflect.getOwnPropertyDescriptor(unit.constructor.prototype, 'state')
-  if (!descriptor || !descriptor.get) return
-  const value: unknown = descriptor.get.call(unit)
+  if (!Reflect.has(unit, 'state')) return
+  if (Object.hasOwn(unit, 'state')) throw new Error(`'state' must be defined as a getter`)
+  const value = Reflect.get(unit, 'state')
   if (!is.object(value)) throw new Error(`'state' getter must return an object`)
   const state = epos.state.create(value)
   Reflect.defineProperty(unit, 'state', { get: () => state })
@@ -201,9 +201,9 @@ function initState<T>(unit: Unit<T>) {
 }
 
 function initInert<T>(unit: Unit<T>) {
-  const descriptor = Reflect.getOwnPropertyDescriptor(unit.constructor.prototype, 'inert')
-  if (!descriptor || !descriptor.get) return
-  const value: unknown = descriptor.get.call(unit)
+  if (!Reflect.has(unit, 'inert')) return
+  if (Object.hasOwn(unit, 'inert')) throw new Error(`'inert' must be defined as a getter`)
+  const value = Reflect.get(unit, 'inert')
   if (!is.object(value)) throw new Error(`'inert' getter must return an object`)
   Reflect.defineProperty(unit, 'inert', { get: () => value })
 }
@@ -211,26 +211,26 @@ function initInert<T>(unit: Unit<T>) {
 /**
  * Prepare properties for the whole prototype chain:
  * - Create components for methods ending with `View`
- * - Bind all other methods to the unit instance
  * - Turn getters into MobX computed properties
+ * - Define methods as accessors to allow `this.method = wrap(this.method)`. Also bind them for convenience.
  */
-function enhancePrototype<T>(unit: Unit<T>) {
+function initPrototypeProperties<T>(unit: Unit<T>) {
   for (const prototype of getPrototypes(unit)) {
     const descriptors = Object.getOwnPropertyDescriptors(prototype)
     for (const [key, descriptor] of Object.entries(descriptors)) {
       if (key === 'constructor') continue
-      if (unit.hasOwnProperty(key)) continue
+      if (Object.hasOwn(unit, key)) continue
 
       if (is.function(descriptor.value) && key.endsWith('View')) {
         let View = createComponent(unit, key, descriptor.value.bind(unit) as FC<unknown>)
         Reflect.defineProperty(unit, key, { configurable: true, get: () => View, set: v => (View = v) })
-      } else if (is.function(descriptor.value)) {
-        let method = descriptor.value.bind(unit)
-        Reflect.defineProperty(unit, key, { configurable: true, get: () => method, set: v => (method = v) })
       } else if (descriptor.get) {
         const getter = descriptor.get
         const computed = epos.libs.mobx.computed(() => getter.call(unit))
         Reflect.defineProperty(unit, key, { configurable: true, get: () => computed.get(), set: descriptor.set })
+      } else if (is.function(descriptor.value)) {
+        let method = descriptor.value.bind(unit)
+        Reflect.defineProperty(unit, key, { configurable: true, get: () => method, set: v => (method = v) })
       }
     }
   }

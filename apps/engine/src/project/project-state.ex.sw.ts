@@ -405,23 +405,30 @@ export class ProjectState<T = Obj> extends exSw.Unit {
   }
 
   private processMObjectSet(change: MObjectSetChange) {
-    // Has getter/setter on a prototype? -> Call setter if defined and prevent default processing
-    const isInherited = change.name in change.object && !Object.hasOwn(change.object, change.name)
+    // Skip symbols
+    if (this.$.utils.is.symbol(change.name)) return
+
+    // Skip getter/setter definitions.
+    // This also applies to the `state.value = undefined` case.
+    // Assigning `undefined` to the state is prohibited by convention, but it will technically "work".
+    // The value will be applied to the state, but it won't be synced or persisted.
+    const hasOwnProperty = Object.hasOwn(change.object, change.name)
+    if (change.newValue === undefined && !hasOwnProperty) return
+
+    // Prevent MobX change for inherited getters/setters.
+    // This preserves native class behavior for inherited accessors: invoke the setter if it exists,
+    // or skip assignment if only a getter is provided, preventing the value from being
+    // incorrectly shadowed on the instance.
+    const isInherited = change.name in change.object && !hasOwnProperty
     if (isInherited) {
       const prototypes = this.$.utils.getPrototypes(change.object)
       const owner = prototypes.find(prototype => Object.hasOwn(prototype, change.name))
       const descriptor = owner ? Reflect.getOwnPropertyDescriptor(owner, change.name) : null
       if (descriptor && (descriptor.get || descriptor.set)) {
         if (descriptor.set) descriptor.set.call(change.object, change.newValue)
-        return true
+        return true // Prevent MobX change
       }
     }
-
-    // Skip symbols
-    if (this.$.utils.is.symbol(change.name)) return
-
-    // Skip `defineProperty` calls
-    if (change.newValue === undefined && !Object.hasOwn(change.object, change.name)) return
 
     // Skip if value didn't change
     if (change.newValue === change.object[change.name]) return
@@ -650,8 +657,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
       this.$.utils.is.string(value) ||
       this.$.utils.is.number(value) ||
       this.$.utils.is.boolean(value) ||
-      this.$.utils.is.null(value) ||
-      this.$.utils.is.undefined(value)
+      this.$.utils.is.null(value)
     )
   }
 }
