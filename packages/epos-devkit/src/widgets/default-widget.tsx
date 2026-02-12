@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge.js'
 import { Field, FieldLabel } from '@/components/ui/field.js'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group.js'
 import { Input } from '@/components/ui/input.js'
 import { Label } from '@/components/ui/label.js'
 import { Switch } from '@/components/ui/switch.js'
@@ -7,7 +8,7 @@ import { is } from '@eposlabs/utils'
 
 export type DefaultWidgetProps = WidgetProps
 
-export const DefaultWidget = epos.component(({ target, name, descriptor }: DefaultWidgetProps) => {
+export const DefaultWidget = epos.component(({ name, target, descriptor }: DefaultWidgetProps) => {
   if (descriptor.get && !descriptor.set) {
     return (
       <Field>
@@ -36,6 +37,17 @@ export const DefaultWidget = epos.component(({ target, name, descriptor }: Defau
   }
 
   const value = target[name]
+  if (is.string(value)) {
+    return (
+      <InputGroup>
+        <InputGroupAddon>
+          <InputGroupText>{name}:</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput className="!pl-0.5" value={target[name]} onInput={e => (target[name] = e.currentTarget.value)} />
+      </InputGroup>
+    )
+  }
+
   const valueDisplay = is.function(value) ? `ƒ ${value.length}` : JSON.stringify(value)
   return (
     <div>

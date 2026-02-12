@@ -36,11 +36,12 @@ export class Unit<TRoot = unknown> {
   constructor(parent: Unit<TRoot> | null) {
     this.id = nanoid()
     this[_parent_] = parent
+    this[':version'] = getLatestVersion(this)
   }
 
   [epos.state.ATTACH]() {
     initInternals(this)
-    initVersioner(this)
+    applyVersioner(this)
     initState(this)
     initInert(this)
     initPrototypeProperties(this)
@@ -171,12 +172,11 @@ function initInternals<T>(unit: Unit<T>) {
   defineAccessor(unit, _ancestors_, new Map())
 }
 
-function initVersioner<T>(unit: Unit<T>) {
-  const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
-  if (!is.object(versioner)) return
+function applyVersioner<T>(unit: Unit<T>) {
+  const versioner = getVersioner(unit)
+  if (!versioner) return
 
-  const asc = (v1: number, v2: number) => v1 - v2
-  const versions = Object.keys(versioner).filter(is.numeric).map(Number).sort(asc)
+  const versions = getVersionsAsc(versioner)
   if (versions.length === 0) return
 
   epos.state.transaction(() => {
@@ -259,6 +259,23 @@ function scheduleAndFlushAttach<T>(unit: Unit<T>) {
 
 // MARK: Helpers
 // ============================================================================
+
+function getLatestVersion<T>(unit: Unit<T>) {
+  const versioner = getVersioner(unit) ?? {}
+  const versions = getVersionsAsc(versioner)
+  return versions.length > 0 ? versions.at(-1) : 0
+}
+
+function getVersioner<T>(unit: Unit<T>) {
+  const versioner: unknown = Reflect.get(unit.constructor, 'versioner')
+  if (!is.object(versioner)) return null
+  return versioner as Versioner<T>
+}
+
+function getVersionsAsc<T>(versioner: Versioner<T>) {
+  const asc = (v1: number, v2: number) => v1 - v2
+  return Object.keys(versioner).filter(is.numeric).map(Number).sort(asc)
+}
 
 function defineAccessor<T extends object, K extends keyof T>(target: T, key: K, value: T[K]) {
   Reflect.defineProperty(target, key, { configurable: true, get: () => value, set: v => (value = v) })

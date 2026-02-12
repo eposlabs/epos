@@ -22,7 +22,7 @@ export type Directory = { handle: FileSystemDirectoryHandle; empty: boolean; has
 export class ProjectsCreation extends gl.Unit {
   get state() {
     return {
-      open: true,
+      open: false,
       mode: 'create' as Mode,
       template: 'default' as Template,
       directory: null as Directory | null,

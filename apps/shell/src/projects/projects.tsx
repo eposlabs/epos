@@ -1,7 +1,18 @@
+import { Button } from '@/components/ui/button'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/empty.js'
+import {
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+} from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
+import { IconFolderCode, IconPlus } from '@tabler/icons-react'
+
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
   selectedProjectId: string | null = null
-  ui = new gl.ProjectsUi(this)
   creation = new gl.ProjectsCreation(this)
 
   get list() {
@@ -63,13 +74,65 @@ export class Projects extends gl.Unit {
     }
   }
 
+  // MARK: View
+  // ============================================================================
+
   View() {
-    return <this.ui.View />
+    if (this.list.length === 1) return <this.NoProjectsView />
+    if (!this.selectedProject) return null
+    return <this.selectedProject.View />
   }
 
+  // MARK: SidebarView
+  // ============================================================================
+
   SidebarView() {
-    return <this.ui.SidebarView />
+    if (this.list.length === 1) return null
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Projects</SidebarGroupLabel>
+        <Tooltip delayDuration={400}>
+          <TooltipTrigger asChild>
+            <SidebarGroupAction title="Add Project" onClick={() => this.addEmptyProject()}>
+              <IconPlus /> <span className="sr-only">Add Project</span>
+            </SidebarGroupAction>
+          </TooltipTrigger>
+          <TooltipContent>Add project</TooltipContent>
+        </Tooltip>
+        <SidebarGroupContent>
+          <SidebarMenu className="gap-1">
+            {this.list.map(project => (
+              <project.SidebarView key={project.id} />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    )
   }
+
+  // MARK: NoProjectsView
+  // ============================================================================
+
+  private NoProjectsView() {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <IconFolderCode />
+          </EmptyMedia>
+          <EmptyDescription>
+            You haven't created any projects yet. Get started by creating your first project.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className="flex-row justify-center gap-2">
+          <Button onClick={() => this.addEmptyProject()}>Create Project</Button>
+        </EmptyContent>
+      </Empty>
+    )
+  }
+
+  // MARK: Versioner
+  // ============================================================================
 
   static versioner: any = {
     1(this: any) {
@@ -86,15 +149,18 @@ export class Projects extends gl.Unit {
       this.creation = new gl.ProjectsCreation(this)
     },
     6() {
-      this.ui = new gl.ProjectsUi(this)
+      this.ui = {}
     },
     7() {
-      this.ui = new gl.ProjectsUi(this)
+      this.ui = {}
       this.actions = {}
     },
     8() {
-      this.ui = new gl.ProjectsUi(this)
+      this.ui = {}
       delete this.actions
+    },
+    9() {
+      delete this.ui
     },
   }
 }
