@@ -1,36 +1,91 @@
-import './core/core.js'
+/// <reference types="epos" />
+/// <reference types="vite/client" />
+/// <reference types="@eposlabs/types" />
+
+import { is, type Obj } from '@eposlabs/utils'
+import { clsx, type ClassValue } from 'clsx'
+import { createContext, useContext, useEffect, useState, type FC } from 'react'
+import { twMerge } from 'tailwind-merge'
 import './devkit.css'
-
-import { Card, CardContent } from '@/components/ui/card.js'
-import { getPrototypes, type Obj } from '@eposlabs/utils'
-import { useEffect, type FC, type ReactNode } from 'react'
-import { FieldGroup } from './components/ui/field.js'
 import css from './devkit.css?inline'
-import { DefaultWidget } from './widgets/default-widget.js'
-import { SelectWidget, type SelectWidgetConfig } from './widgets/select-widget.js'
-import { TextWidget, type TextWidgetConfig } from './widgets/text-widget.js'
 
-export type WidgetFn = (target: object, key: string, descriptor: PropertyDescriptor) => ReactNode
+export type Target = Obj<any>
+export type Property = string | number
+export const _widgets_ = Symbol('widgets')
 
-const inputWidget: WidgetFn = (target, key, descriptor) => {
-  return [key, target, descriptor].join(' - ')
+export const WidgetContext = createContext<{
+  target: Target
+  property: Property
+  descriptor: PropertyDescriptor
+  selectedProperty: Property | null
+  setSelectedProperty: (property: Property | null) => void
+} | null>(null)
+
+export const useWidgetContext = () => {
+  const context = useContext(WidgetContext)
+  if (!context) throw new Error('Widget must be used within a WidgetContext.Provider')
+  return context
 }
 
-export const widget = (fn: WidgetFn) => {
-  return function (target: object, key: string) {
-    const widgets = ensureWidgets(target)
-    widgets[key] = epos.component(props => fn(props.name, props.target, props.descriptor))
+export const widget = {
+  auto: () => makeWidgetDecorator(AutoWidget),
+  text: () => makeWidgetDecorator(TextWidget),
+  number: () => makeWidgetDecorator(NumberWidget),
+  checkbox: () => makeWidgetDecorator(CheckboxWidget),
+  custom: (Widget: FC) => makeWidgetDecorator(Widget),
+}
+
+export const Devkit = epos.component((props: { target: Target }) => {
+  useStyles()
+  return (
+    <div className="dk:flex dk:gap-2">
+      <Explorer target={props.target} />
+    </div>
+  )
+})
+
+// MARK: Explorer
+// ============================================================================
+
+const Explorer = epos.component((props: { target: Target; name?: Property }) => {
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const selectedValue = is.present(selectedProperty) ? props.target[selectedProperty] : null
+
+  let entries: [Property, PropertyDescriptor][]
+  if (is.array(props.target)) {
+    entries = props.target.map((_, i) => [i, Reflect.getOwnPropertyDescriptor(props.target, i)!])
+  } else {
+    entries = Object.entries(getAllDescriptors(props.target))
+    console.warn(entries)
   }
-}
 
-// export const widget = {
-//   default: () => registerWidget(props => <DefaultWidget {...props} />),
-//   custom: (CustomWidget: FC<WidgetProps>) => registerWidget(CustomWidget),
-//   select: (config: SelectWidgetConfig) => registerWidget(props => <SelectWidget {...props} config={config} />),
-//   text: (config: TextWidgetConfig) => registerWidget(props => <TextWidget {...props} config={config} />),
-// }
+  return (
+    <>
+      <div className="dk:w-100 dk:border dk:border-border dk:p-4">
+        <div>{props.name ?? 'ROOT'}</div>
+        {entries.map(([property, descriptor]) => {
+          if (property === 'constructor') return null
+          const widgets = getTargetWidgets(props.target)
+          const Widget = widgets[property] ?? AutoWidget
+          const ctx = { target: props.target, property, descriptor, selectedProperty, setSelectedProperty }
+          return (
+            <WidgetContext.Provider key={property} value={ctx}>
+              <Widget />
+            </WidgetContext.Provider>
+          )
+        })}
+      </div>
+      {is.present(selectedProperty) && (is.object(selectedValue) || is.array(selectedValue)) && (
+        <Explorer target={selectedValue} name={selectedProperty} />
+      )}
+    </>
+  )
+})
 
-export const Devkit = epos.component((props: { target: Obj<any> }) => {
+// MARK: Helpers
+// ============================================================================
+
+const useStyles = () => {
   useEffect(() => {
     const injected = !!document.querySelector('style[data-epos-devkit]')
     if (injected) return
@@ -53,56 +108,118 @@ export const Devkit = epos.component((props: { target: Obj<any> }) => {
     link.href = `https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap`
     eposElement.append(link)
   }, [])
+}
 
-  return (
-    <div>
-      <div className="dk:grid dk:w-100 dk:grid-cols-[auto_1fr] dk:gap-x-2 dk:gap-y-4 dk:border dk:border-border">
-        <div className="dk:contents">
-          <div>label</div>
-          <div>long-value-name</div>
-        </div>
-        <div className="dk:contents">
-          <div>label</div>
-          <div>value</div>
-        </div>
-      </div>
-      <Card className="dk:w-100 dk:font-sans">
-        <CardContent>
-          <FieldGroup className="*:w-full">
-            {Object.entries(getAllDescriptors(props.target)).map(([key, descriptor]) => {
-              if (key === 'constructor') return null
-              const widgets = ensureWidgets(props.target)
-              const Widget = widgets[key] ?? DefaultWidget
-              return <Widget key={key} name={key} target={props.target} descriptor={descriptor} />
-            })}
-          </FieldGroup>
-        </CardContent>
-      </Card>
-      <div className="devkit-portal" />
-    </div>
-  )
-})
-
-// MARK: Helpers
-// ============================================================================
-
-const _widgets_ = Symbol('widgets')
-function ensureWidgets(target: object & { [_widgets_]?: Widgets }) {
+const getTargetWidgets = (target: object & { [_widgets_]?: Record<string, FC> }) => {
   if (target[_widgets_]) return target[_widgets_]
-  const widgets: Widgets = {}
+  const widgets: Record<string, FC> = {}
   Reflect.defineProperty(target, _widgets_, { get: () => widgets })
   return widgets
 }
 
-function getAllDescriptors(target: object) {
-  const chain = [target, ...getPrototypes(target)]
-  const entries = chain.flatMap(object => Object.entries(Object.getOwnPropertyDescriptors(object)))
+const makeWidgetDecorator = (Widget: FC) => {
+  return function (target: object, key: string) {
+    const widgets = getTargetWidgets(target)
+    widgets[key] = epos.component(Widget)
+  }
+}
 
-  const descriptors: Record<string, PropertyDescriptor> = {}
-  for (const [key, descriptor] of entries) {
-    if (Object.hasOwn(descriptors, key)) continue
-    descriptors[key] = descriptor
+const getAllDescriptors = (target: object) => {
+  const deepDescriptors: Record<string, PropertyDescriptor> = {}
+
+  let cursor = target
+  while (cursor && cursor !== Object.prototype) {
+    const descriptors = Object.getOwnPropertyDescriptors(cursor)
+    cursor = Object.getPrototypeOf(cursor)
+
+    for (const [key, descriptor] of Object.entries(descriptors)) {
+      if (key in deepDescriptors) continue
+      if (key === '_') continue
+      deepDescriptors[key] = descriptor
+      console.warn(descriptors)
+    }
   }
 
-  return descriptors
+  return deepDescriptors
 }
+
+const cn = (...inputs: ClassValue[]) => {
+  return twMerge(clsx(inputs))
+}
+
+// MARK: Widgets
+// ============================================================================
+
+const AutoWidget = epos.component(() => {
+  const ctx = useWidgetContext()
+  const { target, property, descriptor } = ctx
+
+  const value = target[property]
+  if (is.string(value)) return <TextWidget />
+  if (is.number(value)) return <NumberWidget />
+  if (is.boolean(value)) return <CheckboxWidget />
+  if (is.object(value) || is.array(value)) return <SectionWidget />
+
+  return <div>AUTO {property}</div>
+})
+
+const SectionWidget = epos.component(() => {
+  const { property, selectedProperty, setSelectedProperty } = useWidgetContext()
+  const toggle = () => setSelectedProperty(selectedProperty === property ? null : property)
+
+  return (
+    <div className="dk:mt-4 dk:mb-2 dk:font-bold" onClick={toggle}>
+      {property}
+    </div>
+  )
+})
+
+const TextWidget = epos.component(() => {
+  const { target, property } = useWidgetContext()
+  return (
+    <div className="dk:flex dk:items-center dk:gap-1">
+      <div className="dk:opacity-50">{property}</div>
+      <input
+        type="text"
+        value={target[property]}
+        onChange={e => (target[property] = e.target.value)}
+        className="dk:w-full dk:rounded dk:border-none dk:px-2 dk:py-1"
+      />
+    </div>
+  )
+})
+
+export type NumberWidgetProps = {
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+}
+
+const NumberWidget = epos.component((props: NumberWidgetProps) => {
+  const { target, property } = useWidgetContext()
+  return (
+    <div className="dk:flex dk:items-center dk:gap-1">
+      <div className="dk:opacity-50">{property}</div>
+      <input
+        {...props.inputProps}
+        type="number"
+        value={target[property]}
+        onChange={e => (target[property] = parseFloat(e.target.value))}
+        className={cn('dk:w-full dk:rounded dk:border-none dk:px-2 dk:py-1', props.inputProps?.className)}
+      />
+    </div>
+  )
+})
+
+const CheckboxWidget = epos.component(() => {
+  const { target, property } = useWidgetContext()
+  return (
+    <div className="dk:flex dk:items-center dk:gap-1">
+      <div className="dk:opacity-50">{property}</div>
+      <input
+        type="checkbox"
+        checked={target[property]}
+        onChange={e => (target[property] = e.target.checked)}
+        className="dk:w-full dk:rounded dk:border-none dk:px-2 dk:py-1"
+      />
+    </div>
+  )
+})

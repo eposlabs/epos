@@ -1,5 +1,5 @@
 import { epos } from 'epos'
-import { Devkit, widget } from 'epos-devkit'
+import { Devkit, useWidgetContext, widget } from 'epos-devkit'
 
 import './core/core.js'
 import './gl.css'
@@ -37,13 +37,28 @@ const Cmp = (props: WidgetProps) => {
 // TODO: provide all possible variants of data (get/set/value/method/computed/etc + extends)
 // and check what are visible with getOwnPropertyDescriptors / prototypes
 class Header extends Base {
-  // @widget.text({})
   title = 'Epos Shell App'
-
-  // @widget.select({ options: ['light', 'dark', 'system'] })
   theme = 'dark'
-
   visible = false
+
+  items = [
+    {
+      id: 1,
+      name: 'Item 1',
+      data: [
+        { id: 'a', value: 'A' },
+        { id: 'b', value: 'B' },
+      ],
+    },
+    {
+      id: 2,
+      name: 'Item 2',
+      data: [
+        { id: 'a2', value: 'A2' },
+        { id: 'b2', value: 'B2' },
+      ],
+    },
+  ]
 
   get uppercasedTitle() {
     return `[${this.title.toUpperCase()}]`
@@ -56,7 +71,6 @@ class Header extends Base {
     this.title = value
   }
 
-  @widget.default()
   move(value: number) {
     console.log('move header', value)
   }
@@ -64,7 +78,7 @@ class Header extends Base {
 
 epos.state.register({ Base, Header })
 
-const header = await epos.state.connect('header', new Header(), {
+const header = await epos.state.connect('header2', new Header(), {
   1() {
     this.theme = 'light'
   },
@@ -75,9 +89,9 @@ const header = await epos.state.connect('header', new Header(), {
 self.header = header
 
 epos.state.register({ ...gl })
-const app = await epos.state.connect(new gl.App(null))
+// const app = await epos.state.connect(new gl.App(null))
 // epos.render(<app.View />)
-Object.assign(self, { epos, $: app, gl })
+Object.assign(self, { epos, gl })
 
 self.Header = Header
 
