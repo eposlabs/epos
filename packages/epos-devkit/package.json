@@ -28,11 +28,11 @@
     "clsx": "^2.1.1",
     "epos": "^1.57.0",
     "epos-unit": "^1.27.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "shadcn": "^3.8.4",
+    "shadcn": "^3.8.5",
     "tailwindcss": "^4.1.18",
     "vite": "^8.0.0-beta.14",
     "vite-plugin-dts": "^4.5.4",
