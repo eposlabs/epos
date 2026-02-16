@@ -27,7 +27,7 @@ export default defineConfig({
         text: 'Introduction',
         items: [
           { text: 'Overview', link: '/docs/' },
-          { text: 'Features', link: '/docs/features-overview' },
+          { text: 'Features', link: '/docs/features' },
         ],
       },
       {
@@ -48,7 +48,7 @@ export default defineConfig({
       {
         text: 'APIs',
         items: [
-          { text: 'API Overview', link: '/docs/api-overview' },
+          { text: 'API Reference', link: '/docs/api' },
           { text: 'epos.*', link: '/docs/api-general' },
           { text: 'epos.env.*', link: '/docs/api-env' },
           { text: 'epos.dom.*', link: '/docs/api-dom' },

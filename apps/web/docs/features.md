@@ -6,28 +6,38 @@ outline: [2]
 
 Epos is packed with built-in tools designed to streamline the extension development lifecycle. Each tool is pre-configured to function across all execution contexts without additional setup.
 
-Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/docs/api.html).
+Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/docs/api).
 
 ## Messaging System
 
-Epos provides an out-of-the-box messaging system called `bus`, it can send messages from any context to any other context. It's like `chrome.runtime.sendMessage`, but **10x better**.
+Epos provides a built-in, unified messaging system called `bus`. It's like `chrome.runtime.sendMessage`, but **10x better**.
 
-Simply call `epos.bus.send` from any context, and Epos will deliver the message to all `epos.bus.on` listeners — no matter where they are. You don't need to worry about tracking tab IDs or proxying messages with `window.postMessage`; the engine handles the **routing automatically** across the entire extension.
+Simply call `epos.bus.send` from any context, and Epos will deliver the message to every `epos.bus.on` listener — no matter where they are located.
 
-Beside this, `bus` also supports sending Blob objects which means you can easily transfer files, images, or any binary data between your extension contexts. This is can't be done with the standard `chrome.runtime.sendMessage` API.
+The engine handles the **routing automatically** across all contexts, meaning you no longer have to juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage`, and `window.postMessage`. Just broadcast the message, and Epos ensures it arrives.
 
-::: code-group
+Every `epos.bus.on` listener can return a value, which will be sent back to the sender as a resolved promise. This allows you to implement request-response patterns with ease.
 
 ```ts
 // background.js
-epos.bus.on('getUserData', userId => {
-  // ... some logic to get user data
-  return userData
+epos.bus.on('getUserData', async userId => {
+  const user = await fetchUserData(userId)
+  return user // This value is sent back to the caller
 })
 
-// popup.js
-const user = await epos.bus.send('getUserData', userId)
+// content-script.js
+const user = await epos.bus.send('getUserData', 123)
 ```
+
+#### Binary Data Support
+
+Standard extension messaging is limited to JSON-serializable data, which means it does not support **Blob** or **File** objects. If you want to transfer binary data the "standard" way, you are forced to manually serialize it into a Base64 string — a process that is slow, memory-intensive, and increases payload size.
+
+The Epos `bus` natively supports **Blob** objects. It uses a smarter transfer logic that avoids Base64 serialization entirely, allowing you to move files, images, or any large binary data across contexts without the performance overhead.
+
+::: info
+
+You can learn more about how `bus` works, its features and capabilities in the [API Reference](/docs/api-bus).
 
 :::
 
@@ -49,9 +59,16 @@ state.value = 20
 state.items.push({ id: 1, name: 'Item 1' })
 ```
 
-## Chrome API
+## Chrome APIs
 
-Standard `chrome.*` APIs are restricted to specific extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
+Standard `chrome.*` APIs can be called only from special extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
+
+```ts
+// content-script.js on https://example.com
+const tabs = await epos.browser.tabs.query({})
+// Works! Even though we are executing the code on a regular web page
+// without direct access to chrome.* APIs
+```
 
 ## Storage
 
@@ -149,3 +166,7 @@ Epos includes a variety of built-in utilities designed to streamline the extensi
 
 You can find the complete list of capabilities in the [API Reference](/docs/api.html).
 -->
+
+```
+
+```

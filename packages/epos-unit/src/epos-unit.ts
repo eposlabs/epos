@@ -40,11 +40,11 @@ export class Unit<TRoot = unknown> {
   }
 
   [epos.state.ATTACH]() {
-    initInternals(this)
+    prepareInternals(this)
     applyVersioner(this)
-    initState(this)
-    initInert(this)
-    initPrototypeProperties(this)
+    prepareState(this)
+    prepareInert(this)
+    preparePrototypeProperties(this)
     scheduleAndFlushAttach(this)
   }
 
@@ -163,7 +163,7 @@ export class Unit<TRoot = unknown> {
 // MARK: Initialization
 // ============================================================================
 
-function initInternals<T>(unit: Unit<T>) {
+function prepareInternals<T>(unit: Unit<T>) {
   defineAccessor(unit, _log_, null)
   defineAccessor(unit, _root_, null)
   defineAccessor(unit, _rpcs_, {})
@@ -190,7 +190,7 @@ function applyVersioner<T>(unit: Unit<T>) {
   })
 }
 
-function initState<T>(unit: Unit<T>) {
+function prepareState<T>(unit: Unit<T>) {
   if (!Reflect.has(unit, 'state')) return
   if (Object.hasOwn(unit, 'state')) throw new Error(`'state' must be defined as a getter`)
   const value = Reflect.get(unit, 'state')
@@ -200,7 +200,7 @@ function initState<T>(unit: Unit<T>) {
   Reflect.defineProperty(state, epos.state.PARENT, { get: () => unit })
 }
 
-function initInert<T>(unit: Unit<T>) {
+function prepareInert<T>(unit: Unit<T>) {
   if (!Reflect.has(unit, 'inert')) return
   if (Object.hasOwn(unit, 'inert')) throw new Error(`'inert' must be defined as a getter`)
   const value = Reflect.get(unit, 'inert')
@@ -214,7 +214,7 @@ function initInert<T>(unit: Unit<T>) {
  * - Turn getters into MobX computed properties
  * - Define methods as accessors to allow `this.method = wrap(this.method)`. Also bind them for convenience.
  */
-function initPrototypeProperties<T>(unit: Unit<T>) {
+function preparePrototypeProperties<T>(unit: Unit<T>) {
   for (const prototype of getPrototypes(unit)) {
     const descriptors = Object.getOwnPropertyDescriptors(prototype)
     for (const [key, descriptor] of Object.entries(descriptors)) {

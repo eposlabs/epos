@@ -46,6 +46,6 @@ The engine prioritizes ease of use for the **95% of common use cases**, even if 
 - **Manifest V3:** No support for the legacy Manifest V2.
 - **No HMR:** Hot Module Replacement is not supported, though live-reload is available.
 - **No Source Maps:** Since Epos injects your code with its own engine runtime, source maps do not function. The support may appear in future releases.
-- **Permissions:** Certain manifest permissions are required for the engine to function and cannot be omitted.
+- **Permissions:** Certain manifest permissions are required for the engine to work and cannot be omitted.
 
-These limitations are intentional trade-offs that enable the specialized features that Epos provides. You can learn more about these in the [Features Overview](/docs/features) section.
+These limitations are intentional trade-offs that enable the specialized features that Epos provides. You can learn more about these in the [Features](/docs/features) section.
