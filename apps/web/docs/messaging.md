@@ -9,18 +9,18 @@ Epos provides a simple and powerful event bus system that allows for cross-conte
 :::
 
 ```ts
-// popup.js
-epos.bus.send('message-name', ...data)
-
 // background.js
 epos.bus.on('message-name', (...data) => {
   console.log('Received in background:', data)
 })
 
-// content.js
+// injected-script.js
 epos.bus.on('message-name', (...data) => {
-  console.log('Received in content:', data)
+  console.log('Received in injected script:', data)
 })
+
+// popup.js
+epos.bus.send('message-name', ...data)
 ```
 
 TODO: describe how return value can be used.

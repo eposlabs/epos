@@ -227,7 +227,7 @@ deno run dev
 
 :::
 
-I assume you already have epos engine istalled and running, if not, please see the [getting started guide](./tutorial-getting-started.md) for instructions on how to do that.
+I assume you already have epos engine istalled and running, if not, please see the [getting started guide](./basics) for instructions on how to do that.
 
 Open `app.epos.dev`, create new project and link this project to your directory.
 

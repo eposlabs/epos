@@ -4,29 +4,23 @@ outline: [2, 3]
 
 # Basics
 
-::: danger TODO
-first, https://example.com, then tell that you can use match pattern (link). So _://_.example.com/\* means "all pages on example.com".
-:::
-
-::: danger TODO
-Call scripts on web pages content scripts, describe that epos does not provide 'isolated', explain that it has extension api available in the regular content scripts.
-:::
-
 In this section, we will cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
 
 Once you are comfortable with the basics, we will walk through how to [set up a development environment](/docs/vite-setup) using **Vite, TypeScript, and React**.
 
 ## Installation
 
-First, install Epos from the [Chrome Web Store](https://get.epos.dev).
+First, install Epos from the [Chrome Web Store](https://get.epos.dev). Yes, Epos is an extension itself that allows you build extensions on top of it.
 
-Once installed, Epos automatically opens [app.epos.dev](https://app.epos.dev) in a new tab. You can also open this page by clicking the Epos extension icon. This tab is automatically pinned, as it must stay open while you are developing your extension.
+Once installed, Epos automatically opens [app.epos.dev](https://app.epos.dev) in a new tab. This tab is automatically pinned, as it **must stay open** while you are developing your extension.
 
 ## Workflow
 
-Epos uses a unique approach compared to other tools. Instead of a CLI-based workflow, Epos is a browser extension that runs your code and provides a dedicated interface for managing your projects, [app.epos.dev](https://app.epos.dev).
+Epos uses a unique approach compared to other frameworks. Instead of a CLI-based workflow, Epos is a browser extension that runs your code and provides a dedicated interface for managing your projects at [app.epos.dev](https://app.epos.dev).
 
-With Epos, you don't develop an extension in the usual sense; you create a project and run it directly within the engine. When your project is ready for production, simply click **EXPORT** in the Epos interface. This generates a ZIP file containing a standard extension, ready for submission to the Chrome Web Store or other marketplaces.
+With Epos, you don't develop an extension in the usual sense; you create a project and run it directly within the engine. Epos can run any number of projects simultaneously, acting as the bridge between your local code and the browser.
+
+When your project is ready for production, simply click **EXPORT** in the Epos interface. This generates a ZIP file containing a standalone extension, ready for submission to the Chrome Web Store or other marketplaces.
 
 ## Your First Project
 
@@ -34,7 +28,7 @@ Let's create a project and see how it works.
 
 1. **Create a directory:** Start by creating an empty folder on your computer for your project.
 2. **Create new project in Epos:** Go to [app.epos.dev](https://app.epos.dev) and click the **NEW PROJECT** button. This will create a new empty project inside the engine.
-3. **Connect to Epos:** Now you need to connect your local directory with the Epos project. Click the **CONNECT** button in the top-right corner of the Epos interface. A file picker dialog will open; select the directory you created in step 1.
+3. **Connect to Epos:** Click the **CONNECT** button in the top-right corner of the Epos interface. When the file picker opens, select the directory you created in step 1.
 
 The browser will ask for your permission to access this folder. This is necessary for Epos to read your code and run it in the browser. Epos only accesses the files within this specific directory and cannot see any other files on your computer.
 
@@ -42,11 +36,11 @@ This workflow is powered by the [File System API](https://developer.mozilla.org/
 
 ## epos.json
 
-Open your project directory in your favorite code editor and create an `epos.json` file. This is the "heart" of every Epos project; it is where you define how the engine should run your code.
+Now, open your project directory in your favorite code editor and create an `epos.json` file. This is the "heart" of every Epos project; it is where you describe how the engine should treat your code.
 
-If you are familiar with `manifest.json` file in browser extensions, you can think of `epos.json` as a higher-level abstraction. Epos doesn't need a separate `manifest.json` file to run your project. Instead, the engine generates a valid manifest automatically during export based on your project settings.
+If you are familiar with `manifest.json` file in browser extensions, you can think of `epos.json` as a higher-level abstraction. You don't need a separate manifest to run your project; the engine automatically generates a valid manifest file for you upon export based on your project settings.
 
-`epos.json` has only one required field: `"name"`. Add the following content:
+`epos.json` has only one required field: `name`. Add the following content:
 
 ::: code-group
 
@@ -58,17 +52,18 @@ If you are familiar with `manifest.json` file in browser extensions, you can thi
 
 :::
 
-You will notice this name is instantly picked up in the Epos interface. The engine reacts to any changes in your directory as they happen. Just keep [app.epos.dev](https://app.epos.dev) open while you work so the engine can maintain this direct access to your files.
+You will notice this name is instantly picked up in the Epos interface. The engine reacts to any changes in your directory as they happen. Just keep [app.epos.dev](https://app.epos.dev) open while you work so the engine can maintain this direct access to your files via the File System API.
 
 ## How to Load CSS
 
-Right now, our project does nothing. Let’s change that by styling [example.com](https://example.com) website.
+Right now, our project does nothing. Let’s change that by styling the [example.com](https://example.com) website.
 
-First, create a file named `example.css`:
+First, create a file named `main.css`:
 
 ::: code-group
 
-```css [example.css]
+```css [main.css]
+/* Let's make the background gold, just for fun! */
 body {
   background: gold;
 }
@@ -76,9 +71,7 @@ body {
 
 :::
 
-Next, tell Epos to apply this style to `example.com` by adding the `matches` and `load` fields to your `epos.json`:
-
-TODO: explain that matches describes "where" your code should be run. And "load" describes "what" should be run.
+Next, you need to tell Epos to inject this file. You’ll use the `matches` field to describe **where** the code should run, and the `load` field to describe **what** file should be loaded.
 
 ::: code-group
 
@@ -86,53 +79,63 @@ TODO: explain that matches describes "where" your code should be run. And "load"
 {
   "name": "My Epos Extension",
   "matches": "https://example.com", // [!code ++]
-  "load": "example.css" // [!code ++]
+  "load": "main.css" // [!code ++]
 }
 ```
 
 :::
 
-No reload or extra steps are required; Epos picks up the changes instantly. Open [example.com](https://example.com) in your browser to see the gold background!
+After saving the file, no reload or extra steps are required; Epos picks up the changes instantly. Now, open [example.com](https://example.com) in your browser — you should see a bright gold background!
 
 ## Live Reloading
 
-By default, you can see changes by manually refreshing the page. If you want Epos to handle this for you, simply add `?autoreload` to the URL: `https://example.com/?autoreload`. Now, whenever you save changes to `example.css`, the page will reload automatically.
+By default, the engine injects your code when the page loads. If you make changes to `main.css`, you would normally need to manually refresh [example.com](https://example.com) to see the result.
 
-You can use this feature on any website where Epos is injecting code.
+To speed up your workflow, Epos provides an **Auto-Reload** feature. Simply add `?autoreload` to your URL: https://example.com/?autoreload.
+
+Now, whenever you make changes to `main.css`, the page will reload automatically. You can use this feature on any website where your project is active.
 
 ## Match Patterns
 
-::: danger
+The `matches` field follows the [Match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax used by standard browser extensions. This means you can use the `*` wildcard to match multiple subdomains or paths.
 
-TODO
+For example, `*://*.example.com/*` translates to "all pages on example.com and its subdomains". Let's update our `epos.json` to use this broader pattern:
+
+::: code-group
+
+```json [epos.json]
+{
+  "name": "My Epos Extension",
+  "matches": "https://example.com", // [!code --]
+  "matches": "*://*.example.com/*", // [!code ++]
+  "load": "main.css"
+}
+```
+
+Now, the gold background isn't restricted to just the homepage. You can navigate to [example.com/anything](https://example.com/anything) or [www.example.com](https://www.example.com), and the engine will inject your styles.
 
 :::
 
 ## How to Load JS
 
-Changing styles is a great start, but let's add some logic. Create a file named `example.js` in your project directory (we'll stick to plain JavaScript for now to keep things build-step free):
+Changing styles is a great start, but let's add some logic. Create a file named `main.js` in your project directory (remember, we are sticking to plain JavaScript for now to keep things build-step free):
 
 ::: code-group
 
-TODO: use:
-
-```
-document.documentElement.innerHTML = `
-  <div style="padding: 20px; font-family: sans-serif;">
-    Hello from Epos extension!
-  </div>
-`
-```
-
-TODO: Also change exmaple.js -> main.js (and example.css -> main.css).
-
-```js [example.js]
-console.log('Hello from Epos extension!')
+```js [main.js]
+// Change the page content when it loads
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.innerHTML = `
+    <div style="padding: 20px; font-family: sans-serif;">
+      Hello from Epos extension!
+    </div>
+  `
+})
 ```
 
 :::
 
-Now, update the `load` field in `epos.json`. Since we are loading multiple files, we change the field to an array:
+Now, update the `load` field in `epos.json`. Since we are now loading multiple files, we change the field from a single string to an array:
 
 ::: code-group
 
@@ -141,17 +144,17 @@ Now, update the `load` field in `epos.json`. Since we are loading multiple files
   "name": "My Epos Extension",
   "matches": "*://*.example.com/*",
   "load": [
-    "example.css",
-    "example.js" // [!code ++]
+    "main.css",
+    "main.js" // [!code ++]
   ]
 }
 ```
 
 :::
 
-Open the DevTools console on `example.com` to see your message.
+After saving, open [example.com](https://example.com) again (don't forget the `?autoreload` trick if you want it to refresh automatically). You should see your new message displayed on the page, confirming that your JavaScript code is running successfully.
 
-Congratulations — you’ve mastered the basics of Epos! The core philosophy is simple: you tell the engine what code to load and where to load it, and Epos handles the rest.
+Congratulations — you’ve mastered the basics of Epos! The core philosophy is simple: you tell the engine **what** code to load and **where** to load it, and Epos handles the rest.
 
 ## Popup
 
@@ -179,7 +182,7 @@ To load this in the popup, use the special `<popup>` keyword in the `matches` fi
 {
   "name": "My Epos Extension",
   "matches": "*://*.example.com/*", // [!code --]
-  "load": ["example.css", "example.js"], // [!code --]
+  "load": ["main.css", "main.js"], // [!code --]
   "matches": "<popup>", // [!code ++]
   "load": "popup.js" // [!code ++]
 }
@@ -189,7 +192,7 @@ To load this in the popup, use the special `<popup>` keyword in the `matches` fi
 
 Now, clicking the Epos extension icon will display your popup. It's that simple. If you'd prefer to use the browser's side panel instead, just change `<popup>` to `<sidePanel>`.
 
-## Working with Multiple Targets
+## Multiple Targets
 
 By adding the popup logic above, we replaced our `example.com` functionality. To run both at the same time, we use **targets**. This allows you to define multiple independent environments within a single project.
 
@@ -215,7 +218,7 @@ Update your `epos.json` to use the `targets` array:
       // [!code ++]
       "matches": "*://*.example.com/*",
       // [!code ++]
-      "load": ["example.css", "example.js"]
+      "load": ["main.css", "main.js"]
       // [!code ++]
     }
     // [!code ++]
@@ -278,7 +281,7 @@ Then, add the `<background>` target to your `epos.json`:
     },
     {
       "matches": "*://*.example.com/*",
-      "load": ["example.css", "example.js"]
+      "load": ["main.css", "main.js"]
     }
   ]
 }
@@ -299,150 +302,6 @@ To get access to DevTools for the background iframe, follow these steps:
 
 Add icon + description + Export to see standalone ZIP
 
-<!--
+## Export
 
-## Beyond the Basics
-
-So far, we used Epos only as a code runner, but we haven't touched its powerful APIs. Let's explore them.
-
-## Core Concepts & API
-
-All Epos APIs are available under the global `epos` object. This isn't a true "global" object; it is injected into your code, so you can treat it as global, but it is scoped and not directly exposed to web pages.
-
-### Bus Messaging
-
-Epos provides a powerful messaging system called Bus (named for "Bus Event", not the vehicle) that simplifies communication between different extension contexts (popup, side panel, background, tabs). Unlike standard `chrome.runtime.sendMessage`, Epos Bus allows you to send messages seamlessly across all contexts without worrying about routing.
-
-Let's see how it works:
-
-```js
-// In background.js
-epos.bus.on('background', data => console.log('⬇︎ background:', data))
-
-// In example.js
-epos.bus.on('example', data => console.log('⬇︎ example:', data))
-
-// In popup.js
-document.body.innerHTML = `
-  <div>
-    <button id="bg">Send Message to Background</button>
-    <button id="ex">Send Message to Example</button>
-  </div>
-`
-
-document.querySelector('#bg').onclick = () => {
-  epos.bus.send('background', 'Hello from Popup!')
-}
-
-document.querySelector('#ex').onclick = () => {
-  epos.bus.send('example', 'Hello from Popup to Example!')
-}
-```
-
-Now open the popup and click the buttons. You will see that messages are received in the background and `example.com` contexts respectively. Epos Bus automatically handles routing, so you don't need to worry about how to pass messages between different contexts. From popup to web page, from popup to background, from background to web page and so on — it just works.
-
-If you need to return some data, it is also possible.
-
-```js
-// In background.js
-epos.bus.on('getBgData', value => {
-  return { value: 100 + value }
-})
-
-// In example.js
-window.epos = epos // Expose epos to the console for testing
-```
-
-Now open DevTools console on `example.com` and type:
-
-```js
-const data = await epos.bus.send('getBgData', 10) // { value: 110 }
-```
-
-Bus supports all JSON-serializable data AND blobs. This is a huge benefit over standard messaging APIs which do not support binary data. With `epos.bus` you can easily send images, videos, and any other binary data between extension contexts.
-
-Some other data types are also supported, see the [Bus API documentation](../api/bus.md) for details.
-
-## Project Setup: TypeScript & React
-
-We have covered the basics of Epos and its messaging system. Now let's set up TypeScript and React using Vite. You can use the default Vite setup, or initialize a project from the **Vite + React + TS** template in shell.epos.dev. Alternatively, you can catch up manually:
-
-We will use Vite in build mode only, because Epos requires JS and CSS files to be physically present, while the Vite dev server serves files from localhost (which isn't compatible with Epos's injection mechanism).
-
-1. Initialize a new npm project in your project directory:
-
-```bash
-npm init -y
-```
-
-2. Install Vite and TypeScript. It is highly recommended to install Vite 8 (or newer) as it uses Rolldown (a Rust-based bundler), which is significantly faster.
-
-```bash
-npm install --save-dev vite@8.beta typescript
-```
-
-3. Create `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "jsx": "react-jsx",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"]
-    }
-  },
-  "include": ["src"]
-}
-```
-
-4. Create `vite.config.ts`:
-
-```ts
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [],
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      input: {
-        popup: 'popup.tsx',
-        background: 'background.ts',
-        example: 'example.tsx',
-      },
-      output: {
-        entryFileNames: '[name].js',
-      },
-    },
-  },
-})
-```
-
-With these configuration files in place, you are ready to start building robust extensions with React and TypeScript!
-
-To finish the setup, add a build script to your `package.json`:
-
-```json
-"scripts": {
-  "build": "vite build --watch"
-}
-```
-
-Now run `npm run build`. Vite will watch for changes and rebuild your files into the `dist` folder. Finally, update your `epos.json` to point to the compiled files in `dist/` (e.g., `dist/popup.js`, `dist/background.js`).
-
-Happy coding!
-
-## Is Epos Right for You?
-
-If you are just starting with extension development, Epos is an excellent choice as it abstracts away much of the complexity. You only need to know the basics of JavaScript and React.
-
-If you are an experienced extension developer, you know how hard it can be to synchronize state across extension contexts and handle messaging. Epos saves you time by solving these hard problems for you.
--->
+Let's say we are happy with our project and want to share it with the world. To do this, simply click the **EXPORT** button in the Epos interface. This generates a ZIP file containing a standalone extension that you can submit to the Chrome Web Store or distribute as you like.

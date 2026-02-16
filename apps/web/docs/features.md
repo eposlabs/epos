@@ -25,7 +25,7 @@ epos.bus.on('getUserData', async userId => {
   return user // This value is sent back to the caller
 })
 
-// content-script.js
+// injected-script.js
 const user = await epos.bus.send('getUserData', 123)
 ```
 
@@ -64,7 +64,7 @@ state.items.push({ id: 1, name: 'Item 1' })
 Standard `chrome.*` APIs can be called only from special extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
 
 ```ts
-// content-script.js on https://example.com
+// injected-script.js on https://example.com
 const tabs = await epos.browser.tabs.query({})
 // Works! Even though we are executing the code on a regular web page
 // without direct access to chrome.* APIs
@@ -78,7 +78,7 @@ Epos provides a built-in storage system for files and data. It acts as a smart w
 // popup.js
 await epos.storage.set('my-image', image)
 
-// content-script.js
+// injected-script.js
 const image = await epos.storage.get('my-image')
 ```
 
