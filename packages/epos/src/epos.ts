@@ -6,8 +6,8 @@ import type * as reactDom from 'react-dom'
 import type * as reactDomClient from 'react-dom/client'
 import type * as reactJsxRuntime from 'react/jsx-runtime'
 import type * as yjs from 'yjs'
-import type { Browser } from './epos-browser.js'
-import type { Spec } from './epos-spec.js'
+import type { Browser } from './browser.js'
+import type { Spec } from './spec.js'
 
 export interface Epos {
   /** Like regular `fetch`, but bypasses CORS. Does not support streams. */

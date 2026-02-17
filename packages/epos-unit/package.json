@@ -12,7 +12,7 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/epos-unit.js"
+    ".": "./dist/unit.js"
   },
   "files": [
     "dist",

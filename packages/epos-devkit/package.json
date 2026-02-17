@@ -7,13 +7,9 @@
   "description": "",
   "keywords": [],
   "scripts": {
-    "dev": "rimraf dist && vite build --mode development",
-    "build": "rimraf dist && vite build --mode production",
-    "lint": "tsgo --build --noEmit",
-    "shadcn": "node ../../scripts/shadcn.ts"
-  },
-  "imports": {
-    "#/*": "./src/*"
+    "dev": "vite build --mode development",
+    "build": "vite build --mode production",
+    "lint": "tsgo --build --noEmit"
   },
   "exports": {
     ".": "./dist/devkit.js"
@@ -24,7 +20,6 @@
   "dependencies": {
     "@eposlabs/utils": "^1.22.0",
     "@tabler/icons-react": "^3.36.1",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "epos": "^1.57.0",
     "epos-unit": "^1.27.0",
@@ -32,7 +27,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "shadcn": "^3.8.5",
     "tailwindcss": "^4.1.18",
     "vite": "^8.0.0-beta.14",
     "vite-plugin-dts": "^4.5.4",
