@@ -2,9 +2,60 @@
 
 In the previous section we covered the basisc of developing with Epos and set up Vite environment. Now we have everything to get deeper and start using Epos APIs.
 
-This section assumes you have three targets in your application: `content`, `popup` and `background`. If you don't have them, you can create them by following the instructions in the previous section.
+This section assumes you have your project set up with Vite and ready to go. If you don't have it, you can create it by following the instructions in the previous section.
 
-## DOM Structure
+## Render React
+
+Let's create our first React component App that will render our application. Create a file `src/app.tsx` in your project directory with the following content:
+
+::: code-group
+
+```tsx [src/app.tsx]
+const App = () => {
+  return <div>Epos Extension</div>
+}
+```
+
+:::
+
+And configure `epos.json` as follows:
+
+::: code-group
+
+```json [epos.json]
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "My Extension",
+  "targets": [
+    {
+      "matches": "*://*.example.com/*",
+      "load": ["dist/app.js"]
+    }
+  ]
+}
+```
+
+:::
+
+To render this component, you can use `react-dom` as you normally would in a React application, but Epos provides a simpler API. Instead of manually creating root elements and rendering into them, you can just call `epos.render(<App/>)` and Epos will take setup everything automatically:
+
+Now when you open [example.com](https://example.com), you should see "Epos Extension" rendered next to the page's content.
+
+While you can use this approach, Epos provides a simpler API for rendering your app. Instead of manually creating root elements and rendering into them, you can just call `epos.render(<App/>)` and Epos will take care of the rest:
+
+::: code-group
+
+```tsx [src/app.tsx]
+import 'epos'
+
+const App = () => {
+  return <div>Epos Extension</div>
+}
+
+epos.render(<App />) // [!code ++]
+```
+
+:::
 
 TODO: _Anatomy_ of DOM structure.
 
@@ -35,7 +86,7 @@ But where will it render the app? Good question! For this, let's take a look at 
     ...
   </body>
 </html>
-```
+````
 
 First thing to notice is the `<epos>` tag that wraps everything. This is where Epos injects its runtime and your project's code. It uses custom tag name just for convenience, so it is easier to spot in the DOM, but you can think of it as a regular `<div>`. You can see that `<epos>` is placed outside of `<body>`, this is done to avoid any conflicts with page's content. This is perfectly valid HTML structure and browsers will render content inside `<epos>` the same way they render content inside `<body>`.
 

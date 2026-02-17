@@ -20,6 +20,10 @@
     {
       "matches": "frame:*://*.epos.dev/@x1",
       "load": ["x1-hub.js"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["x1-bg.js"]
     }
     // { "matches": ["<allUrls>"], "load": ["x1.js"] },
     // { "matches": ["*://epos.dev/@x1"], "load": ["x1-hub.js"] },

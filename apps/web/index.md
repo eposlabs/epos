@@ -8,11 +8,11 @@ hero:
   tagline: The opinionated engine for extension developers who want to skip the boilerplate and ship faster.
   actions:
     - theme: brand
-      text: Get Epos
-      link: https://get.epos.dev
+      text: Get Started
+      link: /guide
     - theme: alt
-      text: Documentation
-      link: /docs
+      text: Install Epos
+      link: https://get.epos.dev
 
 features:
   - title: Zero-Config Setup

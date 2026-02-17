@@ -25,7 +25,7 @@
 /* Overrides */
 :root {
   .VPNavBarTitle.has-sidebar .title {
-    @apply border-b-0;
+    @apply border-b-transparent;
   }
 
   .VPSidebar {

@@ -1,6 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
-import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -17,48 +16,45 @@ export default defineConfig({
     },
 
     // https://vitepress.dev/reference/default-theme-config
-    nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/docs' },
-    ],
+    nav: [{ text: 'Guide', link: '/guide' }],
 
     sidebar: [
       {
         text: 'Introduction',
         items: [
-          { text: 'Overview', link: '/docs/' },
-          { text: 'Features', link: '/docs/features' },
+          { text: 'Overview', link: '/guide/' },
+          { text: 'Features', link: '/guide/features' },
         ],
       },
       {
         text: 'Guide',
         items: [
-          { text: 'Basics', link: '/docs/basics' },
-          { text: 'Vite Setup', link: '/docs/vite-setup' },
-          { text: 'Rendering', link: '/docs/rendering' },
-          { text: 'Environment', link: '/docs/environment' },
-          { text: 'Messaging', link: '/docs/messaging' },
-          { text: 'State Management', link: '/docs/state-management' },
-          { text: 'Storage', link: '/docs/storage' },
-          { text: 'Assets', link: '/docs/assets' },
-          { text: 'Libs', link: '/docs/libs' },
-          { text: 'epos.json', link: '/docs/epos-json' },
+          { text: 'Basics', link: '/guide/basics' },
+          { text: 'Vite Setup', link: '/guide/vite' },
+          { text: 'Rendering', link: '/guide/rendering' },
+          { text: 'Messaging', link: '/guide/messaging' },
+          { text: 'State', link: '/guide/state' },
+          { text: 'Environment', link: '/guide/environment' },
+          { text: 'Storage', link: '/guide/storage' },
+          { text: 'Assets', link: '/guide/assets' },
+          { text: 'Libs', link: '/guide/libs' },
+          { text: 'epos.json', link: '/guide/epos-json' },
         ],
       },
       {
         text: 'APIs',
         items: [
-          { text: 'API Reference', link: '/docs/api' },
-          { text: 'epos.*', link: '/docs/api-general' },
-          { text: 'epos.env.*', link: '/docs/api-env' },
-          { text: 'epos.dom.*', link: '/docs/api-dom' },
-          { text: 'epos.bus.*', link: '/docs/api-bus' },
-          { text: 'epos.state.*', link: '/docs/api-state' },
-          { text: 'epos.storage.*', link: '/docs/api-storage' },
-          { text: 'epos.assets.*', link: '/docs/api-assets' },
-          { text: 'epos.frames.*', link: '/docs/api-frames' },
-          { text: 'epos.projects.*', link: '/docs/api-projects' },
-          { text: 'epos.libs.*', link: '/docs/api-libs' },
+          { text: 'Full API List', link: '/guide/api' },
+          { text: 'epos.*', link: '/guide/api-general' },
+          { text: 'epos.env.*', link: '/guide/api-env' },
+          { text: 'epos.dom.*', link: '/guide/api-dom' },
+          { text: 'epos.bus.*', link: '/guide/api-bus' },
+          { text: 'epos.state.*', link: '/guide/api-state' },
+          { text: 'epos.storage.*', link: '/guide/api-storage' },
+          { text: 'epos.assets.*', link: '/guide/api-assets' },
+          { text: 'epos.frames.*', link: '/guide/api-frames' },
+          { text: 'epos.projects.*', link: '/guide/api-projects' },
+          { text: 'epos.libs.*', link: '/guide/api-libs' },
         ],
       },
     ],
