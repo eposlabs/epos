@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Frames API
 
 The frames API allows you to create and manage invisible background iframes. These are useful for running code in isolated contexts, pre-loading content, or maintaining persistent connections.

@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Storage API
 
 The storage API provides a simple key-value storage system backed by IndexedDB. Unlike state, storage is not automatically synchronized but provides persistence across browser sessions.

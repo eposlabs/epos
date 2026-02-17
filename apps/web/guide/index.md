@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Overview
 
 Epos (**ἔπος**, “epic story”; pronounced **EH-poss**) is a highly opinionated engine designed to simplify browser extension development. It supports all Chromium-based browsers, including Chrome, Edge, and Brave. Firefox and Safari are not supported.
@@ -32,7 +28,7 @@ Once installed, the workflow is simple:
 2. **Develop:** Epos executes your code directly within the browser environment. Any changes you make are picked up automatically.
 3. **Export:** When you are ready to ship, click the **EXPORT** button to generate a production-ready ZIP file, ready for submission to the Chrome Web Store.
 
-## Constraints
+## Philosophy
 
 Epos is not a universal framework. It deliberately strips away the noise and doubles down on a specific tech stack to provide a developer experience that wouldn't be possible otherwise.
 
@@ -48,4 +44,4 @@ The engine prioritizes ease of use for the **95% of common use cases**, even if 
 - **No Source Maps:** Since Epos injects your code with its own engine runtime, source maps do not function. The support may appear in future releases.
 - **Permissions:** Certain manifest permissions are required for the engine to work and cannot be omitted.
 
-These limitations are intentional trade-offs that enable the specialized features that Epos provides. You can learn more about these in the [Features](/docs/features) section.
+These limitations are intentional trade-offs that enable the specialized features that Epos provides. You can learn more about these in the [Features](/guide/features) section.

@@ -1,12 +1,8 @@
----
-outline: [2]
----
-
 # Features
 
 Epos is packed with built-in tools designed to streamline the extension development lifecycle. Each tool is pre-configured to function across all execution contexts without additional setup.
 
-Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/docs/api).
+Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/api/).
 
 ## Messaging System
 
@@ -37,7 +33,7 @@ The Epos `bus` natively supports **Blob** objects. It uses a smarter transfer lo
 
 ::: info
 
-You can learn more about how `bus` works, its features and capabilities in the [API Reference](/docs/api-bus).
+You can learn more about how `bus` works, its features and capabilities in the [API Reference](/api/bus).
 
 :::
 
@@ -116,7 +112,7 @@ Beside these highlighted features, Epos also provides a variety of other built-i
 
 Epos includes a variety of built-in utilities designed to streamline the extension development lifecycle. Each feature is pre-configured to function across all execution contexts without additional setup.
 
-You can find the complete list of capabilities in the [API Reference](/docs/api.html).
+You can find the complete list of capabilities in the [API Reference](/api/).
 
 <!--
 ## Why Use Epos?
@@ -164,7 +160,7 @@ Just tell Epos **what** files to load and **where** — it handles the rest. Epo
 
 Epos includes a variety of built-in utilities designed to streamline the extension development lifecycle. Each feature is pre-configured to function across all execution contexts without additional setup.
 
-You can find the complete list of capabilities in the [API Reference](/docs/api.html).
+You can find the complete list of capabilities in the [API Reference](/api/).
 -->
 
 ```

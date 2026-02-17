@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Assets API
 
 The assets API provides access to static files bundled with your extension. Assets are defined in your `epos.json` and can be loaded on-demand or preloaded.

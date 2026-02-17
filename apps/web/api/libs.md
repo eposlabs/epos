@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Libraries API
 
 The libs API provides access to the third-party libraries that Epos uses internally. This allows you to use the same library versions without bundling them yourself.

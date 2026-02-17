@@ -11,4 +11,4 @@ epos.env.isSidePanel // true if running in side panel context
 epos.env.isBackground // true if running in background context
 ```
 
-All properties are typed with TypeScript, so you can get autocompletion and see what's inside. For more information, see full [Env API reference](/docs/api-env).
+All properties are typed with TypeScript, so you can get autocompletion and see what's inside. For more information, see full [Env API reference](/api/env).

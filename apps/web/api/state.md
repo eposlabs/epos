@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # State API
 
 The state API provides a powerful state management system with automatic synchronization across all extension contexts. It's built on top of MobX and Yjs, handling conflict resolution automatically.

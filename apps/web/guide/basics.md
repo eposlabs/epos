@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Basics
 
 In this section, we will cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
@@ -58,7 +54,7 @@ You will notice this name is instantly picked up in the Epos interface. The engi
 
 Epos provides a JSON Schema for `epos.json`, which means your code editor can offer autocomplete and validation as you edit the file. This makes it easier to discover available options and avoid mistakes.
 
-To enable this feature, simply add `$schema` field with `https://epos.dev/schema.json` value to your `epos.json`:
+To enable this feature, simply add `$schema` field to your `epos.json`:
 
 ::: code-group
 
@@ -364,6 +360,6 @@ The generated extension does not include any development-only code from the `app
 
 ## Summary
 
-Congratulations — you’ve mastered the basics of Epos! The core philosophy is simple: you tell the engine **what** code to load and **where** to load it, and Epos handles the rest.
+Congratulations — you’ve mastered the basics of Epos! The core principle is simple: you tell the engine **what** code to load and **where** to load it, and Epos handles the rest.
 
 In the next sections we didn't even touch any Epos specific APIs that boost development and enable powerful features like cross-context communication, state management, and more. We will cover all of that in the next sections.

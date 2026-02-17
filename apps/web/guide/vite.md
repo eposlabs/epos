@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 <!-- TODO: add tailwindcss setup -->
 
 # Vite Setup
@@ -10,7 +6,7 @@ In this tutorial, we will cover how to setup Epos project with **Vite, TypeScrip
 
 ::: info
 
-You can skip this part all together and just use the default template from Epos interface.
+You can skip this part all together and just use a template from Epos interface.
 
 For this, create new project and pick `Modern` template which setups **Vite + TypeScript + React + TailwindCSS**. This will create a project with all the necessary configuration for you. But if you want to understand how it works and how to setup everything yourself, read on.
 

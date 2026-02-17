@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 ::: danger TODO
 
 - Supported data types

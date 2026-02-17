@@ -27,7 +27,7 @@ TODO: describe how return value can be used.
 
 Bus is extremely powerful. It automatically understands how messages should be routed based on the context they are sent from and received in. There is no need to manually juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage` or `window.postMessage` APIs.
 
-Additionally, bus allows you to send [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) objects. So you can send files, images and video between contexts. Usual `chrome.runtime.sendMessage` does not allow blobs and Epos uses some hard-engineered magic to make it work. You can read more about it and other supported data types in the [Bus API reference](/docs/api-bus#sending-blobs).
+Additionally, bus allows you to send [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) objects. So you can send files, images and video between contexts. Usual `chrome.runtime.sendMessage` does not allow blobs and Epos uses some hard-engineered magic to make it work. You can read more about it and other supported data types in the [Bus API reference](/api/bus#sending-blobs).
 
 Bus sends messages only to other contexts and does not send messages to its own context. If you want in-context communication using bus, you can use `epos.bus.emit` instead:
 

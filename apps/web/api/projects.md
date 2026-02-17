@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # Projects API
 
 The projects API allows you to programmatically manage Epos projects. This is an advanced feature that must be explicitly enabled in your `epos.json`.

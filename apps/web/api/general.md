@@ -1,7 +1,3 @@
----
-outline: [2, 3]
----
-
 # General APIs
 
 Most Epos APIs are categorized and available under `epos.<category>.*`. However, some general-purpose tools live under `epos.*` directly. This section covers these APIs.
@@ -80,7 +76,7 @@ Only a limited number of WebExtensions APIs are supported. All APIs are declared
 
 Renders a React node into the DOM.
 
-Epos pre-creates an element structure for your app, and `epos.render` renders there by default. To know more about pre-created elements, see the [DOM API](api-dom.md).
+Epos pre-creates an element structure for your app, and `epos.render` renders there by default. To know more about pre-created elements, see the [DOM API](/api/dom).
 
 ```ts
 epos.render(node: ReactNode, container?: Container): void
