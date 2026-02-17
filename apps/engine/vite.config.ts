@@ -13,7 +13,7 @@ export default defineConfig(async ({ mode }) => {
 
   const layers = await layerer({
     watch: mode !== 'production',
-    globalLayer: 'gl',
+    baseLayer: 'gl',
   })
 
   const bundle = (name: string, params: { env?: Env; define?: Define } = {}): RolldownOptions => {

@@ -18,8 +18,8 @@ export type Options = {
   watch?: boolean
   /** Whether the layer variables should be exposed globally. */
   expose?: boolean
-  /** Layer available everywhere. If provided, other layers will extend this global layer. */
-  globalLayer?: string | null
+  /** If provided, other layers will extend this base layer. */
+  baseLayer?: string | null
   /** If a file name does not have any layer tags, it will be assigned to this default layer. */
   defaultLayer?: string | null
 }
@@ -197,9 +197,9 @@ export class Layerer extends Unit {
 
     let extendPascal = ''
     let extendCamel = ''
-    if (this.options.globalLayer && layer !== this.options.globalLayer) {
-      extendPascal = `extends ${this.getLayerName(this.options.globalLayer, 'Pascal')} `
-      extendCamel = `extends ${this.getLayerName(this.options.globalLayer, 'camel')} `
+    if (this.options.baseLayer && layer !== this.options.baseLayer) {
+      extendPascal = `extends ${this.getLayerName(this.options.baseLayer, 'Pascal')} `
+      extendCamel = `extends ${this.getLayerName(this.options.baseLayer, 'camel')} `
     }
 
     const globals = [
@@ -232,8 +232,8 @@ export class Layerer extends Unit {
       })
       .map(layer => `import './layer.${layer}.js'`)
 
-    if (this.options.globalLayer && topLayer !== this.options.globalLayer) {
-      imports.unshift(`import './layer.${this.options.globalLayer}.js'`)
+    if (this.options.baseLayer && topLayer !== this.options.baseLayer) {
+      imports.unshift(`import './layer.${this.options.baseLayer}.js'`)
     }
 
     return [...imports, ''].join('\n')
