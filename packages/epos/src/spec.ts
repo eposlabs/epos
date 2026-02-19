@@ -124,7 +124,7 @@ const schema = {
 // MARK: Parsers
 // ============================================================================
 
-export function parseSpecJson(json: string): Spec {
+export const parseSpecJson = (json: string): Spec => {
   if (!is.string(json)) throw new Error(`Failed to parse JSON: input is not a string`)
   json = stripJsonComments(json)
   const [spec, error] = safeSync(() => JSON.parse(json))
@@ -132,7 +132,7 @@ export function parseSpecJson(json: string): Spec {
   return parseSpecObject(spec)
 }
 
-export function parseSpecObject(spec: Obj): Spec {
+export const parseSpecObject = (spec: Obj): Spec => {
   if (!is.object(spec)) throw new Error(`Epos spec must be an object`)
 
   const keys = [...schema.keys, ...schema.target.keys]
@@ -162,7 +162,7 @@ export function parseSpecObject(spec: Obj): Spec {
   }
 }
 
-function parseName(spec: Obj) {
+const parseName = (spec: Obj) => {
   if (!('name' in spec)) throw new Error(`'name' field is required`)
 
   const name = spec.name
@@ -175,7 +175,7 @@ function parseName(spec: Obj) {
   return name
 }
 
-function parseSlug(spec: Obj, name: string) {
+const parseSlug = (spec: Obj, name: string) => {
   if (!('slug' in spec)) return slugify(name)
 
   const slug = spec.slug
@@ -191,7 +191,7 @@ function parseSlug(spec: Obj, name: string) {
   return slug
 }
 
-function parseVersion(spec: Obj): string {
+const parseVersion = (spec: Obj): string => {
   if (!('version' in spec)) return '0.0.1'
 
   const version = spec.version
@@ -201,7 +201,7 @@ function parseVersion(spec: Obj): string {
   return version
 }
 
-function parseDescription(spec: Obj): string | null {
+const parseDescription = (spec: Obj): string | null => {
   if (!('description' in spec)) return null
 
   const description = spec.description
@@ -213,7 +213,7 @@ function parseDescription(spec: Obj): string | null {
   return description
 }
 
-function parseIcon(spec: Obj) {
+const parseIcon = (spec: Obj) => {
   if (!('icon' in spec)) return null
 
   const icon = spec.icon
@@ -222,7 +222,7 @@ function parseIcon(spec: Obj) {
   return parsePath(icon)
 }
 
-function parseAction(spec: Obj, targets: Target[]): Action | null {
+const parseAction = (spec: Obj, targets: Target[]): Action | null => {
   const matches = targets.flatMap(target => target.matches)
   const hasPopup = matches.some(match => match.context === 'locus' && match.value === 'popup')
   const hasSidePanel = matches.some(match => match.context === 'locus' && match.value === 'sidePanel')
@@ -238,7 +238,7 @@ function parseAction(spec: Obj, targets: Target[]): Action | null {
   return action
 }
 
-function parsePopup(spec: Obj) {
+const parsePopup = (spec: Obj) => {
   const popup = structuredClone(spec.popup ?? {})
   if (!is.object(popup)) throw new Error(`'popup' must be an object`)
 
@@ -259,7 +259,7 @@ function parsePopup(spec: Obj) {
   return popup as Popup
 }
 
-function parseOptions(spec: Obj): Options {
+const parseOptions = (spec: Obj): Options => {
   const options = spec.options ?? {}
   if (!is.object(options)) throw new Error(`'options' must be an object`)
 
@@ -283,7 +283,7 @@ function parseOptions(spec: Obj): Options {
   }
 }
 
-function parseAssets(spec: Obj, icon: string | null) {
+const parseAssets = (spec: Obj, icon: string | null) => {
   const assets = structuredClone(spec.assets ?? [])
   if (!isArrayOfStrings(assets)) throw new Error(`'assets' must be an array of strings`)
 
@@ -293,7 +293,7 @@ function parseAssets(spec: Obj, icon: string | null) {
   return unique(assets.map(path => parsePath(path)))
 }
 
-function parseTargets(spec: Obj) {
+const parseTargets = (spec: Obj) => {
   const targets = structuredClone(spec.targets ?? [])
   if (!is.array(targets)) throw new Error(`'targets' must be an array`)
 
@@ -308,7 +308,7 @@ function parseTargets(spec: Obj) {
   return targets.map(target => parseTarget(target))
 }
 
-function parseTarget(target: unknown): Target {
+const parseTarget = (target: unknown): Target => {
   if (!is.object(target)) throw new Error(`Each target must be an object`)
 
   const { keys } = schema.target
@@ -321,12 +321,12 @@ function parseTarget(target: unknown): Target {
   }
 }
 
-function parseMatches(target: Obj): Match[] {
+const parseMatches = (target: Obj): Match[] => {
   const matches = ensureArray(target.matches ?? [])
   return matches.map(match => parseMatch(match)).flat()
 }
 
-function parseMatch(match: unknown): Match | Match[] {
+const parseMatch = (match: unknown): Match | Match[] => {
   if (!is.string(match)) throw new Error(`Invalid match pattern: '${JSON.stringify(match)}'`)
 
   if (match === '<popup>') return { context: 'locus', value: 'popup' }
@@ -356,19 +356,19 @@ function parseMatch(match: unknown): Match | Match[] {
   ]
 }
 
-function parseMatchPattern(pattern: string): MatchPattern {
+const parseMatchPattern = (pattern: string): MatchPattern => {
   const matcher = matchPattern(pattern)
   if (!matcher.valid) throw new Error(`Invalid match pattern: '${pattern}'`)
   return pattern
 }
 
-function parseResources(target: Obj) {
+const parseResources = (target: Obj) => {
   const load = ensureArray(target.load ?? [])
   if (!isArrayOfStrings(load)) throw new Error(`'load' must be an array of strings`)
   return load.map(loadEntry => parseResource(loadEntry))
 }
 
-function parseResource(loadEntry: string): Resource {
+const parseResource = (loadEntry: string): Resource => {
   const isJs = loadEntry.toLowerCase().endsWith('.js')
   const isCss = loadEntry.toLowerCase().endsWith('.css')
   if (!isJs && !isCss) throw new Error(`Invalid 'load' file, must be JS or CSS: '${loadEntry}'`)
@@ -384,7 +384,7 @@ function parseResource(loadEntry: string): Resource {
   }
 }
 
-function parsePermissions(spec: Obj): Permission[] {
+const parsePermissions = (spec: Obj): Permission[] => {
   const permissions = spec.permissions ?? []
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
@@ -394,7 +394,7 @@ function parsePermissions(spec: Obj): Permission[] {
   return permissions as Permission[]
 }
 
-function parseOptionalPermissions(spec: Obj): Permission[] {
+const parseOptionalPermissions = (spec: Obj): Permission[] => {
   const optionalPermissions = spec.optionalPermissions ?? []
   if (!isArrayOfStrings(optionalPermissions)) throw new Error(`'optionalPermissions' must be an array of strings`)
 
@@ -404,7 +404,7 @@ function parseOptionalPermissions(spec: Obj): Permission[] {
   return optionalPermissions as Permission[]
 }
 
-function parseHostPermissions(spec: Obj): string[] {
+const parseHostPermissions = (spec: Obj): string[] => {
   const hostPermissions = spec.hostPermissions ?? []
   if (!isArrayOfStrings(hostPermissions)) throw new Error(`'hostPermissions' must be an array of strings`)
 
@@ -414,7 +414,7 @@ function parseHostPermissions(spec: Obj): string[] {
   return hostPermissions.map(value => (value === '<allUrls>' ? '<all_urls>' : value))
 }
 
-function parseOptionalHostPermissions(spec: Obj): string[] {
+const parseOptionalHostPermissions = (spec: Obj): string[] => {
   const optionalHostPermissions = spec.optionalHostPermissions ?? []
   if (!isArrayOfStrings(optionalHostPermissions)) throw new Error(`'optionalHostPermissions' must be an array of strings`)
 
@@ -424,7 +424,7 @@ function parseOptionalHostPermissions(spec: Obj): string[] {
   return optionalHostPermissions.map(value => (value === '<allUrls>' ? '<all_urls>' : value))
 }
 
-function parseManifest(spec: Obj): Manifest | null {
+const parseManifest = (spec: Obj): Manifest | null => {
   if (!('manifest' in spec)) return null
   if (!is.object(spec.manifest)) throw new Error(`'manifest' must be an object`)
   return spec.manifest
@@ -441,7 +441,7 @@ function parseManifest(spec: Obj): Manifest | null {
  * - 'path/../to' -> 'path/../to'
  * - '../path/to' -> throw
  */
-function parsePath(path: string) {
+const parsePath = (path: string) => {
   const normalizedPath = path
     .split('/')
     .filter(path => path && path !== '.')
@@ -453,16 +453,16 @@ function parsePath(path: string) {
 // MARK: Helpers
 // ============================================================================
 
-function isValidUrl(value: unknown) {
+const isValidUrl = (value: unknown) => {
   if (!is.string(value)) return false
   return URL.canParse(value)
 }
 
-function isArrayOfStrings(value: unknown) {
+const isArrayOfStrings = (value: unknown) => {
   return is.array(value) && value.every(is.string)
 }
 
-function slugify(text: string) {
+const slugify = (text: string) => {
   return text
     .toString() // Ensure it's a string
     .toLowerCase() // Convert to lowercase
