@@ -103,7 +103,7 @@ export class ProjectEpos extends ex.Unit {
         list: this.$.utils.link(this.frames, 'list'),
       },
 
-      ...(this.$project.spec.config.allowProjectsApi && {
+      ...(this.$project.spec.options.allowProjectsApi && {
         projects: {
           has: this.$.utils.link(this.projects, 'has'),
           get: this.$.utils.link(this.projects, 'get'),

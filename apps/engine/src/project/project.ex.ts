@@ -24,14 +24,14 @@ export class Project extends ex.Unit {
     this.fn = def.fn
     this.os = this.use<os.Project>('os', this.id)
     this.browser = new ex.ProjectBrowser(this)
-    this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.config.allowMissingModels })
+    this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.options.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)
   }
 
   async init() {
     await this.browser.init()
     await this.epos.init()
-    if (this.spec.config.preloadAssets) await this.epos.api.assets.load()
+    if (this.spec.options.preloadAssets) await this.epos.api.assets.load()
     if (!this.fn) throw this.never()
     this.fn.call(null, this.epos.api)
     this.fn = null // Free up memory

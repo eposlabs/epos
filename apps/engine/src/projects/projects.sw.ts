@@ -411,14 +411,17 @@ export class Projects extends sw.Unit {
     ]
 
     // Extract host permissions from targets
-    const hostPermissions = new Set<string>()
+    const targetHostPermissions = new Set<string>()
     for (const target of spec.targets) {
       for (const match of target.matches) {
         if (match.context === 'locus') continue
         const hostPermission = this.matchPatternToHostPermission(match.value)
-        hostPermissions.add(hostPermission)
+        targetHostPermissions.add(hostPermission)
       }
     }
+
+    // Combine host permissions from targets and spec
+    const hostPermissions = new Set([...targetHostPermissions, ...spec.hostPermissions])
 
     // Host permissions include `<all_urls>`? ->  Keep `<all_urls>` only
     if (hostPermissions.has('<all_urls>')) {
@@ -441,12 +444,13 @@ export class Projects extends sw.Unit {
         extension_pages: `script-src 'self'; object-src 'self';`,
         sandbox: `sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';`,
       },
+      permissions: [...enginePermissions, ...spec.permissions],
+      optional_permissions: spec.optionalPermissions,
       host_permissions: [...hostPermissions],
-      permissions: [...enginePermissions, ...spec.permissions.required],
-      optional_permissions: spec.permissions.optional,
+      optional_host_permissions: spec.optionalHostPermissions,
     }
 
-    // Override with spec's manifest; preserve engine permissions
+    // Override with spec's manifest preserving engine permissions
     if (spec.manifest) {
       Object.assign(manifest, spec.manifest)
       manifest.permissions = this.$.utils.unique([...enginePermissions, ...(manifest.permissions ?? [])])
