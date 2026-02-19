@@ -3,25 +3,25 @@
   "name": "[epos]",
   "slug": "epos-shell",
   "version": "1.8",
-  "description": "Build web extensions.",
-  "config": { "allowProjectsApi": true, "allowMissingModels": true },
-  "assets": ["public/icon.svg", "public/icon.png"],
-
+  "description": "Web Extension Engine",
   "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
   "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"],
+  "assets": ["public/icon.svg", "public/icon.png"],
 
-  // Override manifest to include `<all_urls>` and `sidePanel` permissions
-  "manifest": {
-    "host_permissions": ["<all_urls>"],
-    "permissions": [
-      "background",
-      "browsingData",
-      "contextMenus",
-      "cookies",
-      "downloads",
-      "notifications",
-      "sidePanel",
-      "storage"
-    ]
-  }
+  "options": {
+    "allowProjectsApi": true,
+    "allowMissingModels": true
+  },
+
+  "hostPermissions": ["<allUrls>"],
+  "permissions": [
+    "background",
+    "browsingData",
+    "contextMenus",
+    "cookies",
+    "downloads",
+    "notifications",
+    "sidePanel",
+    "storage"
+  ]
 }

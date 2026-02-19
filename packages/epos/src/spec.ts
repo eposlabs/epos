@@ -16,11 +16,14 @@ export type Spec = {
   description: string | null
   icon: string | null
   action: Action | null
+  options: Options
   popup: Popup
-  config: Config
   assets: Path[]
   targets: Target[]
-  permissions: Permissions
+  permissions: Permission[]
+  optionalPermissions: Permission[]
+  hostPermissions: string[]
+  optionalHostPermissions: string[]
   manifest: Manifest | null
 }
 
@@ -29,7 +32,7 @@ export type Popup = {
   height: number
 }
 
-export type Config = {
+export type Options = {
   preloadAssets: boolean
   allowProjectsApi: boolean
   allowMissingModels: boolean
@@ -60,11 +63,6 @@ export type Resource = {
   path: Path
 }
 
-export type Permissions = {
-  required: Permission[]
-  optional: Permission[]
-}
-
 export type Permission =
   | 'background'
   | 'browsingData'
@@ -72,6 +70,7 @@ export type Permission =
   | 'cookies'
   | 'downloads'
   | 'notifications'
+  | 'sidePanel'
   | 'storage'
 
 // MARK: Schema
@@ -87,7 +86,7 @@ const schema = {
     'icon',
     'action',
     'popup',
-    'config',
+    'options',
     'assets',
     'targets',
     'permissions',
@@ -102,7 +101,7 @@ const schema = {
     width: { min: 150, max: 800, default: 380 },
     height: { min: 150, max: 600 - 7 * 4, default: 600 - 7 * 4 },
   },
-  config: {
+  options: {
     preloadAssets: true,
     allowProjectsApi: false,
     allowMissingModels: false,
@@ -117,14 +116,8 @@ const schema = {
     'cookies',
     'downloads',
     'notifications',
+    'sidePanel',
     'storage',
-    'optional:background',
-    'optional:browsingData',
-    'optional:contextMenus',
-    'optional:cookies',
-    'optional:downloads',
-    'optional:notifications',
-    'optional:storage',
   ],
 }
 
@@ -158,10 +151,13 @@ export function parseSpecObject(spec: Obj): Spec {
     icon: icon,
     action: parseAction(spec, targets),
     popup: parsePopup(spec),
-    config: parseConfig(spec),
+    options: parseOptions(spec),
     assets: parseAssets(spec, icon),
     targets: targets,
     permissions: parsePermissions(spec),
+    optionalPermissions: parseOptionalPermissions(spec),
+    hostPermissions: parseHostPermissions(spec),
+    optionalHostPermissions: parseOptionalHostPermissions(spec),
     manifest: parseManifest(spec),
   }
 }
@@ -263,22 +259,22 @@ function parsePopup(spec: Obj) {
   return popup as Popup
 }
 
-function parseConfig(spec: Obj): Config {
-  const config = spec.config ?? {}
-  if (!is.object(config)) throw new Error(`'config' must be an object`)
+function parseOptions(spec: Obj): Options {
+  const options = spec.options ?? {}
+  if (!is.object(options)) throw new Error(`'options' must be an object`)
 
-  const configKeys = Object.keys(schema.config)
-  const badKey = Object.keys(config).find(key => !configKeys.includes(key))
-  if (badKey) throw new Error(`Unknown 'config' key: '${badKey}'`)
+  const optionKeys = Object.keys(schema.options)
+  const badKey = Object.keys(options).find(key => !optionKeys.includes(key))
+  if (badKey) throw new Error(`Unknown 'options' key: '${badKey}'`)
 
-  const preloadAssets = config.preloadAssets ?? schema.config.preloadAssets
-  if (!is.boolean(preloadAssets)) throw new Error(`'config.preloadAssets' must be a boolean`)
+  const preloadAssets = options.preloadAssets ?? schema.options.preloadAssets
+  if (!is.boolean(preloadAssets)) throw new Error(`'options.preloadAssets' must be a boolean`)
 
-  const allowProjectsApi = config.allowProjectsApi ?? schema.config.allowProjectsApi
-  if (!is.boolean(allowProjectsApi)) throw new Error(`'config.allowProjectsApi' must be a boolean`)
+  const allowProjectsApi = options.allowProjectsApi ?? schema.options.allowProjectsApi
+  if (!is.boolean(allowProjectsApi)) throw new Error(`'options.allowProjectsApi' must be a boolean`)
 
-  const allowMissingModels = config.allowMissingModels ?? schema.config.allowMissingModels
-  if (!is.boolean(allowMissingModels)) throw new Error(`'config.allowMissingModels' must be a boolean`)
+  const allowMissingModels = options.allowMissingModels ?? schema.options.allowMissingModels
+  if (!is.boolean(allowMissingModels)) throw new Error(`'options.allowMissingModels' must be a boolean`)
 
   return {
     preloadAssets,
@@ -388,33 +384,44 @@ function parseResource(loadEntry: string): Resource {
   }
 }
 
-function parsePermissions(spec: Obj): Permissions {
+function parsePermissions(spec: Obj): Permission[] {
   const permissions = spec.permissions ?? []
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
   const badPermission = permissions.find(value => !schema.permissions.includes(value))
   if (badPermission) throw new Error(`Unknown permission: '${badPermission}'`)
 
-  const requiredPermissions = new Set<string>()
-  const optionalPermissions = new Set<string>()
-  for (const permission of permissions) {
-    if (permission.startsWith('optional:')) {
-      optionalPermissions.add(permission.replace('optional:', ''))
-    } else {
-      requiredPermissions.add(permission)
-    }
-  }
+  return permissions as Permission[]
+}
 
-  for (const permission of requiredPermissions) {
-    if (optionalPermissions.has(permission)) {
-      throw new Error(`Permission cannot be both required and optional: '${permission}'`)
-    }
-  }
+function parseOptionalPermissions(spec: Obj): Permission[] {
+  const optionalPermissions = spec.optionalPermissions ?? []
+  if (!isArrayOfStrings(optionalPermissions)) throw new Error(`'optionalPermissions' must be an array of strings`)
 
-  return {
-    required: [...requiredPermissions] as Permission[],
-    optional: [...optionalPermissions] as Permission[],
-  }
+  const badPermission = optionalPermissions.find(value => !schema.permissions.includes(value))
+  if (badPermission) throw new Error(`Unknown optional permission: '${badPermission}'`)
+
+  return optionalPermissions as Permission[]
+}
+
+function parseHostPermissions(spec: Obj): string[] {
+  const hostPermissions = spec.hostPermissions ?? []
+  if (!isArrayOfStrings(hostPermissions)) throw new Error(`'hostPermissions' must be an array of strings`)
+
+  const hasUnderscoreAllUrls = hostPermissions.find(value => value === '<all_urls>')
+  if (hasUnderscoreAllUrls) throw new Error(`Use '<allUrls>' instead of '<all_urls>'`)
+
+  return hostPermissions.map(value => (value === '<allUrls>' ? '<all_urls>' : value))
+}
+
+function parseOptionalHostPermissions(spec: Obj): string[] {
+  const optionalHostPermissions = spec.optionalHostPermissions ?? []
+  if (!isArrayOfStrings(optionalHostPermissions)) throw new Error(`'optionalHostPermissions' must be an array of strings`)
+
+  const hasUnderscoreAllUrls = optionalHostPermissions.find(value => value === '<all_urls>')
+  if (hasUnderscoreAllUrls) throw new Error(`Use '<allUrls>' instead of '<all_urls>'`)
+
+  return optionalHostPermissions.map(value => (value === '<allUrls>' ? '<all_urls>' : value))
 }
 
 function parseManifest(spec: Obj): Manifest | null {

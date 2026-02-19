@@ -13,12 +13,15 @@
     "icon": { "$ref": "#/$defs/Icon" },
     "action": { "$ref": "#/$defs/Action" },
     "popup": { "$ref": "#/$defs/Popup" },
-    "config": { "$ref": "#/$defs/Config" },
+    "options": { "$ref": "#/$defs/Options" },
     "assets": { "$ref": "#/$defs/Assets" },
     "targets": { "$ref": "#/$defs/Targets" },
     "matches": { "$ref": "#/$defs/Matches" },
     "load": { "$ref": "#/$defs/Resources" },
     "permissions": { "$ref": "#/$defs/Permissions" },
+    "optionalPermissions": { "$ref": "#/$defs/Permissions" },
+    "hostPermissions": { "$ref": "#/$defs/HostPermissions" },
+    "optionalHostPermissions": { "$ref": "#/$defs/HostPermissions" },
     "manifest": { "$ref": "#/$defs/Manifest" }
   },
   "required": ["name"],
@@ -65,7 +68,7 @@
       "additionalProperties": false
     },
 
-    "Config": {
+    "Options": {
       "type": "object",
       "properties": {
         "preloadAssets": { "type": "boolean", "default": true },
@@ -125,15 +128,18 @@
         "cookies",
         "downloads",
         "notifications",
-        "storage",
-        "optional:background",
-        "optional:browsingData",
-        "optional:contextMenus",
-        "optional:cookies",
-        "optional:downloads",
-        "optional:notifications",
-        "optional:storage"
+        "sidePanel",
+        "storage"
       ]
+    },
+
+    "HostPermissions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/HostPermission" }
+    },
+
+    "HostPermission": {
+      "type": "string"
     },
 
     "Manifest": {
