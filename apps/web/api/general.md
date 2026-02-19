@@ -1,6 +1,11 @@
-# General APIs
+# epos.\*
 
-Most Epos APIs are categorized and available under `epos.<category>.*`. However, some general-purpose tools live under `epos.*` directly. This section covers these APIs.
+Most of the Epos APIs are categorized and available under `epos.<namespace>.*`. However, some general-purpose tools live under `epos.*` directly. This section covers these APIs.
+
+- [epos.fetch()](#epos-fetch)
+- [epos.browser](#epos-browser)
+- [epos.render()](#epos-render)
+- [epos.component()](#epos-component)
 
 ## epos.fetch()
 

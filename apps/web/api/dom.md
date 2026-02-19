@@ -1,6 +1,13 @@
-# DOM API
+# epos.dom.\*
 
-The DOM API provides access to pre-created DOM nodes that Epos sets up for your project. These elements are useful for rendering content on web pages with proper isolation.
+The `epos.dom` namespace provides direct access to the underlying DOM nodes managed by the Epos engine.
+
+While you typically don't need to interact with these nodes directly, they can be useful for advanced use cases like custom rendering.
+
+- [epos.dom.root](#epos-dom-root)
+- [epos.dom.view](#epos-dom-view)
+- [epos.dom.shadowRoot](#epos-dom-shadowroot)
+- [epos.dom.shadowView](#epos-dom-shadowview)
 
 ## epos.dom.root
 

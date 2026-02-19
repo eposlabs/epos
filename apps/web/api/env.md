@@ -1,10 +1,17 @@
-# Env API
+# epos.env.\*
 
-The environment API provides information about the current execution context, including tab and window identifiers, context type, and project information.
+The `epos.env.*` provides information about the current execution context.
+
+- [epos.env.tabId](#epos-env-tabid)
+- [epos.env.windowId](#epos-env-windowid)
+- [epos.env.isPopup](#epos-env-ispopup)
+- [epos.env.isSidePanel](#epos-env-issidepanel)
+- [epos.env.isBackground](#epos-env-isbackground)
+- [epos.env.project](#epos-env-project)
 
 ## epos.env.tabId
 
-The identifier of the current tab. Returns `-1` for background context and iframes.
+The identifier of the current tab. `-1` for the `<background>` context and inside iframes.
 
 ```ts
 epos.env.tabId: number | -1
@@ -13,16 +20,12 @@ epos.env.tabId: number | -1
 #### Example
 
 ```ts
-if (epos.env.tabId !== -1) {
-  console.log('Running in tab:', epos.env.tabId)
-} else {
-  console.log('Running in background or iframe')
-}
+const tabInfo = await epos.browser.tabs.get(epos.env.tabId)
 ```
 
 ## epos.env.windowId
 
-The identifier of the current window. Returns `-1` for background context and iframes.
+The identifier of the current window. `-1` for the `<background>` context and inside iframes.
 
 ```ts
 epos.env.windowId: number | -1
@@ -31,14 +34,12 @@ epos.env.windowId: number | -1
 #### Example
 
 ```ts
-if (epos.env.windowId !== -1) {
-  console.log('Running in window:', epos.env.windowId)
-}
+const windowInfo = await epos.browser.windows.get(epos.env.windowId)
 ```
 
 ## epos.env.isPopup
 
-Indicates if the code is running in the popup context.
+Indicates if the code is running in the `<popup>` context.
 
 ```ts
 epos.env.isPopup: boolean
@@ -54,7 +55,7 @@ if (epos.env.isPopup) {
 
 ## epos.env.isSidePanel
 
-Indicates if the code is running in the side panel context.
+Indicates if the code is running in the `<sidePanel>` context.
 
 ```ts
 epos.env.isSidePanel: boolean
@@ -70,7 +71,7 @@ if (epos.env.isSidePanel) {
 
 ## epos.env.isBackground
 
-Indicates if the code is running in the background service worker context.
+Indicates if the code is running in the `<background>` context.
 
 ```ts
 epos.env.isBackground: boolean
@@ -81,46 +82,34 @@ epos.env.isBackground: boolean
 ```ts
 if (epos.env.isBackground) {
   console.log('Running in background')
-  // Initialize background tasks
 }
 ```
 
 ## epos.env.project
 
-Information about the current project.
+Information about the currently running project.
 
 ```ts
 epos.env.project: {
-  id: string
-  debug: boolean
-  enabled: boolean
-  spec: Spec
-  manifest: Manifest
+  id: string // Unique project identifier
+  debug: boolean // Whether the project is in debug mode
+  enabled: boolean // Whether the project is enabled
+  spec: Spec // Normalized project specification from `epos.json`
+  manifest: Manifest // The resulting `manifest.json` used for export
 }
 ```
-
-#### Properties
-
-- `id` - Unique project identifier
-- `debug` - Whether the project is in debug mode
-- `enabled` - Whether the project is enabled
-- `spec` - The project's Epos specification from `epos.json`
-- `manifest` - The generated Chrome extension manifest
 
 #### Example
 
 ```ts
-console.log('Project name:', epos.env.project.spec.name)
-console.log('Project version:', epos.env.project.spec.version)
-console.log('Debug mode:', epos.env.project.debug)
+console.log('Project:', epos.env.project)
 
-// Conditional behavior based on debug mode
 if (epos.env.project.debug) {
   console.log('Running in debug mode')
 }
 ```
 
-## Context Detection Pattern
+<!-- ## Context Detection Pattern
 
 A common pattern is to detect the execution context and run appropriate initialization:
 
@@ -139,4 +128,4 @@ if (epos.env.isBackground) {
   // Content script on web page
   injectUI()
 }
-```
+``` -->
