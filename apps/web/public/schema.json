@@ -6,25 +6,25 @@
   "type": "object",
   "properties": {
     "$schema": { "type": "string" },
-    "name": { "$ref": "#/definitions/Name" },
-    "slug": { "$ref": "#/definitions/Slug" },
-    "version": { "$ref": "#/definitions/Version" },
-    "description": { "$ref": "#/definitions/Description" },
-    "icon": { "$ref": "#/definitions/Icon" },
-    "action": { "$ref": "#/definitions/Action" },
-    "popup": { "$ref": "#/definitions/Popup" },
-    "config": { "$ref": "#/definitions/Config" },
-    "assets": { "$ref": "#/definitions/Assets" },
-    "targets": { "$ref": "#/definitions/Targets" },
-    "matches": { "$ref": "#/definitions/Matches" },
-    "load": { "$ref": "#/definitions/Resources" },
-    "permissions": { "$ref": "#/definitions/Permissions" },
-    "manifest": { "$ref": "#/definitions/Manifest" }
+    "name": { "$ref": "#/$defs/Name" },
+    "slug": { "$ref": "#/$defs/Slug" },
+    "version": { "$ref": "#/$defs/Version" },
+    "description": { "$ref": "#/$defs/Description" },
+    "icon": { "$ref": "#/$defs/Icon" },
+    "action": { "$ref": "#/$defs/Action" },
+    "popup": { "$ref": "#/$defs/Popup" },
+    "config": { "$ref": "#/$defs/Config" },
+    "assets": { "$ref": "#/$defs/Assets" },
+    "targets": { "$ref": "#/$defs/Targets" },
+    "matches": { "$ref": "#/$defs/Matches" },
+    "load": { "$ref": "#/$defs/Resources" },
+    "permissions": { "$ref": "#/$defs/Permissions" },
+    "manifest": { "$ref": "#/$defs/Manifest" }
   },
   "required": ["name"],
   "additionalProperties": false,
 
-  "definitions": {
+  "$defs": {
     "Name": {
       "type": "string",
       "minLength": 2,
@@ -82,20 +82,20 @@
 
     "Targets": {
       "type": "array",
-      "items": { "$ref": "#/definitions/Target" }
+      "items": { "$ref": "#/$defs/Target" }
     },
 
     "Target": {
       "type": "object",
       "properties": {
-        "matches": { "$ref": "#/definitions/Matches" },
-        "load": { "$ref": "#/definitions/Resources" }
+        "matches": { "$ref": "#/$defs/Matches" },
+        "load": { "$ref": "#/$defs/Resources" }
       },
       "additionalProperties": false
     },
 
     "Matches": {
-      "oneOf": [{ "$ref": "#/definitions/Match" }, { "type": "array", "items": { "$ref": "#/definitions/Match" } }]
+      "oneOf": [{ "$ref": "#/$defs/Match" }, { "type": "array", "items": { "$ref": "#/$defs/Match" } }]
     },
 
     "Match": {
@@ -103,7 +103,7 @@
     },
 
     "Resources": {
-      "oneOf": [{ "$ref": "#/definitions/Resource" }, { "type": "array", "items": { "$ref": "#/definitions/Resource" } }]
+      "oneOf": [{ "$ref": "#/$defs/Resource" }, { "type": "array", "items": { "$ref": "#/$defs/Resource" } }]
     },
 
     "Resource": {
@@ -113,7 +113,7 @@
 
     "Permissions": {
       "type": "array",
-      "items": { "$ref": "#/definitions/Permission" }
+      "items": { "$ref": "#/$defs/Permission" }
     },
 
     "Permission": {
