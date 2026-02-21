@@ -135,3 +135,23 @@ epos.dom.shadowView
 ```
 
 Usually you won't need to access these elements directly, because `epos.render` will automatically render your app into the correct container. But if you have custom logic, they may come in handy.
+
+::: code-group
+
+```tsx [src/app.tsx]
+import { createRoot } from 'react-dom/client'
+
+const App = () => {
+  return <div>Epos Extension</div>
+}
+
+// Create root element for React to render into
+const div = document.createElement('div')
+document.body.append(div)
+
+// Render the app
+const root = createRoot(div)
+root.render(<App />)
+```
+
+:::

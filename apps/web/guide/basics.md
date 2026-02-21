@@ -2,13 +2,13 @@
 
 In this section, we will cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
 
-Once you are comfortable with these fundamentals, we will walk through how to [set up a development environment](/guide/vite) using **Vite, TypeScript, React, and TailwindCSS**.
+Once you are comfortable with these fundamentals, we will walk through how to [set up a development environment](/guide/vite) using **Vite, TypeScript, React, and Tailwind**.
 
 ## Installation
 
-First, install Epos from the [Chrome Web Store](https://get.epos.dev). Yes, Epos is itself an extension that allows you to build other extensions on top of it.
+First, install Epos from the [Chrome Web Store](https://get.epos.dev). Yes, Epos itself is an extension that allows you to build other extensions on top of it.
 
-Once installed, Epos will open [app.epos.dev](https://app.epos.dev) in a new tab. This tab is automatically pinned, as it **must remain open** while you develop your extension.
+Once installed, Epos will open [app.epos.dev](https://app.epos.dev) in a new tab. This tab is automatically pinned, and it **must remain open** while you develop your extension.
 
 ## Workflow
 
@@ -16,23 +16,23 @@ Once installed, Epos will open [app.epos.dev](https://app.epos.dev) in a new tab
 
 1. Connect your local folder to Epos.
 2. Epos injects your files into the browser.
-3. When ready, export to get a standalone ZIP.
+3. Export to get a standalone ZIP.
 
 :::
 
-Epos takes a unique approach compared to other frameworks. Instead of being a CLI tool, Epos is a browser extension that executes your code directly. You connect a local folder to Epos, and the engine **injects your files** into the browser in real-time, acting as a bridge between your local code and the browser.
+Epos takes a unique workflow approach. Instead of being a CLI tool, Epos is a browser extension that executes your code. You connect a local folder to Epos, and the engine **injects your files** into the browser in real-time, acting as a bridge between your local code and the browser.
 
 Each folder connected to Epos is called a **project**. You can have multiple projects connected at once, and Epos will run them simultaneously. You can manage all your projects at [app.epos.dev](https://app.epos.dev).
 
-Finally, when you are ready to distribute your extension, you can export it as a standalone ZIP file. The exported ZIP contains your project files and the Epos runtime required to execute it. It does not include any development-only code from the `app.epos.dev` environment.
+Finally, when you are ready to distribute your extension, you can export it as a standalone ZIP file. This bundle contains your project files and the Epos runtime required to execute it. The exported ZIP does not include any code related to the `app.epos.dev` environment or your other projects.
 
 ## Your First Project
 
-Let's create our first project to see how it works:
+Let's create your first project to see how it works:
 
-1. **Create a directory:** Start by creating an empty folder on your computer for your project.
+1. **Create a directory:** Create an empty folder on your computer. This is where your project will live.
 
-2. **Create new project in Epos:** Go to [app.epos.dev](https://app.epos.dev) and click the **NEW PROJECT** button. This will create a new empty project inside the engine.
+2. **Create a project in Epos:** Go to [app.epos.dev](https://app.epos.dev) and click the **New Project** button. This will create a new empty project inside the engine.
 
 3. **Connect to Epos:** Click the **CONNECT** button in the top-right corner of the Epos interface. When the file picker opens, select the directory you created in step 1.
 

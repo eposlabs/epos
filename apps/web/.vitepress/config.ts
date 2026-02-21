@@ -44,8 +44,13 @@ export default defineConfig({
             { text: 'Libs', link: '/guide/libs' },
             { text: 'epos.json', link: '/guide/epos-json' },
             { text: 'Permissions', link: '/guide/permissions' },
+            { text: 'Publishing', link: '/guide/publishing' },
           ],
         },
+        // {
+        //   text: 'Advanced',
+        //   items: [],
+        // },
       ],
       '/api/': [
         {

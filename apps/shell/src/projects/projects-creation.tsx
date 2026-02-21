@@ -112,7 +112,7 @@ export class ProjectsCreation extends gl.Unit {
                       <RadioGroupItem value="default" />
                       <FieldContent>
                         <div>Default</div>
-                        <FieldDescription>Vite + TypeScript + TailwindCSS</FieldDescription>
+                        <FieldDescription>Vite + TypeScript + Tailwind</FieldDescription>
                       </FieldContent>
                     </Field>
                   </Label>
@@ -216,7 +216,7 @@ export class ProjectsCreation extends gl.Unit {
                       <RadioGroupItem value="default" />
                       <FieldContent>
                         <div>Default</div>
-                        <FieldDescription>Vite + TypeScript + TailwindCSS</FieldDescription>
+                        <FieldDescription>Vite + TypeScript + Tailwind</FieldDescription>
                       </FieldContent>
                     </Field>
                   </Label>

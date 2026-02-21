@@ -13,7 +13,7 @@ The `epos.json` file is the configuration file for your Epos extension. It defin
   "icon": "icon.png",
   "action": true,
   "popup": { "width": 380, "height": 572 },
-  "config": {
+  "options": {
     "preloadAssets": false,
     "allowProjectsApi": false,
     "allowMissingModels": false
@@ -30,7 +30,10 @@ The `epos.json` file is the configuration file for your Epos extension. It defin
     }
   ],
   "permissions": ["storage", "notifications"],
-  "manifest": null
+  "optionalPermissions": ["cookies"],
+  "hostPermissions": ["*://example.com/*"],
+  "optionalHostPermissions": ["*://*.example.com/*"],
+  "manifest": {}
 }
 ```
 

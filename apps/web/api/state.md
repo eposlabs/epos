@@ -112,12 +112,12 @@ epos.state.transaction(() => {
 })
 ```
 
-## epos.state.create()
+## epos.state.local()
 
 Create a local state without synchronization. Useful for component-level state.
 
 ```ts
-epos.state.create<T>(initial?: T): T
+epos.state.local<T>(initial?: T): T
 ```
 
 ### Parameters
@@ -132,14 +132,14 @@ An observable local state object (not synchronized)
 
 ```ts
 // Local component state
-const localState = epos.state.create({
+const localState = epos.state.local({
   isOpen: false,
   selectedItem: null
 })
 
 // Use in component
 const MyComponent = epos.component(() => {
-  const local = epos.state.create({ count: 0 })
+  const local = epos.state.local({ count: 0 })
 
   return (
     <button onClick={() => local.count++}>

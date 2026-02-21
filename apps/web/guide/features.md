@@ -6,6 +6,9 @@ Below are some of the core features that make Epos unique. You can find the comp
 
 ## Messaging System
 
+- Smart routing for messages
+- Request-response support
+
 Epos provides a built-in, unified messaging system called `bus`. It's like `chrome.runtime.sendMessage`, but **10x better**.
 
 Simply call `epos.bus.send` from any context, and Epos will deliver the message to every `epos.bus.on` listener — no matter where they are located.
@@ -39,6 +42,40 @@ You can learn more about how `bus` works, its features and capabilities in the [
 
 ## State Management
 
+- Auto-sync across contexts
+- Auto-persist to IndexedDB
+- Just modify state object, and it works
+
+Epos provides a new way of thinking about your extension state. The mental model is simple: you connect to a state object, and work with it as it is a regular JavaScript object. You can modify it, add new fields, delete old fields, and every change is automatically persisted and synchronized across all extension contexts. So when you update the state in a content script, the new value is immediately available in the background script, popup, or any other context that is connected to the same state. This pattern boosts productivity and eliminates the need for manual synchronization logic.
+
+Persisted means that the data is saved to IndexedDB and if user re-opens your extension, it will restored.
+
+And of course, React components react to any state changes automatically, just wrap a component to `epos.component()` and it will react to state changes accordingly.
+
+```tsx
+const state = await epos.state.connect({ value: 10, items: [] })
+
+// All changes are automatically persisted and synced across all contexts
+state.value = 30
+state.value += 10
+state.items.push({ id: 1, name: 'Item 1' })
+state.items.push({ id: 2, name: 'Item 2' })
+
+// Component will re-render automatically on state changes
+const App = epos.component(() => {
+  return (
+    <div>
+      <h1>Value: {state.value}</h1>
+      <ul>
+        {state.items.map(item => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+```
+
 With `epos.state` API you can connect to the state and work with it like a regular JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. And react components with also react to any changes and keep your UI in sync with the state.
 
 TODO: mention IDB for persistence.
@@ -57,6 +94,9 @@ state.items.push({ id: 1, name: 'Item 1' })
 
 ## Chrome APIs
 
+- Call Chrome APIs from any context
+- No more context-specific API restrictions
+
 Standard `chrome.*` APIs can be called only from special extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
 
 ```ts
@@ -67,6 +107,12 @@ const tabs = await epos.browser.tabs.query({})
 ```
 
 ## Storage
+
+- Smart wrapper around IndexedDB
+- Simple key-value API
+- Works across all contexts without setup
+
+Smart wrapper around IDB. What makes it smart? It works across all contexts without setup, and it allows you to create multiple named storage instances. With regular IndexedDB you would need to manually update the database version and provide new store initialization which requires an extension restart. Epos uses magic tricks to perform schema migrations without restart and any hassle. You just write and read data, Epos handles the hard lifting.
 
 Epos provides a built-in storage system for files and data. It acts as a smart wrapper around **IndexedDB**, offering a simple key-value API that works across all extension contexts with zero setup required.
 
@@ -80,7 +126,10 @@ const image = await epos.storage.get('my-image')
 
 ## Simplified Setup
 
-Just tell Epos **what** files to load and **where** — it handles the rest. Epos abstracts the complexity of manual script injection or the technical differences between "isolated" and "main world" content scripts.
+- Just tell Epos **what** code to load and **where**
+- No manual script injection or shadow DOM configuration
+
+Just tell Epos **what** files to load and **where** — it handles the rest. Epos abstracts the complexity of manual script injection or the technical differences between "isolated" and "main world" content scripts. Also Epos simplifies the process of injecting styles into the page by providing a `shadow:` prefix that automatically creates a shadow root and injects the CSS there.
 
 ::: code-group
 
@@ -90,7 +139,7 @@ Just tell Epos **what** files to load and **where** — it handles the rest. Epo
   "targets": [
     {
       "matches": "*://*.example.com/*",
-      "load": ["content-script.js", "content-script.css"]
+      "load": ["global.css", "app.js", "shadow:app.css"]
     },
     {
       "matches": "<popup>",

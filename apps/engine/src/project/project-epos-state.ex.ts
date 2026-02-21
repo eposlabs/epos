@@ -30,8 +30,8 @@ export class ProjectEposState extends ex.Unit {
     this.$project.states.transaction(fn)
   }
 
-  create<T>(initial?: Initial<T>) {
-    return this.$project.states.create(initial)
+  local<T>(initial?: Initial<T>) {
+    return this.$project.states.local(initial)
   }
 
   async list(filter: { connected?: boolean } = {}) {

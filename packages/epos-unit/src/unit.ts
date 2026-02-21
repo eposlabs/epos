@@ -195,7 +195,7 @@ function prepareState<T>(unit: Unit<T>) {
   if (Object.hasOwn(unit, 'state')) throw new Error(`'state' must be defined as a getter`)
   const value = Reflect.get(unit, 'state')
   if (!is.object(value)) throw new Error(`'state' getter must return an object`)
-  const state = epos.state.create(value)
+  const state = epos.state.local(value)
   Reflect.defineProperty(unit, 'state', { get: () => state })
   Reflect.defineProperty(state, epos.state.PARENT, { get: () => unit })
 }

@@ -161,7 +161,7 @@ const { observer } = epos.libs.mobxReactLite
 
 // Manually create observer (epos.component() does this)
 const Counter = observer(() => {
-  const state = epos.state.create({ count: 0 })
+  const state = epos.state.local({ count: 0 })
 
   return (
     <div>

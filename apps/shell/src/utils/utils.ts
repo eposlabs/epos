@@ -77,7 +77,7 @@ Object.assign(Utils.prototype, {
 //                       <RadioGroupItem value="default" />
 //                       <FieldContent>
 //                         <div>Default</div>
-//                         <FieldDescription>Vite + TypeScript + TailwindCSS</FieldDescription>
+//                         <FieldDescription>Vite + TypeScript + Tailwind</FieldDescription>
 //                       </FieldContent>
 //                     </Field>
 //                   </Label>

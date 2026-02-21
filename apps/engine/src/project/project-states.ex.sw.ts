@@ -79,7 +79,7 @@ export class ProjectStates extends exSw.Unit {
     }
   }
 
-  create<T>(initial?: Initial<T>) {
+  local<T>(initial?: Initial<T>) {
     const state = new exSw.ProjectState(this, null, initial)
     return state.root
   }
