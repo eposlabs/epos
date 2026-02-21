@@ -35,6 +35,7 @@
   - epos.state.connect
   - epos.state.disconnect
   - epos.state.transaction
+  - epos.state.reaction
   - epos.state.local
   - epos.state.list
   - epos.state.remove

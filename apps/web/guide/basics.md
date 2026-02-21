@@ -2,7 +2,7 @@
 
 In this section, we will cover the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
 
-Once you are comfortable with these fundamentals, we will walk through how to [set up a development environment](/guide/vite) using **Vite, TypeScript, React, and Tailwind**.
+Once you are comfortable with these fundamentals, we will walk through how to [set up a development environment](/guide/vite) using **Vite, TypeScript, React, and Tailwind CSS**.
 
 ## Installation
 

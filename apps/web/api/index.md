@@ -33,6 +33,7 @@
   - [epos.state.connect](/api/state#epos-state-connect)
   - [epos.state.disconnect](/api/state#epos-state-disconnect)
   - [epos.state.transaction](/api/state#epos-state-transaction)
+  - [epos.state.reaction](/api/state#epos-state-reaction)
   - [epos.state.local](/api/state#epos-state-create)
   - [epos.state.list](/api/state#epos-state-list)
   - [epos.state.remove](/api/state#epos-state-remove)

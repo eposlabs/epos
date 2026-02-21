@@ -104,6 +104,8 @@ export interface EposState {
   disconnect(name?: string): void
   /** Run state changes in a batch. */
   transaction: (fn: () => void) => void
+  /** Create a reactive effect that runs when observed state changes. */
+  reaction: typeof mobx.reaction
   /** Create local state (no sync). */
   local<T extends {}>(initial?: Initial<T>): T
   /** Get list of all state names. */

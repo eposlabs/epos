@@ -2,7 +2,7 @@
 
 # Vite Setup
 
-In this section, we will setup Epos project with **Vite, TypeScript, React, and Tailwind**.
+In this section, we will setup Epos project with **Vite, TypeScript, React, and Tailwind CSS**.
 
 ::: tip
 
@@ -108,9 +108,9 @@ Now, we need to update the scripts inside your `package.json`. Since we are not 
 
 :::
 
-## 4. Install Tailwind
+## 4. Install Tailwind CSS
 
-You can skip this step if you prefer not to use Tailwind, but the rest of the Epos documentation assumes it's available. Setting up Tailwind for an Epos project is just like any other Vite project:
+You can skip this step if you prefer not to use Tailwind CSS, but the rest of the Epos documentation assumes it's available. Setting up Tailwind for an Epos project is just like any other Vite project:
 
 ::: code-group
 

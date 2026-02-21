@@ -11,6 +11,8 @@ export class ProjectEposState extends ex.Unit {
   ATTACH = exSw.ProjectState._attach_
   DETACH = exSw.ProjectState._detach_
 
+  reaction = this.$.libs.mobx.reaction
+
   async connect<T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>
   async connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<Root<T>>
   async connect<T>(...args: unknown[]) {

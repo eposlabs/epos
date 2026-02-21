@@ -19,20 +19,20 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.22.0",
-    "@tabler/icons-react": "^3.36.1",
+    "@tabler/icons-react": "^3.37.1",
     "clsx": "^2.1.1",
     "epos": "^1.57.0",
     "epos-unit": "^1.27.0",
-    "tailwind-merge": "^3.4.1"
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "tailwindcss": "^4.1.18",
-    "vite": "^8.0.0-beta.14",
+    "@tailwindcss/vite": "^4.2.0",
+    "tailwindcss": "^4.2.0",
+    "vite": "^8.0.0-beta.15",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-rebundle": "^1.34.0"
   },
   "overrides": {
-    "vite": "^8.0.0-beta.14"
+    "vite": "^8.0.0-beta.15"
   }
 }

@@ -26,11 +26,11 @@
     "chalk": "^5.6.2",
     "filesize": "^11.0.13",
     "portfinder": "^1.0.38",
-    "rolldown": "^1.0.0-rc.4",
-    "vite": "^8.0.0-beta.14",
+    "rolldown": "^1.0.0-rc.5",
+    "vite": "^8.0.0-beta.15",
     "ws": "^8.19.0"
   },
   "overrides": {
-    "vite": "^8.0.0-beta.14"
+    "vite": "^8.0.0-beta.15"
   }
 }
