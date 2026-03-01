@@ -312,7 +312,7 @@ export class Projects extends sw.Unit {
       try {
         new Function('')()
         return false
-      } catch (e) {
+      } catch {
         return true
       }
     }

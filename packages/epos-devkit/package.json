@@ -26,13 +26,13 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.0",
-    "tailwindcss": "^4.2.0",
-    "vite": "^8.0.0-beta.15",
+    "@tailwindcss/vite": "^4.2.1",
+    "tailwindcss": "^4.2.1",
+    "vite": "^8.0.0-beta.16",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-rebundle": "^1.34.0"
   },
   "overrides": {
-    "vite": "^8.0.0-beta.15"
+    "vite": "^8.0.0-beta.16"
   }
 }
