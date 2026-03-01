@@ -35,7 +35,7 @@ export class BusSerializer extends gl.Unit {
     }
   }
 
-  // MARK: Serialize
+  // MARK: Sanitize
   // ============================================================================
 
   sanitize(data: unknown) {
@@ -67,7 +67,7 @@ export class BusSerializer extends gl.Unit {
     return this.populate(JSON.parse(json), storage)
   }
 
-  // MARK: Sanitize
+  // MARK: Serialize
   // ============================================================================
 
   serialize(data: unknown) {
@@ -177,17 +177,17 @@ export class BusSerializer extends gl.Unit {
         return { [STORAGE_KEY]: key }
       }
 
-      // Serialize Uint8Array
+      // Deserialize Uint8Array
       if (value[REF] === 'uint8') {
         return new Uint8Array(value.integers)
       }
 
-      // Serialize Uint16Array
+      // Deserialize Uint16Array
       if (value[REF] === 'uint16') {
         return new Uint16Array(value.integers)
       }
 
-      // Serialize Uint32Array
+      // Deserialize Uint32Array
       if (value[REF] === 'uint32') {
         return new Uint32Array(value.integers)
       }
