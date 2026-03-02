@@ -140,15 +140,15 @@ export class BusPageBridge extends gl.Unit {
     }
     self.addEventListener('message', onMessage)
 
-    // Context removed? -> Resolve to null
+    // Context removed? -> Resolve to undefined
     const onRemovedContext = (removedContext: WindowProxy) => {
       if (removedContext !== context) return
-      result$.resolve(null)
+      result$.resolve(undefined)
     }
     this.removedContextListeners.add(onRemovedContext)
 
-    // Wait limit reached? -> Resolve to null
-    const timeout = setTimeout(() => result$.resolve(null), 10_000)
+    // Wait limit reached? -> Resolve to undefined
+    const timeout = setTimeout(() => result$.resolve(undefined), 10_000)
 
     // Wait for the result
     const result = await result$.promise

@@ -128,7 +128,7 @@ export class BusSerializer extends gl.Unit {
 
   async deserialize(json: string) {
     const storage: Storage = new Map()
-    const promises: (Promise<void> | null)[] = []
+    const promises: Promise<void>[] = []
 
     const data = JSON.parse(json, (_, value: unknown) => {
       // Regular value? -> Use as is

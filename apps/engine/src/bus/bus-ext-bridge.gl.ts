@@ -23,10 +23,10 @@ export class BusExtBridge extends gl.Unit {
   async send<T>(name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
     const [result, error] = await this.$.utils.safe(() => this.$.browser.runtime.sendMessage(req))
-    if (error && this.isIgnoredError(error)) return null
+    if (error && this.isIgnoredError(error)) return undefined
     if (error) throw error
 
-    if (this.$.utils.is.undefined(result)) return null // No handlers
+    if (this.$.utils.is.undefined(result)) return undefined // No handlers
     if (!this.$.utils.is.string(result)) throw this.never()
     return (await this.$bus.serializer.deserialize(result)) as T
   }
@@ -34,10 +34,10 @@ export class BusExtBridge extends gl.Unit {
   private async sendToTab(tabId: number, name: string, ...args: unknown[]) {
     const req = this.createRequest(name, args)
     const [result, error] = await this.$.utils.safe(() => this.$.browser.tabs.sendMessage(tabId, req))
-    if (error && this.isIgnoredError(error)) return null
+    if (error && this.isIgnoredError(error)) return undefined
     if (error) throw error
 
-    if (this.$.utils.is.undefined(result)) return null // No handlers
+    if (this.$.utils.is.undefined(result)) return undefined // No handlers
     if (!this.$.utils.is.string(result)) throw this.never()
     return await this.$bus.serializer.deserialize(result)
   }

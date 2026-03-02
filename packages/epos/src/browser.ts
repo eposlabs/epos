@@ -153,6 +153,7 @@ export type Runtime = Omit<
 
 export type DeclarativeNetRequest = Omit<
   typeof chrome.declarativeNetRequest,
+  // Overridden (see below)
   | 'updateDynamicRules'
   | 'updateSessionRules'
 
@@ -170,7 +171,7 @@ export type DeclarativeNetRequest = Omit<
   /**
    * Modifies the current set of dynamic rules for the extension. The rules with IDs listed in `options.removeRuleIds` are first removed, and then the rules given in `options.addRules` are added. Notes:
    *
-   * - In `epos`, `addRules` cannot have IDs, instead IDs will be assigned automatically and returned in the result.
+   * - In `epos`, `addRules` does not accept IDs, instead IDs will be assigned automatically and returned in the result.
    * - This update happens as a single atomic operation: either all specified rules are added and removed, or an error is returned.
    * - These rules are persisted across browser sessions and across extension updates.
    * - Static rules specified as part of the extension package can not be removed using this function.
@@ -186,7 +187,7 @@ export type DeclarativeNetRequest = Omit<
    *
    * Can return its result via Promise in Manifest V3 or later since Chrome 91.
    *
-   * - In `epos`, `addRules` cannot have IDs, instead IDs will be assigned automatically and returned in the result.
+   * - In `epos`, `addRules` does not accept IDs, instead IDs will be assigned automatically and returned in the result.
    * - This update happens as a single atomic operation: either all specified rules are added and removed, or an error is returned.
    * - These rules are persisted across browser sessions and across extension updates.
    * - Static rules specified as part of the extension package can not be removed using this function.

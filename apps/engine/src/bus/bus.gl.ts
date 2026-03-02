@@ -22,7 +22,9 @@ export class Bus extends gl.Unit {
     if (this.$.env.is.csTop) {
       this.pageToken = this.$.utils.generateId()
     } else if (this.$.env.is.csFrame) {
-      this.pageToken = await this.extBridge.send<string | null>('Bus.getPageToken')
+      const pageToken = await this.extBridge.send<string | null>('Bus.getPageToken')
+      if (this.$.utils.is.undefined(pageToken)) throw this.never()
+      this.pageToken = pageToken
     } else if (this.$.env.is.ex && !this.$.env.is.exExtension) {
       const pageToken = self.__eposBusPageToken
       delete self.__eposBusPageToken
