@@ -1,7 +1,7 @@
 import type { Assets, Bundle, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
 import type { CsTabInfo } from '../bus/bus.gl.js'
-import type { Address } from '../project/project-target.sw.js'
-import type { Entry, Snapshot } from '../project/project.sw.js'
+import type { Address } from './project-target.sw.js'
+import type { Entry, Snapshot } from './project.sw.js'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
 import tamperUseGlobalsJs from './projects-tamper-use-globals.sw.js?raw'
 
@@ -20,6 +20,10 @@ export class Projects extends sw.Unit {
 
   get list() {
     return Object.values(this.dict)
+  }
+
+  get names() {
+    return this.list.map(project => project.spec.name)
   }
 
   get listEnabled() {

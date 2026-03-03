@@ -1,4 +1,4 @@
-import { Separator } from '@/components/ui/separator'
+import { Separator } from '@/components/ui/separator.js'
 import {
   Sidebar,
   SidebarContent,
@@ -8,7 +8,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from '@/components/ui/sidebar'
+} from '@/components/ui/sidebar.js'
+import { TooltipProvider } from '@/components/ui/tooltip.js'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -17,21 +18,10 @@ export class App extends gl.Unit {
   theme = new gl.Theme(this)
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
-  title = 'abc'
-
-  get state() {
-    return {
-      theme: new gl.Theme(this),
-    }
-  }
-
-  alert(value: number) {
-    alert(value)
-  }
 
   async attach() {
     this.removeUrlPath()
-    // await this.ensureSinglePinnedTab()
+    await this.ensureSinglePinnedTab()
   }
 
   async exportKit() {
@@ -45,43 +35,41 @@ export class App extends gl.Unit {
     history.replaceState(null, '', `/${location.search}`)
   }
 
-  // private async ensureSinglePinnedTab() {
-  //   const kitTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
-  //   if (kitTabs.length === 1) {
-  //     const tab = kitTabs[0]
-  //     if (!tab) throw this.never()
-  //     if (tab.pinned) return
-  //     await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
-  //     await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-  //   } else {
-  //     await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
-  //     await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-  //     for (const tab of kitTabs) {
-  //       if (!tab.id || tab.id === epos.env.tabId) continue
-  //       await epos.browser.tabs.remove(tab.id)
-  //     }
-  //   }
-  // }
+  private async ensureSinglePinnedTab() {
+    const shellTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
+    if (shellTabs.length === 1) {
+      const tab = shellTabs[0]
+      if (!tab) throw this.never()
+      if (tab.pinned) return
+      await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
+      await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
+    } else {
+      await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
+      await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
+      for (const tab of shellTabs) {
+        if (!tab.id || tab.id === epos.env.tabId) continue
+        await epos.browser.tabs.remove(tab.id)
+      }
+    }
+  }
 
-  // MARK: View
+  // MARK: Views
   // ============================================================================
 
   View() {
     if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
-        <this.SidebarView />
-        <Separator orientation="vertical" />
-        <this.ContentView />
-        <this.projects.creation.View />
+        <TooltipProvider>
+          <this.SidebarView />
+          <Separator orientation="vertical" />
+          <this.ContentView />
+        </TooltipProvider>
       </SidebarProvider>
     )
   }
 
-  // MARK: SidebarView
-  // ============================================================================
-
-  SidebarView() {
+  private SidebarView() {
     return (
       <Sidebar collapsible="none">
         <SidebarHeader>
@@ -90,7 +78,7 @@ export class App extends gl.Unit {
               <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
                 <this.LogoView />
                 <div>[epos]</div>
-                <div className="ml-auto tracking-widest text-muted-foreground">v1.8</div>
+                <div className="ml-auto text-muted-foreground">v1.8</div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -105,21 +93,11 @@ export class App extends gl.Unit {
     )
   }
 
-  // MARK: ContentView
-  // ============================================================================
-
-  ContentView() {
-    return (
-      <SidebarInset className="overflow-auto">
-        <this.projects.View />
-      </SidebarInset>
-    )
+  private ContentView() {
+    return <SidebarInset className="overflow-auto">{/* <this.projects.View /> */}</SidebarInset>
   }
 
-  // MARK: LogoView
-  // ============================================================================
-
-  LogoView() {
+  private LogoView() {
     return (
       <svg className="text-brand" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="128" height="128" rx="64" fill="currentColor" />
@@ -134,6 +112,9 @@ export class App extends gl.Unit {
       </svg>
     )
   }
+
+  // MARK: Versioner
+  // ============================================================================
 
   static versioner: any = {
     13() {},

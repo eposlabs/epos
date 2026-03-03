@@ -8,6 +8,24 @@ Epos provides a simple and powerful event bus system that allows for cross-conte
 
 :::
 
+---
+
+#### Binary Data Support
+
+Standard extension messaging is limited to JSON-serializable data, which means it does not support **Blob** or **File** objects. If you want to transfer binary data the "standard" way, you are forced to manually serialize it into a Base64 string — a process that is slow, memory-intensive, and increases payload size.
+
+The Epos `bus` natively supports **Blob** objects. It uses a smarter transfer logic that avoids Base64 serialization entirely, allowing you to move files, images, or any large binary data across contexts without the performance overhead.
+
+::: info
+
+You can learn more about how `bus` works, its features and capabilities in the [API Reference](/api/bus).
+
+:::
+
+The engine handles the **routing automatically** across all contexts, meaning you no longer have to juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage`, and `window.postMessage`. Just broadcast the message, and Epos ensures it arrives.
+
+---
+
 ```ts
 // background.js
 epos.bus.on('message-name', (...data) => {

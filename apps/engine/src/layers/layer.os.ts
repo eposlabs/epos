@@ -1,6 +1,6 @@
 import { Alive, type Alive as AliveType } from '../alive/alive.os.js'
 import { App, type App as AppType } from '../app/app.os.js'
-import { Project, type Project as ProjectType } from '../project/project.os.js'
+import { Project, type Project as ProjectType } from '../projects/project.os.js'
 import { Projects, type Projects as ProjectsType } from '../projects/projects.os.js'
 import { Utils, type Utils as UtilsType } from '../utils/utils.os.js'
 

@@ -1,67 +1,60 @@
 # Features
 
-Epos is packed with built-in tools designed to streamline the extension development lifecycle. Each tool is pre-configured to function across all execution contexts without additional setup.
+Epos is packed with built-in tools designed to steamline the extension development lifecycle. Each tool is pre-configured to work across all execution contexts without additional setup.
 
-Below are some of the core features that make Epos unique. You can find the complete list of capabilities in the [API Reference](/api/).
+In this section, we will highlight the core features that make Epos stand out. For deep dives and implementation details, check the relevant guide sections or see the full [API Reference](/api/).
 
 ## Messaging System
 
-- Smart routing for messages
-- Request-response support
-
-Epos provides a built-in, unified messaging system called `bus`. It's like `chrome.runtime.sendMessage`, but **10x better**.
+Epos provides a messaging system called `bus`. It is like `chrome.runtime.sendMessage`, but **10x better**.
 
 Simply call `epos.bus.send` from any context, and Epos will deliver the message to every `epos.bus.on` listener — no matter where they are located.
 
-The engine handles the **routing automatically** across all contexts, meaning you no longer have to juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage`, and `window.postMessage`. Just broadcast the message, and Epos ensures it arrives.
+You can exchange messages across the popup, side panel, background, injected scripts, offscreen documents, and even iframes. The engine handles the **routing automatically**, picking the most efficient path to the destination.
 
-Every `epos.bus.on` listener can return a value, which will be sent back to the sender as a resolved promise. This allows you to implement request-response patterns with ease.
-
-```ts
-// background.js
+```js
+// [background.js]
+// Set up a listener
 epos.bus.on('getUserData', async userId => {
   const user = await fetchUserData(userId)
-  return user // This value is sent back to the caller
+  return user // Simply return the data to send it back
 })
 
-// injected-script.js
+// [popup.js]
+// Send a message and receive the response
+const user = await epos.bus.send('getUserData', 123)
+
+// [injected-script.js]
+// Works exactly the same in injected scripts
+const user = await epos.bus.send('getUserData', 123)
+
+// [injected-to-iframe.js]
+// Even works within iframes
 const user = await epos.bus.send('getUserData', 123)
 ```
 
-#### Binary Data Support
-
-Standard extension messaging is limited to JSON-serializable data, which means it does not support **Blob** or **File** objects. If you want to transfer binary data the "standard" way, you are forced to manually serialize it into a Base64 string — a process that is slow, memory-intensive, and increases payload size.
-
-The Epos `bus` natively supports **Blob** objects. It uses a smarter transfer logic that avoids Base64 serialization entirely, allowing you to move files, images, or any large binary data across contexts without the performance overhead.
-
-::: info
-
-You can learn more about how `bus` works, its features and capabilities in the [API Reference](/api/bus).
-
-:::
-
 ## State Management
 
-- Auto-sync across contexts
-- Auto-persist to IndexedDB
-- Just modify state object, and it works
+Epos provides a state management that lets you interact with your extension's data as if it were a regular JavaScript object. Behind the scenes, the engine handles two critical tasks: **Persistence** and **Synchronization**.
 
-Epos provides a new way of thinking about your extension state. The mental model is simple: you connect to a state object, and work with it as it is a regular JavaScript object. You can modify it, add new fields, delete old fields, and every change is automatically persisted and synchronized across all extension contexts. So when you update the state in a content script, the new value is immediately available in the background script, popup, or any other context that is connected to the same state. This pattern boosts productivity and eliminates the need for manual synchronization logic.
+#### Persistence & Sync
 
-Persisted means that the data is saved to IndexedDB and if user re-opens your extension, it will restored.
+Every change you make is automatically saved to IndexedDB. This means if a user closes the popup or restarts their browser, the data is restored exactly where they left it. Furthermore, the state is synchronized in real-time across all contexts — if your background script updates a value, your popup UI reflects that change instantly.
 
-And of course, React components react to any state changes automatically, just wrap a component to `epos.component()` and it will react to state changes accordingly.
+#### React Integration
+
+To make your UI reactive, you don't need hooks or providers. Just wrap your component in `epos.component()`. The engine will track which parts of the state your component uses and trigger a re-render only when that specific data changes.
 
 ```tsx
+// Connect to the state with an initial value
 const state = await epos.state.connect({ value: 10, items: [] })
 
-// All changes are automatically persisted and synced across all contexts
+// Update it like a regular JS object.
+// Changes are automatically persisted to IndexedDB and synced!
 state.value = 30
-state.value += 10
-state.items.push({ id: 1, name: 'Item 1' })
-state.items.push({ id: 2, name: 'Item 2' })
+state.items.push({ id: 1, name: 'New Item' })
 
-// Component will re-render automatically on state changes
+// Wrap your component so it reacts to state changes
 const App = epos.component(() => {
   return (
     <div>
@@ -76,37 +69,59 @@ const App = epos.component(() => {
 })
 ```
 
-With `epos.state` API you can connect to the state and work with it like a regular JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. And react components with also react to any changes and keep your UI in sync with the state.
+#### The state that "just works"
 
-TODO: mention IDB for persistence.
-
-Epos provides state management which allows you to work with a state like with a regular JavaScript object. Epos **automatically persists and synchronizes** every change across all extension contexts. When the state updates, your React components re-render automatically.
-
-```ts
-// Connect to the state using { value: 10, items: [] } as the initial value
-const state = await epos.state.connect({ value: 10, items: [] })
-
-// Update like a regular JS object.
-// Every change is automatically persisted and synced across all contexts!
-state.value = 20
-state.items.push({ id: 1, name: 'Item 1' })
-```
+- **Simplicity:** No mental overhead — just connect to a state and use it as a regular object.
+- **Automatic persistence:** Your data is safe even if the user closes the extension or restarts their browser.
+- **Real-time sync:** Changes in one context are reflected everywhere instantly, without manual message passing.
 
 ## Chrome APIs
 
-- Call Chrome APIs from any context
-- No more context-specific API restrictions
+Standard `chrome.*` APIs can only be called from specific extension contexts like the background service worker or the popup.
 
-Standard `chrome.*` APIs can be called only from special extension contexts. Epos removes these boundaries, allowing you to call Extension APIs via `epos.browser.*` from **any** context — including regular web pages.
+Epos removes these boundaries entirely. By using `epos.browser.*`, you can call Chrome APIs from **any context** — including regular web pages and iframes.
 
 ```ts
-// injected-script.js on https://example.com
-const tabs = await epos.browser.tabs.query({})
+// [injected-script.js]
 // Works! Even though we are executing the code on a regular web page
-// without direct access to chrome.* APIs
+// that does not have Chrome API access.
+const tabs = await epos.browser.tabs.query({})
+
+// [injected-to-iframe.js]
+// Even works within iframes!
+epos.browser.windows.onCreated.addListener(window => {
+  console.log('New window created:', window)
+})
 ```
 
 ## Storage
+
+For storing files, large datasets, or any non-state data, Epos provides a built-in storage system. It acts as a smart wrapper around **IndexedDB**, offering a simple key-value API that works across all extension contexts with zero setup required.
+
+#### What makes it "Smart"?
+
+Standard IndexedDB is difficult to work with. It does not provide simple APIs and requires manual versioning. If you want to add a new "store" for a different type of data, you usually have to bump the database version and handle `onupgradeneeded` events — a process that often requires an extension restart to take effect.
+
+Epos handles these "magic tricks" for you. It performs schema migrations on the fly without restarts or manual version management. You simply write and read data; Epos handles the database lifecycle in the background.
+
+```js
+// [popup.js]
+// Save a file or any data from one context
+await epos.storage.set('user-profile-pic', imageFile)
+
+// [injected-script.js]
+// Access that same data from a completely different context
+const profilePic = await epos.storage.get('user-profile-pic')
+```
+
+#### Key Features:
+
+- Zero Setup: No need to initialize databases, open connections, or manage transaction states.
+- True Global Sync: Save an item in the popup and retrieve it instantly in a content script, background worker, or even a nested iframe.
+- Native Binary Support: Because it is powered by IndexedDB, it handles Blobs, Files, and ArrayBuffers natively and efficiently.
+- On-the-fly Instances: Create isolated storage buckets whenever you need them without worrying about the underlying database structure.
+
+For storing files and other non-state data, Epos provides a built-in storage system that acts as a smart wrapper around **IndexedDB**. It offers a simple key-value API that works across all extension contexts with zero setup required.
 
 - Smart wrapper around IndexedDB
 - Simple key-value API

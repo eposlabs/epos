@@ -1,15 +1,15 @@
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button.js'
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.js'
-import { Label } from '@/components/ui/label'
+import { Label } from '@/components/ui/label.js'
 import { Separator } from '@/components/ui/separator.js'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
-import { Spinner } from '@/components/ui/spinner'
-import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
-import { IconAlertCircle, IconDownload, IconFolderOpen, IconPointFilled, IconRefresh, IconTrash } from '@tabler/icons-react'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet.js'
+import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
+import { Spinner } from '@/components/ui/spinner.js'
+import { Switch } from '@/components/ui/switch.js'
+import { AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
 
 export class Project extends gl.Unit {
@@ -38,7 +38,7 @@ export class Project extends gl.Unit {
   }
 
   get selected() {
-    return this.$projects.selectedProjectId === this.id
+    return this.$projects.selectedId === this.id
   }
 
   get paths() {
@@ -76,7 +76,7 @@ export class Project extends gl.Unit {
   }
 
   select() {
-    this.$projects.selectedProjectId = this.id
+    this.$projects.selectedId = this.id
   }
 
   async toggleEnabled() {
@@ -235,15 +235,35 @@ export class Project extends gl.Unit {
   // ===========================================================================
 
   View() {
-    if (!this.state.initialized) return <this.LoadingView />
-    if (!this.state.handle) return <this.NoDirectoryView />
-    return <this.MainView />
+    return (
+      <div className="flex size-full items-center justify-center">
+        <this.LoadingView />
+        <this.NoDirectoryView />
+        <this.MainView />
+      </div>
+    )
   }
 
-  // MARK: LoadingView
-  // ===========================================================================
+  SidebarView() {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
+          <div
+            className={cn(
+              'ml-0.5 size-1 rounded-full bg-green-500',
+              this.state.error && 'bg-red-500',
+              !this.enabled && 'bg-gray-500',
+              !this.state.handle && 'bg-gray-500',
+            )}
+          />
+          <div className="truncate">{this.spec.name}</div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
 
   LoadingView() {
+    if (this.state.initialized) return null
     return (
       <div className="flex size-full items-center justify-center">
         <Spinner />
@@ -251,10 +271,10 @@ export class Project extends gl.Unit {
     )
   }
 
-  // MARK: NoDirectoryView
-  // ===========================================================================
-
   NoDirectoryView() {
+    if (!this.state.initialized) return null
+    if (this.state.handle) return null
+
     return (
       <div className="flex size-full flex-col items-center justify-center gap-6 p-8">
         <this.HeaderView />
@@ -266,7 +286,7 @@ export class Project extends gl.Unit {
 
         {this.state.error && (
           <Alert variant="destructive" className="w-full max-w-md">
-            <IconAlertCircle className="size-4" />
+            <AlertCircle className="size-4" />
             <AlertDescription>{this.state.error.message}</AlertDescription>
           </Alert>
         )}
@@ -290,111 +310,8 @@ export class Project extends gl.Unit {
     )
   }
 
-  // MARK: HeaderView
-  // ===========================================================================
-
-  HeaderView() {
-    return (
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-xl">{this.spec.name}</h1>
-          <div className="mt-1.5 flex gap-2">
-            <Badge variant="secondary" className="select-none">
-              {this.spec.slug}
-            </Badge>
-            <Badge variant="secondary" className="select-none">
-              v{this.spec.version}
-            </Badge>
-          </div>
-        </div>
-        <div className="">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => this.remove()}
-            className="text-destructive hover:text-destructive"
-          >
-            <IconTrash className="mr-1 size-4" />
-            Remove
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  // MARK: Connectview
-  // ============================================================================
-
-  ConnectView() {
-    return (
-      <div className="flex grow items-center justify-center">
-        <Card className="w-90">
-          <CardHeader>
-            <CardTitle>Connect Your Project</CardTitle>
-            <CardDescription>
-              To get started, please select the folder where your project files are located.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button className="w-full" onClick={this.connectDir}>
-              <IconFolderOpen /> Choose Folder
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
-
-  // MARK: Content
-  // ============================================================================
-
-  ContentView() {
-    return (
-      <div className="relative mt-6 grow border border-dashed border-border p-6">
-        <div className="absolute top-0 left-0 flex">
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            {this.spec.slug}
-          </div>
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            v{this.spec.version}
-          </div>
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            <IconDownload className="size-3" />
-            Export
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 flex">
-          <div className="flex items-center gap-2 border-b border-l border-dashed border-border p-2 text-xs text-destructive">
-            <IconTrash className="size-3" />
-            Remove
-          </div>
-        </div>
-      </div>
-    )
-
-    if (!this.state.handle) return <this.ConnectView />
-    if (this.state.error) return <this.ErrorView />
-    return <div>CONNECTED AS {this.state.handle?.name}</div>
-  }
-
-  // MARK: Error View
-  // ============================================================================
-
-  ErrorView() {
-    return (
-      <div className="mt-6">
-        <Alert variant="destructive" className="w-full">
-          <IconAlertCircle className="size-4" />
-          <AlertDescription>Error: {this.state.error?.message}</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
-  // MARK: Main View
-  // ===========================================================================
-
   MainView() {
+    if (!this.state.initialized) return null
     // return (
     //   <div className="flex h-full flex-col p-6">
     //     <this.HeaderView />
@@ -636,8 +553,94 @@ export class Project extends gl.Unit {
     )
   }
 
-  // MARK: SpecTabView
-  // ===========================================================================
+  private HeaderView() {
+    return (
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-xl">{this.spec.name}</h1>
+          <div className="mt-1.5 flex gap-2">
+            <Badge variant="secondary" className="select-none">
+              {this.spec.slug}
+            </Badge>
+            <Badge variant="secondary" className="select-none">
+              v{this.spec.version}
+            </Badge>
+          </div>
+        </div>
+        <div className="">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => this.remove()}
+            className="text-destructive hover:text-destructive"
+          >
+            <IconTrash className="mr-1 size-4" />
+            Remove
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  ConnectView() {
+    return (
+      <div className="flex grow items-center justify-center">
+        <Card className="w-90">
+          <CardHeader>
+            <CardTitle>Connect Your Project</CardTitle>
+            <CardDescription>
+              To get started, please select the folder where your project files are located.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button className="w-full" onClick={this.connectDir}>
+              <IconFolderOpen /> Choose Folder
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  ContentView() {
+    return (
+      <div className="relative mt-6 grow border border-dashed border-border p-6">
+        <div className="absolute top-0 left-0 flex">
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            {this.spec.slug}
+          </div>
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            v{this.spec.version}
+          </div>
+          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
+            <IconDownload className="size-3" />
+            Export
+          </div>
+        </div>
+        <div className="absolute top-0 right-0 flex">
+          <div className="flex items-center gap-2 border-b border-l border-dashed border-border p-2 text-xs text-destructive">
+            <IconTrash className="size-3" />
+            Remove
+          </div>
+        </div>
+      </div>
+    )
+
+    if (!this.state.handle) return <this.ConnectView />
+    if (this.state.error) return <this.ErrorView />
+    return <div>CONNECTED AS {this.state.handle?.name}</div>
+  }
+
+  ErrorView() {
+    return (
+      <div className="mt-6">
+        <Alert variant="destructive" className="w-full">
+          <IconAlertCircle className="size-4" />
+          <AlertDescription>Error: {this.state.error?.message}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   SpecTabView() {
     return (
@@ -651,9 +654,6 @@ export class Project extends gl.Unit {
     )
   }
 
-  // MARK: ManifestTabView
-  // ===========================================================================
-
   ManifestTabView() {
     return (
       <div className="h-full overflow-hidden">
@@ -663,9 +663,6 @@ export class Project extends gl.Unit {
       </div>
     )
   }
-
-  // MARK: AssetsTabView
-  // ===========================================================================
 
   AssetsTabView() {
     return (
@@ -706,9 +703,6 @@ export class Project extends gl.Unit {
     )
   }
 
-  // MARK: SourcesTabView
-  // ===========================================================================
-
   SourcesTabView() {
     return (
       <div className="flex h-full flex-col overflow-hidden">
@@ -745,28 +739,6 @@ export class Project extends gl.Unit {
           </div>
         )}
       </div>
-    )
-  }
-
-  // MARK: SidebarView
-  // ===========================================================================
-
-  SidebarView() {
-    // if (this.spec.slug === 'shell') return null
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
-          <IconPointFilled
-            className={cn(
-              'text-green-500',
-              this.state.error && 'text-red-500',
-              !this.enabled && 'text-gray-500',
-              !this.state.handle && 'text-gray-500',
-            )}
-          />
-          <div className="truncate">{this.spec.name}</div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
     )
   }
 

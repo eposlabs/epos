@@ -5,5 +5,5 @@ export default {
   singleQuote: true,
   arrowParens: 'avoid',
   quoteProps: 'preserve',
-  printWidth: 124,
+  printWidth: 120,
 }

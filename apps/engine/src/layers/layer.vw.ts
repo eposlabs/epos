@@ -1,5 +1,5 @@
 import { App, type App as AppType } from '../app/app.vw.js'
-import { Project, type Project as ProjectType } from '../project/project.vw.js'
+import { Project, type Project as ProjectType } from '../projects/project.vw.js'
 import { Projects, type Projects as ProjectsType } from '../projects/projects.vw.js'
 import { Utils, type Utils as UtilsType } from '../utils/utils.vw.js'
 

@@ -1,17 +1,14 @@
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "[epos]",
-  "slug": "epos-shell",
+  "slug": "shell",
   "version": "1.8",
   "description": "Web Extension Engine",
-  "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
-  "load": ["public/jetbrains-mono.css", "dist/gl.css", "dist/gl.js"],
-  "assets": ["public/icon.svg", "public/icon.png"],
+  "options": { "allowProjectsApi": true, "allowMissingModels": true },
 
-  "options": {
-    "allowProjectsApi": true,
-    "allowMissingModels": true
-  },
+  "assets": ["dist/icon.svg", "dist/icon.png"],
+  "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
+  "load": ["dist/fonts.css", "dist/gl.css", "dist/gl.js"],
 
   "hostPermissions": ["<allUrls>"],
   "permissions": [
