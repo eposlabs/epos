@@ -8,7 +8,7 @@ void (() => {
   const { version, targets } = parseArgs()
   const workspacesArg = targets.map(target => `-w ${target}`).join(' ')
   if (version) run(`npm version ${version} --workspaces-update=false ${workspacesArg}`)
-  run(`syncpack fix-mismatches`)
+  run(`syncpack fix`)
   run(`npm run build ${workspacesArg}`)
   run(`npm publish ${workspacesArg}`)
   run(`npm install`)

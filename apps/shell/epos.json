@@ -5,11 +5,6 @@
   "version": "1.8",
   "description": "Web Extension Engine",
   "options": { "allowProjectsApi": true, "allowMissingModels": true },
-
-  "assets": ["dist/icon.svg", "dist/icon.png"],
-  "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
-  "load": ["dist/fonts.css", "dist/gl.css", "dist/gl.js"],
-
   "hostPermissions": ["<allUrls>"],
   "permissions": [
     "background",
@@ -20,5 +15,26 @@
     "notifications",
     "sidePanel",
     "storage"
+  ],
+
+  "targets": [
+    {
+      "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
+      "load": ["dist/fonts.css", "dist/gl.css", "dist/gl.js"]
+    }
+  ],
+
+  "assets": [
+    "dist/icon.svg",
+    "dist/icon.png",
+    "templates/base/public/epos.svg",
+    "templates/base/src/background.ts",
+    "templates/base/src/main.css",
+    "templates/base/src/main.tsx",
+    "templates/base/.gitignore",
+    "templates/base/epos.json",
+    "templates/base/package.json",
+    "templates/base/tsconfig.json",
+    "templates/base/vite.config.ts"
   ]
 }

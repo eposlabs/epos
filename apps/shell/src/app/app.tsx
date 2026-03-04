@@ -76,7 +76,7 @@ export class App extends gl.Unit {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
-                <this.LogoView />
+                <this.Logo />
                 <div>[epos]</div>
                 <div className="ml-auto text-muted-foreground">v1.8</div>
               </SidebarMenuButton>
@@ -94,10 +94,14 @@ export class App extends gl.Unit {
   }
 
   private ContentView() {
-    return <SidebarInset className="overflow-auto">{/* <this.projects.View /> */}</SidebarInset>
+    return (
+      <SidebarInset className="overflow-auto">
+        <this.projects.View />
+      </SidebarInset>
+    )
   }
 
-  private LogoView() {
+  private Logo() {
     return (
       <svg className="text-brand" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="128" height="128" rx="64" fill="currentColor" />

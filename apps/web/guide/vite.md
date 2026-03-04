@@ -1,5 +1,24 @@
 <!-- TODO: add tailwindcss setup -->
 
+::: danger
+
+ERRROR: plugins inside build - not right
+
+TODO: remove index.html
+
+instead of
+document.addEventListener('DOMContentLoaded', () => {})
+use nothing? jus import 'main.css'
+
+and then, when epos plugin added, use epos.render.
+
+when epos.render is added, also add this:
+"jsx": "react-jsx",
+to tsconfig.json
+
+minify: false in vite.config.ts and minify: mode !== 'devleopment' in rebundle!!
+:::
+
 # Vite Setup
 
 In this section, we will setup Epos project with **Vite, TypeScript, React, and Tailwind CSS**.

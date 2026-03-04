@@ -30,7 +30,7 @@
     "tailwindcss": "^4.2.1",
     "vite": "^8.0.0-beta.16",
     "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-rebundle": "^1.34.0"
+    "vite-plugin-rebundle": "^1.38.0"
   },
   "overrides": {
     "vite": "^8.0.0-beta.16"

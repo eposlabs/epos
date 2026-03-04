@@ -1,25 +1,36 @@
-import { Alert, AlertDescription } from '@/components/ui/alert.js'
-import { Badge } from '@/components/ui/badge.js'
+// import { Alert, AlertDescription } from '@/components/ui/alert.js'
+// import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.js'
-import { Label } from '@/components/ui/label.js'
+// import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.js'
+// import { Label } from '@/components/ui/label.js'
 import { Separator } from '@/components/ui/separator.js'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
 import { Spinner } from '@/components/ui/spinner.js'
-import { Switch } from '@/components/ui/switch.js'
-import { AlertCircle } from 'lucide-react'
+// import { Switch } from '@/components/ui/switch.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
+import { AlertCircle } from 'lucide-react'
+
+export type Template = 'none' | 'base' | 'units'
 
 export class Project extends gl.Unit {
   spec: Spec
   manifest: Manifest
   debug: boolean
   enabled: boolean
-  specText: string | null = null
-  assetsInfo: Record<string, { size: number }> = {}
-  sourcesInfo: Record<string, { size: number }> = {}
+  // specText: string | null = null
+  // assetsInfo: Record<string, { size: number }> = {}
+  // sourcesInfo: Record<string, { size: number }> = {}
+
+  constructor(parent: gl.Unit, params: ProjectBase) {
+    super(parent)
+    this.id = params.id
+    this.spec = params.spec
+    this.manifest = params.manifest
+    this.debug = params.debug
+    this.enabled = params.enabled
+  }
 
   get $projects() {
     return this.closest(gl.Projects)!
@@ -27,13 +38,11 @@ export class Project extends gl.Unit {
 
   get state() {
     return {
-      initialized: false,
-      updating: false,
+      ready: false,
+      reading: false,
       error: null as Error | null,
       handle: null as FileSystemDirectoryHandle | null,
       observers: [] as FileSystemObserver[],
-      activeTab: 'spec' as 'spec' | 'manifest' | 'assets' | 'sources',
-      showExportDialog: false,
     }
   }
 
@@ -47,14 +56,18 @@ export class Project extends gl.Unit {
     return ['epos.json', ...assetPaths, ...resourcePaths]
   }
 
-  constructor(parent: gl.Unit, params: ProjectBase) {
-    super(parent)
-    this.id = params.id
-    this.spec = params.spec
-    this.manifest = params.manifest
-    this.debug = params.debug
-    this.enabled = params.enabled
-    console.warn('!', this.$)
+  // MARK: Main
+  // ============================================================================
+
+  async attach() {
+    this.read = this.$.utils.enqueue(this.read)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
+    if (handle) await this.setHandle(handle)
+    this.state.ready = true
+  }
+
+  async detach() {
+    await this.setHandle(null)
   }
 
   update(updates: Omit<ProjectBase, 'id'>) {
@@ -64,22 +77,11 @@ export class Project extends gl.Unit {
     this.enabled = updates.enabled
   }
 
-  async attach() {
-    this.hydrate = this.$.utils.enqueue(this.hydrate)
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
-    if (handle) await this.setHandle(handle)
-    this.state.initialized = true
-  }
-
-  async detach() {
-    await this.setHandle(null)
-  }
-
   select() {
     this.$projects.selectedId = this.id
   }
 
-  async toggleEnabled() {
+  async toggle() {
     await epos.projects.update(this.id, { enabled: !this.enabled })
   }
 
@@ -91,21 +93,33 @@ export class Project extends gl.Unit {
     await epos.projects.remove(this.id)
   }
 
-  async connectDir() {
+  async connect(template: Template) {
     const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
     if (!handle) return
     await this.setHandle(handle)
   }
 
-  async disconnectDir() {
+  async disconnect() {
     await this.setHandle(null)
   }
+
+  async export() {
+    const files = await epos.projects.export(this.id)
+    const zip = await this.$.utils.zip(files)
+    const url = URL.createObjectURL(zip)
+    const filename = `${this.spec.slug}-${this.spec.version}.zip`
+    await epos.browser.downloads.download({ url, filename })
+    URL.revokeObjectURL(url)
+  }
+
+  // MARK: Helpers
+  // ============================================================================
 
   private async setHandle(handle: FileSystemDirectoryHandle | null) {
     if (handle) {
       await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
-      await this.hydrate()
+      await this.read()
       this.observe()
     } else {
       await this.$.idb.delete('epos-shell', 'handles', this.id)
@@ -126,7 +140,7 @@ export class Project extends gl.Unit {
 
       const observer = new FileSystemObserver(() => {
         clearTimeout(timer)
-        timer = setTimeout(() => this.hydrate())
+        timer = setTimeout(() => this.read())
       })
 
       observer.observe(handle)
@@ -140,10 +154,10 @@ export class Project extends gl.Unit {
     this.state.observers = []
   }
 
-  private async hydrate() {
+  private async read() {
     try {
       this.state.error = null
-      this.state.updating = true
+      this.state.reading = true
 
       // Read epos.json
       const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
@@ -180,7 +194,7 @@ export class Project extends gl.Unit {
     } catch (e) {
       this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
     } finally {
-      this.state.updating = false
+      this.state.reading = false
     }
   }
 
@@ -216,30 +230,48 @@ export class Project extends gl.Unit {
     return fileHandle
   }
 
-  async export() {
-    const files = await epos.projects.export(this.id)
-    const zip = await this.$.utils.zip(files)
-    const url = URL.createObjectURL(zip)
-    const filename = `${this.spec.slug}-${this.spec.version}.zip`
-    await epos.browser.downloads.download({ url, filename })
-    URL.revokeObjectURL(url)
-  }
-
   hasUnminifiedSources(): boolean {
     // Check if sources look unminified (have readable structure)
     // Conservative approach: assume sources are unminified if they're readable
     return Object.keys(this.sourcesInfo).length > 0
   }
 
-  // MARK: View
+  // MARK: Views
   // ===========================================================================
 
   View() {
     return (
-      <div className="flex size-full items-center justify-center">
-        <this.LoadingView />
-        <this.NoDirectoryView />
-        <this.MainView />
+      <div className="">
+        <pre className="m-4 border border-black p-4 text-sm">
+          {JSON.stringify(
+            {
+              id: this.id,
+              name: this.spec.name,
+              slug: this.spec.slug,
+              enabled: this.enabled,
+              debug: this.debug,
+              connected: !!this.state.handle,
+              ready: this.state.ready,
+              reading: this.state.reading,
+              error: this.state.error ? this.state.error.message : null,
+            },
+            null,
+            2,
+          )}
+        </pre>
+        <div>
+          <Button onClick={() => this.toggle()}>toggle enabled</Button>
+          <Button onClick={() => this.toggleDebug()}>toggle debug</Button>
+          <Button onClick={() => this.remove()}>remove</Button>
+          <Button onClick={() => this.connect('none')}>connect none</Button>
+          <Button onClick={() => this.connect('base')}>connect base</Button>
+          <Button onClick={() => this.connect('units')}>connect units</Button>
+          <Button onClick={() => this.disconnect()}>disconnect</Button>
+          <Button onClick={() => this.export()}>export</Button>
+          <Button onClick={() => this.read()}>refresh</Button>
+        </div>
+        {/* <this.NoDirectoryView /> */}
+        {/* <this.MainView /> */}
       </div>
     )
   }
@@ -261,6 +293,61 @@ export class Project extends gl.Unit {
       </SidebarMenuItem>
     )
   }
+
+  // MARK: Versioner
+  // ============================================================================
+
+  static versioner: any = {
+    1(this: any) {
+      this.fs = {}
+      this.handleId = null
+    },
+    2(this: any) {
+      delete this.handleId
+      this.handle = null
+    },
+    4(this: any) {
+      delete this.handle
+      this.handle = null
+    },
+    6() {
+      this.specText = null
+    },
+    7() {
+      this.assetsInfo = {}
+    },
+    8() {
+      this.sourcesInfo = {}
+    },
+    9(this: any) {
+      this.exporter = {}
+    },
+    10(this: any) {
+      delete this.exporter
+    },
+    11(this: any) {
+      delete this.mode
+      this.debug = false
+    },
+    12(this: any) {
+      this.manifest = null
+    },
+    13() {},
+    14() {
+      this.ui = {}
+    },
+    15() {
+      delete this.ui
+    },
+  }
+
+  // ============================================================================
+  // ============================================================================
+  // ============================================================================
+  // ============================================================================
+
+  // MARK: OLD
+  // ============================================================================
 
   LoadingView() {
     if (this.state.initialized) return null
@@ -330,10 +417,10 @@ export class Project extends gl.Unit {
                   Error
                 </div>
               )}
-              {this.state.updating && (
+              {this.state.reading && (
                 <div className="flex items-center gap-1 rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-500">
                   <Spinner className="size-3" />
-                  Updating
+                  reading
                 </div>
               )}
             </div>
@@ -740,52 +827,5 @@ export class Project extends gl.Unit {
         )}
       </div>
     )
-  }
-
-  // MARK: Versioner
-  // ============================================================================
-
-  static versioner: any = {
-    1(this: any) {
-      this.fs = {}
-      this.handleId = null
-    },
-    2(this: any) {
-      delete this.handleId
-      this.handle = null
-    },
-    4(this: any) {
-      delete this.handle
-      this.handle = null
-    },
-    6() {
-      this.specText = null
-    },
-    7() {
-      this.assetsInfo = {}
-    },
-    8() {
-      this.sourcesInfo = {}
-    },
-    9(this: any) {
-      this.exporter = {}
-    },
-    10(this: any) {
-      delete this.exporter
-    },
-    11(this: any) {
-      delete this.mode
-      this.debug = false
-    },
-    12(this: any) {
-      this.manifest = null
-    },
-    13() {},
-    14() {
-      this.ui = {}
-    },
-    15() {
-      delete this.ui
-    },
   }
 }

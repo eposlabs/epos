@@ -1,6 +1,12 @@
 import { Button } from '@/components/ui/button.js'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/empty.js'
-import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, } from '@/components/ui/sidebar.js'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty.js'
+import {
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+} from '@/components/ui/sidebar.js'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
 import { FolderCode, Plus } from 'lucide-react'
 
@@ -21,12 +27,15 @@ export class Projects extends gl.Unit {
     return this.dict[this.selectedId] ?? null
   }
 
+  // MARK: Main
+  // ============================================================================
+
   async attach() {
     epos.projects.watch(() => this.refresh())
     await this.refresh()
   }
 
-  async add() {
+  async create() {
     // Prepare unique project name
     let index = 1
     let name = 'New Project'
@@ -44,6 +53,9 @@ export class Projects extends gl.Unit {
       enabled: true,
     })
   }
+
+  // MARK: Helpers
+  // ============================================================================
 
   private async refresh() {
     // Get projects data from epos
@@ -72,64 +84,58 @@ export class Projects extends gl.Unit {
     }
   }
 
-  // MARK: View
+  // MARK: Views
   // ============================================================================
 
   View() {
-    return (
-      <div className="size-full">
-        <this.NoProjectsView />
-        <this.SelectedProjectView />
-      </div>
-    )
+    if (!this.selected) return null
+    return <this.selected.View />
   }
 
   SidebarView() {
-    if (this.empty) return null
     return (
       <SidebarGroup>
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <Tooltip delayDuration={400}>
-          <TooltipTrigger asChild>
-            <SidebarGroupAction title="Add Project" onClick={() => this.add()}>
-              <Plus /> <span className="sr-only">Add Project</span>
-            </SidebarGroupAction>
-          </TooltipTrigger>
-          <TooltipContent>Add project</TooltipContent>
-        </Tooltip>
-        <SidebarGroupContent>
-          <SidebarMenu className="gap-1">
-            {this.list.map(project => (
-              <project.SidebarView key={project.id} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
+        {/* Empty */}
+        {this.empty && (
+          <Empty className="justify-start">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FolderCode />
+              </EmptyMedia>
+              <EmptyTitle>No Projects Yet</EmptyTitle>
+              <EmptyDescription>
+                You haven't created any projects yet. Get started by creating your first project.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent className="flex-row justify-center gap-2">
+              <Button onClick={() => this.create()}>Create Project</Button>
+            </EmptyContent>
+          </Empty>
+        )}
+
+        {/* Non-empty */}
+        {!this.empty && (
+          <>
+            <SidebarGroupLabel>Projects</SidebarGroupLabel>
+            <Tooltip delayDuration={400}>
+              <TooltipTrigger asChild>
+                <SidebarGroupAction title="Create project" onClick={() => this.create()}>
+                  <Plus /> <span className="sr-only">Create project</span>
+                </SidebarGroupAction>
+              </TooltipTrigger>
+              <TooltipContent>Create project</TooltipContent>
+            </Tooltip>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {this.list.map(project => (
+                  <project.SidebarView key={project.id} />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </>
+        )}
       </SidebarGroup>
     )
-  }
-
-  private NoProjectsView() {
-    if (!this.empty) return null
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia>
-            <FolderCode />
-          </EmptyMedia>
-          <EmptyDescription>
-            You haven't created any projects yet. Get started by creating your first project.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent className="flex-row justify-center gap-2">
-          <Button onClick={() => this.add()}>Create Project</Button>
-        </EmptyContent>
-      </Empty>
-    )
-  }
-
-  private SelectedProjectView() {
-    if (!this.selected) return null
-    return <this.selected.View />
   }
 
   // MARK: Versioner
