@@ -1,14 +1,79 @@
 # Messaging
 
-Epos provides a simple and powerful event bus system that allows for cross-context communication in your app. It provides a simple interface for sending messages from any context to any other context (popup, side panel, background, web page, iframe).
+Epos provides a powerful messaging system called `bus`. It is designed to replace `chrome.runtime.sendMessage` and other related APIs with a **unified interface** for cross-context communication.
+
+With `bus`, you do not have to worry about internal routing. Epos delivers messages from any context to any other context.
 
 ::: info Why “bus”?
 
-[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a vehicle, but a communication system that transfers data between different components. It acts as a centralized hub for exchanging messages.
+[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a vehicle, but a communication system that transfers data between different components. It acts as a **centralized hub** for exchanging messages.
 
 :::
 
----
+## Basic Usage
+
+The `bus` API is consistent across every part of your extension. Whether you are in a background script, a popup, web page, or even an iframe, the methods work exactly the same.
+
+#### Listening for Messages
+
+Use `epos.bus.on()` to register a listener for a specific message type (event). To send data back, simply **return a value** (or a Promise) from the handler.
+
+::: code-group
+
+```ts [background.js]
+epos.bus.on('getUserData', async userId => {
+  const user = await fetchUserData(userId)
+  return user
+})
+```
+
+:::
+
+#### Sending Messages
+
+::: code-group
+
+```tsx {1-3} [src/main.tsx]
+const sendMessage = (value: string) => {
+  epos.bus.send('message-name', value)
+}
+
+const App = () => {
+  const [value, setValue] = useState('')
+  return (
+    <div>
+      <input value={value} onChange={e => setValue(e.target.value)} />
+      <button onClick={() => sendMessage(value)}>Send Message</button>
+    </div>
+  )
+}
+
+epos.render(<App />)
+```
+
+```ts [src/background.ts]
+epos.bus.on('message-name', (...data) => {
+  console.log('Received in background:', data)
+})
+```
+
+```json [epos.json]
+{
+  "name": "My Extension",
+  "targets": [
+    {
+      "matches": "*://*.example.com/*",
+      "load": ["dist/main.css", "dist/main.js"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["dist/background.js"]
+    }
+  ]
+}
+```
+
+:::
 
 #### Binary Data Support
 

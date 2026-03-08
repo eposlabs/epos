@@ -16,15 +16,11 @@ To get a component onto a web page, you don't need to manually create root eleme
 
 ::: code-group
 
-```tsx{12} [src/main.tsx]
+```tsx {12} [src/main.tsx]
 import './main.css'
 
 const App = () => {
-  return (
-    <div>
-      Epos Extension
-    </div>
-  )
+  return <div>Epos Extension</div>
 }
 
 // Render App component on the page
