@@ -10,6 +10,13 @@ export class Utils extends gl.Unit {
   declare safeSync: typeof safeSync
   declare wait: typeof wait
   declare zip: typeof zip
+  fs = new gl.UtilsFs(this)
+
+  static versioner: any = {
+    1() {
+      this.fs = new gl.UtilsFs(this)
+    },
+  }
 }
 
 Object.assign(Utils.prototype, {

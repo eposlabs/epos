@@ -398,6 +398,8 @@ const parsePermissions = (spec: Obj): Permission[] => {
 }
 
 const parseOptionalPermissions = (spec: Obj): Permission[] => {
+  if ('optional_permissions' in spec) throw new Error(`Use 'optionalPermissions' instead of 'optional_permissions'`)
+
   const optionalPermissions = spec.optionalPermissions ?? []
   if (!isArrayOfStrings(optionalPermissions)) throw new Error(`'optionalPermissions' must be an array of strings`)
 
@@ -408,6 +410,8 @@ const parseOptionalPermissions = (spec: Obj): Permission[] => {
 }
 
 const parseHostPermissions = (spec: Obj): string[] => {
+  if ('host_permissions' in spec) throw new Error(`Use 'hostPermissions' instead of 'host_permissions'`)
+
   const hostPermissions = spec.hostPermissions ?? []
   if (!isArrayOfStrings(hostPermissions)) throw new Error(`'hostPermissions' must be an array of strings`)
 
@@ -418,6 +422,9 @@ const parseHostPermissions = (spec: Obj): string[] => {
 }
 
 const parseOptionalHostPermissions = (spec: Obj): string[] => {
+  if ('optional_host_permissions' in spec)
+    throw new Error(`Use 'optionalHostPermissions' instead of 'optional_host_permissions'`)
+
   const optionalHostPermissions = spec.optionalHostPermissions ?? []
   if (!isArrayOfStrings(optionalHostPermissions)) throw new Error(`'optionalHostPermissions' must be an array of strings`)
 

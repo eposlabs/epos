@@ -20,9 +20,9 @@
 - **Bus**
   - [epos.bus.on](/api/bus#epos-bus-on)
   - [epos.bus.off](/api/bus#epos-bus-off)
+  - [epos.bus.once](/api/bus#epos-bus-once)
   - [epos.bus.send](/api/bus#epos-bus-send)
   - [epos.bus.emit](/api/bus#epos-bus-emit)
-  - [epos.bus.once](/api/bus#epos-bus-once)
   - [epos.bus.setSignal](/api/bus#epos-bus-setsignal)
   - [epos.bus.waitSignal](/api/bus#epos-bus-waitsignal)
   - [epos.bus.register](/api/bus#epos-bus-register)
@@ -44,6 +44,7 @@
 - **Storage**
   - [epos.storage.get](/api/storage#epos-storage-get)
   - [epos.storage.set](/api/storage#epos-storage-set)
+  - [epos.storage.has](/api/storage#epos-storage-has)
   - [epos.storage.delete](/api/storage#epos-storage-delete)
   - [epos.storage.keys](/api/storage#epos-storage-keys)
   - [epos.storage.list](/api/storage#epos-storage-list)

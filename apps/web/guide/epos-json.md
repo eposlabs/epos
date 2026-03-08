@@ -1,8 +1,10 @@
 # epos.json
 
-The `epos.json` file is the configuration file for your Epos extension. It defines what your extension does, where to load code, what permissions it needs, and how it should behave.
+`epos.json` is the main configuration file for your Epos extension. It defines the extension's metadata, assets, targets, permissions, and other settings. This guide explains the structure of `epos.json` and how to use it.
 
-## Basic Structure
+## Full Structure
+
+Here is the full list of all available fields in `epos.json`:
 
 ```json
 {
@@ -10,29 +12,44 @@ The `epos.json` file is the configuration file for your Epos extension. It defin
   "slug": "my-extension",
   "version": "1.0.0",
   "description": "A useful extension",
-  "icon": "icon.png",
+  "icon": "dist/icon.png",
+
+  // If true, ':action' event will be triggered when user clicks on extension icon.
+  // You can handle this event via `epos.bus.on(':action', () => {....})`.
+  // Alternatively
   "action": true,
-  "popup": { "width": 380, "height": 572 },
+
+  // Describes width and height of the popup
+  // Applyies only if
+  "popup": {
+    "width": 380,
+    "height": 572
+  },
+
   "options": {
-    "preloadAssets": false,
+    "preloadAssets": true,
     "allowProjectsApi": false,
     "allowMissingModels": false
   },
-  "assets": ["icon.png", "data.json"],
+
+  "assets": ["dist/font.css", "dist/data.json"],
+
   "targets": [
     {
       "matches": ["<popup>"],
-      "load": ["popup.js", "popup.css"]
+      "load": ["dist/popup.js", "dist/popup.css"]
     },
     {
       "matches": ["*://example.com/*"],
-      "load": ["web.js", "web.css"]
+      "load": ["dist/main.js", "dist/main.css"]
     }
   ],
+
   "permissions": ["storage", "notifications"],
   "optionalPermissions": ["cookies"],
-  "hostPermissions": ["*://example.com/*"],
-  "optionalHostPermissions": ["*://*.example.com/*"],
+  "hostPermissions": ["*://another.com/*"],
+  "optionalHostPermissions": ["*://*.another.com/*"],
+
   "manifest": {}
 }
 ```

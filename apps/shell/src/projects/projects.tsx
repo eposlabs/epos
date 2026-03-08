@@ -27,9 +27,6 @@ export class Projects extends gl.Unit {
     return this.dict[this.selectedId] ?? null
   }
 
-  // MARK: Main
-  // ============================================================================
-
   async attach() {
     epos.projects.watch(() => this.refresh())
     await this.refresh()
@@ -53,9 +50,6 @@ export class Projects extends gl.Unit {
       enabled: true,
     })
   }
-
-  // MARK: Helpers
-  // ============================================================================
 
   private async refresh() {
     // Get projects data from epos

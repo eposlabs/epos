@@ -1,10 +1,10 @@
 /// <reference types="epos" />
 
-document.documentElement.innerHTML = `
-  <div style="padding: 20px; font-family: sans-serif;">
-    Hello from Epos 100!
-  </div>
-`
+// document.documentElement.innerHTML = `
+//   <div style="padding: 20px; font-family: sans-serif;">
+//     Hello from Epos 100!
+//   </div>
+// `
 
 // console.warn('[x1]', window.setTimeout)
 // console.warn('x1.js')

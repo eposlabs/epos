@@ -131,6 +131,11 @@ export interface EposStorage {
     <T>(key: string, value: T): Promise<void>
     <T>(name: string, key: string, value: T): Promise<void>
   }
+  /** Check if key exists in storage. */
+  has: {
+    (key: string): Promise<boolean>
+    (name: string, key: string): Promise<boolean>
+  }
   /** Delete key from storage. */
   delete: {
     (key: string): Promise<void>
@@ -148,6 +153,8 @@ export interface EposStorage {
     get<T>(key: string): Promise<T | null>
     /** Set value in storage. */
     set(key: string, value: unknown): Promise<void>
+    /** Check if key exists in storage. */
+    has(key: string): Promise<boolean>
     /** Delete key from storage. */
     delete(key: string): Promise<void>
     /** Get all storage keys. */

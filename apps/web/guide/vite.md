@@ -2,13 +2,7 @@
 
 ::: danger
 
-ERRROR: plugins inside build - not right
-
 TODO: remove index.html
-
-instead of
-document.addEventListener('DOMContentLoaded', () => {})
-use nothing? jus import 'main.css'
 
 and then, when epos plugin added, use epos.render.
 
@@ -164,8 +158,8 @@ import tailwindcss from '@tailwindcss/vite' // [!code ++]
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode }) => ({
+  plugins: [tailwindcss()], // [!code ++]
   build: {
-    plugins: [tailwindcss()], // [!code ++]
     watch: mode === 'production' ? null : {},
     rolldownOptions: {
       input: {
@@ -210,13 +204,7 @@ Next, let's add some simple logic to `main.tsx` to render content on the page:
 ```tsx
 import './main.css'
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.innerHTML = `
-    <div class="p-2 font-sans">
-      Hello from Epos!
-    </div>
-  `
-})
+console.log('Hello from Epos + Vite!')
 ```
 
 ## 6. Install Epos
@@ -257,11 +245,11 @@ import { epos } from 'epos/vite' // [!code ++]
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    epos(), // [!code ++]
+    tailwindcss(),
+  ],
   build: {
-    plugins: [
-      epos(), // [!code ++]
-      tailwindcss(),
-    ],
     watch: mode === 'production' ? null : {},
     rolldownOptions: {
       input: {
@@ -284,13 +272,7 @@ To get full IntelliSense and type checking for the Epos API, you just need to im
 import 'epos' // [!code ++]
 import './main.css'
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.innerHTML = `
-    <div class="p-2 font-sans">
-      Hello from Epos!
-    </div>
-  `
-})
+console.log('Hello from Epos + Vite!')
 ```
 
 :::
@@ -354,8 +336,8 @@ import { defineConfig } from 'vite'
 import { epos } from 'epos/vite' // [!code ++]
 
 export default defineConfig(({ mode }) => ({
+  plugins: [epos()], // [!code ++]
   build: {
-    plugins: [epos()], // [!code ++]
     watch: mode === 'production' ? null : {},
     rolldownOptions: {
       input: {
@@ -427,12 +409,12 @@ import { rebundle } from 'vite-plugin-rebundle' // [!code ++]
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    epos(),
+    rebundle(), // [!code ++]
+    tailwindcss(),
+  ],
   build: {
-    plugins: [
-      epos(),
-      rebundle(), // [!code ++]
-      tailwindcss(),
-    ],
     watch: mode === 'production' ? null : {},
     rolldownOptions: {
       input: {
@@ -478,7 +460,7 @@ deno run dev
 
 :::
 
-I assume you already have epos engine istalled and running, if not, please see the [getting started guide](./basics) for instructions on how to do that.
+I assume you already have epos engine istalled and running, if not, please see the [getting started guide](/guide/getting-started) for instructions on how to do that.
 
 Open `app.epos.dev`, create new project and link this project to your directory.
 

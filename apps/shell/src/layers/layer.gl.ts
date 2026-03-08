@@ -6,6 +6,7 @@ import { Permissions, type Permissions as PermissionsType } from '../permissions
 import { Project, type Project as ProjectType } from '../projects/project.js'
 import { Projects, type Projects as ProjectsType } from '../projects/projects.js'
 import { Theme, type Theme as ThemeType } from '../theme/theme.js'
+import { UtilsFs, type UtilsFs as UtilsFsType } from '../utils/utils-fs.js'
 import { Utils, type Utils as UtilsType } from '../utils/utils.js'
 
 Object.assign(gl, {
@@ -17,6 +18,7 @@ Object.assign(gl, {
   Project,
   Projects,
   Theme,
+  UtilsFs,
   Utils,
 })
 
@@ -32,6 +34,7 @@ declare global {
     Project: typeof Project
     Projects: typeof Projects
     Theme: typeof Theme
+    UtilsFs: typeof UtilsFs
     Utils: typeof Utils
   }
 
@@ -44,6 +47,7 @@ declare global {
     Project: Project
     Projects: Projects
     Theme: Theme
+    UtilsFs: UtilsFs
     Utils: Utils
   }
 
@@ -56,6 +60,7 @@ declare global {
     export type Project = ProjectType
     export type Projects = ProjectsType
     export type Theme = ThemeType
+    export type UtilsFs = UtilsFsType
     export type Utils = UtilsType
   }
 }

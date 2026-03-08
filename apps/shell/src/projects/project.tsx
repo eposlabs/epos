@@ -12,9 +12,24 @@ import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
 import { AlertCircle } from 'lucide-react'
 
-export type Template = 'none' | 'base' | 'units'
+export type Template = 'base'
 
 export class Project extends gl.Unit {
+  get view() {
+    return {
+      id: this.id,
+      name: this.spec.name,
+      slug: this.spec.slug,
+      enabled: this.enabled,
+      debug: this.debug,
+      connected: !!this.state.handle,
+      ready: this.state.ready,
+      hydrating: this.state.hydrating,
+      template: this.state.template,
+      error: this.state.error ? this.state.error.message : null,
+    }
+  }
+
   spec: Spec
   manifest: Manifest
   debug: boolean
@@ -32,18 +47,38 @@ export class Project extends gl.Unit {
     this.enabled = params.enabled
   }
 
-  get $projects() {
-    return this.closest(gl.Projects)!
-  }
-
   get state() {
     return {
       ready: false,
-      reading: false,
+      hydrating: false,
+      connecting: false,
       error: null as Error | null,
       handle: null as FileSystemDirectoryHandle | null,
       observers: [] as FileSystemObserver[],
+      template: null as Template | null,
     }
+  }
+
+  get inert() {
+    return {
+      templates: {
+        base: [
+          { path: 'public/epos.svg', optional: true },
+          { path: 'src/background.ts' },
+          { path: 'src/main.css' },
+          { path: 'src/main.tsx' },
+          { path: '.gitignore', optional: true },
+          { path: 'epos.json' },
+          { path: 'package.json' },
+          { path: 'tsconfig.json', optional: true },
+          { path: 'vite.config.ts' },
+        ],
+      },
+    }
+  }
+
+  get $projects() {
+    return this.closest(gl.Projects)!
   }
 
   get selected() {
@@ -56,11 +91,8 @@ export class Project extends gl.Unit {
     return ['epos.json', ...assetPaths, ...resourcePaths]
   }
 
-  // MARK: Main
-  // ============================================================================
-
   async attach() {
-    this.read = this.$.utils.enqueue(this.read)
+    this.hydrate = this.$.utils.enqueue(this.hydrate)
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
     if (handle) await this.setHandle(handle)
     this.state.ready = true
@@ -93,13 +125,41 @@ export class Project extends gl.Unit {
     await epos.projects.remove(this.id)
   }
 
-  async connect(template: Template) {
+  async connect() {
+    if (this.state.connecting) return
+    this.state.connecting = true
+    await this.safe(() => this._connect(this.state.template))
+    this.state.connecting = false
+  }
+
+  private async _connect(template: Template | null) {
     const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
     if (!handle) return
+
+    if (!template) {
+      await this.setHandle(handle)
+      return
+    }
+
+    const files = this.inert.templates[template]
+    for (const file of files) {
+      const exists = await this.$.utils.fs.fileExists(handle, file.path)
+      if (exists && !file.optional) {
+        throw new Error(`Failed to initialize from "${template}" template: ${file.path} already exists`)
+      }
+      if (!exists) {
+        const blob = await epos.assets.get(`/templates/${template}/${file.path}`)
+        if (!blob) throw this.never()
+        await this.$.utils.fs.writeFile(handle, file.path, blob)
+      }
+    }
+
     await this.setHandle(handle)
   }
 
   async disconnect() {
+    if (!this.state.handle) return
+    this.state.error = null
     await this.setHandle(null)
   }
 
@@ -112,14 +172,11 @@ export class Project extends gl.Unit {
     URL.revokeObjectURL(url)
   }
 
-  // MARK: Helpers
-  // ============================================================================
-
   private async setHandle(handle: FileSystemDirectoryHandle | null) {
     if (handle) {
       await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
-      await this.read()
+      await this.hydrate()
       this.observe()
     } else {
       await this.$.idb.delete('epos-shell', 'handles', this.id)
@@ -140,7 +197,7 @@ export class Project extends gl.Unit {
 
       const observer = new FileSystemObserver(() => {
         clearTimeout(timer)
-        timer = setTimeout(() => this.read())
+        timer = setTimeout(() => this.hydrate())
       })
 
       observer.observe(handle)
@@ -154,10 +211,10 @@ export class Project extends gl.Unit {
     this.state.observers = []
   }
 
-  private async read() {
+  private async hydrate() {
     try {
       this.state.error = null
-      this.state.reading = true
+      this.state.hydrating = true
 
       // Read epos.json
       const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
@@ -194,7 +251,7 @@ export class Project extends gl.Unit {
     } catch (e) {
       this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
     } finally {
-      this.state.reading = false
+      this.state.hydrating = false
     }
   }
 
@@ -209,25 +266,10 @@ export class Project extends gl.Unit {
   }
 
   private async getFileHandle(path: string) {
-    const parts = path.split('/')
-    const dirs = parts.slice(0, -1)
-    const name = parts.at(-1)
-    if (!name) throw this.never()
-
-    // Get dir handle
     if (!this.state.handle) throw new Error('Project directory is not connected')
-    let dirHandle = this.state.handle
-    for (const dir of dirs) {
-      const [nextDirHandle] = await this.$.utils.safe(() => dirHandle.getDirectoryHandle(dir))
-      if (!nextDirHandle) throw new Error(`File not found: ${path}`)
-      dirHandle = nextDirHandle
-    }
-
-    // Get file handle
-    const [fileHandle] = await this.$.utils.safe(() => dirHandle.getFileHandle(name))
-    if (!fileHandle) throw new Error(`File not found: ${path}`)
-
-    return fileHandle
+    const handle = await this.$.utils.fs.getFileHandle(this.state.handle, path)
+    if (!handle) throw new Error(`File not found: ${path}`)
+    return handle
   }
 
   hasUnminifiedSources(): boolean {
@@ -236,42 +278,28 @@ export class Project extends gl.Unit {
     return Object.keys(this.sourcesInfo).length > 0
   }
 
+  private async safe(fn: Fn) {
+    const [result, error] = await this.$.utils.safe(() => fn())
+    if (error) this.state.error = error
+    return [result, error] as const
+  }
+
   // MARK: Views
   // ===========================================================================
 
   View() {
     return (
-      <div className="">
-        <pre className="m-4 border border-black p-4 text-sm">
-          {JSON.stringify(
-            {
-              id: this.id,
-              name: this.spec.name,
-              slug: this.spec.slug,
-              enabled: this.enabled,
-              debug: this.debug,
-              connected: !!this.state.handle,
-              ready: this.state.ready,
-              reading: this.state.reading,
-              error: this.state.error ? this.state.error.message : null,
-            },
-            null,
-            2,
-          )}
-        </pre>
-        <div>
-          <Button onClick={() => this.toggle()}>toggle enabled</Button>
+      <div className="m-4">
+        <pre className="border border-black p-4 text-sm">{JSON.stringify(this.view, null, 2)}</pre>
+        <div className="mt-4 flex gap-1">
+          <Button onClick={() => this.toggle()}>toggle</Button>
           <Button onClick={() => this.toggleDebug()}>toggle debug</Button>
           <Button onClick={() => this.remove()}>remove</Button>
-          <Button onClick={() => this.connect('none')}>connect none</Button>
-          <Button onClick={() => this.connect('base')}>connect base</Button>
-          <Button onClick={() => this.connect('units')}>connect units</Button>
+          <Button onClick={() => this.connect()}>connect</Button>
           <Button onClick={() => this.disconnect()}>disconnect</Button>
           <Button onClick={() => this.export()}>export</Button>
-          <Button onClick={() => this.read()}>refresh</Button>
+          <Button onClick={() => this.hydrate()}>hydrate</Button>
         </div>
-        {/* <this.NoDirectoryView /> */}
-        {/* <this.MainView /> */}
       </div>
     )
   }
@@ -417,10 +445,10 @@ export class Project extends gl.Unit {
                   Error
                 </div>
               )}
-              {this.state.reading && (
+              {this.state.hydrating && (
                 <div className="flex items-center gap-1 rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-500">
                   <Spinner className="size-3" />
-                  reading
+                  hydrating
                 </div>
               )}
             </div>

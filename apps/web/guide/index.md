@@ -18,7 +18,7 @@ You can opt out of these technologies, but doing so means giving up the core fea
 
 ## Installation
 
-Epos is not provided as an NPM package. Instead, the engine itself is a browser extension that you install directly from the [Chrome Web Store](https://get.epos.dev).
+Epos is not provided as an NPM package. Instead, the engine itself is a browser extension that you install directly from the [Chrome Web Store](https://get.epos.dev). Yes, Epos is an extension for building other extensions — a meta-extension, if you will.
 
 ## Workflow
 
@@ -32,7 +32,7 @@ Once installed, the workflow is simple:
 
 Epos is not a universal framework. It deliberately strips away the noise and doubles down on a specific tech stack to provide a developer experience that wouldn't be possible otherwise.
 
-The engine prioritizes ease of use for the **95% of common use cases**, even if that means sacrificing flexibility. Epos isn't for everyone — but if you embrace its constraints, you get an incredibly powerful toolset in return.
+The engine prioritizes ease of use for the **most common use cases**, even if that means sacrificing flexibility. Epos isn't for everyone — but if you embrace its constraints, you get an incredibly powerful toolset in return.
 
 #### Core Limitations:
 

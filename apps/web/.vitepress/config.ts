@@ -33,7 +33,7 @@ export default defineConfig({
         {
           text: 'Guide',
           items: [
-            { text: 'Basics', link: '/guide/basics' },
+            { text: 'Getting Started', link: '/guide/getting-started' },
             { text: 'Vite Setup', link: '/guide/vite' },
             { text: 'Rendering', link: '/guide/rendering' },
             { text: 'Messaging', link: '/guide/messaging' },
@@ -41,22 +41,19 @@ export default defineConfig({
             { text: 'Environment', link: '/guide/environment' },
             { text: 'Storage', link: '/guide/storage' },
             { text: 'Assets', link: '/guide/assets' },
+            { text: 'Action', link: '/guide/action' },
             { text: 'Libs', link: '/guide/libs' },
-            { text: 'epos.json', link: '/guide/epos-json' },
             { text: 'Permissions', link: '/guide/permissions' },
             { text: 'Publishing', link: '/guide/publishing' },
+            { text: 'epos.json', link: '/guide/epos-json' },
           ],
         },
-        // {
-        //   text: 'Advanced',
-        //   items: [],
-        // },
       ],
       '/api/': [
         {
-          text: 'Reference',
+          text: 'API Reference',
           items: [
-            { text: 'Overview', link: '/api/' },
+            { text: 'APIs', link: '/api/' },
             { text: 'epos.*', link: '/api/general' },
             { text: 'epos.env.*', link: '/api/env' },
             { text: 'epos.dom.*', link: '/api/dom' },

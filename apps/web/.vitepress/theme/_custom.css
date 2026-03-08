@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+:root {
+  --color-brand: hsl(65 100% 49%);
+  --color-accent: oklch(0.61 0.08 140.5 / 1);
+  --vp-button-brand-active-bg: var(--color-brand);
+  --vp-button-brand-active-text: black;
+  --vp-button-brand-bg: var(--color-brand);
+  --vp-button-brand-hover-bg: var(--color-brand);
+  --vp-button-brand-hover-text: black;
+  --vp-button-brand-text: black;
+  --vp-c-brand-1: var(--color-accent);
+  --vp-c-brand-2: var(--color-accent);
+  --vp-c-brand-3: var(--color-accent);
+  --vp-c-gutter: var(--vp-c-divider);
+  --vp-sidebar-bg-color: var(--vp-c-bg);
+}
+
+.dark {
+  --color-accent: var(--color-brand);
+  --vp-c-bg: #16171d;
+  --vp-c-divider: #202333;
+}
+
+/* Overrides */
+:root {
+  .VPNavBarTitle.has-sidebar .title {
+    @apply border-b-transparent;
+  }
+
+  .VPSidebar {
+    @apply mt-16 border-r border-(--vp-c-divider) pt-4.5 shadow-none;
+  }
+
+  .VPNavBar.has-sidebar .divider {
+    @apply pl-0;
+  }
+
+  .VPDoc .aside-container {
+    @apply border-l border-(--vp-c-divider);
+  }
+
+  .VPDocAside .content {
+    @apply border-l-0 pl-8;
+  }
+
+  .aside-container {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 28px);
+  }
+
+  .VPFeatures .item {
+    @apply p-0;
+  }
+  .VPFeature {
+    @apply rounded-none border-(--vp-c-divider) bg-(--vp-c-bg);
+  }
+  .VPFeatures .item:nth-child(1) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(2) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(3) .VPFeature {
+    @apply border-b-0;
+  }
+  .VPFeatures .item:nth-child(4) .VPFeature {
+    @apply border-r-0;
+  }
+  .VPFeatures .item:nth-child(5) .VPFeature {
+    @apply border-r-0;
+  }
+
+  .vp-code-group .tabs label:first-of-type:last-child {
+    &::after {
+      @apply bg-black;
+    }
+    .dark &::after {
+      @apply bg-white/50;
+    }
+  }
+
+  .vp-code-group .tabs {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
+
+  pre.shiki {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
+}
