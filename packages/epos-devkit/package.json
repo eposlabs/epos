@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.22.0",
-    "@tabler/icons-react": "^3.37.1",
+    "@tabler/icons-react": "^3.40.0",
     "clsx": "^2.1.1",
     "epos": "^1.57.0",
     "epos-unit": "^1.27.0",
