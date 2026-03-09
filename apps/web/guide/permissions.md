@@ -1,12 +1,12 @@
 # Permissions
 
-Epos follows the same permissions model as the regular web extensions. Yet some permissions are not available in Epos and there
+Epos uses the same general permission model as normal browser extensions, but you describe those permissions in `epos.json` instead of writing a raw `manifest.json` by hand.
 
-## Full List of Permissions
+Some permissions are always added by the engine. Others are optional and depend on what your project needs.
 
-Here is the full list of all permissions supported by Epos:
+## Engine Permissions
 
-Required:
+Every exported Epos extension includes a set of permissions required by the engine itself:
 
 - `alarms`
 - `declarativeNetRequest`
@@ -16,7 +16,13 @@ Required:
 - `unlimitedStorage`
 - `webNavigation`
 
-Optional:
+If your project uses a `<sidePanel>` target, Epos also adds `sidePanel` automatically.
+
+You do not need to declare these permissions yourself.
+
+## Project Permissions
+
+These are the extra permissions you can declare in `epos.json` today:
 
 - `background`
 - `browsingData`
@@ -27,29 +33,7 @@ Optional:
 - `sidePanel`
 - `storage`
 
-Rqeuired permissions are mandatory for all Epos extensions. The engine requires them to work properly. So even if your application does not use any of them, the resulting extension will still have them in its `manifest.json` file.
-
-## Other Permissions
-
-Browser extensions allow you to request other permissions as well, such as `bookmarks` or `history`. Epos does not support them so you can not create `history` management tool using Epos. The support may be added in the future.
-
-## Permission Justification
-
-When publishing to Chrome Web Store, you need to provide a justification for some of the permissions. Here are the justifications for the permissions used by Epos, you can simply copy-paste them when submitting your extension:
-
-- `alarms` - Wake up Service Worker to perform background tasks
-- `declarativeNetRequest` - Modify headers to allow code to be executed within web pages
-- `offscreen` - Working with Blobs and other Web APIs not available in Service Worker
-- `scripting` - Dynamically register content scripts
-- `tabs` - Send messages to tabs using `chrome.tabs.sendMessage`
-- `unlimitedStorage` - Prevent IndexedDB from being cleared by the browser
-- `webNavigation` - Watch navigation to automatically fix CSP errors
-
-## Optional Permissions
-
-Optional permissions are not required for the extension to work, but they allow you to use additional APIs. To access those permissions, same as with `manifest.json`, you need to explicitly request them in `epos.json`:
-
-::: code-group
+Add them to `permissions` if your extension always needs them:
 
 ```json
 {
@@ -57,33 +41,90 @@ Optional permissions are not required for the extension to work, but they allow 
 }
 ```
 
-:::
+## Optional Permissions
 
-To request optional permissions, you should use `optionalPermissions` field in `epos.json`:
+If a permission is needed only for some user flows, put it into `optionalPermissions` instead.
 
-::: code-group
-
-```json [epos.json]
+```json
 {
-  "permissions": ["contextMenus", "cookies"],
-  "optionalPermissions": ["tabs", "webNavigation"]
+  "optionalPermissions": ["downloads", "notifications"]
 }
 ```
 
-Note that in regular `manifest.json`, the field is called `optional_permissions`. Manifest uses snake_case due to historical reasons, but in `epos.json` we use camelCase for consistency with the rest of the JavaScript ecosystem.
-
-:::
-
-To request optional permissions at runtime, you would normally use `chrome.permissions.request()`. However, Epos replaces `chrome.*` API with `epos.browser.*`, so you should call `epos.browser.permissions.request()` instead:
+At runtime, request it through `epos.browser.permissions.request()`:
 
 ```ts
 const granted = await epos.browser.permissions.request({
-  permissions: ['tabs', 'webNavigation'],
+  permissions: ['downloads'],
 })
 ```
 
+This is the same general idea as `chrome.permissions.request()`, just through the Epos browser wrapper.
+
 ## Host Permissions
 
-Usually you do not need to worry about host permissions. All match patters from your `targets` are automatically registered as host permissions in the resulting `manifest.json` during export. However, if you need manual control, e.g. you perform `fetch` requests to foreign domains, you should specify those hosts in `hostPermissions` or `optionalHostPermissions` field. They work the same way as regular `host_permissions` and `optional_host_permissions` in `manifest.json`.
+Host permissions are a little different.
 
-To learn more about permissions, read the official Chrome extension documentation: https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions
+In many cases, you do not need to write them manually. Epos automatically derives host permissions from your `targets.matches` patterns when exporting the manifest.
+
+For example, this target:
+
+```json
+{
+  "matches": "*://*.example.com/*",
+  "load": ["dist/main.js"]
+}
+```
+
+already implies host access to `example.com` and its subdomains.
+
+## Manual Host Permissions
+
+If your project needs host access beyond its normal targets, use `hostPermissions` or `optionalHostPermissions`.
+
+```json
+{
+  "hostPermissions": ["https://api.example.com/*"],
+  "optionalHostPermissions": ["https://*.another.com/*"]
+}
+```
+
+If you want all URLs, use `<allUrls>` in `epos.json`.
+
+```json
+{
+  "hostPermissions": ["<allUrls>"]
+}
+```
+
+Use the camelCase Epos form. Do not use raw manifest names like `host_permissions` or `<all_urls>` inside `epos.json`.
+
+## Unsupported Permissions
+
+Epos does not expose every browser extension permission through `epos.json` yet.
+
+If a permission is not in the supported list above, you should assume it is currently unsupported unless the docs say otherwise.
+
+## Permission Justifications
+
+When publishing to the Chrome Web Store, you may need to explain why some permissions are present. For the engine permissions, these explanations are a good starting point:
+
+- `alarms` - Wake up the background worker for scheduled tasks.
+- `declarativeNetRequest` - Adjust headers so project code can run reliably on web pages.
+- `offscreen` - Use web APIs that are not available in the service worker.
+- `scripting` - Register and inject project scripts.
+- `tabs` - Interact with browser tabs and route messages.
+- `unlimitedStorage` - Reduce the risk of browser cleanup removing extension data.
+- `webNavigation` - Watch navigation events and react when pages change.
+
+You should still describe your own extension-specific permissions in your own words.
+
+## A Practical Rule
+
+Keep the permission list as small as possible.
+
+If a permission is always needed, put it in `permissions`.
+If it is needed only after a user action, prefer `optionalPermissions`.
+If it comes from a target match pattern, let Epos derive it automatically.
+
+For more on project configuration, see the [epos.json guide](/guide/epos-json).

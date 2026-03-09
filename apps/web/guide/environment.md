@@ -1,52 +1,68 @@
 # Environment
 
-To access information about currently executing environment and your project, you can use `epos.env` API. This API is available in all contexts (content script, background, popup, side panel) and provides useful information about the current execution context.
+`epos.env` gives you information about where your code is running and which project it belongs to.
 
-## Context Information
+This is useful when the same code can run in different places, such as the popup, background, side panel, or a web page.
 
-Epos provides information about what project is currently running and in what context. This information is available via `epos.env` object:
+## Basic Context Flags
 
-#### `epos.env.tabId`
+The most common values are the three boolean flags:
 
-Current tab ID if applicable, `-1` otherwise.
+- `epos.env.isPopup`
+- `epos.env.isSidePanel`
+- `epos.env.isBackground`
 
-Can be used for [`epos.browser.tabs`](https://developer.chrome.com/docs/extensions/reference/api/tabs) API calls.
+Example:
 
-#### `epos.env.windowId`
+```ts
+if (epos.env.isBackground) {
+  console.log('Running in background')
+}
 
-Current window ID if applicable, `-1` otherwise.
+if (epos.env.isPopup) {
+  console.log('Running in popup')
+}
+```
 
-Can be used for [`epos.browser.windows`](https://developer.chrome.com/docs/extensions/reference/api/windows) API calls.
+These checks are often enough when you need slightly different startup logic in different contexts.
 
-#### `epos.env.isPopup`
+## `tabId` and `windowId`
 
-`true` if the code is running in a popup context (`<popup>` in `epos.json`)
+`epos.env.tabId` and `epos.env.windowId` tell you which browser tab and window the current code belongs to.
 
-#### `epos.env.isSidePanel`
+```ts
+console.log(epos.env.tabId)
+console.log(epos.env.windowId)
+```
 
-`true` if the code is running in a side panel context (`<sidePanel>` in `epos.json`)
+They can be used in `epos.browser.tabs` and `epos.browser.windows` APIs:
 
-#### `epos.env.isBackground`
+```ts
+const tab = await epos.browser.tabs.get(epos.env.tabId)
+const win = await epos.browser.windows.get(epos.env.windowId)
+```
 
-`true` if the code is running in a background context (`<background>` in `epos.json`)
+For background scripts and iframes, these values are `-1`.
 
 ## Project Information
 
-- `epos.env.project` - Information about your project
-- `epos.env.tabId` - Current tab ID (if applicable, -1 otherwise)
-- `epos.env.windowId` - Current window ID (if applicable, -1 otherwise)
-- `epos.env.isPopup` - true if running in `<popup>`
-- `epos.env.isSidePanel` - true if running in `<sidePanel>`
-- `epos.env.isBackground` - true if running in `<background>`
+`epos.env.project` contains information about the current project:
 
-All properties are typed with TypeScript, so you can get autocompletion and see what's inside.
+- `id` - the internal project id
+- `debug` - whether the project is running in debug mode
+- `enabled` - whether the project is enabled
+- `spec` - the normalized `epos.json`
+- `manifest` - the generated `manifest.json` content for export
 
-## Project Information
+Example:
 
-`epos.env.project` provides information about the currently running project. It has the following properties:
+```ts
+console.log(epos.env.project.id)
+console.log(epos.env.project.spec.name)
 
-- `epos.env.project.id` - Unique identifier of the project
-- `epos.env.project.debug` - true if the project is running in debug mode
-- `epos.env.project.enabled` - true if the project is enabled (can become false if the project is disabled via [app.epos.dev](https://app.epos.dev) dashboard
-- `epos.env.project.spec` - this is normalized content of your `epos.json` file.
-- `epos.env.project.manifest` - The manifest object generated from the project specification
+if (epos.env.project.debug) {
+  console.log('Debug mode is on')
+}
+```
+
+`spec` is useful when your code needs to read its own configuration. `manifest` is mostly useful for inspection and debugging.

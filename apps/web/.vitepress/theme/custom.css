@@ -1,2 +1,85 @@
 @import 'tailwindcss';
 
+html:not(.dark) {
+  --vp-c-brand-1: var(--color-teal-600);
+  --vp-c-brand-2: var(--color-teal-600);
+  --vp-c-brand-3: var(--color-teal-600);
+}
+
+html.dark {
+  --vp-c-brand-1: hsl(65 100% 49%);
+  --vp-c-brand-2: hsl(65 100% 49%);
+  --vp-c-brand-3: hsl(65 100% 49%);
+  --vp-button-brand-text: var(--color-black);
+  --vp-button-brand-hover-text: var(--color-black);
+}
+
+.main {
+  .name {
+    @apply font-semibold;
+  }
+  .text {
+    @apply font-medium;
+  }
+  .tagline {
+    @apply font-normal!;
+  }
+}
+
+.vp-doc {
+  strong {
+    @apply font-medium text-black dark:text-white;
+  }
+
+  h1 {
+    @apply text-4xl/[1.6] font-medium;
+  }
+
+  h2 {
+    @apply text-3xl/[1.6] font-medium;
+  }
+
+  h3 {
+    @apply font-medium;
+  }
+
+  h4 {
+    @apply font-medium;
+  }
+}
+
+/* :root {
+  --vp-c-brand-1: #3eb234;
+  --vp-c-brand-2: #3eb234;
+  --vp-c-brand-3: #3eb234;
+}
+
+.dark {
+}
+
+.vp-doc {
+  strong {
+    font-weight: 500;
+    color: black;
+    .dark & {
+      color: white;
+    }
+  }
+
+  h1 {
+    font-size: 36px;
+    line-height: 1.6;
+  }
+
+  h2 {
+    font-size: 28px;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 500;
+  }
+} */

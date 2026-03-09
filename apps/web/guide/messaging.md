@@ -1,60 +1,50 @@
 # Messaging
 
-Epos provides a powerful messaging system called `bus`. It is designed to replace `chrome.runtime.sendMessage` and other related APIs with a **unified interface** for cross-context communication.
+`epos.bus` is the messaging layer used to communicate between extension contexts. You can use the same API in the popup, background, side panel, web page, or iframes.
 
-With `bus`, you do not have to worry about internal routing. Epos delivers messages from any context to any other context.
+The simple mental model is this:
+
+- `epos.bus.on()` listens for a message.
+- `epos.bus.send()` sends a message to other contexts.
+- `epos.bus.off()` removes a listener.
+
+Epos handles the routing for you, so you do not need to switch between `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage`, or `window.postMessage`.
 
 ::: info Why “bus”?
 
-[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a **bus** is not a vehicle, but a communication system that transfers data between different components. It acts as a **centralized hub** for exchanging messages.
+[In computing](<https://en.wikipedia.org/wiki/Bus_(computing)>), a bus is not a vehicle, but a communication system that transfers data between different components. It acts as a centralized hub for exchanging messages.
 
 :::
 
-## Basic Usage
+## Why Use `epos.bus`?
 
-The `bus` API is consistent across every part of your extension. Whether you are in a background script, a popup, web page, or even an iframe, the methods work exactly the same.
+TODO: describe that epos.bus works in any context and has smart routing system that knows how to transfer messages from any context to any context. It replacees chrome.runtime.sendMessage and others with unified API.
 
-#### Listening for Messages
+## Basics
 
-Use `epos.bus.on()` to register a listener for a specific message type (event). To send data back, simply **return a value** (or a Promise) from the handler.
+The most common pattern is one context listening and another one sending.
+
+In this example, the background listens for `analytics:event` and popup sends it:
 
 ::: code-group
 
-```ts [background.js]
-epos.bus.on('getUserData', async userId => {
-  const user = await fetchUserData(userId)
-  return user
+```ts [background.ts]
+epos.bus.on('analytics:event', eventName => {
+  console.log('Analytics event received:', eventName)
 })
 ```
 
-:::
-
-#### Sending Messages
-
-::: code-group
-
-```tsx {1-3} [src/main.tsx]
-const sendMessage = (value: string) => {
-  epos.bus.send('message-name', value)
-}
-
+<!-- prettier-ignore -->
+```tsx [popup.tsx]
 const App = () => {
-  const [value, setValue] = useState('')
   return (
-    <div>
-      <input value={value} onChange={e => setValue(e.target.value)} />
-      <button onClick={() => sendMessage(value)}>Send Message</button>
-    </div>
+    <button onClick={() => epos.bus.send('analytics:event', 'save')}>
+      Save
+    </button>
   )
 }
 
 epos.render(<App />)
-```
-
-```ts [src/background.ts]
-epos.bus.on('message-name', (...data) => {
-  console.log('Received in background:', data)
-})
 ```
 
 ```json [epos.json]
@@ -62,8 +52,8 @@ epos.bus.on('message-name', (...data) => {
   "name": "My Extension",
   "targets": [
     {
-      "matches": "*://*.example.com/*",
-      "load": ["dist/main.css", "dist/main.js"]
+      "matches": "<popup>",
+      "load": ["dist/popup.js"]
     },
     {
       "matches": "<background>",
@@ -75,139 +65,235 @@ epos.bus.on('message-name', (...data) => {
 
 :::
 
-#### Binary Data Support
+That is the most common pattern. You pick an event name, attach a listener with `on()`, and send data with `send()`.
 
-Standard extension messaging is limited to JSON-serializable data, which means it does not support **Blob** or **File** objects. If you want to transfer binary data the "standard" way, you are forced to manually serialize it into a Base64 string — a process that is slow, memory-intensive, and increases payload size.
+## Returning Data
 
-The Epos `bus` natively supports **Blob** objects. It uses a smarter transfer logic that avoids Base64 serialization entirely, allowing you to move files, images, or any large binary data across contexts without the performance overhead.
+`epos.bus.send()` is not only for fire-and-forget events. If a listener returns a value, the sender receives that value back.
 
-::: info
-
-You can learn more about how `bus` works, its features and capabilities in the [API Reference](/api/bus).
-
-:::
-
-The engine handles the **routing automatically** across all contexts, meaning you no longer have to juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage`, and `window.postMessage`. Just broadcast the message, and Epos ensures it arrives.
-
----
-
-```ts
-// background.js
-epos.bus.on('message-name', (...data) => {
-  console.log('Received in background:', data)
-})
-
-// injected-script.js
-epos.bus.on('message-name', (...data) => {
-  console.log('Received in injected script:', data)
-})
-
-// popup.js
-epos.bus.send('message-name', ...data)
-```
-
-TODO: describe how return value can be used.
-
-Bus is extremely powerful. It automatically understands how messages should be routed based on the context they are sent from and received in. There is no need to manually juggle with `chrome.runtime.sendMessage`, `chrome.tabs.sendMessage` or `window.postMessage` APIs.
-
-Additionally, bus allows you to send [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) objects. So you can send files, images and video between contexts. Usual `chrome.runtime.sendMessage` does not allow blobs and Epos uses some hard-engineered magic to make it work. You can read more about it and other supported data types in the [Bus API reference](/api/bus#sending-blobs).
-
-Bus sends messages only to other contexts and does not send messages to its own context. If you want in-context communication using bus, you can use `epos.bus.emit` instead:
-
-```ts
-// content.js
-epos.bus.on('in-context-event', (...data) => {
-  console.log('Received in content:', data)
-})
-epos.bus.emit('in-context-event', ...data)
-```
-
-## TypeScript for Bus
-
-To have type safety when using Bus messages, you can use generics provided by `epos.bus` API:
-
-For simple retunr type, you can use it like this:
-
-```ts
-const value = await epos.bus.send<number>('some-event') // value is number
-```
-
-But for more complex scenarios, you can use a "remote" function type instead:
-
-```ts
-// background.js
-export function getUser(userId: string) {
-  const userData = ... // get user data from API
-  return userData
-}
-epos.bus.on('get-user', getUser)
-
-// popup.js
-import type { getUser } from './background'
-
-// Now we have full type safety for getUser function, including its parameters and return type
-const user = await epos.bus.send<typeof getUser>('get-user', '123')
-```
-
-This way, you can have full type safety for your bus messages, which is especially useful when you have complex data structures or want to ensure that the data being sent and received is of the correct type.
-
-## Bus as RPC
-
-In some cases though, you want to "expose" some objects to other contexts. For example:
+This allows for request-response flows:
 
 ```ts
 // background.ts
-export const userApi = {
-  getUser() {},
-  updateUser() {},
-}
+epos.bus.on('user:get', async (userId: string) => {
+  const response = await fetch(`https://api.example.com/users/${userId}`)
+  return await response.json()
+})
+
+// popup.tsx
+const user = await epos.bus.send<User>('user:get', '42')
+console.log(user)
 ```
 
-With regular bus api, if you want to expose api.getUser and api.updateUser functions to other contexts, you would need to create 2 separate bus messages for each function:
+If no listener responds, `send()` resolves to `undefined`.
+
+## Local Events with `emit()`
+
+`epos.bus.send()` does not call listeners in the current context. It is meant for sending messages to other contexts.
+
+To trigger local listeners, use `epos.bus.emit()` instead:
+
+::: code-group
+
+```ts [popup.tsx]
+epos.bus.on('modal:close', () => {
+  console.log('Close modal')
+})
+
+await epos.bus.emit('modal:close')
+```
+
+:::
+
+This can be handy for local coordination when you do not need cross-context delivery.
+
+## Removing Listeners
+
+Use `epos.bus.off()` when a listener should stop receiving messages.
+
+::: code-group
+
+```ts [popup.tsx]
+const handleUpdate = (value: number) => {
+  console.log('Updated:', value)
+}
+
+epos.bus.on('counter:update', handleUpdate)
+
+// Later
+epos.bus.off('counter:update', handleUpdate)
+```
+
+:::
+
+If you call `off()` without a callback, Epos removes all listeners for that event name in the current context.
+
+## One-Time Listeners
+
+Sometimes an event should be handled only once. In that case, use `epos.bus.once()`.
+
+::: code-group
+
+```ts [popup.tsx]
+epos.bus.once('auth:ready', () => {
+  console.log('Auth is ready')
+})
+```
+
+:::
+
+After the first call, the listener is removed automatically.
+
+## Waiting for Readiness
+
+For startup flows, it is common to wait until another context finishes some work. `epos.bus.setSignal()` and `epos.bus.waitSignal()` are made for that.
+
+For example, your popup may need to wait until the background loads configuration:
+
+```ts
+// src/background.ts
+const config = await loadConfig()
+epos.bus.setSignal('config:ready', config)
+
+// src/popup.tsx
+const config = await epos.bus.waitSignal<Config>('config:ready')
+console.log(config)
+```
+
+By default, `waitSignal()` waits indefinitely. You can also pass a timeout in milliseconds. If the signal is not set within that time, it resolves to `undefined`:
+
+```ts
+// Resolves to `undefined` if config is not ready within 5 seconds
+const config = await epos.bus.waitSignal<Config>('config:ready', 5000)
+```
+
+## Type Safety
+
+If you are using TypeScript, `send()` can be typed in two ways.
+
+1. For a simple return value, pass the expected result type:
+
+```ts
+const total = await epos.bus.send<number>('math:sum', 5, 10)
+```
+
+2. If you also want argument checking, pass a function type:
+
+::: code-group
+
+```ts [popup.tsx]
+import type { sum } from './background'
+
+const total = await epos.bus.send<typeof sum>('math:sum', 5, 10)
+```
+
+```ts [background.ts]
+export const sum = (a: number, b: number) => a + b
+
+epos.bus.on('math:sum', sum)
+```
+
+:::
+
+This keeps the event name string-based, but still gives you good TypeScript help.
+
+## Using Bus as RPC
+
+If you have many related methods, exposing them all via `epos.bus.on` can become exhausting:
 
 ::: code-group
 
 ```ts [background.ts]
 export const userApi = {
-  getUser() {},
-  updateUser() {},
+  getUser () { ... },
+  updateUser () { ... },
+  removeUser () { ... },
+  // ... 10 more methods
 }
 
-epos.bus.on('userApi.getUser', userApi.getUser)
-epos.bus.on('userApi.updateUser', userApi.updateUser)
+epos.bus.on('user:get', userApi.getUser.bind(userApi))
+epos.bus.on('user:update', userApi.updateUser.bind(userApi))
+epos.bus.on('user:remove', userApi.removeUser.bind(userApi))
+// ... 10 more listeners
 ```
 
 :::
 
-This approach works, but it can quickly become unmanageable as your API grows. You would need to create a separate bus message for each function, which can lead to a lot of boilerplate code.
-
-To solve this problem, Epos provides a special `epos.bus.register` API that allows you to register an entire object as a remote API with just one line of code:
+To expose all methods at once, you can `register()` the API object as an RPC:
 
 ::: code-group
 
 ```ts [background.ts]
-export const userApi = {
-  getUser() {},
-  updateUser() {},
-}
+export const userApi = { ... }
 
-epos.bus.register('userApi', userApi)
+epos.bus.register('user', userApi)
 ```
 
 :::
 
-And then you can use this api in other contexts using `epos.bus.use` method:
+Then, in another context, you can just `use()` that API by its name:
 
 ::: code-group
 
-```ts [popup.ts]
+```ts [popup.tsx]
 import type { userApi } from './background'
 
-const userApi = await epos.bus.use<typeof userApi>('userApi')
+const userApi = epos.bus.use<typeof userApi>('user')
 
-// Use api directly, full type safety for both parameters and return types
-const user = await userApi.getUser()
-await userApi.updateUser(user)
+const user = await userApi.getUser('42')
 ```
 
 :::
+
+Notice that `epos.bus.use()` returns the API object immediately. You do not `await` it.
+
+Also you get the full type safety for the API methods.
+
+If the API should no longer be available, you can remove it later with `epos.bus.unregister('user')`.
+
+## Namespaces with for()
+
+On larger projects, event names can start to collide. `epos.bus.for()` solves this problem by creating a namespaced version of the bus:
+
+::: code-group
+
+```ts [chat.ts]
+const chatBus = epos.bus.for('chat')
+
+chatBus.on('message', text => {
+  console.log('Chat message:', text)
+})
+
+await chatBus.send('message', 'Hello')
+```
+
+:::
+
+The namespaced bus has all methods of the normal `epos.bus` API. Additionally it has `dispose()` method to remove all listeners registered through it.
+
+## Sending Blobs
+
+`epos.bus` is not restricted to JSON data, you can safely transfer `Blob` objects between contexts. This is useful when you work with images, files, or other binary data.
+
+```ts
+// popup.ts
+await epos.bus.send('file:save', imageBlob)
+
+// background.ts
+epos.bus.on('file:save', async (blob: Blob) => {
+  console.log('Save file:', blob.type, blob.size)
+})
+```
+
+Epos does not serialize blobs as base64 strings. Instead, it uses smarter algorithms to transfer them efficiently. You can easily send **100MB** files or even more without any performance issues.
+
+## When to Use What
+
+- Use `on()` and `send()` for normal cross-context messaging.
+- Use `emit()` for local-only events.
+- Use `once()` when an event should be handled a single time.
+- Use `setSignal()` and `waitSignal()` for readiness and synchronization.
+- Use `register()` and `use()` when you want full remote API access.
+- Use `for()` to create a namespaced bus and avoid event name collisions.
+
+If you want the exact signatures and edge cases for each method, continue to the [Bus API Reference](/api/bus).

@@ -1,117 +1,128 @@
 # Assets
 
-In this section, we will cover how to use static files (assets) in your Epos projects. This includes images, fonts, and any other files that you want to include in your extension.
+Assets are static files bundled with your project, such as images, fonts, JSON files, or media.
+
+You list them in `epos.json`, and then access them through `epos.assets`.
+
+This guide covers the practical workflow. For exact method signatures, see the [Assets API Reference](/api/assets).
 
 ## Defining Assets
 
-Let's say we want `public/view.jpg` to be available as an asset. If you need a placeholder image to test with, you can download this one: `https://picsum.photos/300/300`.
-
-Now we need add this file to the `assets` array in `epos.json`:
+Suppose your project contains `public/view.jpg`. To make it available at runtime, add it to the `assets` field in `epos.json`:
 
 ::: code-group
 
 ```json [epos.json]
 {
   "name": "My Extension",
-  "assets": ["public/view.jpg"], // [!code ++]
-  ...
+  "assets": ["public/view.jpg"]
 }
 ```
 
 :::
 
-## Using Assets
+Once a file is listed there, Epos treats it as part of your project bundle.
 
-After you define an asset, you can get its URL with `epos.assets.url()`:
+## Using Asset URLs
+
+The most common method is `epos.assets.url()`. It returns a blob URL that you can use in `src`, `href`, CSS, and similar places.
 
 ```tsx
-const App = epos.component(() => {
-  return <img src={epos.assets.url('public/view.jpg')} />
-})
+const App = () => {
+  return <img src={epos.assets.url('public/view.jpg')} alt="View" />
+}
 
 epos.render(<App />)
 ```
 
-You can provide any variation for the path. For example `./public/view.jpg` and `/public/view.jpg` will also work. But you should provide correct path, if you wil use `epos.assets.url('view.jpg')`, Epos will throw an error as the asset file does not exist.
+Paths are normalized, so these forms all work if the asset exists:
 
-## ⬇︎ ADVANCED ⬇︎
+- `public/view.jpg`
+- `./public/view.jpg`
+- `/public/view.jpg`
 
-## How Assets Work
+But the file still needs to be listed in `epos.json`. If you ask for `view.jpg` when only `public/view.jpg` exists, Epos throws an error.
 
-Since Epos loads projects dynamically, it can't just reference files from your local folder. Instead, when Epos consumes your project, it saves all assets into IndexedDB. When your project starts, assets are automatically loaded from IndexedDB into memory.
+## Reading Asset Contents
 
-When you call `epos.assets.url()`, Epos creates an [object URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static) for the specified file.
+If you need the file itself instead of a URL, use `epos.assets.get()`.
 
-The assets API works in any context, including regular web pages.
+```ts
+const blob = await epos.assets.get('public/data.json')
 
-## Heavy Assets
+if (blob) {
+  const text = await blob.text()
+  console.log(text)
+}
+```
 
-In most cases assets are relatively small files and loading them into memory is not a problem. However, if you have large files that you don't want to load until necessary, you can disable automatic assets preloading in `epos.json`:
+This is useful for JSON, text files, templates, or binary data you want to process yourself.
 
-```json [epos.json]
+## Preloading and Manual Loading
+
+By default, Epos preloads assets so `epos.assets.url()` works immediately.
+
+If you want manual control, disable preloading in `epos.json`:
+
+```json
 {
   "name": "My Extension",
   "assets": ["public/view.jpg", "public/heavy.mp4"],
-  "options": { "preloadAssets": false } // [!code ++]
-  ...
+  "options": {
+    "preloadAssets": false
+  }
 }
 ```
 
-Once you disable preloading, assets will not be loaded into memory automatically. Instead, you will need to call `epos.assets.load()` manually to load assets into memory. If you call `epos.assets.load()` without any arguments, it will load all assets into memory.
+Then load assets yourself:
 
 ```ts
-// Will throw an error if asset is not loaded
-epos.assets.url('public/view.jpg')
-
 await epos.assets.load('public/view.jpg')
-epos.assets.url('public/view.jpg') // Works now
 
-// Load ALL assets
+const url = epos.assets.url('public/view.jpg')
+```
+
+You can also load everything at once:
+
+```ts
 await epos.assets.load()
 ```
 
-To unload, use `epos.assets.unload()`:
+This setup is useful when you have large files and do not want all of them in memory from the start.
+
+## Unloading Assets
+
+To release memory, use `epos.assets.unload()`.
 
 ```ts
-// Unload a specific asset
-epos.assets.unload('public/view.jpg')
+epos.assets.unload('public/heavy.mp4')
 
-// Unload ALL assets
+// Or unload everything
 epos.assets.unload()
 ```
 
-## Other Asset APIs
+This only affects the in-memory loaded asset URLs. It does not remove the asset from the project.
 
-If you need to read the contents of an asset file and not the URL, you can use `epos.assets.get()`:
+## Listing Assets
 
-```ts
-const blob = await epos.assets.get('public/view.jpg')
-console.log(blob.size, blob.type)
-```
-
-Note that `get()` is asynchronous compared to `url()` method. If asset is not loaded, `get()` will load it first. You may wonder why `url()` is not asynchronous also. The reason is that in most cases you want to use url inside rendering (provide path to image/video/font) and making it asynchronous would make it more difficult to use.
-
-To list all available assets, use `epos.assets.list()`:
+`epos.assets.list()` shows which assets exist and whether they are currently loaded.
 
 ```ts
-// Array<{ path: string, loaded: boolean }>
-const assets = await epos.assets.list()
-
-for (const asset of assets) {
-  console.log(asset.path, asset.loaded)
-}
+const allAssets = epos.assets.list()
+const loadedAssets = epos.assets.list({ loaded: true })
+const unloadedAssets = epos.assets.list({ loaded: false })
 ```
 
-Additionally you can provide a filter object to `list()` method and filter only loaded/unloaded assets:
+This method is synchronous.
 
-```ts
-// List only loaded assets
-const loadedAssets = await epos.assets.list({ loaded: true })
+## How It Works
 
-// List only unloaded assets
-const unloadedAssets = await epos.assets.list({ loaded: false })
-```
+Epos stores project assets in IndexedDB. When needed, they are loaded into memory and exposed as blob URLs.
 
-## Caveats
+That is why `epos.assets.url()` can work in any context, including normal web pages.
 
-At the moment, Epos does not provide a way to define assets using a glob pattern, so providing `public/*.jpg` won't work. You need to list each file separately in `epos.json`. If you have a lot of assets, you still have to list all of them. The glob pattern support may be added in the future.
+## Notes
+
+- `url()` throws if the asset does not exist or is not loaded.
+- `get()` can still read an asset even if you did not load it manually.
+- Epos does not currently support glob patterns such as `public/*.jpg` in the `assets` field. List each asset explicitly.

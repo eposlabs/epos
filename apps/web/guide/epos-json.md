@@ -1,84 +1,70 @@
 # epos.json
 
-`epos.json` is the main configuration file for your Epos extension. It defines the extension's metadata, assets, targets, permissions, and other settings. This guide explains the structure of `epos.json` and how to use it.
+`epos.json` is the main configuration file for an Epos project. It tells Epos what your extension is called, where your code should run, what assets to bundle, and what permissions to request.
 
-## Full Structure
+If you know `manifest.json`, you can think of `epos.json` as the higher-level source that Epos uses to generate the manifest for export.
 
-Here is the full list of all available fields in `epos.json`:
+## Smallest Valid File
+
+The only required field is `name`.
 
 ```json
 {
+  "name": "My Extension"
+}
+```
+
+That is enough to create a valid project, but it does not load any code yet.
+
+## A Common Real Example
+
+Here is a more typical configuration:
+
+```json
+{
+  "$schema": "https://epos.dev/schema.json",
   "name": "My Extension",
-  "slug": "my-extension",
   "version": "1.0.0",
-  "description": "A useful extension",
-  "icon": "dist/icon.png",
-
-  // If true, ':action' event will be triggered when user clicks on extension icon.
-  // You can handle this event via `epos.bus.on(':action', () => {....})`.
-  // Alternatively
-  "action": true,
-
-  // Describes width and height of the popup
-  // Applyies only if
-  "popup": {
-    "width": 380,
-    "height": 572
-  },
-
-  "options": {
-    "preloadAssets": true,
-    "allowProjectsApi": false,
-    "allowMissingModels": false
-  },
-
-  "assets": ["dist/font.css", "dist/data.json"],
-
+  "description": "Example Epos extension",
+  "icon": "dist/icon.svg",
+  "assets": ["dist/data.json"],
   "targets": [
     {
-      "matches": ["<popup>"],
+      "matches": "<popup>",
       "load": ["dist/popup.js", "dist/popup.css"]
     },
     {
-      "matches": ["*://example.com/*"],
-      "load": ["dist/main.js", "dist/main.css"]
+      "matches": "*://*.example.com/*",
+      "load": ["dist/main.js", "shadow:dist/main.css"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["dist/background.js"]
     }
   ],
-
-  "permissions": ["storage", "notifications"],
-  "optionalPermissions": ["cookies"],
-  "hostPermissions": ["*://another.com/*"],
-  "optionalHostPermissions": ["*://*.another.com/*"],
-
-  "manifest": {}
+  "permissions": ["notifications"],
+  "optionalPermissions": ["downloads"],
+  "hostPermissions": ["https://api.example.com/*"]
 }
 ```
 
-## Fields
+## Top-Level Fields
 
-### name
+These are the main fields you will use most often.
 
-The display name of your extension. Required.
+### `name`
 
-- **Type:** `string`
-- **Min length:** 2 characters
-- **Max length:** 45 characters
+Required. This is the display name of the extension.
 
 ```json
 {
-  "name": "My Awesome Extension"
+  "name": "My Extension"
 }
 ```
 
-### slug
+### `slug`
 
-A unique identifier for your extension. Used internally for directory and database names.
-
-- **Type:** `string`
-- **Min length:** 2 characters
-- **Max length:** 45 characters
-- **Format:** lowercase letters, numbers, and hyphens; must start and end with a letter or number
-- **Default:** Auto-generated from `name` if not provided
+Optional. A stable internal identifier. If omitted, Epos generates it from `name`.
 
 ```json
 {
@@ -86,17 +72,11 @@ A unique identifier for your extension. Used internally for directory and databa
 }
 ```
 
-::: tip
-If you don't provide a slug, it's automatically generated from the name (e.g., "My Extension" → "my-extension").
-:::
+Keep it lowercase and use only letters, numbers, and hyphens.
 
-### version
+### `version`
 
-Your extension's version number. Should follow semantic versioning.
-
-- **Type:** `string`
-- **Format:** `V.V.V`, `V.V`, or `V` (e.g., `1.0.0`, `2.5`, `3`)
-- **Default:** `0.0.1`
+Optional. If omitted, Epos uses `0.0.1`.
 
 ```json
 {
@@ -104,44 +84,152 @@ Your extension's version number. Should follow semantic versioning.
 }
 ```
 
-### description
+For published projects, you should set this explicitly.
 
-A brief description of what your extension does.
+### `description`
 
-- **Type:** `string | null`
-- **Max length:** 132 characters
-- **Default:** `null`
+Optional. A short extension description.
 
 ```json
 {
-  "description": "Enhances your browsing experience with custom features"
+  "description": "Saves selected text into a personal library"
 }
 ```
 
-### icon
+### `icon`
 
-Path to your extension's icon file. Used in the extension UI and Chrome Web Store.
-
-- **Type:** `string | null`
-- **Default:** `null`
+Optional. Path to your icon file.
 
 ```json
 {
-  "icon": "icon.png"
+  "icon": "dist/icon.png"
 }
 ```
 
-::: tip
-The icon is automatically added to your assets list if specified.
-:::
+Epos automatically includes the icon in the exported bundle and also treats it as an asset.
 
-### action
+## Loading Code
 
-Whether to show an action button (icon) in the Chrome toolbar. Set to `true` for a default icon, or provide a URL for a custom icon.
+The most important fields for runtime behavior are `matches`, `load`, and `targets`.
 
-- **Type:** `true | string | null`
-- **Default:** `null` (auto-detected based on targets)
-- **Note:** Automatically set to `null` if your extension has a popup or side panel
+### Single-Target Shorthand
+
+If your project has only one target, you can use top-level `matches` and `load`.
+
+```json
+{
+  "name": "My Extension",
+  "matches": "*://*.example.com/*",
+  "load": ["dist/main.js", "dist/main.css"]
+}
+```
+
+Epos treats this as a shorthand for one item in `targets`.
+
+### `targets`
+
+For anything beyond the simplest setup, use `targets`.
+
+```json
+{
+  "name": "My Extension",
+  "targets": [
+    {
+      "matches": "<popup>",
+      "load": ["dist/popup.js", "dist/popup.css"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["dist/background.js"]
+    },
+    {
+      "matches": "*://*.example.com/*",
+      "load": ["dist/main.js", "shadow:dist/main.css"]
+    }
+  ]
+}
+```
+
+Each target has two main fields:
+
+- `matches` says where the target runs.
+- `load` says which files should be loaded there.
+
+## `matches`
+
+`matches` accepts one string or an array of strings.
+
+### Special Epos Contexts
+
+These are the most common special values:
+
+- `<popup>`
+- `<sidePanel>`
+- `<background>`
+
+Example:
+
+```json
+{
+  "matches": ["<popup>", "<background>"]
+}
+```
+
+### URL Match Patterns
+
+For web pages, use normal extension-style match patterns.
+
+```json
+{
+  "matches": "*://*.example.com/*"
+}
+```
+
+You can also use:
+
+- `frame:*://*.example.com/*` for iframes only
+- `exact:https://example.com/path` for exact matching
+- `<allUrls>` for all URLs
+
+In `epos.json`, use `<allUrls>` with a capital `U`, not raw manifest `<all_urls>`.
+
+## `load`
+
+`load` is a list of JavaScript and CSS files.
+
+```json
+{
+  "load": ["dist/main.js", "dist/main.css"]
+}
+```
+
+Order matters. Files are loaded in the order you list them.
+
+### Load Prefixes
+
+Epos supports two useful prefixes.
+
+`shadow:` loads CSS into the Shadow DOM:
+
+```json
+{
+  "load": ["dist/main.js", "shadow:dist/main.css"]
+}
+```
+
+`lite:` loads lightweight JavaScript:
+
+```json
+{
+  "load": ["lite:dist/snippet.js"]
+}
+```
+
+Use `shadow:` when you want style isolation on web pages. Use `lite:` only when you specifically need its lightweight injection behavior.
+
+## `action`
+
+`action` controls what happens when the extension icon is clicked, but only when there is no popup or side panel target.
 
 ```json
 {
@@ -149,224 +237,101 @@ Whether to show an action button (icon) in the Chrome toolbar. Set to `true` for
 }
 ```
 
+With `true`, Epos sends a `:action` bus event.
+
+You can also provide a URL:
+
 ```json
 {
-  "action": "https://example.com/icon.png"
+  "action": "https://example.com/help"
 }
 ```
 
-### popup
+If your project has a `<popup>` or `<sidePanel>` target, `action` is ignored.
 
-Configuration for the extension's popup UI.
+## `popup`
 
-- **Type:** `object`
-- **Defaults:** `{ width: 380, height: 572 }`
-
-#### popup.width
-
-Width of the popup in pixels.
-
-- **Type:** `number`
-- **Min:** 150px
-- **Max:** 800px
-- **Default:** 380px
-
-#### popup.height
-
-Height of the popup in pixels.
-
-- **Type:** `number`
-- **Min:** 150px
-- **Max:** 572px
-- **Default:** 572px
+`popup` lets you adjust popup size.
 
 ```json
 {
   "popup": {
     "width": 400,
-    "height": 600
+    "height": 560
   }
 }
 ```
 
-### config
+This only matters when your project actually uses a popup.
 
-Extension configuration options.
+## `options`
 
-#### config.preloadAssets
-
-If `true`, all assets are automatically loaded when your extension starts. If `false`, you must call `epos.assets.load()` manually.
-
-- **Type:** `boolean`
-- **Default:** `true`
+`options` contains a few engine-level flags.
 
 ```json
 {
-  "config": {
-    "preloadAssets": false
-  }
-}
-```
-
-#### config.allowProjectsApi
-
-If `true`, enables the `epos.projects` API for programmatic project management. This is a powerful feature that should only be enabled if needed.
-
-- **Type:** `boolean`
-- **Default:** `false`
-
-```json
-{
-  "config": {
-    "allowProjectsApi": true
-  }
-}
-```
-
-#### config.allowMissingModels
-
-If `true`, state objects can be created without being registered in `epos.state.register()`. Only enable if you know what you're doing.
-
-- **Type:** `boolean`
-- **Default:** `false`
-
-```json
-{
-  "config": {
+  "options": {
+    "preloadAssets": true,
+    "allowProjectsApi": false,
     "allowMissingModels": false
   }
 }
 ```
 
-### assets
+### `options.preloadAssets`
 
-List of static files to bundle with your extension. These files are accessible via `epos.assets.url()` and `epos.assets.get()`.
+If `true`, assets are loaded automatically at startup.
+If `false`, you load them manually with `epos.assets.load()`.
 
-- **Type:** `string[]`
-- **Default:** `[]`
+### `options.allowProjectsApi`
 
-```json
-{
-  "assets": ["icon.png", "logo.svg", "data.json", "styles/theme.css"]
-}
-```
+Enables `epos.projects.*` inside the project.
 
-::: tip
-Your icon is automatically added to assets if specified in the `icon` field.
-:::
+Most projects do not need this.
 
-### targets
+### `options.allowMissingModels`
 
-Define where your code runs. Each target specifies what code to load in specific contexts (popup, background, content scripts, etc.).
+Relaxes model registration rules for state.
 
-- **Type:** `Target[]`
-- **Required:** At least one target
+This is an advanced option and most projects should leave it off.
 
-#### Target Object
+## `assets`
 
-```ts
-{
-  matches: Match[]
-  load: string[]
-}
-```
-
-##### matches
-
-Array of match patterns specifying where this target applies.
-
-**Special contexts (always available):**
-
-- `<popup>` - Extension popup
-- `<sidePanel>` - Extension side panel
-- `<background>` - Background service worker
-
-**URL patterns (use for web pages):**
-
-- `*://example.com/*` - Any page on example.com
-- `*://*.example.com/*` - Any subdomain of example.com
-- `<allUrls>` - All URLs
-- `*://*/* ` - Any http/https URL
-
-**Frame matching:**
-
-- `frame:*://example.com/*` - Only in iframes
-
-**URL path matching:**
-
-- `exact:*://example.com/path` - Exact URL (no query string matching by default)
+List any static files your project needs at runtime.
 
 ```json
 {
-  "targets": [
-    {
-      "matches": ["<popup>"],
-      "load": ["popup.js"]
-    },
-    {
-      "matches": ["*://*.example.com/*"],
-      "load": ["web.js", "web.css"]
-    }
-  ]
+  "assets": ["dist/logo.svg", "dist/data.json"]
 }
 ```
 
-##### load
+You can then access them through `epos.assets`.
 
-Array of JavaScript and CSS files to load in this target. Order matters—files are loaded in the order specified.
+## Permissions Fields
 
-**File types:**
+Epos uses four permission-related fields:
 
-- `.js` files are treated as scripts
-- `.css` files are treated as stylesheets
+- `permissions`
+- `optionalPermissions`
+- `hostPermissions`
+- `optionalHostPermissions`
 
-**Prefixes:**
-
-- `lite:` - Load as a lightweight script (minimal isolation)
-- `shadow:` - Load CSS in shadow DOM (for web page content)
+Example:
 
 ```json
 {
-  "load": ["popup.js", "popup.css", "lite:utils.js", "shadow:isolated.css"]
+  "permissions": ["notifications"],
+  "optionalPermissions": ["downloads"],
+  "hostPermissions": ["https://api.example.com/*"],
+  "optionalHostPermissions": ["https://*.another.com/*"]
 }
 ```
 
-### permissions
+Host permissions are also derived automatically from `targets.matches`, so you often need fewer manual entries than you would in a handwritten manifest.
 
-List of browser permissions your extension needs.
+## `manifest`
 
-- **Type:** `string[]`
-- **Default:** `[]`
-
-#### Available Permissions
-
-- `background` - Run a background service worker
-- `storage` - Access browser storage API
-- `notifications` - Create notifications
-- `cookies` - Access cookies
-- `contextMenus` - Add context menu items
-- `downloads` - Manage downloads
-- `browsingData` - Clear browsing data
-
-**Optional permissions:**
-Prefix with `optional:` to request permission only when needed.
-
-```json
-{
-  "permissions": ["storage", "notifications", "optional:cookies"]
-}
-```
-
-::: tip
-Use `optional:` prefix for permissions you only need in certain situations. Users can grant them through your UI.
-:::
-
-### manifest
-
-Custom manifest overrides. Advanced feature for fine-tuning the generated Chrome manifest.
-
-- **Type:** `object | null`
-- **Default:** `null`
+`manifest` lets you override or extend parts of the generated manifest.
 
 ```json
 {
@@ -376,215 +341,47 @@ Custom manifest overrides. Advanced feature for fine-tuning the generated Chrome
 }
 ```
 
-::: warning
-This field is for advanced users. Most use cases don't need this.
-:::
+Use this only when the normal Epos fields are not enough.
 
-## Complete Example
+Epos still preserves the engine permissions it needs internally.
 
-Here's a complete `epos.json` with all features:
+## Paths
 
-```json
-{
-  "name": "Todo Manager",
-  "slug": "todo-manager",
-  "version": "2.1.0",
-  "description": "Manage your todos across all tabs",
-  "icon": "icon.png",
-  "action": true,
-  "popup": {
-    "width": 400,
-    "height": 600
-  },
-  "config": {
-    "preloadAssets": true,
-    "allowProjectsApi": false,
-    "allowMissingModels": false
-  },
-  "assets": ["icon.png", "logo.svg", "data/defaults.json", "styles/theme.css"],
-  "targets": [
-    {
-      "matches": ["<popup>"],
-      "load": ["popup.js", "popup.css"]
-    },
-    {
-      "matches": ["<background>"],
-      "load": ["background.js"]
-    },
-    {
-      "matches": ["*://*.example.com/*"],
-      "load": ["web.js", "shadow:web.css"]
-    }
-  ],
-  "permissions": ["storage", "notifications", "optional:contextMenus"],
-  "manifest": null
-}
-```
+Epos normalizes paths in `epos.json`.
 
-## Comments in epos.json
+These are treated as the same path:
 
-You can add comments to your `epos.json` file (they will be stripped during parsing):
+- `dist/main.js`
+- `./dist/main.js`
+- `/dist/main.js`
 
-```json
-{
-  // Display name
-  "name": "My Extension",
+External paths such as `../somewhere/file.js` are not allowed.
 
-  // Unique slug
-  "slug": "my-extension",
+## Camel Case Only
 
-  "version": "1.0.0"
-  // ... rest of config
-}
-```
+In `epos.json`, use Epos field names, not raw manifest names.
 
-## Match Pattern Reference
+Use:
 
-### Context Matching
+- `optionalPermissions`
+- `hostPermissions`
+- `optionalHostPermissions`
 
-| Pattern        | Description               |
-| -------------- | ------------------------- |
-| `<popup>`      | Extension popup window    |
-| `<sidePanel>`  | Extension side panel      |
-| `<background>` | Background service worker |
+Do not use:
 
-### URL Matching
+- `optional_permissions`
+- `host_permissions`
+- `optional_host_permissions`
 
-| Pattern                      | Matches                     |
-| ---------------------------- | --------------------------- |
-| `*://example.com/*`          | example.com on any protocol |
-| `*://*.example.com/*`        | example.com and subdomains  |
-| `*://*/* `                   | Any http/https URL          |
-| `<allUrls>`                  | Equivalent to `*://*/*`     |
-| `exact:*://example.com/path` | Exact URL only              |
-| `frame:*://example.com/*`    | Only in iframes             |
+The same idea applies to `<allUrls>` instead of `<all_urls>`.
 
-### Examples
+## A Good Workflow
 
-```json
-{
-  "targets": [
-    {
-      "matches": ["<popup>", "<background>"],
-      "load": ["ui.js"]
-    },
-    {
-      "matches": ["*://*.github.com/*", "*://*.gitlab.com/*"],
-      "load": ["code-host.js"]
-    },
-    {
-      "matches": ["frame:*://example.com/*"],
-      "load": ["iframe.js"]
-    }
-  ]
-}
-```
+For most projects, this is enough:
 
-## Loading Order
+1. Start with `name`.
+2. Add one target with `matches` and `load`.
+3. Move to `targets` when you need popup, background, or multiple page contexts.
+4. Add `assets`, `permissions`, and `options` only when the project actually needs them.
 
-Files in each target are loaded in the order specified:
-
-```json
-{
-  "targets": [
-    {
-      "matches": ["<popup>"],
-      "load": [
-        "vendor.js", // Loads first
-        "utils.js", // Then this
-        "components.js", // Then this
-        "app.js", // Finally this
-        "styles.css" // CSS after scripts
-      ]
-    }
-  ]
-}
-```
-
-## Performance Tips
-
-### Preload vs On-Demand
-
-```json
-{
-  "config": {
-    "preloadAssets": false // Don't preload if you have many assets
-  },
-  "assets": ["large-image.jpg", "huge-dataset.json"]
-}
-```
-
-Then load only what you need:
-
-```ts
-// Load only needed assets
-await epos.assets.load('large-image.jpg')
-const url = epos.assets.url('large-image.jpg')
-```
-
-### Lite JavaScript
-
-Use `lite:` prefix for scripts that don't need full extension context:
-
-```json
-{
-  "targets": [
-    {
-      "matches": ["*://example.com/*"],
-      "load": [
-        "lite:injected.js", // Minimal context
-        "content.js" // Full context
-      ]
-    }
-  ]
-}
-```
-
-### Shadow CSS
-
-Use `shadow:` prefix for CSS that runs in shadow DOM (isolated from page styles):
-
-```json
-{
-  "targets": [
-    {
-      "matches": ["*://example.com/*"],
-      "load": [
-        "web.js",
-        "shadow:isolated.css" // Won't conflict with page CSS
-      ]
-    }
-  ]
-}
-```
-
-## Validation Rules
-
-Epos validates your `epos.json` and provides helpful error messages:
-
-- ✅ `name` is required and 2-45 characters
-- ✅ `slug` must be lowercase with letters, numbers, and hyphens
-- ✅ `version` must be semantic (e.g., `1.0.0`)
-- ✅ `description` max 132 characters
-- ✅ `popup.width` between 150-800px
-- ✅ `popup.height` between 150-572px
-- ✅ `permissions` must be valid permission strings
-- ✅ `targets` must have valid matches and load files
-- ✅ File paths cannot go outside project with `..`
-
-## IDE Support
-
-Most IDEs support JSON schema validation. You can add this at the top of your file:
-
-```json
-{
-  "$schema": "https://epos.dev/epos.schema.json",
-  "name": "My Extension"
-}
-```
-
-This provides autocomplete and validation in VS Code and other modern editors.
-
-::: tip
-When you save `epos.json`, Epos automatically regenerates your extension. Changes to `config`, `targets`, and `permissions` are instant!
-:::
+That usually keeps `epos.json` small and easy to understand.

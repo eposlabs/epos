@@ -74,13 +74,13 @@ export interface EposBus {
   /** Register a one-time event listener. */
   once<T extends Fn>(name: string, callback: T, thisArg?: unknown): void
   /** Send an event to all remote listeners. */
-  send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+  send<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | undefined>
   /** Call local listeners for an event. */
-  emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | null>
+  emit<T>(name: string, ...args: FnArgsOrArr<T>): Promise<FnResultOrValue<T> | undefined>
   /** Set a signal with an optional value. */
   setSignal(name: string, value?: unknown): void
   /** Wait for a signal to be set. */
-  waitSignal<T>(name: string, timeout?: number): Promise<T | null>
+  waitSignal<T>(name: string, timeout?: number): Promise<T | undefined>
   /** Register an RPC API. */
   register(name: string, api: RpcTarget): void
   /** Unregister an RPC API. */

@@ -93,13 +93,13 @@ export class Bus extends gl.Unit {
       throw error
     }
 
-    return result as FnResultOrValue<T> | null
+    return result as FnResultOrValue<T> | undefined
   }
 
   async emit<T>(name: string, ...args: FnArgsOrArr<T>) {
     const actions = this.actions.filter(action => action.name === name && !action.target)
     const result = await this.utils.pick(actions.map(action => action.execute(...args)))
-    return result as FnResultOrValue<T> | null
+    return result as FnResultOrValue<T> | undefined
   }
 
   once<T extends Fn>(name: string, fn: T, thisArg?: unknown) {
@@ -128,9 +128,9 @@ export class Bus extends gl.Unit {
     this.on(name, listener)
 
     // Setup timer if timeout is specified
-    const timer$ = Promise.withResolvers<null>()
+    const timer$ = Promise.withResolvers<undefined>()
     let timer: number | null = null
-    if (timeout) timer = setTimeout(() => timer$.resolve(null), timeout)
+    if (timeout) timer = setTimeout(() => timer$.resolve(undefined), timeout)
 
     // Wait for the signal or timer
     const result = await this.utils.pick([this.send(name), listener$.promise, timer$.promise])
@@ -139,7 +139,7 @@ export class Bus extends gl.Unit {
     this.off(name, listener)
     if (timer) clearTimeout(timer)
 
-    return result as T | null
+    return result as T | undefined
   }
 
   register(name: string, api: RpcTarget) {
@@ -183,11 +183,11 @@ export class Bus extends gl.Unit {
         this.off<T>(prefixed(name), fn)
       },
       send: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
-        if (disposed) return null
+        if (disposed) return undefined
         return await this.send<T>(prefixed(name), ...args)
       },
       emit: async <T>(name: string, ...args: FnArgsOrArr<T>) => {
-        if (disposed) return null
+        if (disposed) return undefined
         return await this.emit<T>(prefixed(name), ...args)
       },
       once: <T extends Fn>(name: string, fn: T, thisArg?: unknown) => {
@@ -199,7 +199,7 @@ export class Bus extends gl.Unit {
         this.setSignal(prefixed(name), ...args)
       },
       waitSignal: async <T>(name: string, timeout?: number) => {
-        if (disposed) return null
+        if (disposed) return undefined
         return await this.waitSignal<T>(prefixed(name), timeout)
       },
       register: (id: string, api: RpcTarget) => {

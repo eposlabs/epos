@@ -1,40 +1,32 @@
 # Libs
 
-Epos uses a number of third-party libraries to provide features and simplify development. This page lists the main libraries used in Epos, along with links to their documentation.
+Epos ships with a small set of built-in libraries. They are available through `epos.libs`, and the Vite plugin can rewrite normal imports to use those built-in versions.
 
-These libraries are already bundled with Epos, so you don't need to install them separately. When bundling your project with Vite, make sure to use `epos` plugin:
+This helps avoid duplicate React or MobX copies and keeps your bundle smaller.
 
-```
-npm install -D epos
-```
+## Vite Setup
 
-```
+If you are using Vite, make sure you use the Epos plugin:
+
+```ts
 import { epos } from 'epos/vite'
 
-{
-  plugins: [epos()]
+export default {
+  plugins: [epos()],
 }
 ```
 
-This plugin is required so you can safely import the used libraries and plugin will make sure to use the bundled versions instead of installing them separately which can lead to unwanted issues.
-
-For example, when epos plugin is used, imports from 'react' will be resolved to the bundled version of React that comes with Epos, ensuring compatibility and preventing issues that can arise from having multiple versions of React in the same project.
-
-Just import as usual:
+With that plugin in place, normal imports such as this:
 
 ```ts
 import { useState } from 'react'
 ```
 
-Epos plugin with transform it to:
+can be resolved to the Epos-provided library version under the hood.
 
-```ts
-const { useState } = epos.libs.react
-```
+## Available Libraries
 
-All libraries are available under `epos.libs` object. You can access them directly, or use regular imports as shown above.
-
-## List of Libraries
+The built-in libraries are:
 
 - `react`
 - `react-dom`
@@ -43,3 +35,71 @@ All libraries are available under `epos.libs` object. You can access them direct
 - `mobx`
 - `mobx-react-lite`
 - `yjs`
+
+You can access them directly through `epos.libs`.
+
+```ts
+const { useState } = epos.libs.react
+const { reaction } = epos.libs.mobx
+```
+
+## When to Use `epos.libs`
+
+For most app code, regular imports are usually nicer:
+
+```ts
+import { useState } from 'react'
+```
+
+But direct `epos.libs.*` access is useful when:
+
+- you are not using a bundler,
+- you want to be explicit about using the built-in copy,
+- you are experimenting in a small file or devtools-like environment.
+
+## React Example
+
+```tsx
+const { useState } = epos.libs.react
+
+const Counter = () => {
+  const [count, setCount] = useState(0)
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+```
+
+## MobX Example
+
+```ts
+const { reaction } = epos.libs.mobx
+
+const state = await epos.state.connect({ count: 0 })
+
+reaction(
+  () => state.count,
+  count => console.log('Count changed:', count),
+)
+```
+
+## Yjs Example
+
+Most projects do not need to use Yjs directly, because Epos already uses it internally for shared state. Still, it is available if you need it.
+
+```ts
+const { Doc, applyUpdate } = epos.libs.yjs
+
+const doc = new Doc()
+
+epos.bus.on('yjs:update', (update: number[]) => {
+  applyUpdate(doc, new Uint8Array(update))
+})
+```
+
+## Why This Exists
+
+The goal of `epos.libs` is not to give you more things to learn. It is there to keep the environment consistent.
+
+The most important practical benefit is usually React. When your app and the engine use the same React version, you avoid a whole class of confusing problems.
+
+If you want the exact API shape, see the [Libraries API Reference](/api/libs).
