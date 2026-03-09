@@ -33,7 +33,7 @@ export default defineConfig({
         {
           text: 'Guide',
           items: [
-            { text: 'Getting Started', link: '/guide/getting-started' },
+            { text: 'Basics', link: '/guide/basics' },
             { text: 'Vite Setup', link: '/guide/vite' },
             { text: 'Rendering', link: '/guide/rendering' },
             { text: 'Messaging', link: '/guide/messaging' },

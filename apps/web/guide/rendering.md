@@ -2,7 +2,7 @@
 
 This guide explains how Epos renders React apps, how Shadow DOM fits into that process, and what DOM structure Epos creates for you.
 
-It assumes you already familiar with the [Epos basics](/guide/getting-started) and have completed the [Vite setup](/guide/vite).
+It assumes you already familiar with the [Epos basics](/guide/basics) and have completed the [Vite setup](/guide/vite).
 
 ::: info
 

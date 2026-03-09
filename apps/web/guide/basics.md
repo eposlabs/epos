@@ -1,4 +1,4 @@
-# Getting Started
+# Basics
 
 This guide covers the core principles of building extensions with Epos. To keep things as simple as possible, we will start with **plain JavaScript and CSS**. This allows you to see the engine in action without needing a build step.
 
