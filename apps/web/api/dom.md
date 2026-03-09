@@ -1,186 +1,83 @@
 # epos.dom.\*
 
-The `epos.dom` namespace provides direct access to the underlying DOM nodes managed by the Epos engine.
+`epos.dom` exposes the DOM nodes that Epos creates for the current project.
 
-While you typically don't need to interact with these nodes directly, they can be useful for advanced use cases like custom rendering.
-
-- [epos.dom.root](#epos-dom-root)
-- [epos.dom.view](#epos-dom-view)
-- [epos.dom.shadowRoot](#epos-dom-shadowroot)
-- [epos.dom.shadowView](#epos-dom-shadowview)
+You usually do not need these directly, because `epos.render()` already uses the right container by default. They are useful when you need custom rendering or low-level DOM work.
 
 ## epos.dom.root
-
-The project's root container element. This is a `<div>` that serves as the main container for all your project's DOM elements.
 
 ```ts
 epos.dom.root: HTMLDivElement
 ```
 
-### Attributes
+The root project container appended under the page-level `<epos>` element.
 
-- `data-project-name` - The name of your project
-- `data-project-id` - The unique identifier of your project
+### Notes
 
-### Example
+- Epos adds `data-project-name`, `data-project-id`, and `data-epos` attributes to this node.
+- `epos.dom.view` and the shadow host both live inside this root.
 
-```ts
-// Access the root element
-console.log(epos.dom.root)
-
-// Append custom elements
-const customElement = document.createElement('div')
-customElement.textContent = 'Hello World'
-epos.dom.root.appendChild(customElement)
-```
-
-## epos.dom.reactRoot
-
-A pre-created element for React rendering outside of shadow DOM. This is used when you don't need style isolation.
+## epos.dom.view
 
 ```ts
-epos.dom.reactRoot: HTMLDivElement
+epos.dom.view: HTMLDivElement
 ```
 
-### Attributes
+The normal light-DOM view container.
 
-- `data-react-root` - Marks this as a React root container
+### Notes
 
-### Example
-
-```ts
-// Manual React rendering (usually epos.render() does this automatically)
-import { createRoot } from 'react-dom/client'
-
-const root = createRoot(epos.dom.reactRoot)
-root.render(<App />)
-```
+- Epos adds a `data-view` attribute to this node.
+- `epos.render()` uses this container by default when the project is not rendering into Shadow DOM.
 
 ## epos.dom.shadowRoot
-
-A pre-created shadow DOM root for style isolation. Use this when you want to prevent your styles from affecting the host page and vice versa.
 
 ```ts
 epos.dom.shadowRoot: ShadowRoot
 ```
 
-### Example
+The pre-created open Shadow DOM used by the project.
+
+### Notes
+
+- The Shadow DOM exists even if you do not render into it.
+- When the project has shadow CSS, Epos injects that CSS into this Shadow DOM.
+- `@property` rules from shadow CSS are hoisted to the root DOM because they do not work correctly inside Shadow DOM.
+
+## epos.dom.shadowView
 
 ```ts
-// Append elements to shadow DOM
-const element = document.createElement('div')
-element.textContent = 'Isolated content'
-epos.dom.shadowRoot.appendChild(element)
-
-// Add styles that won't leak to the page
-const style = document.createElement('style')
-style.textContent = 'div { color: red; }'
-epos.dom.shadowRoot.appendChild(style)
+epos.dom.shadowView: HTMLDivElement
 ```
 
-## epos.dom.shadowReactRoot
+The default render container inside `epos.dom.shadowRoot`.
 
-A pre-created element inside the shadow DOM specifically for React rendering. This is used when you have shadow CSS defined in your project.
+### Notes
 
-```ts
-epos.dom.shadowReactRoot: HTMLDivElement
-```
+- Epos adds a `data-shadow-view` attribute to this node.
+- `epos.render()` uses this container by default when the project is set up to render with shadow CSS.
 
-### Attributes
+## Structure
 
-- `data-react-root` - Marks this as a React root container
-
-### Example
-
-```ts
-// React rendering in shadow DOM (usually epos.render() does this automatically)
-import { createRoot } from 'react-dom/client'
-
-const root = createRoot(epos.dom.shadowReactRoot)
-root.render(<App />)
-```
-
-## DOM Hierarchy
-
-The DOM structure that Epos creates looks like this:
+The generated structure looks like this:
 
 ```html
 <epos>
-  <div data-project-name="my-project" data-project-id="abc123">
-    <!-- epos.dom.root -->
-
-    <div data-react-root="">
-      <!-- epos.dom.reactRoot -->
-      <!-- React content renders here (if no shadow CSS) -->
-    </div>
-
-    <div data-shadow="">
+  <div data-project-name="My Extension" data-project-id="..." data-epos>
+    <div data-view></div>
+    <div data-shadow>
       #shadow-root
-      <!-- epos.dom.shadowRoot -->
-      <link rel="stylesheet" href="blob:..." />
-      <!-- Your shadow CSS -->
-
-      <div data-react-root="">
-        <!-- epos.dom.shadowReactRoot -->
-        <!-- React content renders here (if shadow CSS exists) -->
-      </div>
+      <div data-shadow-view></div>
     </div>
   </div>
 </epos>
 ```
 
-## Shadow CSS Configuration
-
-When you define shadow CSS in your `epos.json`, Epos automatically:
-
-1. Creates a shadow DOM with `epos.dom.shadowRoot`
-2. Injects your CSS as a linked stylesheet
-3. Uses `epos.dom.shadowReactRoot` for React rendering
-4. Hoists `@property` rules to the document root (they don't work in shadow DOM)
-
-::: tip
-Use `epos.render()` instead of accessing these elements directly. It automatically selects the correct root based on your project configuration.
-:::
-
-## Use Cases
-
-### Manual DOM Manipulation
+## Example
 
 ```ts
-// Add a custom element
-const banner = document.createElement('div')
-banner.className = 'my-banner'
-banner.textContent = 'Extension loaded'
-epos.dom.root.appendChild(banner)
-```
+const badge = document.createElement('div')
+badge.textContent = 'Injected by Epos'
 
-### Style Isolation
-
-```ts
-// Add isolated styles
-const style = document.createElement('style')
-style.textContent = `
-  .my-widget {
-    color: blue;
-    font-size: 16px;
-  }
-`
-epos.dom.shadowRoot.appendChild(style)
-
-// Add widget
-const widget = document.createElement('div')
-widget.className = 'my-widget'
-widget.textContent = 'This style is isolated'
-epos.dom.shadowRoot.appendChild(widget)
-```
-
-### Custom React Root
-
-```ts
-// Create a custom portal
-import { createPortal } from 'react-dom'
-
-const MyPortal = ({ children }) => {
-  return createPortal(children, epos.dom.shadowRoot)
-}
+epos.dom.root.append(badge)
 ```

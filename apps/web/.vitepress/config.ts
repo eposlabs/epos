@@ -40,6 +40,7 @@ export default defineConfig({
             { text: 'State', link: '/guide/state' },
             { text: 'Environment', link: '/guide/environment' },
             { text: 'Browser API', link: '/guide/browser' },
+            { text: 'Frames', link: '/guide/frames' },
             { text: 'Fetch', link: '/guide/fetch' },
             { text: 'Storage', link: '/guide/storage' },
             { text: 'Assets', link: '/guide/assets' },

@@ -1,81 +1,22 @@
 # API
 
-- **General**
-  - [epos.fetch](/api/general#epos-fetch)
-  - [epos.browser](/api/general#epos-browser)
-  - [epos.component](/api/general#epos-component)
-  - [epos.render](/api/general#epos-render)
-- **Env**
-  - [epos.env.tabId](/api/env#epos-env-tabid)
-  - [epos.env.windowId](/api/env#epos-env-windowid)
-  - [epos.env.isPopup](/api/env#epos-env-ispopup)
-  - [epos.env.isSidePanel](/api/env#epos-env-issidepanel)
-  - [epos.env.isBackground](/api/env#epos-env-isbackground)
-  - [epos.env.project](/api/env#epos-env-project)
-- **DOM**
-  - [epos.dom.root](/api/dom#epos-dom-root)
-  - [epos.dom.view](/api/dom#epos-dom-view)
-  - [epos.dom.shadowRoot](/api/dom#epos-dom-shadowroot)
-  - [epos.dom.shadowView](/api/dom#epos-dom-shadowview)
-- **Bus**
-  - [epos.bus.on](/api/bus#epos-bus-on)
-  - [epos.bus.off](/api/bus#epos-bus-off)
-  - [epos.bus.once](/api/bus#epos-bus-once)
-  - [epos.bus.send](/api/bus#epos-bus-send)
-  - [epos.bus.emit](/api/bus#epos-bus-emit)
-  - [epos.bus.setSignal](/api/bus#epos-bus-setsignal)
-  - [epos.bus.waitSignal](/api/bus#epos-bus-waitsignal)
-  - [epos.bus.register](/api/bus#epos-bus-register)
-  - [epos.bus.unregister](/api/bus#epos-bus-unregister)
-  - [epos.bus.use](/api/bus#epos-bus-use)
-  - [epos.bus.for](/api/bus#epos-bus-for)
-- **State**
-  - [epos.state.connect](/api/state#epos-state-connect)
-  - [epos.state.disconnect](/api/state#epos-state-disconnect)
-  - [epos.state.transaction](/api/state#epos-state-transaction)
-  - [epos.state.reaction](/api/state#epos-state-reaction)
-  - [epos.state.local](/api/state#epos-state-create)
-  - [epos.state.list](/api/state#epos-state-list)
-  - [epos.state.remove](/api/state#epos-state-remove)
-  - [epos.state.register](/api/state#epos-state-register)
-  - [epos.state.PARENT](/api/state#epos-state-parent)
-  - [epos.state.ATTACH](/api/state#epos-state-attach)
-  - [epos.state.DETACH](/api/state#epos-state-detach)
-- **Storage**
-  - [epos.storage.get](/api/storage#epos-storage-get)
-  - [epos.storage.set](/api/storage#epos-storage-set)
-  - [epos.storage.has](/api/storage#epos-storage-has)
-  - [epos.storage.delete](/api/storage#epos-storage-delete)
-  - [epos.storage.keys](/api/storage#epos-storage-keys)
-  - [epos.storage.list](/api/storage#epos-storage-list)
-  - [epos.storage.remove](/api/storage#epos-storage-remove)
-  - [epos.storage.for](/api/storage#epos-storage-for)
-- **Frames**
-  - [epos.frames.create](/api/frames#epos-frames-create)
-  - [epos.frames.remove](/api/frames#epos-frames-remove)
-  - [epos.frames.has](/api/frames#epos-frames-has)
-  - [epos.frames.list](/api/frames#epos-frames-list)
-- **Assets**
-  - [epos.assets.url](/api/assets#epos-assets-url)
-  - [epos.assets.get](/api/assets#epos-assets-get)
-  - [epos.assets.list](/api/assets#epos-assets-list)
-  - [epos.assets.load](/api/assets#epos-assets-load)
-  - [epos.assets.unload](/api/assets#epos-assets-unload)
-- **Projects**
-  - [epos.projects.has](/api/projects#epos-projects-has)
-  - [epos.projects.get](/api/projects#epos-projects-get)
-  - [epos.projects.list](/api/projects#epos-projects-list)
-  - [epos.projects.create](/api/projects#epos-projects-create)
-  - [epos.projects.update](/api/projects#epos-projects-update)
-  - [epos.projects.remove](/api/projects#epos-projects-remove)
-  - [epos.projects.export](/api/projects#epos-projects-export)
-  - [epos.projects.watch](/api/projects#epos-projects-watch)
-  - [epos.projects.fetch](/api/projects#epos-projects-fetch)
-- **Libs**
-  - [epos.libs.mobx](/api/libs#epos-libs-mobx)
-  - [epos.libs.mobxReactLite](/api/libs#epos-libs-mobxreactlite)
-  - [epos.libs.react](/api/libs#epos-libs-react)
-  - [epos.libs.reactDom](/api/libs#epos-libs-reactdom)
-  - [epos.libs.reactDomClient](/api/libs#epos-libs-reactdomclient)
-  - [epos.libs.reactJsxRuntime](/api/libs#epos-libs-reactjsxruntime)
-  - [epos.libs.yjs](/api/libs#epos-libs-yjs)
+This section documents the runtime API available through the global `epos` object.
+
+The pages are grouped by namespace:
+
+- [epos.\*](/api/general) — top-level APIs such as fetch, browser, render, and component.
+- [epos.env.\*](/api/env) — information about the current context and project.
+- [epos.dom.\*](/api/dom) — DOM nodes created by Epos for the current project.
+- [epos.bus.\*](/api/bus) — messaging, signals, RPC helpers, and namespaced buses.
+- [epos.state.\*](/api/state) — shared state, local state, models, and lifecycle symbols.
+- [epos.storage.\*](/api/storage) — persistent key-value storage.
+- [epos.assets.\*](/api/assets) — access to assets declared in `epos.json`.
+- [epos.frames.\*](/api/frames) — background frames created by the project.
+- [epos.projects.\*](/api/projects) — project management APIs.
+- [epos.libs.\*](/api/libs) — runtime copies of the libraries bundled with Epos.
+
+## Notes
+
+- The signatures in these docs follow the public Epos types.
+- When behavior is not obvious from the types, the notes here are based on the engine implementation.
+- `epos.browser` is a wrapper around a supported subset of `chrome.*`, not a full replacement for the entire Chrome Extensions API.

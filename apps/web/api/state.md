@@ -1,263 +1,169 @@
-# State API
+# epos.state.\*
 
-The state API provides a powerful state management system with automatic synchronization across all extension contexts. It's built on top of MobX and Yjs, handling conflict resolution automatically.
+`epos.state` is the shared state system used by Epos.
+
+It combines observable objects with sync and persistence across contexts.
 
 ## epos.state.connect()
 
-Connect to a shared state. The state is automatically synchronized across all extension contexts (popup, background, content scripts, iframes).
-
 ```ts
-epos.state.connect<T>(
-  initial?: T,
-  versioner?: Versioner<T>
-): Promise<T>
-
-epos.state.connect<T>(
-  name: string,
-  initial?: T,
-  versioner?: Versioner<T>
-): Promise<T>
+epos.state.connect<T>(initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
+epos.state.connect<T>(name: string, initial?: Initial<T>, versioner?: Versioner<T>): Promise<T>
 ```
 
-### Parameters
+Connects to a shared state.
 
-- `name` - Optional state name. If not provided, uses the default state (`:default`)
-- `initial` - Initial state value. Can be an object, array, or class instance
-- `versioner` - Optional versioning function for state migrations
+### Notes
 
-### Returns
-
-A Promise that resolves to the connected state object. The state is observable and any changes are automatically synchronized.
+- If `name` is omitted, Epos uses the default state.
+- Custom state names cannot start with `:`.
+- The initial value must be an object.
+- Shared state supports objects, arrays, strings, numbers, booleans, and `null` values.
+- Connected state is synchronized across contexts and persisted to IndexedDB.
+- `versioner` is a map of version numbers to migration functions.
 
 ### Example
 
 ```ts
-// Simple state
 const state = await epos.state.connect({
   count: 0,
-  user: null,
+  items: [],
 })
 
-// Named state
-const settings = await epos.state.connect('settings', {
-  theme: 'light',
-  language: 'en',
-})
-
-// Class-based state
-class TodoStore {
-  todos = []
-
-  addTodo(text: string) {
-    this.todos.push({ text, done: false })
-  }
-}
-
-const todoState = await epos.state.connect(new TodoStore())
+state.count += 1
 ```
 
 ## epos.state.disconnect()
-
-Disconnect from a state. This stops synchronization but doesn't remove the state data.
 
 ```ts
 epos.state.disconnect(name?: string): void
 ```
 
-### Parameters
-
-- `name` - Optional state name. If not provided, disconnects from the default state (`:default`)
-
-### Example
-
-```ts
-// Disconnect from default state
-epos.state.disconnect()
-
-// Disconnect from named state
-epos.state.disconnect('settings')
-```
+Disconnects from a shared state without deleting its stored data.
 
 ## epos.state.transaction()
-
-Batch multiple state changes into a single transaction for better performance.
 
 ```ts
 epos.state.transaction(fn: () => void): void
 ```
 
-### Parameters
+Runs state changes in a batch.
 
-- `fn` - Function that performs multiple state changes
+### Notes
 
-### Example
+- This groups updates across all currently connected states.
+- Use it when one action changes several observable values.
+
+## epos.state.reaction
 
 ```ts
-const state = await epos.state.connect({
-  count: 0,
-  total: 0,
-  history: [],
-})
-
-// Without transaction (triggers 3 syncs)
-state.count = 5
-state.total += 5
-state.history.push(5)
-
-// With transaction (triggers 1 sync)
-epos.state.transaction(() => {
-  state.count = 10
-  state.total += 10
-  state.history.push(10)
-})
+epos.state.reaction: typeof mobx.reaction
 ```
+
+Direct access to MobX `reaction`.
 
 ## epos.state.local()
 
-Create a local state without synchronization. Useful for component-level state.
-
 ```ts
-epos.state.local<T>(initial?: T): T
+epos.state.local<T extends {}>(initial?: Initial<T>): T
 ```
 
-### Parameters
+Creates local observable state with no sync and no persistence.
 
-- `initial` - Initial state value
+### Notes
 
-### Returns
-
-An observable local state object (not synchronized)
-
-### Example
-
-```ts
-// Local component state
-const localState = epos.state.local({
-  isOpen: false,
-  selectedItem: null
-})
-
-// Use in component
-const MyComponent = epos.component(() => {
-  const local = epos.state.local({ count: 0 })
-
-  return (
-    <button onClick={() => local.count++}>
-      Count: {local.count}
-    </button>
-  )
-})
-```
+- Use this for component-local or context-local state.
+- For local state, non-model class instances are made observable automatically.
 
 ## epos.state.list()
 
-Get a list of all available states with their connection status.
-
 ```ts
-epos.state.list(
-  filter?: { connected?: boolean }
-): Promise<{ name: string | null; connected: boolean }[]>
+epos.state.list(filter?: { connected?: boolean }): Promise<{ name: string | null; connected: boolean }[]>
 ```
 
-### Parameters
+Lists known states for the current project.
 
-- `filter` - Optional filter object
-  - `connected` - If `true`, only returns connected states. If `false`, only returns disconnected states
+### Notes
 
-### Returns
-
-A Promise that resolves to an array of state info objects.
-
-### Example
-
-```ts
-// Get all states
-const allStates = await epos.state.list()
-console.log(allStates)
-// [
-//   { name: null, connected: true },       // default state
-//   { name: 'settings', connected: true },
-//   { name: 'cache', connected: false }
-// ]
-
-// Get only connected states
-const connected = await epos.state.list({ connected: true })
-
-// Get only disconnected states
-const disconnected = await epos.state.list({ connected: false })
-```
+- The default state is reported as `name: null`.
+- `connected` tells you whether the current context is connected to that state right now.
 
 ## epos.state.remove()
-
-Permanently delete a state and all its data from storage.
 
 ```ts
 epos.state.remove(name?: string): Promise<void>
 ```
 
-### Parameters
+Removes a shared state and its persisted data.
 
-- `name` - Optional state name. If not provided, removes the default state (`:default`)
+### Notes
 
-### Example
-
-```ts
-// Remove default state
-await epos.state.remove()
-
-// Remove named state
-await epos.state.remove('old-cache')
-```
-
-::: warning
-This action is permanent and cannot be undone. All state data will be lost.
-:::
+- This is permanent.
 
 ## epos.state.register()
 
-Register model classes that can be used in states. This is necessary if you want to use custom classes in your state.
-
 ```ts
-epos.state.register(models: Record<string, Constructor>): void
+epos.state.register(models: Record<string, Ctor>): void
 ```
 
-### Parameters
+Registers model classes that may appear inside shared state.
 
-- `models` - Object mapping model names to constructor functions
+### Notes
+
+- Register models before calling `connect()`.
+- Registered names are used to restore prototypes when state is loaded again.
+- If a model is missing and the project does not allow missing models, `connect()` can throw.
 
 ### Example
 
 ```ts
 class Todo {
   text = ''
-  done = false
 
-  constructor(text: string) {
-    this.text = text
-  }
-
-  toggle() {
-    this.done = !this.done
-  }
+  toggle() {}
 }
 
-class User {
-  name = ''
-  email = ''
-}
+epos.state.register({ Todo })
 
-// Register models (must be done before connecting to state)
-epos.state.register({
-  Todo,
-  User,
-})
-
-// Now you can use these classes in state
 const state = await epos.state.connect({
-  todos: [new Todo('Buy milk')],
-  currentUser: new User(),
+  todos: [new Todo()],
 })
 ```
+
+## epos.state.PARENT
+
+```ts
+epos.state.PARENT: symbol
+```
+
+A symbol for reading the parent object or parent array of an attached state node.
+
+### Example
+
+```ts
+const parent = state.items[0][epos.state.PARENT]
+```
+
+## epos.state.ATTACH
+
+```ts
+epos.state.ATTACH: symbol
+```
+
+A lifecycle symbol called when a model object is attached to a state tree.
+
+### Notes
+
+- If the state is already connected, the handler runs immediately.
+- Otherwise it runs after connection finishes.
+
+## epos.state.DETACH
+
+```ts
+epos.state.DETACH: symbol
+```
+
+A lifecycle symbol called when a model object is detached from a state tree.
 
 ## State Symbols
 
