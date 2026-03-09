@@ -46,14 +46,16 @@ Read more in the [State Management](/guide/state) guide.
 
 ## Chrome APIs Everywhere
 
-`epos.browser.*` mirrors `chrome.*` APIs and make them available in all contexts, including web pages and iframes.
+`epos.browser.*` mirrors supported `chrome.*` APIs and makes them available in all contexts, including web pages and iframes.
 
 ```ts
 // content-script.ts
 const tabs = await epos.browser.tabs.query({})
 ```
 
-This is especially useful on web pages and in iframes, where standard extension APIs are unavailable.
+This is especially useful on web pages and in iframes, where the standard extension APIs are not available.
+
+Read more in the [Browser API](/guide/browser) guide.
 
 ## Storage
 

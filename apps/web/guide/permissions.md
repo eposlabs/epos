@@ -99,6 +99,49 @@ If you want all URLs, use `<allUrls>` in `epos.json`.
 
 Use the camelCase Epos form. Do not use raw manifest names like `host_permissions` or `<all_urls>` inside `epos.json`.
 
+## Host Permissions and `epos.fetch()`
+
+`epos.fetch()` bypasses page-level CORS checks, but it does not bypass extension host permissions.
+
+If you fetch `https://api.example.com/data`, your project still needs access to `https://api.example.com/*`.
+
+That access can come from one of three places:
+
+- your target `matches`
+- `hostPermissions`
+- `optionalHostPermissions`, requested at runtime
+
+Example:
+
+```json
+{
+  "optionalHostPermissions": ["https://api.example.com/*"]
+}
+```
+
+```ts
+const granted = await epos.browser.permissions.request({
+  origins: ['https://api.example.com/*'],
+})
+
+if (granted) {
+  const response = await epos.fetch('https://api.example.com/data')
+  const data = await response.json()
+}
+```
+
+This is a good pattern when your extension only needs access to a remote API after a user action.
+
+## `epos.browser` Still Follows Permissions
+
+`epos.browser` makes extension APIs available in more places, but it does not remove their normal permission requirements.
+
+If a namespace requires a permission in Chrome, assume it still needs that permission in Epos.
+
+For example, `epos.browser.downloads.*` needs `downloads`, and `epos.browser.cookies.*` needs `cookies`.
+
+So the practical rule is simple: `epos.browser` changes where you can call the API from, not what the API is allowed to do.
+
 ## Unsupported Permissions
 
 Epos does not expose every browser extension permission through `epos.json` yet.

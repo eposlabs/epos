@@ -39,6 +39,8 @@ export default defineConfig({
             { text: 'Messaging', link: '/guide/messaging' },
             { text: 'State', link: '/guide/state' },
             { text: 'Environment', link: '/guide/environment' },
+            { text: 'Browser API', link: '/guide/browser' },
+            { text: 'Fetch', link: '/guide/fetch' },
             { text: 'Storage', link: '/guide/storage' },
             { text: 'Assets', link: '/guide/assets' },
             { text: 'Action', link: '/guide/action' },
