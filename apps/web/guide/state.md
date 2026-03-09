@@ -27,9 +27,9 @@ state.items.push('Hello')
 
 ## It Is a Proxy
 
-While state feels like a normal object, in reality is a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) object that can track any changes.
+While state feels like a normal object, in reality it is a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) object that can track any changes.
 
-Most of the time, you can't see any difference, working with state object feels like working with a normal object.
+Most of the time, you can't see any difference, working with a proxy object feels like working with a normal object.
 
 It only becomes noticeable when you inspect the value in DevTools.
 

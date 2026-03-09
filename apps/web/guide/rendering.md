@@ -136,7 +136,7 @@ The important parts are:
 
 ## Why Outside of `<body>`?
 
-Epos injects the project outside of `<body>` to prevent any conflicts with the page's content. This is a perfectly valid DOM structure, and browsers render content outisde of `<body>` the same way they render content inside `<body>`.
+Epos injects the project outside of `<body>` to prevent any conflicts with the page's content. This is a perfectly valid DOM structure, and browsers render content outside of `<body>` the same way they render content inside `<body>`.
 
 ## Security
 
