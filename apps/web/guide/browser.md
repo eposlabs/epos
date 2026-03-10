@@ -10,9 +10,9 @@ This guide focuses on the practical mental model. For exact method signatures, s
 
 The goal of `epos.browser` is simple:
 
-- keep the familiar `chrome.*` namespace structure
-- make it work in more execution contexts
-- keep the normal extension permission rules
+- Keep the familiar `chrome.*` namespace structure.
+- Make it work in more execution contexts.
+- Keep the normal extension permission rules.
 
 So in practice, you can think of it as `chrome.*`, but routed through Epos when the current context does not have direct access.
 
@@ -22,7 +22,7 @@ This is most useful when your code runs on a web page or in an iframe.
 
 In those places, standard extension APIs are normally unavailable. Without Epos, you would often need to move that logic into the background and build a message bridge first.
 
-With `epos.browser`, many of those cases can stay where the code already is.
+With `epos.browser`, many of those cases can stay in the same place.
 
 ## Basic Example
 
@@ -33,7 +33,7 @@ const tabs = await epos.browser.tabs.query({ active: true })
 console.log(tabs)
 ```
 
-This would normally not work from a regular web page context.
+This would not normally work from a regular web page context.
 
 ## Using `epos.env` Together with `epos.browser`
 
@@ -68,9 +68,9 @@ If an API needs a permission in Chrome, assume it still needs that permission in
 
 For example:
 
-- `epos.browser.downloads.*` needs `downloads`
-- `epos.browser.cookies.*` needs `cookies`
-- `epos.browser.permissions.*` is used to inspect or request optional permissions
+- `epos.browser.downloads.*` needs `downloads`.
+- `epos.browser.cookies.*` needs `cookies`.
+- `epos.browser.permissions.*` is used to inspect or request optional permissions.
 
 Typical runtime request:
 
@@ -103,13 +103,13 @@ For the full permission model, see the [Permissions](/guide/permissions) guide.
 
 `epos.browser` does not expose the entire Chrome Extensions API.
 
-The supported subset is typed and documented by Epos. If you try to use a namespace that Epos does not support yet, you should assume it is not available.
+The supported subset is typed and documented by Epos. If you try to use a namespace that Epos does not support yet, assume it is not available.
 
 Still, the official Chrome docs are useful for understanding the general behavior of tabs, windows, downloads, cookies, and other extension namespaces:
 
 - [Chrome Extensions API reference](https://developer.chrome.com/docs/extensions/reference/api)
 
-Use the Chrome docs for the concepts, then check the Epos types and Epos API reference for what is actually exposed.
+Use the Chrome docs for the concepts, then check the Epos types and API reference for what is actually exposed.
 
 ## When Not to Use It
 

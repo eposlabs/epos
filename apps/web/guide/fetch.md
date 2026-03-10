@@ -1,78 +1,42 @@
 # Fetch
 
-`epos.fetch()` is a version of `fetch()` that runs through the extension instead of the page.
+`epos.fetch()` gives you a way to make cross-origin requests.
 
-Its main purpose is to let page code make cross-origin requests that normal page `fetch()` cannot make because of CORS.
-
-For exact signatures, see the [API reference](/api/general#epos-fetch).
+When normal `fetch()` fails because of CORS restrictions, `epos.fetch()` can still make the request.
 
 ## Why It Exists
 
-Use normal `fetch()` by default.
+If your code runs on a page like `https://example.com` and tries to fetch another origin like `https://epos.dev`, the request will usually fail because of CORS restrictions. This is normal web page security.
 
-Use `epos.fetch()` when all of these are true:
-
-- your code runs on a web page or in an iframe
-- you need to request another origin
-- normal `fetch()` is blocked by CORS
-
-`epos.fetch()` is not a better `fetch()` API. It is just a way to make the request from the extension side.
+Extensions can bypass that restriction. If your extension has permission to access `https://epos.dev`, it can make the request. Use `epos.fetch()` instead of `fetch()`, and Epos will route it through the extension.
 
 ## Which URLs It Can Fetch
 
 `epos.fetch()` can fetch URLs that your project has permission to access.
 
-That access can come from:
+That access can come from these `epos.json` fields:
 
 - `matches`
 - `hostPermissions`
 - `optionalHostPermissions`, requested at runtime
 
-If your project does not have permission for a URL, `epos.fetch()` will not be able to fetch it.
+If your project does not have permission for a URL, `epos.fetch()` will fail.
 
 ## Basic Usage
 
+`epos.fetch()` uses the same API as `fetch()`:
+
 ```ts
-const response = await epos.fetch('https://api.example.com/data')
-const data = await response.json()
+const res = await epos.fetch('https://api.example.com/data')
+const data = await res.json()
 ```
-
-The call shape is close to standard `fetch()`.
-
-## Requesting Optional Host Access
-
-If a remote API is only needed in one user flow, `optionalHostPermissions` is often the better choice.
-
-::: code-group
-
-```json [epos.json]
-{
-  "optionalHostPermissions": ["https://api.example.com/*"]
-}
-```
-
-```ts [main.ts]
-const granted = await epos.browser.permissions.request({
-  origins: ['https://api.example.com/*'],
-})
-
-if (granted) {
-  const response = await epos.fetch('https://api.example.com/data')
-  const data = await response.json()
-  console.log(data)
-}
-```
-
-:::
-
-For more on this model, see the [Permissions](/guide/permissions) guide.
 
 ## Limitations
 
-`epos.fetch()` is close to normal `fetch()`, but it is not identical.
+`epos.fetch()` is similar to normal `fetch()`, but it is not identical.
 
-- streaming responses are not supported
-- some `RequestInit` fields are missing
-- some `Response` fields and methods are missing
+- Streaming responses are not supported.
+- Some `RequestInit` fields are missing.
+- Some `Response` fields and methods are missing.
 
-If you rely on advanced fetch behavior, check the TypeScript types first.
+All supported fields and methods are typed in TypeScript, so your editor can help you avoid unsupported features.

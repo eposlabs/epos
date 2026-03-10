@@ -18,9 +18,11 @@ Once installed, the workflow is simple:
 
 ## Philosophy
 
-Epos is not a universal framework. It focuses on a specific stack to reduce setup and complexity.
+Epos is not a universal framework. It focuses on a specific tech stack to **reduce setup and complexity**.
 
-The engine prioritizes ease of use for the **most common use cases**, even if that means giving up some flexibility. Epos is not for everyone, but if its constraints fit your project, it can make extension development simpler.
+It also rethinks how extensions can be built, making trade-offs that allow a **smoother developer experience** and more **powerful built-in features**.
+
+Epos prioritizes ease of use for the **most common use cases**, even if that means giving up some flexibility.
 
 ## What You Get
 
