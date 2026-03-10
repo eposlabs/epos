@@ -5,7 +5,6 @@ export class App extends ex.Unit {
   env = new gl.Env(this)
   bus = new gl.Bus(this)
 
-  fetcher = new ex.Fetcher(this)
   idb = new ex.Idb(this)
   peer = new exOs.Peer(this)
   projects = new ex.Projects(this)

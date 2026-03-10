@@ -24,12 +24,16 @@ export type ReqInit = {
   referrerPolicy: RequestInit['referrerPolicy']
 }
 
-export class Fetcher extends sw.Unit {
+export class ProjectFetcher extends sw.Unit {
   private responses: { [id: string]: Response } = {}
 
   constructor(parent: sw.Unit) {
     super(parent)
     this.expose()
+  }
+
+  dispose() {
+    this.unexpose()
   }
 
   async fetch(url: string | URL, init?: ReqInit): Promise<ResData | Error> {

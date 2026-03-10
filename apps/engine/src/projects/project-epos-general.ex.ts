@@ -3,7 +3,7 @@ import type { Container } from 'react-dom/client'
 
 export class ProjectEposGeneral extends ex.Unit {
   private $project = this.closest(ex.Project)!
-  fetch = this.$.utils.link(this.$.fetcher, 'fetch')
+  fetch = this.$.utils.link(this.$project.fetcher, 'fetch')
   browser = this.$project.browser.api
 
   component<T>(Component: FC<T>): FC<T> {

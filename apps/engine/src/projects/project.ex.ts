@@ -1,4 +1,4 @@
-import type { Rpc } from 'epos'
+import type { BusService } from 'epos'
 
 export class Project extends ex.Unit {
   id: ProjectDef['id']
@@ -9,9 +9,10 @@ export class Project extends ex.Unit {
   shadowCss: ProjectDef['shadowCss']
   fn: ProjectDef['fn'] | null = null
   browser: ex.ProjectBrowser
+  fetcher: ex.ProjectFetcher
   states: exSw.ProjectStates
   epos: ex.ProjectEpos
-  os: Rpc<os.Project>
+  os: BusService<os.Project>
 
   constructor(parent: ex.Unit, def: ProjectDef) {
     super(parent)
@@ -24,6 +25,7 @@ export class Project extends ex.Unit {
     this.fn = def.fn
     this.os = this.use<os.Project>('os', this.id)
     this.browser = new ex.ProjectBrowser(this)
+    this.fetcher = new ex.ProjectFetcher(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: this.spec.options.allowMissingModels })
     this.epos = new ex.ProjectEpos(this)
   }

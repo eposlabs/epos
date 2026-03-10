@@ -1,4 +1,4 @@
-import type { ReqInit } from './fetcher.sw'
+import type { ReqInit } from './project-fetcher.sw'
 
 export type Res = {
   ok: Response['ok']
@@ -13,11 +13,15 @@ export type Res = {
   blob: Response['blob']
 }
 
-export class Fetcher extends ex.Unit {
-  private sw = this.use<sw.Fetcher>('sw')
+export class ProjectFetcher extends ex.Unit {
+  private sw = this.use<sw.ProjectFetcher>('sw')
+  private $project = this.closest(ex.Project)!
 
   async fetch(url: string | URL, init?: ReqInit): Promise<Res> {
     const href = new URL(String(url), location.href).href
+    const canAccess = await this.$project.browser.api.permissions.contains({ origins: [href] })
+    if (!canAccess) throw new Error(`No permission to access ${href}`)
+
     const res = await this.sw.fetch(href, init)
     if (this.$.utils.is.error(res)) throw res
 

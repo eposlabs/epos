@@ -81,12 +81,12 @@ export interface EposBus {
   setSignal(name: string, value?: unknown): void
   /** Wait for a signal to be set. */
   waitSignal<T>(name: string, timeout?: number): Promise<T | undefined>
-  /** Register an RPC API. */
-  register(name: string, api: RpcTarget): void
-  /** Unregister an RPC API. */
+  /** Register as a service. */
+  register(name: string, api: Obj<any>): void
+  /** Unregister a service. */
   unregister(name: string): void
-  /** Use an RPC API. */
-  use<T extends RpcTarget>(name: string): Rpc<T>
+  /** Use a service. */
+  use<T extends Obj<any>>(name: string): BusService<T>
   /** Create a namespaced bus instance. */
   for(namespace: string): Omit<EposBus, 'for'> & {
     /** Dispose namespaced bus instance. Removes all its listeners and ignores any further method calls. */
@@ -240,7 +240,6 @@ export type Initial<T> = T extends Obj ? T : Instance<T>
 export type Instance<T> = T extends object ? Exclude<T, Obj | Arr | Fn> : never
 export type Versioner<T> = Record<number, (this: Root<T>, state: Root<T>) => void>
 
-export type RpcTarget = Obj<any>
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
 
@@ -259,7 +258,7 @@ export type Project<T extends ProjectQuery = {}> = ProjectBase &
   (T extends { sources: true } ? { sources: Sources } : {}) &
   (T extends { assets: true } ? { assets: Assets } : {})
 
-export type Rpc<T extends RpcTarget> = {
+export type BusService<T extends Obj<any>> = {
   [K in keyof T]: T[K] extends Fn ? (...args: Parameters<T[K]>) => Promise<Awaited<ReturnType<T[K]>>> : never
 }
 

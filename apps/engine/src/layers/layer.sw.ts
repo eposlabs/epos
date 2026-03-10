@@ -1,6 +1,5 @@
 import { Alive, type Alive as AliveType } from '../alive/alive.sw.js'
 import { App, type App as AppType } from '../app/app.sw.js'
-import { Fetcher, type Fetcher as FetcherType } from '../fetcher/fetcher.sw.js'
 import { Idb, type Idb as IdbType } from '../idb/idb.sw.js'
 import { Libs, type Libs as LibsType } from '../libs/libs.sw.js'
 import { Net, type Net as NetType } from '../net/net.sw.js'
@@ -13,6 +12,7 @@ import { ProjectBrowserPermissions, type ProjectBrowserPermissions as ProjectBro
 import { ProjectBrowserStorageArea, type ProjectBrowserStorageArea as ProjectBrowserStorageAreaType } from '../projects/project-browser-storage-area.sw.js'
 import { ProjectBrowserStorage, type ProjectBrowserStorage as ProjectBrowserStorageType } from '../projects/project-browser-storage.sw.js'
 import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../projects/project-browser.sw.js'
+import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../projects/project-fetcher.sw.js'
 import { ProjectTarget, type ProjectTarget as ProjectTargetType } from '../projects/project-target.sw.js'
 import { Project, type Project as ProjectType } from '../projects/project.sw.js'
 import { Projects, type Projects as ProjectsType } from '../projects/projects.sw.js'
@@ -23,7 +23,6 @@ import { Utils, type Utils as UtilsType } from '../utils/utils.sw.js'
 Object.assign(sw, {
   Alive,
   App,
-  Fetcher,
   Idb,
   Libs,
   Net,
@@ -36,6 +35,7 @@ Object.assign(sw, {
   ProjectBrowserStorageArea,
   ProjectBrowserStorage,
   ProjectBrowser,
+  ProjectFetcher,
   ProjectTarget,
   Project,
   Projects,
@@ -50,7 +50,6 @@ declare global {
   interface Sw extends Gl {
     Alive: typeof Alive
     App: typeof App
-    Fetcher: typeof Fetcher
     Idb: typeof Idb
     Libs: typeof Libs
     Net: typeof Net
@@ -63,6 +62,7 @@ declare global {
     ProjectBrowserStorageArea: typeof ProjectBrowserStorageArea
     ProjectBrowserStorage: typeof ProjectBrowserStorage
     ProjectBrowser: typeof ProjectBrowser
+    ProjectFetcher: typeof ProjectFetcher
     ProjectTarget: typeof ProjectTarget
     Project: typeof Project
     Projects: typeof Projects
@@ -74,7 +74,6 @@ declare global {
   interface sw extends gl {
     Alive: Alive
     App: App
-    Fetcher: Fetcher
     Idb: Idb
     Libs: Libs
     Net: Net
@@ -87,6 +86,7 @@ declare global {
     ProjectBrowserStorageArea: ProjectBrowserStorageArea
     ProjectBrowserStorage: ProjectBrowserStorage
     ProjectBrowser: ProjectBrowser
+    ProjectFetcher: ProjectFetcher
     ProjectTarget: ProjectTarget
     Project: Project
     Projects: Projects
@@ -98,7 +98,6 @@ declare global {
   namespace sw {
     export type Alive = AliveType
     export type App = AppType
-    export type Fetcher = FetcherType
     export type Idb = IdbType
     export type Libs = LibsType
     export type Net = NetType
@@ -111,6 +110,7 @@ declare global {
     export type ProjectBrowserStorageArea = ProjectBrowserStorageAreaType
     export type ProjectBrowserStorage = ProjectBrowserStorageType
     export type ProjectBrowser = ProjectBrowserType
+    export type ProjectFetcher = ProjectFetcherType
     export type ProjectTarget = ProjectTargetType
     export type Project = ProjectType
     export type Projects = ProjectsType

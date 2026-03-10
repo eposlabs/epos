@@ -1,4 +1,5 @@
 /// <reference types="epos" />
+self.epos = epos
 
 // document.documentElement.innerHTML = `
 //   <div style="padding: 20px; font-family: sans-serif;">

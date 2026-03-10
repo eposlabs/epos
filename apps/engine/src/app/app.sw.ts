@@ -6,7 +6,6 @@ export class App extends sw.Unit {
   bus = new gl.Bus(this)
 
   alive = new sw.Alive(this)
-  fetcher = new sw.Fetcher(this)
   idb = new sw.Idb(this)
   medium = new swVw.Medium(this)
   net = new sw.Net(this)

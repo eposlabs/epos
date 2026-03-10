@@ -1,4 +1,4 @@
-import type { Rpc } from 'epos'
+import type { BusService } from 'epos'
 import type { Entry } from './project.sw'
 
 export type Attrs = Record<string, string | number>
@@ -8,7 +8,7 @@ export class Project extends os.Unit {
   debug: Entry['debug']
   spec: Entry['spec']
   hash: Entry['hash']
-  sw: Rpc<sw.Project>
+  sw: BusService<sw.Project>
 
   constructor(parent: os.Unit, params: Pick<Entry, 'id' | 'debug' | 'spec' | 'hash'>) {
     super(parent)

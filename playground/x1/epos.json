@@ -8,6 +8,7 @@
 
   "permissions": ["contextMenus"],
   "optionalPermissions": ["browsingData", "notifications", "downloads"],
+  "optionalHostPermissions": ["https://inssist.com"],
 
   "targets": [
     {
@@ -32,9 +33,5 @@
     // { "matches": ["<popup>"], "load": ["x1-popup.css", "x1-popup.js"] },
     // { "matches": ["<sidePanel>"], "load": ["x1-popup.css", "x1-popup.js"] },
     // { "matches": ["<background>"], "load": ["x1-bg.js"] }
-  ],
-
-  "manifest": {
-    "optional_host_permissions": ["*://*.fbcdn.com/*"]
-  }
+  ]
 }

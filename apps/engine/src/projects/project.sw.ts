@@ -42,11 +42,16 @@ export class Project extends sw.Unit {
   meta: Meta
   manifest: chrome.runtime.ManifestV3
   targets: sw.ProjectTarget[] = []
+  fetcher: sw.ProjectFetcher
   browser: sw.ProjectBrowser
   states: exSw.ProjectStates
   private $projects = this.closest(sw.Projects)!
   private onEnabledFns: Array<() => void> = []
   private onDisabledFns: Array<() => void> = []
+
+  get name() {
+    return this.spec.name
+  }
 
   static async new(parent: sw.Unit, params: Bundle & Partial<ProjectSettings & { id: string; main: boolean }>) {
     const project = new Project(parent, { ...params, meta: undefined }) // Always initial meta
@@ -119,6 +124,7 @@ export class Project extends sw.Unit {
     this.meta = params.meta ?? this.getInitialMeta()
     this.targets = this.spec.targets.map(target => new sw.ProjectTarget(this, target))
     this.manifest = this.$projects.generateManifest(this.spec)
+    this.fetcher = new sw.ProjectFetcher(this)
     this.browser = new sw.ProjectBrowser(this)
     this.states = new exSw.ProjectStates(this, { allowMissingModels: true })
     this.expose(this.id)
@@ -131,6 +137,7 @@ export class Project extends sw.Unit {
 
   async dispose() {
     this.unexpose(this.id)
+    this.fetcher.dispose()
     await this.browser.dispose()
     await this.states.dispose()
     await this.removeSystemRules()

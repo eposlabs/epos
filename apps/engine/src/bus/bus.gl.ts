@@ -1,4 +1,4 @@
-import type { Rpc, RpcTarget } from 'epos'
+import type { BusService } from 'epos'
 import type { Target } from './bus-action.gl'
 
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
@@ -142,7 +142,7 @@ export class Bus extends gl.Unit {
     return result as T | undefined
   }
 
-  register(name: string, api: RpcTarget) {
+  register(name: string, api: Obj<any>) {
     if (this.rpcNames.has(name)) return
     this.rpcNames.add(name)
 
@@ -159,13 +159,13 @@ export class Bus extends gl.Unit {
     this.off(`Bus.rpc[${name}]`)
   }
 
-  use<T extends RpcTarget>(name: string) {
+  use<T extends Obj<any>>(name: string) {
     const target = {}
     return new Proxy(target, {
       get: (_, key: string) => {
         return (...args: unknown[]) => this.send(`Bus.rpc[${name}]`, key, ...args)
       },
-    }) as Rpc<T>
+    }) as BusService<T>
   }
 
   for(namespace: string) {
@@ -202,7 +202,7 @@ export class Bus extends gl.Unit {
         if (disposed) return undefined
         return await this.waitSignal<T>(prefixed(name), timeout)
       },
-      register: (id: string, api: RpcTarget) => {
+      register: (id: string, api: Obj<any>) => {
         if (disposed) return
         this.register(prefixed(id), api)
       },
@@ -210,7 +210,7 @@ export class Bus extends gl.Unit {
         if (disposed) return
         this.unregister(prefixed(id))
       },
-      use: <T extends RpcTarget>(id: string) => {
+      use: <T extends Obj<any>>(id: string) => {
         if (disposed) throw new Error('Cannot call `use` on disposed Bus')
         return this.use<T>(prefixed(id))
       },

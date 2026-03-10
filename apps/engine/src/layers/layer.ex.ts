@@ -1,5 +1,4 @@
 import { App, type App as AppType } from '../app/app.ex.js'
-import { Fetcher, type Fetcher as FetcherType } from '../fetcher/fetcher.ex.js'
 import { Idb, type Idb as IdbType } from '../idb/idb.ex.js'
 import { Libs, type Libs as LibsType } from '../libs/libs.ex.js'
 import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../projects/project-browser.ex.js'
@@ -13,13 +12,13 @@ import { ProjectEposProjects, type ProjectEposProjects as ProjectEposProjectsTyp
 import { ProjectEposState, type ProjectEposState as ProjectEposStateType } from '../projects/project-epos-state.ex.js'
 import { ProjectEposStorage, type ProjectEposStorage as ProjectEposStorageType } from '../projects/project-epos-storage.ex.js'
 import { ProjectEpos, type ProjectEpos as ProjectEposType } from '../projects/project-epos.ex.js'
+import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../projects/project-fetcher.ex.js'
 import { Project, type Project as ProjectType } from '../projects/project.ex.js'
 import { Projects, type Projects as ProjectsType } from '../projects/projects.ex.js'
 import { Utils, type Utils as UtilsType } from '../utils/utils.ex.js'
 
 Object.assign(ex, {
   App,
-  Fetcher,
   Idb,
   Libs,
   ProjectBrowser,
@@ -33,6 +32,7 @@ Object.assign(ex, {
   ProjectEposState,
   ProjectEposStorage,
   ProjectEpos,
+  ProjectFetcher,
   Project,
   Projects,
   Utils,
@@ -43,7 +43,6 @@ declare global {
 
   interface Ex extends Gl {
     App: typeof App
-    Fetcher: typeof Fetcher
     Idb: typeof Idb
     Libs: typeof Libs
     ProjectBrowser: typeof ProjectBrowser
@@ -57,6 +56,7 @@ declare global {
     ProjectEposState: typeof ProjectEposState
     ProjectEposStorage: typeof ProjectEposStorage
     ProjectEpos: typeof ProjectEpos
+    ProjectFetcher: typeof ProjectFetcher
     Project: typeof Project
     Projects: typeof Projects
     Utils: typeof Utils
@@ -64,7 +64,6 @@ declare global {
 
   interface ex extends gl {
     App: App
-    Fetcher: Fetcher
     Idb: Idb
     Libs: Libs
     ProjectBrowser: ProjectBrowser
@@ -78,6 +77,7 @@ declare global {
     ProjectEposState: ProjectEposState
     ProjectEposStorage: ProjectEposStorage
     ProjectEpos: ProjectEpos
+    ProjectFetcher: ProjectFetcher
     Project: Project
     Projects: Projects
     Utils: Utils
@@ -85,7 +85,6 @@ declare global {
 
   namespace ex {
     export type App = AppType
-    export type Fetcher = FetcherType
     export type Idb = IdbType
     export type Libs = LibsType
     export type ProjectBrowser = ProjectBrowserType
@@ -99,6 +98,7 @@ declare global {
     export type ProjectEposState = ProjectEposStateType
     export type ProjectEposStorage = ProjectEposStorageType
     export type ProjectEpos = ProjectEposType
+    export type ProjectFetcher = ProjectFetcherType
     export type Project = ProjectType
     export type Projects = ProjectsType
     export type Utils = UtilsType
