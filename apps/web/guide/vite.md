@@ -1,8 +1,8 @@
 # Vite Setup
 
-This guide shows how to setup Epos with Vite, TypeScript, React, and Tailwind CSS.
+This guide shows how to set up Epos with Vite, TypeScript, React, and Tailwind CSS.
 
-You can skip this guide and just select `Vite` template when creating a new project in the dashboard. This will setup all the steps below for you. But if you want to understand how it works or customize the setup, read on.
+You can skip this guide and just select the `Vite` template when creating a new project in the dashboard. That sets up everything below for you. If you want to understand how it works or customize the setup, read on.
 
 ## 1. Create a Vite Project
 
@@ -28,12 +28,12 @@ yarn create vite
 
 :::
 
-Follow the prompts to configure your environment:
+Follow the prompts to set up the project:
 
 1. **Project name:** Choose any name for your project.
-2. **Framework:** Select **Vanilla**. Do not select React, Epos already includes React.
+2. **Framework:** Select **Vanilla**. Do not select React here, because Epos already provides it.
 3. **Variant:** Choose your preference. This guide assumes you select **TypeScript**.
-4. **Use Vite 8**: Select **Yes**. Vite 8 uses [`rolldown`](https://rolldown.rs/) for bundling which is significantly faster.
+4. **Use Vite 8:** Select **Yes**. Vite 8 uses [`rolldown`](https://rolldown.rs/) for bundling, which is much faster.
 
 ## 2. Install Epos
 
@@ -59,7 +59,7 @@ yarn add epos
 
 :::
 
-This package provides TypeScript types for Epos API and the Epos Vite plugin.
+This package provides TypeScript types for the Epos API and includes the Epos Vite plugin.
 
 ## 3. Install Tailwind CSS
 
@@ -122,12 +122,12 @@ export default defineConfig(({ mode }) => ({
 
 As you may know, Vite consists of two major parts:
 
-- A **dev server** that serves your application under `localhost`.
+- A **dev server** that serves your application on `localhost`.
 - A **build command** that bundles your code into static output.
 
-Epos works with actual built files, so we need to use the **build command**. The `watch` option makes Vite rebuild whenever you change source files.
+Epos works with actual built files, so we need to use the **build command**.
 
-## 4. Update `package.json`
+## 5. Update `package.json`
 
 Update to use the build command:
 
@@ -150,11 +150,11 @@ Update to use the build command:
 
 :::
 
-This way you use Vite as a bundler that writes files into `dist`.
+This uses Vite as a bundler that writes files into `dist`.
 
-## 5. Create the Entry Files
+## 6. Create the Entry Files
 
-Remove precreated Vite example files:
+Remove the files that Vite created for the starter app:
 
 - `src/counter.ts`
 - `src/main.ts`
@@ -188,9 +188,9 @@ epos.render(<App />)
 
 :::
 
-The `import 'epos'` line gives you types and editor help for the Epos API.
+The `import 'epos'` line gives your editor types and autocomplete for the Epos API.
 
-## 6. Create `epos.json`
+## 7. Create `epos.json`
 
 Tell Epos to load the built files from `dist`.
 
@@ -200,8 +200,12 @@ Tell Epos to load the built files from `dist`.
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "My Extension",
-  "matches": "<popup>",
-  "load": ["dist/main.css", "dist/main.js"]
+  "targets": [
+    {
+      "matches": "<popup>",
+      "load": ["dist/main.css", "dist/main.js"]
+    }
+  ]
 }
 ```
 
@@ -209,7 +213,7 @@ Tell Epos to load the built files from `dist`.
 
 Notice that `epos.json` points to bundled `dist` files, not `src` files.
 
-## 7. Start the Build
+## 8. Start the Build
 
 Run the development build:
 
@@ -233,11 +237,11 @@ yarn dev
 
 :::
 
-Vite now rebuilds whenever you change source files, and Epos picks up the new `dist` output.
+Vite now rebuilds whenever you change source files, and Epos picks up the updated `dist` output.
 
 ## 9. Multiple Entry Points
 
-If your project has more than one entry, add them all to `input`:
+If your project has more than one entry point, add them all to `input`:
 
 ::: code-group
 
@@ -273,9 +277,9 @@ Then load the matching built files in `epos.json`:
 
 ## 10. Shared Chunks and `vite-plugin-rebundle`
 
-With multiple entry points, Vite may extract shared code into extra chunk files. That is normally good, but Epos can't load those chunks as they are imported dynamically.
+With multiple entry points, Vite may extract shared code into extra chunk files. That is normally ok, but Epos cannot load those chunks directly because they are imported dynamically.
 
-To avoid chunk files, you can use [`vite-plugin-rebundle`](https://www.npmjs.com/package/vite-plugin-rebundle) which ensures single output file per entry point:
+To avoid that, you can use [`vite-plugin-rebundle`](https://www.npmjs.com/package/vite-plugin-rebundle), which keeps a single output file per entry point:
 
 ::: code-group
 
@@ -334,11 +338,11 @@ export default defineConfig(({ mode }) => ({
 }))
 ```
 
-Notice how we disabled `minify` for usual Vite output and enabled it for `vite-plugin-rebundle`. This way your files are minified only once, when rebundled.
+Notice that `minify` is disabled for the normal Vite output and enabled for `vite-plugin-rebundle`. This way the files are minified only once, during rebundling.
 
 ## Summary
 
-The main idea of using Vite with Epos is simple:
+The basic idea of using Vite with Epos is simple:
 
 1. Use Vite to write built files into `dist`.
 2. Point `epos.json` at those built files.

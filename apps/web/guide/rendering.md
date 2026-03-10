@@ -2,11 +2,11 @@
 
 This guide explains how Epos renders React apps, how Shadow DOM fits into that process, and what DOM structure Epos creates for you.
 
-It assumes you already familiar with the [Epos basics](/guide/basics) and have completed the [Vite setup](/guide/vite).
+It assumes you are already familiar with the [Epos basics](/guide/basics) and have completed the [Vite setup](/guide/vite).
 
 ::: info
 
-Epos is designed to work **exclusively with React**. You can use other UI libraries, but some of the crucial features of Epos are built with React in mind.
+Epos is designed to work **exclusively with React**. You can use other UI libraries, but some of its core features are built with React in mind.
 
 :::
 
@@ -26,13 +26,13 @@ epos.render(<App />)
 
 :::
 
-You do not need to create a root element manually. Epos prepares one for the project and renders into it.
+You do not need to create a root element manually. Epos prepares one automatically and renders into it.
 
 ## Shadow DOM
 
 By default, Epos renders into the normal DOM.
 
-That means your styles can affect the page, and the page styles can affect your app.
+That means your styles can affect the page, and the page styles can affect your app injected to this page.
 
 If you have:
 
@@ -46,7 +46,7 @@ div {
 
 :::
 
-The increased font size will be applied to your `div` elements and to the pages `div`s as well.
+The increased font size will be applied to your `div` elements and to the page's `div`s as well.
 
 ## Isolating Styles with `shadow:`
 
@@ -60,7 +60,7 @@ To isolate your styles, prefix the CSS file in `epos.json` with `shadow:`.
   "name": "My Extension",
   "matches": "*://*.example.com/*",
   "load": [
-    "shadow:dist/main.css"
+    "shadow:dist/main.css",
     "dist/main.js",
   ]
 }
@@ -68,7 +68,7 @@ To isolate your styles, prefix the CSS file in `epos.json` with `shadow:`.
 
 :::
 
-When Epos sees `shadow:`, it injects that CSS into a Shadow DOM automatically. And `epos.render(<App/>)` starts rendering your app inside that Shadow DOM as well.
+When Epos sees `shadow:`, it injects that CSS into a Shadow DOM automatically. `epos.render(<App />)` then renders your app inside that Shadow DOM as well.
 
 That keeps your styles isolated from the page.
 
@@ -104,7 +104,7 @@ This is useful when your extension both changes the page and renders its own UI.
 
 Epos injects a top-level `<epos>` element and places the project inside it.
 
-A simplified structure looks like this:
+The structure looks like this:
 
 <!-- prettier-ignore -->
 ```html {2-12}
@@ -127,24 +127,24 @@ A simplified structure looks like this:
 
 The important parts are:
 
-- `<link>` element contains your global styles (without `shadow:` prefix).
-- `<script>` element contains engine's runtime and your app code.
-- `data-project-name` element is the root container for your project.
+- `<link>` loads your global styles (the ones without the `shadow:` prefix).
+- `<script>` loads the engine runtime and your app code.
+- `data-project-name` is the root container for your project.
 - `data-view` is the default container for `epos.render()`.
 - `data-shadow` hosts the Shadow DOM.
 - `data-shadow-view` is the default render container when using `shadow:` CSS.
 
 ## Why Outside of `<body>`?
 
-Epos injects the project outside of `<body>` to prevent any conflicts with the page's content. This is a perfectly valid DOM structure, and browsers render content outside of `<body>` the same way they render content inside `<body>`.
+Epos injects the project outside `<body>` to avoid conflicts with the page content. This is valid DOM structure, and browsers render content outside `<body>` the same way they render content inside it.
 
 ## Security
 
-To prevent malicious web pages from reading your extension's code, Epos revokes the URLs of injected styles and scripts after loading, so the website cannot `fetch` them.
+To prevent web pages from reading your extension code, Epos revokes the URLs of injected styles and scripts after they load, so the page cannot read them.
 
 ## Custom Containers
 
-To customize rendering container, just pass it as the second argument to `epos.render()`:
+To customize the render container, pass it as the second argument to `epos.render()`:
 
 ```tsx
 const container = document.createElement('div')
@@ -159,7 +159,7 @@ In that case, Epos renders exactly where you tell it to.
 
 `epos.render()` wraps the rendered tree in React [`StrictMode`](https://react.dev/reference/react/StrictMode).
 
-It helps identify potential issues and ensures your app follows best practices.
+This helps catch potential issues and keeps your app aligned with React best practices.
 
 If you need to disable `StrictMode`, you can use `createRoot()` directly:
 
@@ -177,11 +177,11 @@ createRoot(container).render(<App />)
 Epos also exposes the main DOM nodes through `epos.dom`:
 
 - `epos.dom.root` - the root `data-project-name` element.
-- `epos.dom.view`- the `data-view` element.
+- `epos.dom.view` - the `data-view` element.
 - `epos.dom.shadowRoot` - the Shadow DOM root.
 - `epos.dom.shadowView` - the `data-shadow-view` element.
 
-These are helpful when you need to integrate with a third-party library or attach something outside normal rendering flow.
+These are helpful when you need to integrate with third-party libraries or attach something outside the normal rendering flow.
 
 ## Practical Rule
 
