@@ -6,7 +6,7 @@ This is useful when the same code can run in different places, such as the popup
 
 ## Basic Context Flags
 
-The most common values are the three boolean flags:
+The most common values are these three boolean flags:
 
 - `epos.env.isPopup`
 - `epos.env.isSidePanel`
@@ -35,24 +35,24 @@ console.log(epos.env.tabId)
 console.log(epos.env.windowId)
 ```
 
-They can be used in `epos.browser.tabs` and `epos.browser.windows` APIs:
+You can use them with the `epos.browser.tabs` and `epos.browser.windows` APIs:
 
 ```ts
 const tab = await epos.browser.tabs.get(epos.env.tabId)
 const win = await epos.browser.windows.get(epos.env.windowId)
 ```
 
-For background scripts and iframes, these values are `-1`.
+For background code and iframes, these values are `-1`.
 
 ## Project Information
 
 `epos.env.project` contains information about the current project:
 
-- `id` - the internal project id
+- `id` - the internal project ID
 - `debug` - whether the project is running in debug mode
 - `enabled` - whether the project is enabled
 - `spec` - the normalized `epos.json`
-- `manifest` - the generated `manifest.json` content for export
+- `manifest` - the generated `manifest.json` content used for export
 
 Example:
 
@@ -65,4 +65,4 @@ if (epos.env.project.debug) {
 }
 ```
 
-`spec` is useful when your code needs to read its own configuration. `manifest` is mostly useful for inspection and debugging.
+`spec` is useful when your code needs to read its own `epos.json` configuration. `manifest` is mostly useful for inspection and debugging.
