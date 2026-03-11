@@ -1,5 +1,5 @@
 import { createLog, getPrototypes, is, type Arr, type Ctor, type Log, type Obj } from '@eposlabs/utils'
-import { epos, type Rpc, type RpcTarget } from 'epos'
+import { epos, type BusService } from 'epos'
 import { customAlphabet } from 'nanoid'
 import type { FC } from 'react'
 
@@ -22,7 +22,7 @@ export class Unit<TRoot = unknown> {
   declare [':version']?: number;
   declare [_log_]: Log | null;
   declare [_root_]: TRoot | null;
-  declare [_rpcs_]: Record<string, Rpc<RpcTarget>>;
+  declare [_rpcs_]: Record<string, BusService<Obj<any>>>;
   declare [_parent_]: Unit<TRoot> | null; // Parent reference for a not-yet-attached units
   declare [_attached_]: boolean;
   declare [_disposers_]: Set<() => void>;
@@ -77,7 +77,7 @@ export class Unit<TRoot = unknown> {
   /**
    * Get access to this unit running by other application instances (tabs, popup, background, etc).
    */
-  use<T extends RpcTarget>(name: string): Rpc<T> {
+  use<T extends Obj<any>>(name: string): BusService<T> {
     this[_rpcs_][name] ??= epos.bus.use<T>(`${this['@']}[${this.id}][${name}]`)
     return this[_rpcs_][name]
   }
