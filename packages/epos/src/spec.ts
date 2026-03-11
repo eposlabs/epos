@@ -64,14 +64,22 @@ export type Resource = {
 }
 
 export type Permission =
+  | 'alarms'
   | 'background'
   | 'browsingData'
   | 'contextMenus'
   | 'cookies'
+  | 'declarativeNetRequest'
   | 'downloads'
+  | 'downloads.ui'
   | 'notifications'
+  | 'offscreen'
+  | 'scripting'
   | 'sidePanel'
   | 'storage'
+  | 'tabs'
+  | 'unlimitedStorage'
+  | 'webNavigation'
 
 // MARK: Schema
 // ============================================================================
@@ -113,16 +121,21 @@ const schema = {
     keys: ['matches', 'load'],
   },
   permissions: [
+    'alarms',
     'background',
     'browsingData',
     'contextMenus',
     'cookies',
+    'declarativeNetRequest',
     'downloads.ui',
     'downloads',
     'notifications',
+    'offscreen',
+    'scripting',
     'sidePanel',
     'storage',
     'tabs',
+    'unlimitedStorage',
     'webNavigation',
   ],
 }

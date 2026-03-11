@@ -86,3 +86,17 @@ If your extension requests broad host access or sensitive permissions, expect cl
 Treat export as a release boundary.
 
 During development, Epos can smooth over a lot of workflow details. The exported extension is the real product. Test that version directly before you publish.
+
+## Permission Justifications
+
+When publishing to the Chrome Web Store, you may need to explain why some permissions are present. For the engine permissions, these explanations are a good starting point:
+
+- `alarms` - Wake up the background worker for scheduled tasks.
+- `declarativeNetRequest` - Adjust headers so project code can run reliably on web pages.
+- `offscreen` - Use web APIs that are not available in the service worker.
+- `scripting` - Register and inject project scripts.
+- `tabs` - Interact with browser tabs and route messages.
+- `unlimitedStorage` - Reduce the risk of browser cleanup removing extension data.
+- `webNavigation` - Watch navigation events and react when pages change.
+
+You should still describe your own extension-specific permissions in your own words.

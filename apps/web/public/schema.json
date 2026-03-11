@@ -122,16 +122,21 @@
     "Permission": {
       "type": "string",
       "enum": [
+        "alarms",
         "background",
         "browsingData",
         "contextMenus",
         "cookies",
+        "declarativeNetRequest",
         "downloads.ui",
         "downloads",
         "notifications",
+        "offscreen",
+        "scripting",
         "sidePanel",
         "storage",
         "tabs",
+        "unlimitedStorage",
         "webNavigation"
       ]
     },
