@@ -35,10 +35,7 @@
     "alarms",
     "declarativeNetRequest",
     "offscreen",
-    "scripting",
-    "tabs",
     "unlimitedStorage",
-    "webNavigation",
 
     // Optional
     "background",
@@ -47,7 +44,10 @@
     "cookies",
     "downloads",
     "notifications",
+    "scripting",
     "sidePanel",
-    "storage"
+    "storage",
+    "tabs",
+    "webNavigation"
   ]
 }

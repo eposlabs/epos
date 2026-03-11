@@ -18,7 +18,6 @@ export type LooseBrowser = {
   alarms: { [K in keyof Browser['alarms']]-?: unknown }
   declarativeNetRequest?: { [K in keyof Browser['declarativeNetRequest']]-?: unknown }
   tabs: { [K in keyof Browser['tabs']]-?: unknown }
-  webNavigation: { [K in keyof Browser['webNavigation']]-?: unknown }
 
   // Optional for epos
   browsingData?: { [K in keyof Browser['browsingData']]-?: unknown }
@@ -34,6 +33,7 @@ export type LooseBrowser = {
     onChanged: unknown
     AccessLevel: unknown
   }
+  webNavigation?: { [K in keyof Browser['webNavigation']]-?: unknown }
 }
 
 export class ProjectBrowser extends ex.Unit {
@@ -325,27 +325,6 @@ export class ProjectBrowser extends ex.Unit {
         TAB_INDEX_NONE: tree.tabs.TAB_INDEX_NONE,
       },
 
-      webNavigation: {
-        // Methods
-        getAllFrames: this.createMethod('webNavigation.getAllFrames'),
-        getFrame: this.createMethod('webNavigation.getFrame'),
-
-        // Events
-        onBeforeNavigate: this.createEvent('webNavigation.onBeforeNavigate'),
-        onCommitted: this.createEvent('webNavigation.onCommitted'),
-        onCompleted: this.createEvent('webNavigation.onCompleted'),
-        onCreatedNavigationTarget: this.createEvent('webNavigation.onCreatedNavigationTarget'),
-        onDOMContentLoaded: this.createEvent('webNavigation.onDOMContentLoaded'),
-        onErrorOccurred: this.createEvent('webNavigation.onErrorOccurred'),
-        onHistoryStateUpdated: this.createEvent('webNavigation.onHistoryStateUpdated'),
-        onReferenceFragmentUpdated: this.createEvent('webNavigation.onReferenceFragmentUpdated'),
-        onTabReplaced: this.createEvent('webNavigation.onTabReplaced'),
-
-        // Values
-        TransitionQualifier: tree.webNavigation.TransitionQualifier,
-        TransitionType: tree.webNavigation.TransitionType,
-      },
-
       ...(hasPermission('browsingData') && {
         browsingData: {
           // Methods
@@ -524,6 +503,29 @@ export class ProjectBrowser extends ex.Unit {
 
           onChanged: this.createEvent('storage.onChanged'),
           AccessLevel: tree.storage.AccessLevel,
+        },
+      }),
+
+      ...(hasPermission('webNavigation') && {
+        webNavigation: {
+          // Methods
+          getAllFrames: this.createMethod('webNavigation.getAllFrames'),
+          getFrame: this.createMethod('webNavigation.getFrame'),
+
+          // Events
+          onBeforeNavigate: this.createEvent('webNavigation.onBeforeNavigate'),
+          onCommitted: this.createEvent('webNavigation.onCommitted'),
+          onCompleted: this.createEvent('webNavigation.onCompleted'),
+          onCreatedNavigationTarget: this.createEvent('webNavigation.onCreatedNavigationTarget'),
+          onDOMContentLoaded: this.createEvent('webNavigation.onDOMContentLoaded'),
+          onErrorOccurred: this.createEvent('webNavigation.onErrorOccurred'),
+          onHistoryStateUpdated: this.createEvent('webNavigation.onHistoryStateUpdated'),
+          onReferenceFragmentUpdated: this.createEvent('webNavigation.onReferenceFragmentUpdated'),
+          onTabReplaced: this.createEvent('webNavigation.onTabReplaced'),
+
+          // Values
+          TransitionQualifier: tree.webNavigation.TransitionQualifier,
+          TransitionType: tree.webNavigation.TransitionType,
         },
       }),
     }

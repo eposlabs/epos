@@ -302,6 +302,9 @@ export class Projects extends sw.Unit {
   }
 
   private async watchAndFixCsp() {
+    const applicable = !!(this.$.browser.scripting || this.$.browser.webNavigation)
+    if (!applicable) return
+
     const IGNORED_URL_PREFIXES = [
       'blob:',
       'chrome:',
@@ -407,10 +410,7 @@ export class Projects extends sw.Unit {
       'alarms',
       'declarativeNetRequest',
       'offscreen',
-      'scripting',
-      'tabs',
       'unlimitedStorage',
-      'webNavigation',
       ...(hasSidePanel ? ['sidePanel' as const] : []),
     ]
 
@@ -431,6 +431,11 @@ export class Projects extends sw.Unit {
     if (hostPermissions.has('<all_urls>')) {
       hostPermissions.clear()
       hostPermissions.add('<all_urls>')
+    }
+
+    // Has host permissions? -> Add extra engine permissions
+    if (hostPermissions.size > 0) {
+      enginePermissions.push('scripting', 'tabs', 'webNavigation')
     }
 
     // Generate manifest object
