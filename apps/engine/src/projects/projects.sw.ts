@@ -433,8 +433,8 @@ export class Projects extends sw.Unit {
       hostPermissions.add('<all_urls>')
     }
 
-    // Has host permissions? -> Add extra engine permissions
-    if (hostPermissions.size > 0) {
+    // Has any host permissions? -> Add extra engine permissions
+    if (hostPermissions.size > 0 || spec.optionalHostPermissions.length > 0) {
       enginePermissions.push('scripting', 'tabs', 'webNavigation')
     }
 

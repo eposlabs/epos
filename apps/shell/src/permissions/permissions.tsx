@@ -16,7 +16,9 @@ export class Permissions extends gl.Unit {
     else if (name === 'downloads') {
       const blob = new Blob(['test-file'], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
+      await epos.browser.downloads.setUiOptions({ enabled: false })
       await epos.browser.downloads.download({ url, filename: 'test-file.txt' })
+      await epos.browser.downloads.setUiOptions({ enabled: true })
       URL.revokeObjectURL(url)
     }
 

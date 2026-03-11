@@ -4,13 +4,19 @@
   "slug": "epos-shell",
   "version": "1.8",
   "description": "Web Extension Engine",
-  "options": { "allowProjectsApi": true, "allowMissingModels": true },
+
+  "options": {
+    "allowProjectsApi": true,
+    "allowMissingModels": true
+  },
+
   "hostPermissions": ["<allUrls>"],
   "permissions": [
     "background",
     "browsingData",
     "contextMenus",
     "cookies",
+    "downloads.ui",
     "downloads",
     "notifications",
     "sidePanel",

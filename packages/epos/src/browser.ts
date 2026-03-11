@@ -246,7 +246,6 @@ export type Downloads = Omit<
 
   // Not supported by epos
   | 'open' // Requires user gesture and "downloads.open" permission
-  | 'setUiOptions' // Requires "downloads.ui" permission
 >
 
 export type Notifications = Omit<

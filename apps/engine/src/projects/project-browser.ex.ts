@@ -12,12 +12,12 @@ export type LooseBrowser = {
   management: { [K in keyof Browser['management']]-?: unknown }
   permissions: { [K in keyof Browser['permissions']]-?: unknown }
   runtime: { [K in keyof Browser['runtime']]-?: unknown }
+  tabs: { [K in keyof Browser['tabs']]-?: unknown }
   windows: { [K in keyof Browser['windows']]-?: unknown }
 
   // Required for epos
   alarms: { [K in keyof Browser['alarms']]-?: unknown }
   declarativeNetRequest?: { [K in keyof Browser['declarativeNetRequest']]-?: unknown }
-  tabs: { [K in keyof Browser['tabs']]-?: unknown }
 
   // Optional for epos
   browsingData?: { [K in keyof Browser['browsingData']]-?: unknown }
@@ -396,6 +396,10 @@ export class ProjectBrowser extends ex.Unit {
           search: this.createMethod('downloads.search'),
           show: this.createMethod('downloads.show'),
           showDefaultFolder: this.createMethod('downloads.showDefaultFolder'),
+          setUiOptions: async (options: chrome.downloads.UiOptions) => {
+            if (hasPermission('downloads.ui')) return await this.callMethod('downloads.setUiOptions', options)
+            throw new Error('downloads.setUiOptions requires the "downloads.ui" permission')
+          },
 
           // Events
           onChanged: this.createEvent('downloads.onChanged'),

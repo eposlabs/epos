@@ -42,6 +42,7 @@
     "browsingData",
     "contextMenus",
     "cookies",
+    "downloads.ui",
     "downloads",
     "notifications",
     "scripting",

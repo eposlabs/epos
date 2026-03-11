@@ -6,27 +6,32 @@
   "action": "https://epos.dev/@x1",
   "popup": { "width": 500, "height": 500 },
 
-  "permissions": ["contextMenus"],
-  "optionalPermissions": ["browsingData", "notifications", "downloads"],
-  "optionalHostPermissions": ["https://inssist.com"],
+  "permissions": ["downloads"],
+  "optionalPermissions": ["downloads.ui"],
+  // "optionalPermissions": ["browsingData", "notifications", "downloads"],
+  // "optionalHostPermissions": ["https://inssist.com"],
 
   "targets": [
     {
-      "matches": "*://*.example.com/*",
+      "matches": ["*://*.example.com/*"],
       "load": ["x1.js"]
-    },
-    {
-      "matches": ["*://*.epos.dev/@x1", "<popup>"],
-      "load": ["x1-hub.js"]
-    },
-    {
-      "matches": "frame:*://*.epos.dev/@x1",
-      "load": ["x1-hub.js"]
-    },
-    {
-      "matches": "<background>",
-      "load": ["x1-bg.js"]
     }
+    // {
+    //   "matches": "*://*.example.com/*",
+    //   "load": ["x1.js"]
+    // },
+    // {
+    //   "matches": ["*://*.epos.dev/@x1", "<popup>"],
+    //   "load": ["x1-hub.js"]
+    // },
+    // {
+    //   "matches": "frame:*://*.epos.dev/@x1",
+    //   "load": ["x1-hub.js"]
+    // },
+    // {
+    //   "matches": "<background>",
+    //   "load": ["x1-bg.js"]
+    // }
     // { "matches": ["<allUrls>"], "load": ["x1.js"] },
     // { "matches": ["*://epos.dev/@x1"], "load": ["x1-hub.js"] },
     // { "matches": ["frame:*://*.epos.dev/*"], "load": ["lite:x1-lite-2.js", "x1-frame.js"] },

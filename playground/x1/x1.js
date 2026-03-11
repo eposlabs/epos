@@ -1,55 +1,19 @@
 /// <reference types="epos" />
 self.epos = epos
 
-// document.documentElement.innerHTML = `
-//   <div style="padding: 20px; font-family: sans-serif;">
-//     Hello from Epos 100!
-//   </div>
-// `
+const render = () => {
+  document.documentElement.innerHTML = `
+    <div style="padding: 16px; font-family: sans-serif; font-size: 20px;" onClick="window.clicked()">
+      Hello [x1] ${state.count}
+    </div>
+  `
+}
 
-// console.warn('[x1]', window.setTimeout)
-// console.warn('x1.js')
-// self.epos = epos
-// self.state = await epos.state.connect()
-// state.theme = { value: 'dark' }
+window.clicked = () => {
+  state.count += 1
+}
 
-// console.warn('!')
-// const state = await epos.state.connect(() => ({ title: 'abc' }))
-// console.warn('x1', state.title)
+const state = await epos.state.connect({ count: 0 })
 
-// await epos.browser.declarativeNetRequest.updateDynamicRules({
-//   removeRuleIds: [3],
-//   addRules: [
-//     {
-//       id: 3,
-//       priority: 1,
-//       condition: { urlFilter: 'inssist', resourceTypes: ['sub_frame'] },
-//       action: {
-//         type: 'modifyHeaders',
-//         responseHeaders: [{ header: 'x-frame-options', operation: 'remove' }],
-//       },
-//     },
-//   ],
-// })
-
-// document.body.innerHTML = `
-//   <div>
-//     test x1 package
-//     <iframe src="https://inssist.com" style="width: 500px; height: 500px;"></iframe>
-//   </div>
-// `
-
-// epos.register(X1App)
-
-// $: (async () => {
-//   // await epos.browser.declarativeNetRequest.updateDynamicRules({
-//   //   addRules: [{}],
-//   // })
-
-//   document.body.innerHTML = `
-//     <div style="background">
-//       test x1 package
-//       <!-- <iframe src="https://inssist.com" style="width: 500px; height: 500px;"></iframe> -->
-//     </div>
-//   `
-// })()
+epos.libs.mobx.reaction(() => state.count, render)
+render()

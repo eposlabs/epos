@@ -18,7 +18,7 @@ export class BusUtils extends gl.Unit {
     return this.$.utils.is.object(value) && THROW in value
   }
 
-  /** Resolves to the first non-undefined result or undefined, catches errors as `Throw` objects. */
+  /** Resolves to the first non-undefined result, catches errors as `Throw` objects. */
   async pick(promises: Promise<unknown>[]) {
     if (promises.length === 0) return undefined
 
@@ -32,17 +32,17 @@ export class BusUtils extends gl.Unit {
         const [result, error] = await this.$.utils.safe(promise)
         processed += 1
 
-        // Result is not `undefined`? -> Resolve to it
-        if (!this.$.utils.is.undefined(result)) {
-          result$.resolve(result)
-        }
-
         // Error was thrown? -> Resolve to a special `Throw` object
-        else if (error) {
+        if (error) {
           const message = error?.message ?? 'Unexpected error'
           const throwObject: Throw = { [THROW]: true, message }
           result$.resolve(throwObject)
           throw error
+        }
+
+        // Result is not `undefined`? -> Resolve to it
+        else if (!this.$.utils.is.undefined(result)) {
+          result$.resolve(result)
         }
 
         // All promises are processed and no result found? -> Resolve to undefined

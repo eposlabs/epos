@@ -117,10 +117,13 @@ const schema = {
     'browsingData',
     'contextMenus',
     'cookies',
+    'downloads.ui',
     'downloads',
     'notifications',
     'sidePanel',
     'storage',
+    'tabs',
+    'webNavigation',
   ],
 }
 

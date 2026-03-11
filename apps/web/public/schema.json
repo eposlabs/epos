@@ -126,10 +126,13 @@
         "browsingData",
         "contextMenus",
         "cookies",
+        "downloads.ui",
         "downloads",
         "notifications",
         "sidePanel",
-        "storage"
+        "storage",
+        "tabs",
+        "webNavigation"
       ]
     },
 
