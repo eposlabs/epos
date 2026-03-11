@@ -32,11 +32,11 @@ html.dark {
   }
 
   h1 {
-    @apply text-[40px]/[1.6] font-medium;
+    @apply text-4xl/[1.6] font-medium;
   }
 
   h2 {
-    @apply text-[30px]/[1.6] font-medium;
+    @apply text-3xl/[1.6] font-medium;
   }
 
   h3 {
@@ -48,6 +48,38 @@ html.dark {
   }
 }
 
-.VPSidebar {
-  @apply pb-15!;
+.landing-page {
+  :where(*, *::before, *::after) {
+    border-radius: 0 !important;
+  }
+
+  .VPDoc,
+  .container,
+  .content,
+  .content-container {
+    max-width: none !important;
+  }
+
+  .VPDoc {
+    padding: 0 !important;
+  }
+
+  .vp-doc {
+    @apply max-w-none px-0! py-0!;
+  }
+
+  .vp-doc h1,
+  .vp-doc h2,
+  .vp-doc h3,
+  .vp-doc p {
+    @apply mt-0 mb-0;
+  }
+
+  .vp-doc a {
+    @apply no-underline;
+  }
+
+  .vp-doc pre {
+    @apply mt-0 mb-0 font-mono;
+  }
 }

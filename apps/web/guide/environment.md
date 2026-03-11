@@ -48,11 +48,11 @@ For background code and iframes, these values are `-1`.
 
 `epos.env.project` contains information about the current project:
 
-- `id` - the internal project ID
-- `debug` - whether the project is running in debug mode
-- `enabled` - whether the project is enabled
-- `spec` - the normalized `epos.json`
-- `manifest` - the generated `manifest.json` content used for export
+- `id` - the internal project ID.
+- `debug` - whether the project is running in debug mode.
+- `enabled` - whether the project is enabled.
+- `spec` - the normalized `epos.json`.
+- `manifest` - the generated `manifest.json` content used for export.
 
 Example:
 

@@ -8,6 +8,27 @@
   "sandbox": { "pages": ["/project.html"] },
   "background": { "type": "module", "service_worker": "/sw.js" },
   "web_accessible_resources": [{ "matches": ["<all_urls>"], "resources": ["*"] }],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["/cs.js"],
+      "world": "ISOLATED",
+      "run_at": "document_start",
+      "all_frames": true,
+      "exclude_matches": [
+        "https://ogs.google.com/*",
+        "https://*.google.com/static/proxy.html?*",
+        "https://accounts.google.com/RotateCookiesPage?*"
+      ]
+    }
+  ],
+
   "host_permissions": ["<all_urls>"],
   "permissions": [
     // Required
@@ -28,9 +49,5 @@
     "notifications",
     "sidePanel",
     "storage"
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self';",
-    "sandbox": "sandbox allow-scripts allow-popups allow-modals allow-forms; default-src * blob: data: 'unsafe-eval' 'unsafe-inline';"
-  }
+  ]
 }

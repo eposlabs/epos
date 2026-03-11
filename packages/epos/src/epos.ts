@@ -143,10 +143,10 @@ export interface EposStorage {
   }
   /** Get all storage keys. */
   keys(name?: string): Promise<string[]>
-  /** Get list of all storages. */
-  list(): Promise<{ name: string | null; keys: string[] }[]>
+  /** List existing storages. */
+  list(): Promise<{ name: string | null }[]>
   /** Remove storage and all its data. */
-  remove(name?: string): Promise<void>
+  clear(name?: string): Promise<void>
   /** Create API for the specific storage. */
   for(name?: string): {
     /** Get value from storage. */
@@ -160,7 +160,7 @@ export interface EposStorage {
     /** Get all storage keys. */
     keys(): Promise<string[]>
     /** Remove storage and all its data. */
-    remove(): Promise<void>
+    clear(): Promise<void>
   }
 }
 

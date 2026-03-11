@@ -1,18 +1,18 @@
 # Action
 
-The `action` field controls what happens when the user clicks your extension icon in the browser toolbar.
+The `action` field in `epos.json` controls what happens when the user clicks your extension icon in the browser toolbar.
 
-For many extensions, this click opens a popup or a side panel. But if your project does not use either of those, Epos can still give that click a meaning.
+For many extensions, this click opens a popup or a side panel. But if your project uses neither of those, Epos can still give that click a meaning.
 
-## When `action` Matters
+## When `action` Applies
+
+`action` is only relevant when your project does not have a popup or side panel.
 
 If your project has a `<popup>` target, clicking the icon opens the popup.
 
 If your project has a `<sidePanel>` target, clicking the icon opens the side panel.
 
-In those cases, the `action` field is not used.
-
-`action` is only relevant when your project does not define a popup or side panel.
+If neither of those targets exists, Epos looks at the `action` field.
 
 ## `action: true`
 
@@ -20,59 +20,46 @@ When you set `action` to `true`, clicking the toolbar icon sends a special `:act
 
 ::: code-group
 
-```json [epos.json]
+```ts [background.ts]
+epos.bus.on(':action', tab => {
+  console.log('Action clicked. Active tab:', tab)
+})
+```
+
+```json {3} [epos.json]
 {
   "name": "My Extension",
   "action": true,
-  "targets": [
-    {
-      "matches": "<background>",
-      "load": ["dist/background.js"]
-    }
-  ]
+  "matches": "<background>",
+  "load": ["dist/background.js"]
 }
-```
-
-```ts [src/background.ts]
-epos.bus.on(':action', tab => {
-  console.log('Action clicked from tab:', tab?.id)
-})
 ```
 
 :::
 
-This is useful when clicking the icon should run some code instead of opening UI.
-
-A common example is toggling a feature on the current tab.
+Notice that the currently active tab is passed to the event listener. This makes it easy to do something with the active page when the icon is clicked.
 
 ## `action` as a URL
 
 Instead of `true`, you can also set `action` to a URL.
 
-```json
+::: code-group
+
+```json {3} [epos.json]
 {
   "name": "My Extension",
-  "action": "https://example.com/help"
+  "action": "https://example.com"
 }
 ```
 
-When the icon is clicked, Epos opens that URL in a new tab.
+:::
 
-This can be useful for simple tools that should open a dashboard, documentation page, or onboarding screen.
+When the icon is clicked, Epos opens that URL in a new tab. If the URL is already open in an existing tab, Epos focuses that tab instead of opening a duplicate.
 
-## Choosing Between Popup, Side Panel, and Action
-
-A simple rule:
-
-- Use `<popup>` when you want a small UI attached to the icon.
-- Use `<sidePanel>` when you want more room and a persistent UI.
-- Use `action: true` when a click should trigger logic.
-- Use `action: "https://..."` when a click should open a page.
-
-If you already have a popup or side panel, you usually do not need `action` at all.
+This can be useful if your extension renders its UI on a regular web page instead of a popup or side panel. The toolbar icon then becomes a quick way to open that page.
 
 ## Notes
 
 - `action` accepts only `true` or a valid URL string.
-- If your project has a popup or side panel target, `action` is ignored.
-- The `:action` event fits naturally with `epos.bus`, so background logic is often the best place to handle it.
+- If your project has a `<popup>` or `<sidePanel>` target, `action` is ignored.
+- The `:action` event is fired through `epos.bus`.

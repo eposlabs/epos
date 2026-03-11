@@ -44,9 +44,13 @@ export class ProjectEposStorage extends ex.Unit {
     return await this.$.idb.keys(this.$project.id, name)
   }
 
-  async remove(name = DEFAULT_NAME) {
+  async clear(name = DEFAULT_NAME) {
     this.validateName(name)
     return await this.$.idb.deleteStore(this.$project.id, name)
+  }
+
+  remove() {
+    throw new Error(`Use delete() to remove individual keys or clear() to remove the entire storage.`)
   }
 
   for(name: string = DEFAULT_NAME) {
@@ -57,7 +61,8 @@ export class ProjectEposStorage extends ex.Unit {
       has: (key: string) => this.has(name, key),
       delete: (key: string) => this.delete(name, key),
       keys: () => this.keys(name),
-      remove: () => this.remove(name),
+      clear: () => this.clear(name),
+      remove: () => this.remove(),
     }
   }
 
@@ -67,7 +72,6 @@ export class ProjectEposStorage extends ex.Unit {
     return await Promise.all(
       storageNames.map(async name => ({
         name: name === DEFAULT_NAME ? null : name,
-        keys: await this.$.idb.keys(this.$project.id, name),
       })),
     )
   }

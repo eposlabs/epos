@@ -19,7 +19,6 @@ export class App extends sw.Unit {
     await this.projects.init()
     this.logInfo()
     this.initGlobalMethods()
-    await this.setupContentScript()
     await this.createOffscreen()
     await this.shell.reloadTabs()
   }
@@ -35,31 +34,6 @@ export class App extends sw.Unit {
   private initGlobalMethods() {
     self.install = (url: Url, debug = false) => this.projects.install(url, debug)
     self.remove = (id: string) => this.projects.remove(id)
-  }
-
-  private async setupContentScript() {
-    const CHROME_WEB_STORE_IFRAMES = [
-      'https://ogs.google.com/*',
-      'https://*.google.com/static/proxy.html?*',
-      'https://accounts.google.com/RotateCookiesPage?*',
-    ]
-
-    // Unregister previous content script
-    const contentScripts = await this.browser.scripting.getRegisteredContentScripts()
-    await this.browser.scripting.unregisterContentScripts({ ids: contentScripts.map(cs => cs.id) })
-
-    // Register new content script
-    await this.browser.scripting.registerContentScripts([
-      {
-        id: 'cs',
-        matches: ['<all_urls>'],
-        js: ['/cs.js'],
-        world: 'ISOLATED',
-        runAt: 'document_start',
-        allFrames: true,
-        excludeMatches: CHROME_WEB_STORE_IFRAMES,
-      },
-    ])
   }
 
   private async createOffscreen() {
