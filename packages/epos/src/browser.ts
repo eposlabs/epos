@@ -1,155 +1,49 @@
 import 'chrome'
 
 export type Browser = {
-  // Always available
   action: Action
-  extension: Extension
-  i18n: I18n
-  management: Management
-  permissions: Permissions
-  runtime: Runtime
-  windows: Windows
-
-  // Required for epos
   alarms: Alarms
-  declarativeNetRequest: DeclarativeNetRequest
-  tabs: Tabs
-  webNavigation: WebNavigation
-
-  // Optional for epos
   browsingData: BrowsingData
   contextMenus: ContextMenus
   cookies: Cookies
+  declarativeNetRequest: DeclarativeNetRequest
   downloads: Downloads
+  extension: Extension
+  i18n: I18n
+  management: Management
   notifications: Notifications
+  permissions: Permissions
+  runtime: Runtime
   sidePanel: SidePanel
   storage: Storage
+  tabs: Tabs
+  webNavigation: WebNavigation
+  windows: Windows
 }
-
-export type Alarms = typeof chrome.alarms
-export type Cookies = typeof chrome.cookies
-export type WebNavigation = typeof chrome.webNavigation
-export type Windows = typeof chrome.windows
 
 export type Action = Omit<
   typeof chrome.action,
-  // Not supported by epos:
+  // Not supported by Epos:
   'openPopup'
 >
 
-export type Extension = Omit<
-  typeof chrome.extension,
+export type Alarms = typeof chrome.alarms
+
+export type BrowsingData = Omit<
+  typeof chrome.browsingData,
   // Deprecated
-  | 'getBackgroundPage'
-  | 'getExtensionTabs'
-  | 'getURL'
-  | 'getViews'
-  | 'lastError'
-  | 'onRequest'
-  | 'onRequestExternal'
-  | 'sendRequest'
+  'removePasswords' | 'removePluginData'
 >
 
-export type I18n = Omit<
-  typeof chrome.i18n,
-  // Not supported by epos
-  'getMessage'
->
-
-export type Management = Omit<
-  typeof chrome.management,
-  // Not supported by epos (require "management" permission)
-  | 'createAppShortcut'
-  | 'generateAppForLink'
-  | 'get'
-  | 'getAll'
-  | 'getPermissionWarningsById'
-  | 'installReplacementWebApp'
-  | 'launchApp'
-  | 'onDisabled'
-  | 'onEnabled'
-  | 'onInstalled'
-  | 'onUninstalled'
-  | 'setEnabled'
-  | 'setLaunchType'
-  | 'uninstall'
->
-
-export type Permissions = Omit<
-  typeof chrome.permissions,
-  | 'contains'
-  | 'getAll'
-  | 'remove'
-  | 'request'
-  // Not supported by epos
-  | 'addHostAccessRequest'
-  | 'onAdded'
-  | 'onRemoved'
-  | 'removeHostAccessRequest'
-> & {
-  contains: (query: PermissionQuery) => Promise<boolean>
-  getAll: () => Promise<{ origins: string[]; permissions: Permission[] }>
-  remove: (query: PermissionQuery) => Promise<boolean>
-  request: (query: PermissionQuery) => Promise<boolean>
+export type ContextMenus = Omit<typeof chrome.contextMenus, 'create'> & {
+  /**
+   * Creates a new context menu item.
+   * @return The ID of the newly created item.
+   */
+  create: (createProperties: chrome.contextMenus.CreateProperties) => Promise<string>
 }
 
-export type PermissionQuery = {
-  origins?: string[]
-  permissions?: chrome.runtime.ManifestPermission[]
-}
-
-export type Permission = RequiredPermission | OptionalPermission
-
-export type RequiredPermission =
-  | 'alarms'
-  | 'declarativeNetRequest'
-  | 'offscreen'
-  | 'scripting'
-  | 'tabs'
-  | 'unlimitedStorage'
-  | 'webNavigation'
-
-export type OptionalPermission =
-  | 'background'
-  | 'browsingData'
-  | 'contextMenus'
-  | 'cookies'
-  | 'downloads'
-  | 'notifications'
-  | 'sidePanel'
-  | 'storage'
-
-export type Runtime = Omit<
-  typeof chrome.runtime,
-  // Deprecated
-  | 'getBackgroundPage'
-  | 'onBrowserUpdateAvailable'
-
-  // Not supported by epos
-  | 'connect'
-  | 'connectNative' // Requires "nativeMessaging" permission
-  | 'getPackageDirectoryEntry' // Foreground only, not available in the Service Worker
-  | 'lastError'
-  | 'onConnect'
-  | 'onConnectExternal'
-  | 'onConnectNative' // Requires "nativeMessaging" permission
-  | 'onInstalled'
-  | 'OnInstalledReason'
-  | 'onMessage'
-  | 'onMessageExternal'
-  | 'onRestartRequired' // ChromeOS
-  | 'OnRestartRequiredReason'
-  | 'onStartup'
-  | 'onSuspend'
-  | 'onSuspendCanceled'
-  | 'onUserScriptConnect'
-  | 'onUserScriptMessage'
-  | 'openOptionsPage'
-  | 'restart' // ChromeOS
-  | 'restartAfterDelay' // ChromeOS
-  | 'sendMessage'
-  | 'sendNativeMessage' // Requires "nativeMessaging" permission
->
+export type Cookies = typeof chrome.cookies
 
 export type DeclarativeNetRequest = Omit<
   typeof chrome.declarativeNetRequest,
@@ -157,7 +51,7 @@ export type DeclarativeNetRequest = Omit<
   | 'updateDynamicRules'
   | 'updateSessionRules'
 
-  // Not supported by epos
+  // Not supported by Epos
   | 'getAvailableStaticRuleCount'
   | 'getDisabledRuleIds'
   | 'getEnabledRulesets'
@@ -200,11 +94,149 @@ export type DeclarativeNetRequest = Omit<
   updateSessionRules: (options: UpdateRuleOptions) => Promise<number[]>
 }
 
-export type UpdateRuleOptions = {
-  /** Rules to add. */
-  addRules?: Omit<chrome.declarativeNetRequest.Rule, 'id'>[] | undefined
-  /** IDs of the rules to remove. Any invalid IDs will be ignored. */
-  removeRuleIds?: number[] | undefined
+export type Downloads = Omit<
+  typeof chrome.downloads,
+  // Deprecated
+  | 'setShelfEnabled'
+
+  // Not supported by Epos
+  | 'open' // Requires user gesture and "downloads.open" permission
+>
+
+export type Extension = Omit<
+  typeof chrome.extension,
+  // Deprecated
+  | 'getBackgroundPage'
+  | 'getExtensionTabs'
+  | 'getURL'
+  | 'getViews'
+  | 'lastError'
+  | 'onRequest'
+  | 'onRequestExternal'
+  | 'sendRequest'
+>
+
+export type I18n = Omit<
+  typeof chrome.i18n,
+  // Not supported by Epos
+  'getMessage'
+>
+
+export type Management = Omit<
+  typeof chrome.management,
+  // Not supported by Epos (require "management" permission)
+  | 'createAppShortcut'
+  | 'generateAppForLink'
+  | 'get'
+  | 'getAll'
+  | 'getPermissionWarningsById'
+  | 'installReplacementWebApp'
+  | 'launchApp'
+  | 'onDisabled'
+  | 'onEnabled'
+  | 'onInstalled'
+  | 'onUninstalled'
+  | 'setEnabled'
+  | 'setLaunchType'
+  | 'uninstall'
+>
+
+export type Notifications = Omit<
+  typeof chrome.notifications,
+  // Deprecated
+  | 'onShowSettings'
+
+  // Not supported by Epos
+  | 'getPermissionLevel'
+  | 'onPermissionLevelChanged'
+>
+
+export type Permissions = Omit<
+  typeof chrome.permissions,
+  | 'contains'
+  | 'getAll'
+  | 'remove'
+  | 'request'
+  // Not supported by Epos
+  | 'addHostAccessRequest'
+  | 'onAdded'
+  | 'onRemoved'
+  | 'removeHostAccessRequest'
+> & {
+  contains: (query: PermissionQuery) => Promise<boolean>
+  getAll: () => Promise<{ origins: string[]; permissions: Permission[] }>
+  remove: (query: PermissionQuery) => Promise<boolean>
+  request: (query: PermissionQuery) => Promise<boolean>
+}
+
+export type Runtime = Omit<
+  typeof chrome.runtime,
+  // Deprecated
+  | 'getBackgroundPage'
+  | 'onBrowserUpdateAvailable'
+
+  // Not supported by Epos
+  | 'connect'
+  | 'connectNative' // Requires "nativeMessaging" permission
+  | 'getPackageDirectoryEntry' // Foreground only, not available in the Service Worker
+  | 'lastError'
+  | 'onConnect'
+  | 'onConnectExternal'
+  | 'onConnectNative' // Requires "nativeMessaging" permission
+  | 'onInstalled'
+  | 'OnInstalledReason'
+  | 'onMessage'
+  | 'onMessageExternal'
+  | 'onRestartRequired' // ChromeOS
+  | 'OnRestartRequiredReason'
+  | 'onStartup'
+  | 'onSuspend'
+  | 'onSuspendCanceled'
+  | 'onUserScriptConnect'
+  | 'onUserScriptMessage'
+  | 'openOptionsPage'
+  | 'restart' // ChromeOS
+  | 'restartAfterDelay' // ChromeOS
+  | 'sendMessage'
+  | 'sendNativeMessage' // Requires "nativeMessaging" permission
+>
+
+export type SidePanel = Omit<
+  typeof chrome.sidePanel,
+  // Not supported by Epos
+  | 'close' // New api, not available in `@types/chrome`
+  | 'open'
+  | 'setOptions'
+  | 'setPanelBehavior'
+> & {
+  onClosed: chrome.events.Event<() => void> // New api, not available in `@types/chrome`
+}
+
+export type Storage = Omit<
+  typeof chrome.storage,
+  | 'local'
+  | 'session'
+  | 'sync'
+  // Not supported by Epos
+  | 'managed'
+> & {
+  local: Omit<
+    typeof chrome.storage.local,
+    // Not supported by Epos
+    'setAccessLevel'
+  >
+  session: Omit<
+    typeof chrome.storage.session,
+    // Not supported by Epos
+    'setAccessLevel'
+  >
+  sync: Omit<
+    typeof chrome.storage.sync,
+    // Deprecated
+    | 'MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE'
+    // Not supported by Epos
+    | 'setAccessLevel'
+  >
 }
 
 export type Tabs = Omit<
@@ -219,79 +251,44 @@ export type Tabs = Omit<
   | 'onSelectionChanged'
   | 'sendRequest'
 
-  // Not supported by epos
+  // Not supported by Epos
   | 'connect'
   | 'sendMessage'
   | 'getCurrent'
 >
 
-export type BrowsingData = Omit<
-  typeof chrome.browsingData,
-  // Deprecated
-  'removePasswords' | 'removePluginData'
->
+export type WebNavigation = typeof chrome.webNavigation
+export type Windows = typeof chrome.windows
 
-export type ContextMenus = Omit<typeof chrome.contextMenus, 'create'> & {
-  /**
-   * Creates a new context menu item.
-   * @return The ID of the newly created item.
-   */
-  create: (createProperties: chrome.contextMenus.CreateProperties) => Promise<string>
+// MARK: Helpers
+// ============================================================================
+
+export type Permission =
+  | 'alarms'
+  | 'background'
+  | 'browsingData'
+  | 'contextMenus'
+  | 'cookies'
+  | 'declarativeNetRequest'
+  | 'downloads.ui'
+  | 'downloads'
+  | 'notifications'
+  | 'offscreen'
+  | 'scripting'
+  | 'sidePanel'
+  | 'storage'
+  | 'tabs'
+  | 'unlimitedStorage'
+  | 'webNavigation'
+
+export type PermissionQuery = {
+  origins?: string[]
+  permissions?: Permission[]
 }
 
-export type Downloads = Omit<
-  typeof chrome.downloads,
-  // Deprecated
-  | 'setShelfEnabled'
-
-  // Not supported by epos
-  | 'open' // Requires user gesture and "downloads.open" permission
->
-
-export type Notifications = Omit<
-  typeof chrome.notifications,
-  // Deprecated
-  | 'onShowSettings'
-
-  // Not supported by epos
-  | 'getPermissionLevel'
-  | 'onPermissionLevelChanged'
->
-
-export type SidePanel = Omit<
-  typeof chrome.sidePanel,
-  // Not supported by epos
-  | 'close' // New api, not available in `@types/chrome`
-  | 'open'
-  | 'setOptions'
-  | 'setPanelBehavior'
-> & {
-  onClosed: chrome.events.Event<() => void> // New api, not available in `@types/chrome`
-}
-
-export type Storage = Omit<
-  typeof chrome.storage,
-  | 'local'
-  | 'session'
-  | 'sync'
-  // Not supported by epos
-  | 'managed'
-> & {
-  local: Omit<
-    typeof chrome.storage.local,
-    // Not supported by epos
-    'setAccessLevel'
-  >
-  session: Omit<
-    typeof chrome.storage.session,
-    // Not supported by epos
-    'setAccessLevel'
-  >
-  sync: Omit<
-    typeof chrome.storage.sync,
-    // Deprecated
-    | 'MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE'
-    // Not supported by epos
-    | 'setAccessLevel'
-  >
+export type UpdateRuleOptions = {
+  /** Rules to add. */
+  addRules?: Omit<chrome.declarativeNetRequest.Rule, 'id'>[] | undefined
+  /** IDs of the rules to remove. Any invalid IDs will be ignored. */
+  removeRuleIds?: number[] | undefined
 }

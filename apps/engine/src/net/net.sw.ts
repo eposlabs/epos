@@ -11,7 +11,12 @@ export class Net extends sw.Unit {
   private freeDynamicRuleIds = new Set<number>()
   private freeSessionRuleIds = new Set<number>()
 
+  private get supported() {
+    return !!this.$.browser.declarativeNetRequest
+  }
+
   async init() {
+    if (!this.supported) return
     await this.disableCsp()
     await this.populateDynamicIdPool()
     await this.populateSessionIdPool()
@@ -43,6 +48,7 @@ export class Net extends sw.Unit {
   }
 
   async updateDynamicRules(options: UpdateRuleOptions): Promise<Rule[]> {
+    if (!this.supported) return []
     const addRules = (options.addRules ?? []).map(rule => ({ ...rule, id: this.nextDynamicRuleId() }))
     const removeRuleIds = (options.removeRuleIds ?? []).filter(id => id < this.dynamicRuleIdCursor)
     await this.$.browser.declarativeNetRequest.updateDynamicRules({ ...options, addRules })
@@ -51,6 +57,7 @@ export class Net extends sw.Unit {
   }
 
   async updateSessionRules(options: UpdateRuleOptions): Promise<Rule[]> {
+    if (!this.supported) return []
     const addRules = (options.addRules ?? []).map(rule => ({ ...rule, id: this.nextSessionRuleId() }))
     const removeRuleIds = (options.removeRuleIds ?? []).filter(id => id < this.sessionRuleIdCursor)
     await this.$.browser.declarativeNetRequest.updateSessionRules({ ...options, addRules })

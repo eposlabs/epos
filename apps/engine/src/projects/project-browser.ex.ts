@@ -5,35 +5,32 @@ export const _cbId_ = Symbol('id')
 export type Callback = Fn & { [_cbId_]?: string }
 
 export type LooseBrowser = {
-  // Always available
   action: { [K in keyof Browser['action']]-?: unknown }
-  extension: { [K in keyof Browser['extension']]-?: unknown }
-  i18n: { [K in keyof Browser['i18n']]-?: unknown }
-  management: { [K in keyof Browser['management']]-?: unknown }
-  permissions: { [K in keyof Browser['permissions']]-?: unknown }
-  runtime: { [K in keyof Browser['runtime']]-?: unknown }
-  tabs: { [K in keyof Browser['tabs']]-?: unknown }
-  windows: { [K in keyof Browser['windows']]-?: unknown }
-
-  // Required for epos
   alarms: { [K in keyof Browser['alarms']]-?: unknown }
-  declarativeNetRequest?: { [K in keyof Browser['declarativeNetRequest']]-?: unknown }
-
-  // Optional for epos
   browsingData?: { [K in keyof Browser['browsingData']]-?: unknown }
   contextMenus?: { [K in keyof Browser['contextMenus']]-?: unknown }
   cookies?: { [K in keyof Browser['cookies']]-?: unknown }
+  declarativeNetRequest?: { [K in keyof Browser['declarativeNetRequest']]-?: unknown }
   downloads?: { [K in keyof Browser['downloads']]-?: unknown }
+  extension: { [K in keyof Browser['extension']]-?: unknown }
+  i18n: { [K in keyof Browser['i18n']]-?: unknown }
+  management: { [K in keyof Browser['management']]-?: unknown }
   notifications?: { [K in keyof Browser['notifications']]-?: unknown }
+  permissions: { [K in keyof Browser['permissions']]-?: unknown }
+  runtime: { [K in keyof Browser['runtime']]-?: unknown }
   sidePanel?: { [K in keyof Browser['sidePanel']]-?: unknown }
-  storage?: {
-    local: { [K in keyof Browser['storage']['local']]-?: unknown }
-    session: { [K in keyof Browser['storage']['session']]-?: unknown }
-    sync: { [K in keyof Browser['storage']['sync']]-?: unknown }
-    onChanged: unknown
-    AccessLevel: unknown
-  }
+  storage?: Storage
+  tabs: { [K in keyof Browser['tabs']]-?: unknown }
   webNavigation?: { [K in keyof Browser['webNavigation']]-?: unknown }
+  windows: { [K in keyof Browser['windows']]-?: unknown }
+}
+
+export type Storage = {
+  local: { [K in keyof Browser['storage']['local']]-?: unknown }
+  session: { [K in keyof Browser['storage']['session']]-?: unknown }
+  sync: { [K in keyof Browser['storage']['sync']]-?: unknown }
+  onChanged: unknown
+  AccessLevel: unknown
 }
 
 export class ProjectBrowser extends ex.Unit {
@@ -140,101 +137,6 @@ export class ProjectBrowser extends ex.Unit {
         onUserSettingsChanged: this.createEvent('action.onUserSettingsChanged'),
       },
 
-      extension: {
-        // Methods
-        isAllowedFileSchemeAccess: this.createMethod('extension.isAllowedFileSchemeAccess'),
-        isAllowedIncognitoAccess: this.createMethod('extension.isAllowedIncognitoAccess'),
-        setUpdateUrlData: this.createMethod('extension.setUpdateUrlData'),
-
-        // Values
-        inIncognitoContext: tree.extension.inIncognitoContext,
-        ViewType: tree.extension.ViewType,
-      },
-
-      i18n: {
-        // Methods
-        detectLanguage: this.createMethod('i18n.detectLanguage'),
-        getAcceptLanguages: this.createMethod('i18n.getAcceptLanguages'),
-        getUILanguage: this.createMethod('i18n.getUILanguage'),
-      },
-
-      management: {
-        // Methods
-        getPermissionWarningsByManifest: this.createMethod('management.getPermissionWarningsByManifest'),
-        getSelf: this.createMethod('management.getSelf'),
-        uninstallSelf: this.createMethod('management.uninstallSelf'),
-
-        // Values
-        ExtensionDisabledReason: tree.management.ExtensionDisabledReason,
-        ExtensionInstallType: tree.management.ExtensionInstallType,
-        ExtensionType: tree.management.ExtensionType,
-        LaunchType: tree.management.LaunchType,
-      },
-
-      permissions: {
-        // Methods
-        contains: this.createMethod('permissions.contains'),
-        getAll: this.createMethod('permissions.getAll'),
-        remove: this.createMethod('permissions.remove'),
-        request: async (...args: unknown[]) => {
-          // Sending `App.requestPermissions` from `sw` fails with 'gesture' error, but sending from `ex` works.
-          // Here we create a temporary listener to forward request: `sw` -> `ex` -> `sm`.
-          const reqId = this.$.utils.generateId()
-          const name = `ProjectBrowser.requestPermissions[${reqId}]`
-          this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('App.requestPermissions', ...args))
-          setTimeout(() => this.$.bus.off(name), this.$.utils.time('15s'))
-
-          return await this.callMethod('permissions.request', reqId, ...args)
-        },
-      },
-
-      runtime: {
-        // Methods
-        getContexts: this.createMethod('runtime.getContexts'),
-        getManifest: () => manifest,
-        getPlatformInfo: this.createMethod('runtime.getPlatformInfo'),
-        getURL: (path: string) => `chrome-extension://${tree.runtime.id}/${path}`,
-        getVersion: () => manifest.version,
-        reload: this.createMethod('runtime.reload'),
-        requestUpdateCheck: this.createMethod('runtime.requestUpdateCheck'),
-        setUninstallURL: this.createMethod('runtime.setUninstallURL'),
-
-        // Events
-        onUpdateAvailable: this.createEvent('runtime.onUpdateAvailable'),
-
-        // Values
-        ContextType: tree.runtime.ContextType,
-        id: tree.runtime.id,
-        PlatformArch: tree.runtime.PlatformArch,
-        PlatformNaclArch: tree.runtime.PlatformNaclArch,
-        PlatformOs: tree.runtime.PlatformOs,
-        RequestUpdateCheckStatus: tree.runtime.RequestUpdateCheckStatus,
-      },
-
-      windows: {
-        // Methods
-        create: this.createMethod('windows.create'),
-        get: this.createMethod('windows.get'),
-        getAll: this.createMethod('windows.getAll'),
-        getCurrent: this.createMethod('windows.getCurrent'),
-        getLastFocused: this.createMethod('windows.getLastFocused'),
-        remove: this.createMethod('windows.remove'),
-        update: this.createMethod('windows.update'),
-
-        // Events
-        onBoundsChanged: this.createEvent('windows.onBoundsChanged'),
-        onCreated: this.createEvent('windows.onCreated'),
-        onFocusChanged: this.createEvent('windows.onFocusChanged'),
-        onRemoved: this.createEvent('windows.onRemoved'),
-
-        // Values
-        CreateType: tree.windows.CreateType,
-        WINDOW_ID_CURRENT: tree.windows.WINDOW_ID_CURRENT,
-        WINDOW_ID_NONE: tree.windows.WINDOW_ID_NONE,
-        WindowState: tree.windows.WindowState,
-        WindowType: tree.windows.WindowType,
-      },
-
       alarms: {
         // Methods
         clear: this.createMethod('alarms.clear'),
@@ -245,84 +147,6 @@ export class ProjectBrowser extends ex.Unit {
 
         // Events
         onAlarm: this.createEvent('alarms.onAlarm'),
-      },
-
-      declarativeNetRequest: {
-        // Methods
-        getDynamicRules: this.createMethod('declarativeNetRequest.getDynamicRules'),
-        getSessionRules: this.createMethod('declarativeNetRequest.getSessionRules'),
-        isRegexSupported: this.createMethod('declarativeNetRequest.isRegexSupported'),
-        updateDynamicRules: this.createMethod('declarativeNetRequest.updateDynamicRules'),
-        updateSessionRules: this.createMethod('declarativeNetRequest.updateSessionRules'),
-
-        // Values
-        DomainType: tree.declarativeNetRequest.DomainType,
-        HeaderOperation: tree.declarativeNetRequest.HeaderOperation,
-        RequestMethod: tree.declarativeNetRequest.RequestMethod,
-        ResourceType: tree.declarativeNetRequest.ResourceType,
-        RuleActionType: tree.declarativeNetRequest.RuleActionType,
-        RuleConditionKeys: tree.declarativeNetRequest.RuleConditionKeys,
-        UnsupportedRegexReason: tree.declarativeNetRequest.UnsupportedRegexReason,
-        DYNAMIC_RULESET_ID: tree.declarativeNetRequest.DYNAMIC_RULESET_ID,
-        GETMATCHEDRULES_QUOTA_INTERVAL: tree.declarativeNetRequest.GETMATCHEDRULES_QUOTA_INTERVAL,
-        GUARANTEED_MINIMUM_STATIC_RULES: tree.declarativeNetRequest.GUARANTEED_MINIMUM_STATIC_RULES,
-        MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL: tree.declarativeNetRequest.MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL,
-        MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES,
-        MAX_NUMBER_OF_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES,
-        MAX_NUMBER_OF_ENABLED_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS,
-        MAX_NUMBER_OF_REGEX_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES,
-        MAX_NUMBER_OF_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_SESSION_RULES,
-        MAX_NUMBER_OF_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_STATIC_RULESETS,
-        MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES,
-        MAX_NUMBER_OF_UNSAFE_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_SESSION_RULES,
-        SESSION_RULESET_ID: tree.declarativeNetRequest.SESSION_RULESET_ID,
-      },
-
-      tabs: {
-        // Methods
-        captureVisibleTab: this.createMethod('tabs.captureVisibleTab'),
-        create: this.createMethod('tabs.create'),
-        detectLanguage: this.createMethod('tabs.detectLanguage'),
-        discard: this.createMethod('tabs.discard'),
-        duplicate: this.createMethod('tabs.duplicate'),
-        get: this.createMethod('tabs.get'),
-        getZoom: this.createMethod('tabs.getZoom'),
-        getZoomSettings: this.createMethod('tabs.getZoomSettings'),
-        goBack: this.createMethod('tabs.goBack'),
-        goForward: this.createMethod('tabs.goForward'),
-        group: this.createMethod('tabs.group'),
-        highlight: this.createMethod('tabs.highlight'),
-        move: this.createMethod('tabs.move'),
-        query: this.createMethod('tabs.query'),
-        reload: this.createMethod('tabs.reload'),
-        remove: this.createMethod('tabs.remove'),
-        setZoom: this.createMethod('tabs.setZoom'),
-        setZoomSettings: this.createMethod('tabs.setZoomSettings'),
-        ungroup: this.createMethod('tabs.ungroup'),
-        update: this.createMethod('tabs.update'),
-
-        // Events
-        onActivated: this.createEvent('tabs.onActivated'),
-        onAttached: this.createEvent('tabs.onAttached'),
-        onCreated: this.createEvent('tabs.onCreated'),
-        onDetached: this.createEvent('tabs.onDetached'),
-        onHighlighted: this.createEvent('tabs.onHighlighted'),
-        onMoved: this.createEvent('tabs.onMoved'),
-        onRemoved: this.createEvent('tabs.onRemoved'),
-        onReplaced: this.createEvent('tabs.onReplaced'),
-        onUpdated: this.createEvent('tabs.onUpdated'),
-        onZoomChange: this.createEvent('tabs.onZoomChange'),
-
-        // Values
-        MutedInfoReason: tree.tabs.MutedInfoReason,
-        TabStatus: tree.tabs.TabStatus,
-        WindowType: tree.tabs.WindowType,
-        ZoomSettingsMode: tree.tabs.ZoomSettingsMode,
-        ZoomSettingsScope: tree.tabs.ZoomSettingsScope,
-        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: tree.tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND,
-        SPLIT_VIEW_ID_NONE: tree.tabs.SPLIT_VIEW_ID_NONE,
-        TAB_ID_NONE: tree.tabs.TAB_ID_NONE,
-        TAB_INDEX_NONE: tree.tabs.TAB_INDEX_NONE,
       },
 
       ...(hasPermission('browsingData') && {
@@ -382,6 +206,39 @@ export class ProjectBrowser extends ex.Unit {
         },
       }),
 
+      ...(hasPermission('declarativeNetRequest') && {
+        declarativeNetRequest: {
+          // Methods
+          getDynamicRules: this.createMethod('declarativeNetRequest.getDynamicRules'),
+          getSessionRules: this.createMethod('declarativeNetRequest.getSessionRules'),
+          isRegexSupported: this.createMethod('declarativeNetRequest.isRegexSupported'),
+          updateDynamicRules: this.createMethod('declarativeNetRequest.updateDynamicRules'),
+          updateSessionRules: this.createMethod('declarativeNetRequest.updateSessionRules'),
+
+          // Values
+          DomainType: tree.declarativeNetRequest.DomainType,
+          HeaderOperation: tree.declarativeNetRequest.HeaderOperation,
+          RequestMethod: tree.declarativeNetRequest.RequestMethod,
+          ResourceType: tree.declarativeNetRequest.ResourceType,
+          RuleActionType: tree.declarativeNetRequest.RuleActionType,
+          RuleConditionKeys: tree.declarativeNetRequest.RuleConditionKeys,
+          UnsupportedRegexReason: tree.declarativeNetRequest.UnsupportedRegexReason,
+          DYNAMIC_RULESET_ID: tree.declarativeNetRequest.DYNAMIC_RULESET_ID,
+          GETMATCHEDRULES_QUOTA_INTERVAL: tree.declarativeNetRequest.GETMATCHEDRULES_QUOTA_INTERVAL,
+          GUARANTEED_MINIMUM_STATIC_RULES: tree.declarativeNetRequest.GUARANTEED_MINIMUM_STATIC_RULES,
+          MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL: tree.declarativeNetRequest.MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL,
+          MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES,
+          MAX_NUMBER_OF_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES,
+          MAX_NUMBER_OF_ENABLED_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS,
+          MAX_NUMBER_OF_REGEX_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES,
+          MAX_NUMBER_OF_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_SESSION_RULES,
+          MAX_NUMBER_OF_STATIC_RULESETS: tree.declarativeNetRequest.MAX_NUMBER_OF_STATIC_RULESETS,
+          MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES,
+          MAX_NUMBER_OF_UNSAFE_SESSION_RULES: tree.declarativeNetRequest.MAX_NUMBER_OF_UNSAFE_SESSION_RULES,
+          SESSION_RULESET_ID: tree.declarativeNetRequest.SESSION_RULESET_ID,
+        },
+      }),
+
       ...(hasPermission('downloads') && {
         downloads: {
           // Methods
@@ -416,6 +273,37 @@ export class ProjectBrowser extends ex.Unit {
         },
       }),
 
+      extension: {
+        // Methods
+        isAllowedFileSchemeAccess: this.createMethod('extension.isAllowedFileSchemeAccess'),
+        isAllowedIncognitoAccess: this.createMethod('extension.isAllowedIncognitoAccess'),
+        setUpdateUrlData: this.createMethod('extension.setUpdateUrlData'),
+
+        // Values
+        inIncognitoContext: tree.extension.inIncognitoContext,
+        ViewType: tree.extension.ViewType,
+      },
+
+      i18n: {
+        // Methods
+        detectLanguage: this.createMethod('i18n.detectLanguage'),
+        getAcceptLanguages: this.createMethod('i18n.getAcceptLanguages'),
+        getUILanguage: this.createMethod('i18n.getUILanguage'),
+      },
+
+      management: {
+        // Methods
+        getPermissionWarningsByManifest: this.createMethod('management.getPermissionWarningsByManifest'),
+        getSelf: this.createMethod('management.getSelf'),
+        uninstallSelf: this.createMethod('management.uninstallSelf'),
+
+        // Values
+        ExtensionDisabledReason: tree.management.ExtensionDisabledReason,
+        ExtensionInstallType: tree.management.ExtensionInstallType,
+        ExtensionType: tree.management.ExtensionType,
+        LaunchType: tree.management.LaunchType,
+      },
+
       ...(hasPermission('notifications') && {
         notifications: {
           // Methods
@@ -434,6 +322,46 @@ export class ProjectBrowser extends ex.Unit {
           TemplateType: tree.notifications.TemplateType,
         },
       }),
+
+      permissions: {
+        // Methods
+        contains: this.createMethod('permissions.contains'),
+        getAll: this.createMethod('permissions.getAll'),
+        remove: this.createMethod('permissions.remove'),
+        request: async (...args: unknown[]) => {
+          // Sending `App.requestPermissions` from `sw` fails with 'gesture' error, but sending from `ex` works.
+          // Here we create a temporary listener to forward request: `sw` -> `ex` -> `sm`.
+          const reqId = this.$.utils.generateId()
+          const name = `ProjectBrowser.requestPermissions[${reqId}]`
+          this.$.bus.once(name, (...args: unknown[]) => this.$.bus.send('App.requestPermissions', ...args))
+          setTimeout(() => this.$.bus.off(name), this.$.utils.time('15s'))
+
+          return await this.callMethod('permissions.request', reqId, ...args)
+        },
+      },
+
+      runtime: {
+        // Methods
+        getContexts: this.createMethod('runtime.getContexts'),
+        getManifest: () => manifest,
+        getPlatformInfo: this.createMethod('runtime.getPlatformInfo'),
+        getURL: (path: string) => `chrome-extension://${tree.runtime.id}/${path}`,
+        getVersion: () => manifest.version,
+        reload: this.createMethod('runtime.reload'),
+        requestUpdateCheck: this.createMethod('runtime.requestUpdateCheck'),
+        setUninstallURL: this.createMethod('runtime.setUninstallURL'),
+
+        // Events
+        onUpdateAvailable: this.createEvent('runtime.onUpdateAvailable'),
+
+        // Values
+        ContextType: tree.runtime.ContextType,
+        id: tree.runtime.id,
+        PlatformArch: tree.runtime.PlatformArch,
+        PlatformNaclArch: tree.runtime.PlatformNaclArch,
+        PlatformOs: tree.runtime.PlatformOs,
+        RequestUpdateCheckStatus: tree.runtime.RequestUpdateCheckStatus,
+      },
 
       ...(hasPermission('sidePanel') && {
         sidePanel: {
@@ -510,6 +438,53 @@ export class ProjectBrowser extends ex.Unit {
         },
       }),
 
+      tabs: {
+        // Methods
+        captureVisibleTab: this.createMethod('tabs.captureVisibleTab'),
+        create: this.createMethod('tabs.create'),
+        detectLanguage: this.createMethod('tabs.detectLanguage'),
+        discard: this.createMethod('tabs.discard'),
+        duplicate: this.createMethod('tabs.duplicate'),
+        get: this.createMethod('tabs.get'),
+        getZoom: this.createMethod('tabs.getZoom'),
+        getZoomSettings: this.createMethod('tabs.getZoomSettings'),
+        goBack: this.createMethod('tabs.goBack'),
+        goForward: this.createMethod('tabs.goForward'),
+        group: this.createMethod('tabs.group'),
+        highlight: this.createMethod('tabs.highlight'),
+        move: this.createMethod('tabs.move'),
+        query: this.createMethod('tabs.query'),
+        reload: this.createMethod('tabs.reload'),
+        remove: this.createMethod('tabs.remove'),
+        setZoom: this.createMethod('tabs.setZoom'),
+        setZoomSettings: this.createMethod('tabs.setZoomSettings'),
+        ungroup: this.createMethod('tabs.ungroup'),
+        update: this.createMethod('tabs.update'),
+
+        // Events
+        onActivated: this.createEvent('tabs.onActivated'),
+        onAttached: this.createEvent('tabs.onAttached'),
+        onCreated: this.createEvent('tabs.onCreated'),
+        onDetached: this.createEvent('tabs.onDetached'),
+        onHighlighted: this.createEvent('tabs.onHighlighted'),
+        onMoved: this.createEvent('tabs.onMoved'),
+        onRemoved: this.createEvent('tabs.onRemoved'),
+        onReplaced: this.createEvent('tabs.onReplaced'),
+        onUpdated: this.createEvent('tabs.onUpdated'),
+        onZoomChange: this.createEvent('tabs.onZoomChange'),
+
+        // Values
+        MutedInfoReason: tree.tabs.MutedInfoReason,
+        TabStatus: tree.tabs.TabStatus,
+        WindowType: tree.tabs.WindowType,
+        ZoomSettingsMode: tree.tabs.ZoomSettingsMode,
+        ZoomSettingsScope: tree.tabs.ZoomSettingsScope,
+        MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND: tree.tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND,
+        SPLIT_VIEW_ID_NONE: tree.tabs.SPLIT_VIEW_ID_NONE,
+        TAB_ID_NONE: tree.tabs.TAB_ID_NONE,
+        TAB_INDEX_NONE: tree.tabs.TAB_INDEX_NONE,
+      },
+
       ...(hasPermission('webNavigation') && {
         webNavigation: {
           // Methods
@@ -532,6 +507,30 @@ export class ProjectBrowser extends ex.Unit {
           TransitionType: tree.webNavigation.TransitionType,
         },
       }),
+
+      windows: {
+        // Methods
+        create: this.createMethod('windows.create'),
+        get: this.createMethod('windows.get'),
+        getAll: this.createMethod('windows.getAll'),
+        getCurrent: this.createMethod('windows.getCurrent'),
+        getLastFocused: this.createMethod('windows.getLastFocused'),
+        remove: this.createMethod('windows.remove'),
+        update: this.createMethod('windows.update'),
+
+        // Events
+        onBoundsChanged: this.createEvent('windows.onBoundsChanged'),
+        onCreated: this.createEvent('windows.onCreated'),
+        onFocusChanged: this.createEvent('windows.onFocusChanged'),
+        onRemoved: this.createEvent('windows.onRemoved'),
+
+        // Values
+        CreateType: tree.windows.CreateType,
+        WINDOW_ID_CURRENT: tree.windows.WINDOW_ID_CURRENT,
+        WINDOW_ID_NONE: tree.windows.WINDOW_ID_NONE,
+        WindowState: tree.windows.WindowState,
+        WindowType: tree.windows.WindowType,
+      },
     }
 
     Object.keys(this.#api).forEach(key => delete this.#api[key])

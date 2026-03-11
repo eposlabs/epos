@@ -33,9 +33,17 @@
   "permissions": [
     // Required
     "alarms",
-    "declarativeNetRequest",
     "offscreen",
     "unlimitedStorage",
+
+    // Automatically added if host permissions are used
+    "declarativeNetRequest",
+    "scripting",
+    "tabs",
+    "webNavigation",
+
+    // Automatically added if <sidePanel> is used
+    "sidePanel",
 
     // Optional
     "background",
@@ -45,10 +53,6 @@
     "downloads.ui",
     "downloads",
     "notifications",
-    "scripting",
-    "sidePanel",
-    "storage",
-    "tabs",
-    "webNavigation"
+    "storage"
   ]
 }

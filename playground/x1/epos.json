@@ -13,7 +13,8 @@
 
   "targets": [
     {
-      "matches": ["*://*.example.com/*"],
+      // "matches": ["*://*.example.com/*"],
+      "matches": "<popup>",
       "load": ["x1.js"]
     }
     // {

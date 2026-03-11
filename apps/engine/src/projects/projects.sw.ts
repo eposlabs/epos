@@ -408,7 +408,6 @@ export class Projects extends sw.Unit {
     // Prepare engine permissions
     const enginePermissions: chrome.runtime.ManifestPermission[] = [
       'alarms',
-      'declarativeNetRequest',
       'offscreen',
       'unlimitedStorage',
       ...(hasSidePanel ? ['sidePanel' as const] : []),
@@ -435,7 +434,7 @@ export class Projects extends sw.Unit {
 
     // Has any host permissions? -> Add extra engine permissions
     if (hostPermissions.size > 0 || spec.optionalHostPermissions.length > 0) {
-      enginePermissions.push('scripting', 'tabs', 'webNavigation')
+      enginePermissions.push('declarativeNetRequest', 'scripting', 'tabs', 'webNavigation')
     }
 
     // Generate manifest object

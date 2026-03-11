@@ -1,20 +1,19 @@
 # Permissions
 
-Epos uses the same general permission model as normal browser extensions, but you describe those permissions in `epos.json` instead of writing a raw `manifest.json` by hand.
+Epos uses the same general permission model as normal browser extensions, but you declare those permissions in `epos.json` instead of `manifest.json`.
 
-Some permissions are always added by the engine. Others are optional and depend on what your project needs.
+Some permissions required for the engine to work, so they are always end up in the resulting `manifest.json`. But most of the permissions are optional and depend on your project’s needs.
+
+If you are not familiar with browser extension permissions, you can read the [Chrome permissions docs](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions) or [MDN version](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
 
 ## Engine Permissions
 
-Every exported Epos extension includes a set of permissions required by the engine itself:
+These permissions are always end up in your extension as they are requierd for the engine to work:
 
-- `alarms`
-- `declarativeNetRequest`
+- `alarms` - wakes up the background worker for scheduled tasks.
+- `declarativeNetRequest` - adjusts headers
 - `offscreen`
-- `scripting`
-- `tabs`
 - `unlimitedStorage`
-- `webNavigation`
 
 If your project uses a `<sidePanel>` target, Epos also adds `sidePanel` automatically.
 
