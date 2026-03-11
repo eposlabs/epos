@@ -141,7 +141,7 @@ If you want all URLs, use `<allUrls>` in `epos.json`.
 
 Notice that `<allUrls>` is also in camelCase, while standard `manifest.json` uses `<all_urls>` in snake_case.
 
-## `epos.browser` Still Follows Permissions
+## `epos.browser` Follows Permissions
 
 `epos.browser.*` APIs follow the same rules as `chrome.*` APIs. If you do not have a permission, you cannot use the related API. For example, if you do not have the `downloads` permission, `epos.browser.downloads` will be unavailable (`undefined`).
 
