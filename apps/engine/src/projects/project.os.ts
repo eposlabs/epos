@@ -153,18 +153,18 @@ export class Project extends os.Unit {
 
     // Prepare iframe attributes
     attrs = {
+      'width': screen.availWidth,
+      'height': screen.availHeight,
+      'referrerpolicy': 'unsafe-url',
+      'allow': `fullscreen; geolocation; microphone; camera; clipboard-read; clipboard-write; autoplay; payment; usb; accelerometer; gyroscope; magnetometer; midi; encrypted-media; picture-in-picture; display-capture; screen-wake-lock; gamepad; xr-spatial-tracking`,
+      'sandbox': `allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation`,
+      ...attrs,
       'name': name,
       'data-type': 'frame',
       'data-project-id': this.id,
       'data-frame-id': id,
       'data-net-rule-id': ruleId,
       'src': url,
-      ...attrs,
-      'width': screen.availWidth,
-      'height': screen.availHeight,
-      'referrerpolicy': 'unsafe-url',
-      'allow': `fullscreen; geolocation; microphone; camera; clipboard-read; clipboard-write; autoplay; payment; usb; accelerometer; gyroscope; magnetometer; midi; encrypted-media; picture-in-picture; display-capture; screen-wake-lock; gamepad; xr-spatial-tracking`,
-      'sandbox': `allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation`,
     }
 
     // Create iframe

@@ -1,4 +1,4 @@
-# Browser API
+# Extension API
 
 `epos.browser` provides access to `chrome.*` APIs in every context of your extension.
 
