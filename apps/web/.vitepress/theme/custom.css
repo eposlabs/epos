@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+@theme inline {
+  --color-brand: hsl(65 100% 49%);
+}
+
 html:not(.dark) {
   --vp-c-brand-1: var(--color-teal-600);
   --vp-c-brand-2: var(--color-teal-600);
@@ -7,9 +11,9 @@ html:not(.dark) {
 }
 
 html.dark {
-  --vp-c-brand-1: hsl(65 100% 49%);
-  --vp-c-brand-2: hsl(65 100% 49%);
-  --vp-c-brand-3: hsl(65 100% 49%);
+  --vp-c-brand-1: var(--color-brand);
+  --vp-c-brand-2: var(--color-brand);
+  --vp-c-brand-3: var(--color-brand);
   --vp-button-brand-text: var(--color-black);
   --vp-button-brand-hover-text: var(--color-black);
   --vp-button-brand-active-text: var(--color-black);
@@ -51,4 +55,13 @@ html.dark {
 
 .VPSidebar {
   @apply pb-15!;
+}
+
+.docs-landing-shell {
+  margin-inline: calc(50% - 50vw);
+  width: 100vw;
+}
+
+.docs-section {
+  @apply mx-auto max-w-7xl px-6 sm:px-8 lg:px-12;
 }
