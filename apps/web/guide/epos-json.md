@@ -314,7 +314,7 @@ Epos supports two useful prefixes:
 }
 ```
 
-Read more about `lite:` prefix in the [Basics guide](http://localhost:5173/guide/basics.html#lite-mode-for-javascript).
+Read more about `lite:` prefix in the [Basics guide](/guide/basics#lite-mode-for-javascript).
 
 ## Permissions Fields
 

@@ -55,7 +55,7 @@ const tabs = await epos.browser.tabs.query({})
 
 This is especially useful on web pages and in iframes, where the standard extension APIs are not available.
 
-Read more in the [Browser API](/guide/browser) guide.
+Read more in the [Extension API](/guide/extension) guide.
 
 ## Storage
 
