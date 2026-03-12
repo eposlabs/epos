@@ -21,7 +21,7 @@ export type Spec = {
   assets: Path[]
   targets: Target[]
   permissions: Permission[]
-  optionalPermissions: Permission[]
+  optionalPermissions: OptionalPermission[]
   hostPermissions: string[]
   optionalHostPermissions: string[]
   manifest: Manifest | null
@@ -63,23 +63,8 @@ export type Resource = {
   path: Path
 }
 
-export type Permission =
-  | 'alarms'
-  | 'background'
-  | 'browsingData'
-  | 'contextMenus'
-  | 'cookies'
-  | 'declarativeNetRequest'
-  | 'downloads'
-  | 'downloads.ui'
-  | 'notifications'
-  | 'offscreen'
-  | 'scripting'
-  | 'sidePanel'
-  | 'storage'
-  | 'tabs'
-  | 'unlimitedStorage'
-  | 'webNavigation'
+export type Permission = (typeof schema)['permissions'][number]
+export type OptionalPermission = (typeof schema)['optionalPermissions'][number]
 
 // MARK: Schema
 // ============================================================================
@@ -137,7 +122,23 @@ const schema = {
     'tabs',
     'unlimitedStorage',
     'webNavigation',
-  ],
+  ] as const satisfies chrome.runtime.ManifestPermission[],
+  optionalPermissions: [
+    'alarms',
+    'background',
+    'browsingData',
+    'contextMenus',
+    'cookies',
+    'downloads.ui',
+    'downloads',
+    'notifications',
+    'offscreen',
+    'scripting',
+    'sidePanel',
+    'storage',
+    'tabs',
+    'webNavigation',
+  ] as const satisfies chrome.runtime.ManifestOptionalPermission[],
 }
 
 // MARK: Parsers
@@ -407,22 +408,22 @@ const parsePermissions = (spec: Obj): Permission[] => {
   const permissions = spec.permissions ?? []
   if (!isArrayOfStrings(permissions)) throw new Error(`'permissions' must be an array of strings`)
 
-  const badPermission = permissions.find(value => !schema.permissions.includes(value))
+  const badPermission = permissions.find(value => !schema.permissions.includes(value as Permission))
   if (badPermission) throw new Error(`Unknown permission: '${badPermission}'`)
 
   return permissions as Permission[]
 }
 
-const parseOptionalPermissions = (spec: Obj): Permission[] => {
+const parseOptionalPermissions = (spec: Obj): OptionalPermission[] => {
   if ('optional_permissions' in spec) throw new Error(`Use 'optionalPermissions' instead of 'optional_permissions'`)
 
   const optionalPermissions = spec.optionalPermissions ?? []
   if (!isArrayOfStrings(optionalPermissions)) throw new Error(`'optionalPermissions' must be an array of strings`)
 
-  const badPermission = optionalPermissions.find(value => !schema.permissions.includes(value))
+  const badPermission = optionalPermissions.find(value => !schema.optionalPermissions.includes(value as OptionalPermission))
   if (badPermission) throw new Error(`Unknown optional permission: '${badPermission}'`)
 
-  return optionalPermissions as Permission[]
+  return optionalPermissions as OptionalPermission[]
 }
 
 const parseHostPermissions = (spec: Obj): string[] => {

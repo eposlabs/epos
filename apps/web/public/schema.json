@@ -19,7 +19,7 @@
     "matches": { "$ref": "#/$defs/Matches" },
     "load": { "$ref": "#/$defs/Resources" },
     "permissions": { "$ref": "#/$defs/Permissions" },
-    "optionalPermissions": { "$ref": "#/$defs/Permissions" },
+    "optionalPermissions": { "$ref": "#/$defs/OptionalPermissions" },
     "hostPermissions": { "$ref": "#/$defs/HostPermissions" },
     "optionalHostPermissions": { "$ref": "#/$defs/HostPermissions" },
     "manifest": { "$ref": "#/$defs/Manifest" }
@@ -119,6 +119,11 @@
       "items": { "$ref": "#/$defs/Permission" }
     },
 
+    "OptionalPermissions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/OptionalPermission" }
+    },
+
     "Permission": {
       "type": "string",
       "enum": [
@@ -137,6 +142,26 @@
         "storage",
         "tabs",
         "unlimitedStorage",
+        "webNavigation"
+      ]
+    },
+
+    "OptionalPermission": {
+      "type": "string",
+      "enum": [
+        "alarms",
+        "background",
+        "browsingData",
+        "contextMenus",
+        "cookies",
+        "downloads.ui",
+        "downloads",
+        "notifications",
+        "offscreen",
+        "scripting",
+        "sidePanel",
+        "storage",
+        "tabs",
         "webNavigation"
       ]
     },
