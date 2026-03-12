@@ -15,7 +15,7 @@
     {
       // "matches": ["*://*.example.com/*"],
       "matches": ["frame:*://*.example.com/*", "<sidePanel>"],
-      "load": ["x1.js"]
+      "load": ["/x1.js"]
     }
     // {
     //   "matches": "*://*.example.com/*",

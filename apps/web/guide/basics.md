@@ -140,6 +140,12 @@ Update `epos.json` to use this pattern:
 
 Now, the gold background is not limited to just the homepage. You can navigate to `https://example.com/anything` or `https://www.example.com`, and the engine will inject your styles.
 
+::: tip
+
+To match all websites, use `<allUrls>` match pattern.
+
+:::
+
 ## Load JavaScript
 
 Changing styles is useful, but let's add some JavaScript logic.
