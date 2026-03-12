@@ -12,6 +12,7 @@ html.dark {
   --vp-c-brand-3: hsl(65 100% 49%);
   --vp-button-brand-text: var(--color-black);
   --vp-button-brand-hover-text: var(--color-black);
+  --vp-button-brand-active-text: var(--color-black);
 }
 
 .main {

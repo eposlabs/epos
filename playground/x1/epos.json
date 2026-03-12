@@ -14,7 +14,7 @@
   "targets": [
     {
       // "matches": ["*://*.example.com/*"],
-      "matches": "<popup>",
+      "matches": ["frame:*://*.example.com/*", "<sidePanel>"],
       "load": ["x1.js"]
     }
     // {

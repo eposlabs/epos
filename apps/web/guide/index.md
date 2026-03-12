@@ -35,7 +35,7 @@ At a high level, Epos gives you:
 - Automatic script injection + Shadow DOM.
 - A simpler setup through `epos.json`.
 
-## Core Limitations
+## Core Constraints
 
 - **React:** Epos is built around React.
 - **Chromium:** Firefox and Safari are not supported.
@@ -44,7 +44,7 @@ At a high level, Epos gives you:
 - **No Source Maps:** Epos injects its runtime into your code, so source maps do not work.
 - **Permissions:** Certain manifest permissions are required and cannot be omitted.
 
-These limitations are intentional trade-offs that make Epos's features possible. You can learn more about them in the [Features](/guide/features) section.
+These constraints are intentional trade-offs that make Epos's features possible. You can learn more about them in the [Features](/guide/features) section.
 
 ## Is It for You?
 

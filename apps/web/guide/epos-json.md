@@ -1,20 +1,18 @@
 # epos.json
 
-`epos.json` is the main configuration file for an Epos project. It tells Epos what your extension is called, where your code should run, what assets to bundle, and what permissions to request.
+`epos.json` is the main configuration file for any Epos project. It tells Epos how your extension should work.
 
-If you know `manifest.json`, you can think of `epos.json` as the higher-level source that Epos uses to generate the manifest for export.
+You do not need to provide standard extension `manifest.json` file, Epos generates `manifest.json` automatically based on your `epos.json` config.
 
 ## Smallest Valid File
 
-The only required field is `name`.
+The only required field in `epos.json` is `name`, all other fields are optional.
 
 ```json
 {
   "name": "My Extension"
 }
 ```
-
-That is enough to create a valid project, but it does not load any code yet.
 
 ## A Common Real Example
 
@@ -28,6 +26,8 @@ Here is a more typical configuration:
   "description": "Example Epos extension",
   "icon": "dist/icon.svg",
   "assets": ["dist/data.json"],
+  "permissions": ["notifications"],
+  "optionalPermissions": ["downloads"],
   "targets": [
     {
       "matches": "<popup>",
@@ -41,20 +41,13 @@ Here is a more typical configuration:
       "matches": "<background>",
       "load": ["dist/background.js"]
     }
-  ],
-  "permissions": ["notifications"],
-  "optionalPermissions": ["downloads"],
-  "hostPermissions": ["https://api.example.com/*"]
+  ]
 }
 ```
 
-## Top-Level Fields
+## `name`
 
-These are the main fields you will use most often.
-
-### `name`
-
-Required. This is the display name of the extension.
+This is the name of the extension that appears to users.
 
 ```json
 {
@@ -62,9 +55,9 @@ Required. This is the display name of the extension.
 }
 ```
 
-### `slug`
+## `slug`
 
-Optional. A stable internal identifier. If omitted, Epos generates it from `name`.
+A lowercased dashed string that shown in Epos system logs. If not provided, Epos will generate it from the `name` field: `My Extension` → `my-extension`. Keep it lowercase and use only letters, numbers, and hyphens.
 
 ```json
 {
@@ -72,11 +65,11 @@ Optional. A stable internal identifier. If omitted, Epos generates it from `name
 }
 ```
 
-Keep it lowercase and use only letters, numbers, and hyphens.
+This is useful, when your extension name is too long and you want a shorter identifier for logs.
 
-### `version`
+## `version`
 
-Optional. If omitted, Epos uses `0.0.1`.
+Version of your extension in semver format. If not provided, `0.0.1` will be used.
 
 ```json
 {
@@ -84,11 +77,9 @@ Optional. If omitted, Epos uses `0.0.1`.
 }
 ```
 
-For published projects, you should set this explicitly.
+## `description`
 
-### `description`
-
-Optional. A short extension description.
+A short extension description. This will be shown to users in the extension store.
 
 ```json
 {
@@ -96,9 +87,9 @@ Optional. A short extension description.
 }
 ```
 
-### `icon`
+## `icon`
 
-Optional. Path to your icon file.
+Path to your icon file. If not provided, Epos logo will be used.
 
 ```json
 {
@@ -106,130 +97,9 @@ Optional. Path to your icon file.
 }
 ```
 
-Epos automatically includes the icon in the exported bundle and also treats it as an asset.
-
-## Loading Code
-
-The most important fields for runtime behavior are `matches`, `load`, and `targets`.
-
-### Single-Target Shorthand
-
-If your project has only one target, you can use top-level `matches` and `load`.
-
-```json
-{
-  "name": "My Extension",
-  "matches": "*://*.example.com/*",
-  "load": ["dist/main.js", "dist/main.css"]
-}
-```
-
-Epos treats this as a shorthand for one item in `targets`.
-
-### `targets`
-
-For anything beyond the simplest setup, use `targets`.
-
-```json
-{
-  "name": "My Extension",
-  "targets": [
-    {
-      "matches": "<popup>",
-      "load": ["dist/popup.js", "dist/popup.css"]
-    },
-    {
-      "matches": "<background>",
-      "load": ["dist/background.js"]
-    },
-    {
-      "matches": "*://*.example.com/*",
-      "load": ["dist/main.js", "shadow:dist/main.css"]
-    }
-  ]
-}
-```
-
-Each target has two main fields:
-
-- `matches` says where the target runs.
-- `load` says which files should be loaded there.
-
-## `matches`
-
-`matches` accepts one string or an array of strings.
-
-### Special Epos Contexts
-
-These are the most common special values:
-
-- `<popup>`
-- `<sidePanel>`
-- `<background>`
-
-Example:
-
-```json
-{
-  "matches": ["<popup>", "<background>"]
-}
-```
-
-### URL Match Patterns
-
-For web pages, use normal extension-style match patterns.
-
-```json
-{
-  "matches": "*://*.example.com/*"
-}
-```
-
-You can also use:
-
-- `frame:*://*.example.com/*` for iframes only
-- `exact:https://example.com/path` for exact matching
-- `<allUrls>` for all URLs
-
-In `epos.json`, use `<allUrls>` with a capital `U`, not raw manifest `<all_urls>`.
-
-## `load`
-
-`load` is a list of JavaScript and CSS files.
-
-```json
-{
-  "load": ["dist/main.js", "dist/main.css"]
-}
-```
-
-Order matters. Files are loaded in the order you list them.
-
-### Load Prefixes
-
-Epos supports two useful prefixes.
-
-`shadow:` loads CSS into the Shadow DOM:
-
-```json
-{
-  "load": ["dist/main.js", "shadow:dist/main.css"]
-}
-```
-
-`lite:` loads lightweight JavaScript:
-
-```json
-{
-  "load": ["lite:dist/snippet.js"]
-}
-```
-
-Use `shadow:` when you want style isolation on web pages. Use `lite:` only when you specifically need its lightweight injection behavior.
-
 ## `action`
 
-`action` controls what happens when the extension icon is clicked, but only when there is no popup or side panel target.
+`action` controls what happens when the extension icon is clicked.
 
 ```json
 {
@@ -237,7 +107,7 @@ Use `shadow:` when you want style isolation on web pages. Use `lite:` only when 
 }
 ```
 
-With `true`, Epos sends a `:action` bus event.
+With `true`, Epos sends a `:action` bus event that you can listen with `epos.bus.on(':action', ...)`.
 
 You can also provide a URL:
 
@@ -280,32 +150,168 @@ This only matters when your project actually uses a popup.
 
 ### `options.preloadAssets`
 
+Default: `true`.
+
 If `true`, assets are loaded automatically at startup.
 If `false`, you load them manually with `epos.assets.load()`.
 
 ### `options.allowProjectsApi`
 
-Enables `epos.projects.*` inside the project.
+Default: `false`. Enables `epos.projects.*` inside the project.
 
-Most projects do not need this.
+This is an API for dynamically managing projects inside Epos. In fact, `app.epos.dev` is just a project that uses this API and ships with Epos pre-installed.
+
+Most projects do not need this API, so it is disabled by default.
 
 ### `options.allowMissingModels`
 
-Relaxes model registration rules for state.
+Default: `false`. Does not throw an error if your states contains model instances but does not have the related model class registered.
 
-This is an advanced option and most projects should leave it off.
+This is an advanced option, use it only if you sure you need it.
 
 ## `assets`
 
-List any static files your project needs at runtime.
+List of static files that will be bundled with your extension and available through `epos.assets`.
 
 ```json
 {
-  "assets": ["dist/logo.svg", "dist/data.json"]
+  "assets": ["dist/logo.svg", "static/data.json"]
 }
 ```
 
-You can then access them through `epos.assets`.
+## Loading Code
+
+The fields that configure where your code should be executed are `matches`, `load`, and `targets`.
+
+If your project has only one target, you can use top-level `matches` and `load`.
+
+```json
+{
+  "name": "My Extension",
+  "matches": "*://*.example.com/*",
+  "load": ["dist/main.js", "dist/main.css"]
+}
+```
+
+Epos treats this as a shorthand for one item in `targets`.
+
+## `targets`
+
+For anything beyond the simplest setup, use `targets`.
+
+```json
+{
+  "name": "My Extension",
+  "targets": [
+    {
+      "matches": "<popup>",
+      "load": ["dist/popup.js", "dist/popup.css"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["dist/background.js"]
+    },
+    {
+      "matches": "*://*.example.com/*",
+      "load": ["dist/main.js", "shadow:dist/main.css"]
+    }
+  ]
+}
+```
+
+Each target has two fields: `matches` and `load`.
+
+## `matches`
+
+`matches` accepts one string or an array of strings.
+
+It describes where the code should be loaded. You can pass special Epos contexts or normal [match patterns](https://developer.chrome.com/docs/extensions/mv3/match_patterns/) for web pages.
+
+### Special Epos Contexts
+
+These are 3 special contexts:
+
+- `<popup>`
+- `<sidePanel>`
+- `<background>`
+
+Example:
+
+```json
+{
+  "matches": ["<popup>", "<background>"]
+}
+```
+
+### URL Match Patterns
+
+For web pages, use normal extension-style match patterns.
+
+```json
+{
+  "matches": "*://*.example.com/*"
+}
+```
+
+You can also use:
+
+- `<allUrls>` for all URLs
+- `frame:PATTERN` for matching iframes
+- `exact:PATTERN` for exact match
+
+By default Epos allows any GET parameters in the match pattern. For example, if your match pattern is `https://example.com`, the code will injected into `https://example.com?foo=1` as well.
+
+If you want to disable this behavior, and match the exact pattern you provided, prefix the pattern with `exact:`:
+
+```json
+{
+  "matches": "exact:https://example.com"
+}
+```
+
+## `load`
+
+`load` is a list of JavaScript and CSS files that should be loaded into the matching contexts.
+
+<!-- prettier-ignore -->
+```json
+{
+  "load": [
+    "dist/global.css",
+    "dist/main.css",
+    "dist/global.js",
+    "dist/main.js"
+  ]
+}
+```
+
+Order between the same type of files is preserved. So in the example above, `global.css` is loaded before `main.css`, and `global.js` is loaded before `main.js`.
+
+### Load Prefixes
+
+Epos supports two useful prefixes.
+
+1. `shadow:` loads CSS into the Shadow DOM:
+
+```json
+{
+  "load": ["dist/main.js", "shadow:dist/main.css"]
+}
+```
+
+2. `lite:` loads JavaScript as is, without any Epos runtime.
+
+```json
+{
+  "load": ["lite:dist/patch.js"]
+}
+```
+
+Epos always tries to inject your code as soon as possible, but it does not guarantee that your code will be executed before the page's own scripts.
+
+If you need to ensure that your code runs first, use `lite:` prefix. In this mode, Epos does not do any extra processing with your code, does not inject its APIs and uses another injection strategy that ensures that your code runs _before_ the page's own scripts.
+
+This can be useful if you need to override some global functions or do something before the page's own code runs.
 
 ## Permissions Fields
 

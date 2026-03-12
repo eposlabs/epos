@@ -18,7 +18,7 @@ That access can come from these `epos.json` fields:
 
 - `matches`
 - `hostPermissions`
-- `optionalHostPermissions`, requested at runtime
+- `optionalHostPermissions`
 
 If your project does not have permission for a URL, `epos.fetch()` will fail.
 

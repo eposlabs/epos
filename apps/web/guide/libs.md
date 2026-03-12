@@ -40,12 +40,14 @@ As explained in the [Vite guide](/guide/vite), you should use the `epos/vite` pl
 
 ::: code-group
 
-```ts [vite.config.ts]
+```ts {5} [vite.config.ts]
 import { epos } from 'epos/vite'
+import { defineConfig } from 'vite'
 
-export default {
+export default defineConfig({
   plugins: [epos()],
-}
+  ...
+})
 ```
 
 :::

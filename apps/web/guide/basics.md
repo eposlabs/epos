@@ -208,16 +208,15 @@ And do not worry about the extension icon. Epos uses a default icon during devel
 
 ## Side Panel
 
-If you want a side panel instead of a popup, replace `<popup>` with `<sidePanel>`:
+If you want a side panel instead of a popup, use `<sidePanel>`:
 
 ::: code-group
 
-```json [epos.json]
+```json {4} [epos.json]
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "My Extension",
-  "matches": "<popup>", // [!code --]
-  "matches": "<sidePanel>", // [!code ++]
+  "matches": "<sidePanel>",
   "load": ["main.css", "main.js"]
 }
 ```
@@ -356,6 +355,31 @@ To inspect the background context:
 5. Select your project from the DevTools context dropdown, which shows `top` by default.
 
 When you change your background code, Epos reloads the iframe automatically, but your DevTools stay connected. There is no need to repeat the steps above. You will remain in the context of your background script as you work.
+
+## Lite Mode for JavaScript
+
+Epos always injects your code as soon as possible, but it does not guarantee that your code will be executed before the page's own scripts.
+
+If you need that guarantee, use the `lite:` prefix for JavaScript files in `load`.
+
+In this mode, Epos uses a different injection strategy that ensures your code runs _before_ the page's own scripts.
+
+This is useful when you need to patch global functions or do some setup before the page starts running its own code. You can mix `lite:` and normal files in the same `load` array.
+
+::: code-group
+
+```json {5} [epos.json]
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "My Extension",
+  "matches": "*://*.example.com/*",
+  "load": ["lite:patch.js", "main.js"]
+}
+```
+
+:::
+
+In `lite:` mode, Epos injects the file as-is and does not expose its APIs inside that script. In the example above, `patch.js` cannot access the Epos API, while `main.js` still can.
 
 ## Exporting
 
