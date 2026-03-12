@@ -2,7 +2,7 @@
 
 Epos (**ἔπος**, “epic story”; pronounced **EH-poss**) is an opinionated engine for building Chromium browser extensions with React.
 
-While frameworks like [WXT](https://wxt.dev/) and [Plasmo](https://www.plasmo.com/) offer more flexibility, Epos gives you a **zero-config experience** and **powerful built-in features** that work out of the box.
+While frameworks like [WXT](https://wxt.dev/) and [Plasmo](https://www.plasmo.com/) offer more flexibility, Epos gives you a **zero-config** experience and **powerful built-in features** that work out of the box.
 
 ## Installation
 

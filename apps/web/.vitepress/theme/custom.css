@@ -4,6 +4,7 @@
 @theme inline {
   --color-brand: hsl(65 100% 49%);
   --color-brand: oklch(0.94 0.26 120.51);
+  --color-brand: #e8ff00;
   /* oklch(0.94 0.26 120.51) */
 }
 
