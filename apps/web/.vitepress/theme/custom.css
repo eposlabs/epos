@@ -2,12 +2,22 @@
 
 @theme inline {
   --color-brand: hsl(65 100% 49%);
+  --color-brand: oklch(0.94 0.26 120.51);
+  /* oklch(0.94 0.26 120.51) */
 }
 
 html:not(.dark) {
   --vp-c-brand-1: var(--color-teal-600);
   --vp-c-brand-2: var(--color-teal-600);
   --vp-c-brand-3: var(--color-teal-600);
+
+  /* --vp-c-brand-1: oklch(0.56 0.34 133.56 / 1); */
+  /* --vp-c-brand-2: oklch(0.56 0.34 133.56 / 1); */
+  /* --vp-c-brand-3: oklch(0.56 0.34 133.56 / 1); */
+
+  /* var(--color-teal-600) */
+  /* oklch(0.76 0.25 133.97) */
+  /* oklch(0.6 0.18 131.81) */
 }
 
 html.dark {
@@ -34,6 +44,10 @@ html.dark {
 .vp-doc {
   strong {
     @apply font-medium text-black dark:text-white;
+  }
+
+  a {
+    @apply font-normal underline-offset-4;
   }
 
   h1 {
@@ -64,4 +78,86 @@ html.dark {
 
 .docs-section {
   @apply mx-auto max-w-7xl px-6 sm:px-8 lg:px-12;
+}
+
+/* Overrides */
+:root {
+  --vp-c-gutter: var(--vp-c-divider);
+  --vp-sidebar-bg-color: var(--vp-c-bg);
+
+  &.dark {
+    --color-accent: var(--color-brand);
+    --vp-c-bg: #16171d;
+    --vp-c-divider: #202333;
+  }
+
+  .VPNavBarTitle.has-sidebar .title {
+    @apply border-b-transparent;
+  }
+
+  .VPSidebar {
+    @apply mt-16 border-r border-(--vp-c-divider) pt-4.5 shadow-none;
+  }
+
+  .VPNavBar.has-sidebar .divider {
+    @apply pl-0;
+  }
+
+  .VPDoc .aside-container {
+    @apply border-l border-(--vp-c-divider);
+  }
+
+  .VPDocAside .content {
+    @apply border-l-0 pl-8;
+  }
+  .VPDocAside .outline-marker {
+    @apply w-0.75 rounded-none;
+  }
+
+  .aside-container {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 28px);
+  }
+
+  .VPFeatures .item {
+    @apply p-0;
+  }
+  .VPFeature {
+    @apply rounded-none border-(--vp-c-divider) bg-(--vp-c-bg);
+  }
+  .VPFeatures .item:nth-child(1) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(2) .VPFeature {
+    @apply border-r-0 border-b-0;
+  }
+  .VPFeatures .item:nth-child(3) .VPFeature {
+    @apply border-b-0;
+  }
+  .VPFeatures .item:nth-child(4) .VPFeature {
+    @apply border-r-0;
+  }
+  .VPFeatures .item:nth-child(5) .VPFeature {
+    @apply border-r-0;
+  }
+
+  .vp-code-group .tabs label:first-of-type:last-child {
+    &::after {
+      @apply bg-black;
+    }
+    .dark &::after {
+      @apply bg-white/50;
+    }
+  }
+
+  .vp-code-group .tabs {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
+
+  pre.shiki {
+    .dark & {
+      @apply bg-[#121317];
+    }
+  }
 }

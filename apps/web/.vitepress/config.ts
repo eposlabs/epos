@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Epos',
+  title: '[epos] Web Extension Engine',
   description: 'Build Web Extensions',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
   outDir: 'dist',
@@ -11,6 +11,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   themeConfig: {
+    siteTitle: 'ᛃ epos',
     outline: {
       level: 2,
     },

@@ -162,7 +162,7 @@ This is an advanced option. Use it only if you are sure you need it.
 
 ### `options.allowProjectsApi`
 
-Default: `false`. Enables the `epos.projects.*` API.
+Default: `false`. Enables the [`epos.projects.*`](/api/projects) API.
 
 This API lets a project manage other projects inside Epos. For example, `app.epos.dev` itself is just a project that uses this API and ships with Epos extension.
 

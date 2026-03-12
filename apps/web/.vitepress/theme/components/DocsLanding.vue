@@ -57,7 +57,7 @@ const steps = [
 </script>
 
 <template>
-  <div class="docs-landing-shell bg-white text-black dark:bg-black dark:text-white">
+  <div class="docs-landing-shell bg-white text-black dark:bg-[#16171d] dark:text-white">
     <section class="docs-section border-b border-zinc-200 py-12 sm:py-16 lg:py-20 dark:border-zinc-800">
       <div class="grid gap-10 lg:grid-cols-[auto_auto] lg:gap-16">
         <div class="max-w-4xl">
@@ -66,32 +66,46 @@ const steps = [
           </div>
 
           <h1
-            class="mt-6 max-w-5xl text-5xl font-medium tracking-tighter text-black sm:text-6xl lg:text-8xl dark:text-white"
+            :class="[
+              'mt-6 max-w-5xl text-5xl font-medium tracking-tighter text-black',
+              'sm:text-6xl lg:text-8xl dark:text-white',
+            ]"
           >
             A better way to build browser extensions.
           </h1>
 
-          <p class="mt-6 max-w-2xl text-base leading-8 text-zinc-600 sm:text-lg dark:text-zinc-300">
-            Epos focuses on a <span class="font-medium text-black">zero-config</span> experience and
-            <span class="font-medium text-black">powerful features</span><br />preconfigured to work across all execution
-            contexts with no extra setup.
+          <p class="mt-6 max-w-150 text-base leading-8 text-zinc-600 sm:text-lg dark:text-zinc-300">
+            Epos provides a <span class="font-medium text-black dark:text-white">zero-config</span> experience and
+            <span class="font-medium text-black dark:text-white">powerful features</span> designed to work across all
+            execution contexts with no extra setup.
           </p>
 
-          <div class="mt-8 flex flex-wrap gap-3">
+          <div class="mt-8 flex flex-wrap gap-4">
             <a
-              class="bg-brand inline-flex items-center justify-center border px-5 py-3 text-sm font-medium text-black transition"
+              :class="[
+                'bg-brand inline-flex items-center justify-center border px-9 py-3',
+                'text-sm font-medium text-black transition',
+              ]"
               href="https://get.epos.dev"
             >
               Install Epos
             </a>
             <a
-              class="inline-flex items-center justify-center border border-zinc-300 px-5 py-3 text-sm font-medium text-black transition hover:border-black hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900"
+              :class="[
+                'inline-flex items-center justify-center border px-9 py-3',
+                'text-sm font-medium text-black transition hover:border-black hover:bg-zinc-100',
+                'dark:border-zinc-700 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900',
+              ]"
               href="/guide/basics"
             >
               Get Started
             </a>
             <a
-              class="inline-flex items-center justify-center border border-zinc-300 px-5 py-3 text-sm font-medium text-black transition hover:border-black hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900"
+              :class="[
+                'inline-flex items-center justify-center border px-9 py-3',
+                'text-sm font-medium text-black transition hover:border-black hover:bg-zinc-100',
+                'dark:border-zinc-700 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900',
+              ]"
               href="/api"
             >
               API Reference
@@ -100,25 +114,30 @@ const steps = [
         </div>
 
         <div>
-          <div class="px-5 py-1 font-mono text-[11px] tracking-[0.32em] text-zinc-500 uppercase dark:text-zinc-400">
-            Workflow
+          <div class="pl-2 font-mono text-[11px] tracking-[0.32em] text-zinc-500 uppercase dark:text-zinc-400">
+            WORKFLOW
           </div>
 
-          <div class="mt-4">
+          <div class="mt-8">
             <div
               v-for="(step, index) in steps"
               :key="`hero-${step.number}`"
-              class="grid sm:grid-cols-[88px_1fr]"
+              class="grid first:*:pt-2 last:*:pb-2 sm:grid-cols-[88px_1fr]"
               :class="index > 0 ? 'border-t border-zinc-200 dark:border-zinc-800' : ''"
             >
               <div
-                class="px-5 py-6 font-mono text-xl text-zinc-500 sm:border-r sm:border-zinc-200 dark:text-zinc-400 dark:sm:border-zinc-800"
+                :class="[
+                  'py-6 pr-5 pl-2 font-mono text-xl text-zinc-500',
+                  'sm:border-r sm:border-zinc-200 dark:text-zinc-400 dark:sm:border-zinc-800',
+                ]"
               >
                 {{ step.number }}
               </div>
               <div class="px-5 py-6">
                 <h3 class="text-xl font-medium tracking-[-0.04em]">{{ step.title }}</h3>
-                <p class="mt-3 text-sm leading-7 text-nowrap text-zinc-600 dark:text-zinc-300">{{ step.description }}</p>
+                <p :class="['mt-3 text-sm leading-7 text-nowrap text-zinc-600', 'dark:text-zinc-300']">
+                  {{ step.description }}
+                </p>
               </div>
             </div>
           </div>
@@ -129,23 +148,30 @@ const steps = [
     <section class="docs-section border-b border-zinc-200 py-12 sm:py-16 lg:py-20 dark:border-zinc-800">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div class="font-mono text-[11px] tracking-[0.32em] text-zinc-500 uppercase dark:text-zinc-400">Features</div>
+          <div :class="['font-mono text-[11px] tracking-[0.32em] text-zinc-500 uppercase', 'dark:text-zinc-400']">
+            Features
+          </div>
           <h2 class="mt-4 text-3xl font-medium tracking-[-0.06em] sm:text-5xl">What Epos gives you.</h2>
         </div>
       </div>
 
       <div
-        class="mt-10 grid gap-px border border-zinc-200 bg-zinc-200 md:grid-cols-2 xl:grid-cols-3 dark:border-zinc-800 dark:bg-zinc-800"
+        :class="[
+          'mt-10 grid gap-px border border-zinc-200 bg-zinc-200 md:grid-cols-2 xl:grid-cols-3',
+          'dark:border-zinc-800 dark:bg-zinc-800',
+        ]"
       >
         <a
           v-for="feature in features"
           :key="feature.title"
           :href="feature.href"
-          class="group bg-white p-8 transition hover:bg-zinc-50 dark:bg-black dark:hover:bg-zinc-950"
+          :class="['group bg-white p-8 transition hover:bg-zinc-50', 'dark:bg-black dark:hover:bg-zinc-950']"
         >
           <h3 class="text-xl font-medium tracking-[-0.04em] text-black dark:text-white">{{ feature.title }}</h3>
           <p class="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">{{ feature.description }}</p>
-          <div class="mt-5 font-mono text-[11px] tracking-[0.24em] text-black uppercase dark:text-white">Open Guide →</div>
+          <div :class="['mt-5 font-mono text-[11px] tracking-[0.24em] text-black uppercase', 'dark:text-white']">
+            Open Guide →
+          </div>
         </a>
       </div>
     </section>
