@@ -3,4 +3,4 @@ layout: page
 aside: false
 ---
 
-<DocsLanding />
+<Landing />

@@ -8,10 +8,41 @@
   /* oklch(0.94 0.26 120.51) */
 }
 
+/* @utility box {
+  @apply shrink-0 grow border-t border-l border-zinc-200 p-16 last:border-r;
+} */
+
+@utility text-h1 {
+  @apply text-8xl font-medium tracking-tighter text-black dark:text-white;
+}
+
+@utility text-h2 {
+  @apply text-5xl font-medium tracking-tight;
+}
+
+@utility text-normal {
+  @apply text-lg leading-8 text-zinc-600;
+  @apply *:[strong]:font-medium *:[strong]:text-black;
+}
+
+/* @utility text-eyebrow {
+  @apply font-mono text-[11px] tracking-[0.32em] text-zinc-500 uppercase dark:text-zinc-400;
+} */
+
+@utility button {
+  @apply border px-9 py-3 text-sm font-medium text-black transition hover:bg-zinc-100;
+}
+
+@utility button-brand {
+  @apply button bg-brand hover:bg-brand;
+}
+
 html:not(.dark) {
-  --vp-c-brand-1: var(--color-teal-600);
-  --vp-c-brand-2: var(--color-teal-600);
-  --vp-c-brand-3: var(--color-teal-600);
+  --vp-c-brand-1: oklch(0.71 0.23 132.2);
+  --vp-c-brand-2: oklch(0.71 0.23 132.2);
+  --vp-c-brand-3: oklch(0.71 0.23 132.2);
+  /* oklch(0.63 0.25 143.27) */
+  /* oklch(0.71 0.23 132.2) */
 
   /* --vp-c-brand-1: oklch(0.56 0.34 133.56 / 1); */
   /* --vp-c-brand-2: oklch(0.56 0.34 133.56 / 1); */

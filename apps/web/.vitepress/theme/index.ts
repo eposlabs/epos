@@ -1,10 +1,10 @@
 import DefaultTheme from 'vitepress/theme'
-import DocsLanding from './components/DocsLanding.vue'
+import Landing from './components/landing.vue'
 import './custom.css'
 
 export default {
   extends: DefaultTheme,
-  enhanceApp({ app }) {
-    app.component('DocsLanding', DocsLanding)
+  enhanceApp({ app }: any) {
+    app.component('Landing', Landing)
   },
 }
