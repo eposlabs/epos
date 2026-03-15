@@ -113,6 +113,18 @@ html.dark {
   @apply mx-auto max-w-7xl px-6 sm:px-8 lg:px-12;
 }
 
+.VPContent:not(:has(.has-sidebar)) {
+  @apply pt-0;
+}
+
+.VPNav:not(:has(.has-sidebar)) {
+  @apply relative;
+}
+
+.VPNavBar:not(.has-sidebar) {
+  @apply mx-auto max-w-7xl border-zinc-200 border-l border-r;
+}
+
 /* Overrides */
 :root {
   --vp-c-gutter: var(--vp-c-divider);

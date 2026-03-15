@@ -57,7 +57,7 @@ It also supports files, blobs, and other binary data. It is available in all con
 
 Read more in the [Storage](/guide/storage) guide.
 
-## Extension API Everywhere
+## Extension API
 
 `epos.browser.*` mirrors supported `chrome.*` APIs and makes them available in all contexts.
 
