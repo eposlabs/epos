@@ -44,19 +44,6 @@ In React, wrap components with `epos.component()` and they will update automatic
 
 Read more in the [State Management](/guide/state) guide.
 
-## Chrome APIs Everywhere
-
-`epos.browser.*` mirrors supported `chrome.*` APIs and makes them available in all contexts.
-
-```ts
-// content-script.ts
-const tabs = await epos.browser.tabs.query({})
-```
-
-This is especially useful on web pages and in iframes, where the standard extension APIs are not available.
-
-Read more in the [Extension API](/guide/extension) guide.
-
 ## Storage
 
 `epos.storage` is a persistent key-value store powered by IndexedDB.
@@ -69,6 +56,19 @@ const theme = await epos.storage.get<string>('theme')
 It also supports files, blobs, and other binary data. It is available in all contexts, including web pages and iframes.
 
 Read more in the [Storage](/guide/storage) guide.
+
+## Extension API Everywhere
+
+`epos.browser.*` mirrors supported `chrome.*` APIs and makes them available in all contexts.
+
+```ts
+// content-script.ts
+const tabs = await epos.browser.tabs.query({})
+```
+
+This is especially useful on web pages and in iframes, where the standard extension APIs are not available.
+
+Read more in the [Extension API](/guide/extension) guide.
 
 ## Simpler Project Setup
 
