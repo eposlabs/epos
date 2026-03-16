@@ -1,5 +1,4 @@
 import { layerer } from '@eposlabs/layerer'
-import { preact } from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
@@ -52,7 +51,6 @@ export default defineConfig(async ({ mode }) => {
 
     plugins: [
       tailwindcss(),
-      preact({ reactAliasesEnabled: false }),
       rebundle(null, {
         'cs': bundle('cs'),
         'os': bundle('os'),
