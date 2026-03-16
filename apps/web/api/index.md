@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # API
 
 This section documents the runtime API available through the global `epos` object.

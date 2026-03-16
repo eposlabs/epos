@@ -2,7 +2,7 @@
 
 `epos.env` gives you information about where your code is running and which project it belongs to.
 
-This is useful when the same code can run in different places, such as the popup, background, side panel, or a web page.
+This is useful when the same code can run in different places or you need to access project information at runtime.
 
 ## Basic Context Flags
 

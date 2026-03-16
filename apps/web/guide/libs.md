@@ -4,8 +4,6 @@ Epos is built on top of several libraries, such as React and MobX.
 
 They are exposed through `epos.libs`, and with the Epos Vite plugin you can import them normally.
 
-This guide explains which libraries are available and how to use them. For exact API details, see the [Libraries API Reference](/api/libs).
-
 ## Available Libraries
 
 Epos includes these libraries:

@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # epos.env.\*
 
 `epos.env` describes where the current code is running and which project owns it.

@@ -1,8 +1,8 @@
-# Extension API
+# Extension APIs
 
 `epos.browser` provides access to `chrome.*` APIs in every context of your extension.
 
-Normally, you cannot access `chrome.*` from web pages or iframes. In isolated content scripts, access is also very limited. Epos removes these boundaries and lets you use the same APIs from any context.
+Normally, you cannot access `chrome.*` from web pages or iframes. And in isolated content scripts, access is very limited. Epos removes these boundaries and lets you use the same APIs from any context.
 
 ::: info Why `epos.browser` and not `epos.chrome`?
 
@@ -14,9 +14,9 @@ There are two reasons for the name:
 
 :::
 
-## The Same API
+## The Same APIs
 
-`epos.browser` does not give you a new API to learn. For supported APIs, it is a one-to-one mirror of `chrome.*`. For example:
+`epos.browser` does not give you a new APIs to learn. For supported APIs, it is a one-to-one mirror of `chrome.*`. For example:
 
 ```ts
 const tabs = await epos.browser.tabs.query({ active: true })
@@ -28,7 +28,15 @@ epos.browser.windows.onCreated.addListener(window => {
 
 If you know how to use `chrome.*`, you already know how to use `epos.browser.*`.
 
-`epos.browser` is fully typed, so you get autocompletion and type checking in your editor. For general API behavior, see the [Chrome Extensions API reference](https://developer.chrome.com/docs/extensions/reference/api) or the [MDN version](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API).
+`epos.browser` is fully typed, so you get autocompletion and type checking in your editor.
+
+To learn more, see the [Chrome Extensions API reference](https://developer.chrome.com/docs/extensions/reference/api) or the [MDN version](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API).
+
+::: warning
+
+When using Epos, you can not access `chrome` directly. Always use `epos.browser`.
+
+:::
 
 ## Permissions Still Apply
 
@@ -68,7 +76,7 @@ To learn more about supported permissions, see the [Permissions](/guide/permissi
 
 ## Supported APIs
 
-`epos.browser` does not expose the full set of `chrome.*` APIs, but it does include the most commonly used ones:
+`epos.browser` does not support the full set of `chrome` APIs, but it does include the most commonly used ones:
 
 - `action`
 - `alarms`

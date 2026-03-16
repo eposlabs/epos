@@ -2,15 +2,15 @@
 
 Epos (**ἔπος**, “epic story”; pronounced **EH-poss**) is an opinionated engine for building Chromium browser extensions with React.
 
-While frameworks like [WXT](https://wxt.dev/) and [Plasmo](https://www.plasmo.com/) offer more flexibility, Epos gives you a **zero-config** experience and **powerful built-in features** that work out of the box.
+While frameworks like [WXT](https://wxt.dev/) and [Plasmo](https://www.plasmo.com/) prioritize flexibility, Epos focuses on a **zero-config** experience with **powerful features** that work out of the box.
 
 ## Installation
 
-Epos is not distributed as an npm package. Instead, the engine itself is a browser extension that you install from the [Chrome Web Store](https://get.epos.dev). In other words, Epos is an **extension for building other extensions**.
+Epos is not an npm package. Instead, the engine is a browser extension installed from the [Chrome Web Store](https://get.epos.dev). In other words, Epos is an **extension for building other extensions**.
 
 ## Workflow
 
-Once installed, the workflow is simple:
+Once installed, the workflow is straightforward:
 
 1. **Connect:** Link your local project folder to Epos.
 2. **Develop:** Epos runs your code directly in the browser.
@@ -20,7 +20,7 @@ Once installed, the workflow is simple:
 
 Epos is not a universal framework. It focuses on a specific tech stack to **reduce setup and complexity**.
 
-It also rethinks how extensions can be built, making trade-offs that allow a **smoother developer experience** and more **powerful built-in features**.
+The engine rethinks how extensions are built, making trade-offs that allow a **smoother developer experience** and  **powerful built-in features**.
 
 Epos prioritizes ease of use for the **most common use cases**, even if that means giving up some flexibility.
 
@@ -28,12 +28,12 @@ Epos prioritizes ease of use for the **most common use cases**, even if that mea
 
 At a high level, Epos gives you:
 
-- A cross-context messaging system.
-- Shared state with persistence and sync.
-- Storage for files and other data.
-- Chrome APIs available in any context.
-- Automatic script injection + Shadow DOM.
-- A simpler setup through `epos.json`.
+- A cross-context **messaging system**.
+- **Shared state** with persistence and sync.
+- **Storage** for files and other data.
+- **Chrome APIs** available in any context.
+- Automatic **script injection** + Shadow DOM.
+- A **simpler setup** through `epos.json`.
 
 ## Core Constraints
 

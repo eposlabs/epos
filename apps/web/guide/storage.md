@@ -2,12 +2,7 @@
 
 `epos.storage` is a simple persistent key-value storage powered by IndexedDB.
 
-Use it for files and any data that does not need to be reactive. A simple rule of thumb is:
-
-- Use `epos.state` for live shared app data.
-- Use `epos.storage` for heavy data and files.
-
-This guide focuses on the common patterns. For raw method signatures, see the [Storage API Reference](/api/storage).
+Use it for files and any data that does not need to be reactive.
 
 ## Basic Usage
 
@@ -15,7 +10,7 @@ This guide focuses on the common patterns. For raw method signatures, see the [S
 
 ```ts
 await epos.storage.set('theme', 'dark')
-await epos.storage.set('user', { name: 'Sam' })
+await epos.storage.set('user', { name: 'James' })
 
 const theme = await epos.storage.get<string>('theme') // 'dark'
 const hasTheme = await epos.storage.has('theme') // true
@@ -31,14 +26,14 @@ If a key does not exist, `get()` returns `null`.
 For larger projects, you may want separate storages for different kinds of data. In that case, pass the storage name as the first argument:
 
 ```ts
-await epos.storage.set('users', 'user-1', { name: 'James' })
-await epos.storage.set('users', 'user-2', { name: 'Mary' })
+await epos.storage.set('users', 'u1', { name: 'James' })
+await epos.storage.set('users', 'u2', { name: 'Mary' })
 await epos.storage.set('settings', 'theme', 'dark')
 
-const user = await epos.storage.get<User>('users', 'user-1')
+const user = await epos.storage.get<User>('users', 'u1')
 const userIds = await epos.storage.keys('users')
-const hasUser = await epos.storage.has('users', 'user-1')
-await epos.storage.delete('users', 'user-1')
+const hasUser = await epos.storage.has('users', 'u1')
+await epos.storage.delete('users', 'u1')
 ```
 
 ## `epos.storage.for()`
@@ -48,7 +43,7 @@ If you use one named storage often, you can create a namespaced API for it with 
 ```ts
 const users = epos.storage.for('users')
 
-const user = await users.get<User>('user-1')
+const user = await users.get<User>('u1')
 const userIds = await users.keys()
 ```
 
@@ -77,7 +72,7 @@ Use `delete()` to remove a single key:
 
 ```ts
 await epos.storage.delete('theme') // Remove key from the default storage
-await epos.storage.delete('users', 'user-1') // From 'users' storage
+await epos.storage.delete('users', 'u1') // From 'users' storage
 ```
 
 Use `clear()` to remove the whole storage and everything inside it:

@@ -4,8 +4,6 @@ Assets are static files bundled with your project, such as images, fonts, or any
 
 Internally, Epos stores assets in IndexedDB and loads them into memory when needed.
 
-This guide covers the practical workflow. For exact method signatures, see the [Assets API Reference](/api/assets).
-
 ## Defining Assets
 
 Suppose your project contains `static/logo.png`. To make it available in your extension, add it to the `assets` field in `epos.json`:
@@ -47,7 +45,7 @@ Paths passed to `url()` are normalized, so all these variations work the same:
 - `/static/logo.png`
 - `./static/logo.png`
 
-But the file still has to be listed in `epos.json`. If you ask for `logo.png` when only `static/logo.png` exists, Epos throws an error.
+But the file still has to be listed in `epos.json`. If you ask for `logo.png` when only `static/logo.png` exists, Epos will throw an error.
 
 ## Reading Asset Contents
 
@@ -66,7 +64,7 @@ if (blob) {
 
 By default, Epos preloads assets when your app starts.
 
-This is fine for most projects. If you have large files, you may prefer to load them only when you need them.
+This approach works well for most projects. However, if you have large files, you may prefer to load them on demand.
 
 To disable auto-loading, set `options.preloadAssets: false` in `epos.json`:
 
@@ -113,7 +111,9 @@ In most projects, auto-loading is sufficient. Use manual loading only when you h
 
 - `epos.assets.get()` is **asynchronous** and can read the asset even if it is not loaded.
 
-Why is `get()` async, but `url()` is not? `url()` is mostly used during rendering, where the URL needs to be available synchronously. In contrast, `get()` reads the actual file content, so it can fetch it from IndexedDB when needed.
+Why is `get()` async, but `url()` is not?
+
+`url()` is mostly used during rendering, where the URL needs to be available synchronously. In contrast, `get()` reads the actual file content, so it can fetch it from IndexedDB when needed.
 
 If you call `get()` for an asset that is not loaded, Epos does not keep that asset in memory afterward. It just reads the file from IndexedDB and returns it.
 
@@ -137,13 +137,13 @@ epos.assets.unload()
 
 ## Listing Assets
 
-`epos.assets.list()` shows which assets exist and whether they are currently loaded:
+`list()` shows which assets exist and whether they are currently loaded:
 
 ```ts
 const assets = epos.assets.list()
 // [
 //   { path: 'static/logo.png', loaded: true },
-//   { path: 'static/heavy.mp4', loaded: false }
+//   { path: 'static/heavy.json', loaded: false }
 // ]
 ```
 
@@ -156,9 +156,9 @@ const unloadedAssets = epos.assets.list({ loaded: false })
 
 ## How It Works
 
-Epos stores project assets in IndexedDB. When needed, it loads them into memory and exposes them as blob URLs.
+Epos stores project assets as blobs in IndexedDB. When you call `url()`, it exposes the asset as a blob URL.
 
-Assets are loaded per context. If you load an asset in the background, it is not automatically loaded in the popup or page code.
+Assets are loaded per context. If you load an asset in the background, it is not automatically loaded in the popup.
 
 ## Glob Patterns
 

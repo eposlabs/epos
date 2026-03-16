@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # epos.storage.\*
 
 `epos.storage` is a persistent key-value storage backed by IndexedDB.
@@ -62,10 +68,10 @@ epos.storage.list(): Promise<{ name: string | null; keys: string[] }[]>
 
 Lists all storages for the current project.
 
-## epos.storage.remove()
+## epos.storage.clear()
 
 ```ts
-epos.storage.remove(name?: string): Promise<void>
+epos.storage.clear(name?: string): Promise<void>
 ```
 
 Deletes a whole storage and all of its keys.
@@ -79,7 +85,7 @@ epos.storage.for(name?: string): {
   has(key: string): Promise<boolean>
   delete(key: string): Promise<void>
   keys(): Promise<string[]>
-  remove(): Promise<void>
+  clear(): Promise<void>
 }
 ```
 

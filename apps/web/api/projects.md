@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # epos.projects.\*
 
 `epos.projects` is the project management API.

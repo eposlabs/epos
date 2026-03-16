@@ -2,13 +2,13 @@
 
 `epos.fetch()` gives you a way to make cross-origin requests.
 
-When normal `fetch()` fails because of CORS restrictions, `epos.fetch()` can still make the request.
+When normal `fetch()` fails due to CORS restrictions, `epos.fetch()` will work.
 
 ## Why It Exists
 
-If your code runs on a page like `https://example.com` and tries to fetch another origin like `https://epos.dev`, the request will usually fail because of CORS restrictions. This is normal web page security.
+If your code runs on a page like `example.com` and tries to fetch another origin like `google.com`, the request will fail because of CORS restrictions. This is normal web security behavior.
 
-Extensions can bypass that restriction. If your extension has permission to access `https://epos.dev`, it can make the request. Use `epos.fetch()` instead of `fetch()`, and Epos will route it through the extension.
+Extensions can bypass that restriction. If your extension has permission to access `google.com`, it can make the request. Use `epos.fetch()` instead of `fetch()`, and Epos will route the request through the extension.
 
 ## Which URLs It Can Fetch
 
@@ -22,7 +22,7 @@ That access can come from these `epos.json` fields:
 
 If your project does not have permission for a URL, `epos.fetch()` will fail.
 
-## Basic Usage
+## Usage
 
 `epos.fetch()` uses the same API as `fetch()`:
 

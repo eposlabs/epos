@@ -83,13 +83,13 @@ A short extension description. This is shown to users in the extension store.
 
 ```json
 {
-  "description": "Saves selected text into a personal library"
+  "description": "Saves selected text into a personal library."
 }
 ```
 
 ## `icon`
 
-Path to your icon file. If you do not provide one, Epos uses its default icon.
+Path to your icon file. If you do not provide one, Epos logo will be used.
 
 ```json
 {
@@ -107,7 +107,7 @@ Path to your icon file. If you do not provide one, Epos uses its default icon.
 }
 ```
 
-With `true`, Epos sends a `:action` bus event that you can listen to with `epos.bus.on(':action', ...)`.
+With `true`, Epos sends an `:action` bus event that you can listen to with `epos.bus.on(':action', ...)`.
 
 You can also provide a URL, which opens in a new tab when the icon is clicked:
 
@@ -156,7 +156,7 @@ If `true`, all provided assets are loaded automatically at startup. If `false`, 
 
 ### `options.allowMissingModels`
 
-Default: `false`. Prevents Epos from throwing when a state contains model instances but the related model class is not registered.
+Default: `false`. Prevents Epos from throwing an error when your state contains a model instance but the related model class is not registered.
 
 This is an advanced option. Use it only if you are sure you need it.
 
@@ -184,7 +184,7 @@ The main fields for configuring where your code runs are `matches`, `load`, and 
 
 If your project has only one target, you can use top-level `matches` and `load`.
 
-```json
+```json {3-4}
 {
   "name": "My Extension",
   "matches": "*://*.example.com/*",
@@ -316,7 +316,7 @@ Epos supports two useful prefixes:
 
 Read more about `lite:` prefix in the [Basics guide](/guide/basics#lite-mode-for-javascript).
 
-## Permissions Fields
+## Permission Fields
 
 Epos uses four permission-related fields:
 
@@ -368,7 +368,7 @@ These are treated as the same path:
 - `./dist/main.js`
 - `/dist/main.js`
 
-Out-of-directory paths such as `../somewhere/file.js` are not allowed.
+Out-of-root-directory paths such as `../somewhere/file.js` are not allowed.
 
 ## Camel Case Only
 

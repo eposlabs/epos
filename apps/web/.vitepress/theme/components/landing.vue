@@ -85,12 +85,11 @@ code {
 
 <template>
   <div class="mx-auto max-w-7xl">
-    <slot name="title" />
     <!-- Hero -->
     <div class="flex">
       <div class="box w-[60%] border-l">
         <div class="eyebrow">WEB EXTENSION ENGINE</div>
-        <h1 class="h1 mt-6">A better way to build browser extensions</h1>
+        <h1 class="h1 mt-6">A better way to build browser extensions.</h1>
         <div class="prose mt-6">
           Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong>
           <div></div>
@@ -99,7 +98,6 @@ code {
         <div class="mt-8 flex gap-4">
           <a class="button bg-brand hover:bg-brand!" href="https://get.epos.dev">Install Epos</a>
           <a class="button" href="/guide">Get Started</a>
-          <a class="button" href="/api">API Reference</a>
         </div>
       </div>
       <div class="box border-r">
@@ -131,16 +129,14 @@ code {
 
     <div class="flex">
       <!-- Messaging -->
-      <div class="box border-t border-l">
+      <div class="box w-1/2 border-t border-l">
         <div class="eyebrow">MESSAGING</div>
         <h2 class="h2 mt-4">Unified messaging system</h2>
-        <p class="prose mt-4 max-w-2xl">
-          Just use <code>epos.bus.send</code> and <code>epos.bus.on</code> for cross-context communication. Epos
-          automatically handles the routing. Works in all contexts, including web pages and iframes.
-        </p>
+        <p class="prose mt-4 max-w-2xl">Like <code>chrome.runtime.sendMessage</code>, but 10x more powerful.</p>
         <ul class="prose mt-4 list-disc space-y-3 pl-5 text-zinc-500">
+          <li>Simple API</li>
           <li>Automatic routing</li>
-          <li>Works in all contexts</li>
+          <li>Works across all contexts</li>
         </ul>
         <div class="code-block">
           <div class="code">
@@ -148,21 +144,39 @@ code {
               <div class="code-comment">// Send</div>
             </div>
             <div class="code-line">
-              <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">bus</div><div class="code-punctuation">.</div><div class="code-function">send</div><div class="code-punctuation">(</div><div class="code-string">'event'</div><div class="code-punctuation">,</div> <div class="code-variable">data</div><div class="code-punctuation">)</div>
+              <div class="code-variable">epos</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">bus</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-function">send</div>
+              <div class="code-punctuation">(</div>
+              <div class="code-string">'event'</div>
+              <div class="code-punctuation">,</div>
+              <div class="code-variable">data</div>
+              <div class="code-punctuation">)</div>
             </div>
             <div class="code-line"></div>
             <div class="code-line">
               <div class="code-comment">// Listen</div>
             </div>
             <div class="code-line">
-              <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">bus</div><div class="code-punctuation">.</div><div class="code-function">on</div><div class="code-punctuation">(</div><div class="code-string">'event'</div><div class="code-punctuation">,</div> <div class="code-variable">handler</div><div class="code-punctuation">)</div>
+              <div class="code-variable">epos</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">bus</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-function">on</div>
+              <div class="code-punctuation">(</div>
+              <div class="code-string">'event'</div>
+              <div class="code-punctuation">,</div>
+              <div class="code-variable">handler</div>
+              <div class="code-punctuation">)</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- State -->
-      <div class="box border-t border-r border-l">
+      <div class="box w-1/2 border-t border-r border-l">
         <div class="eyebrow">SHARED STATE</div>
         <h2 class="h2 mt-4">State that feels like normal object</h2>
         <p class="prose mt-4 max-w-2xl">
@@ -176,20 +190,55 @@ code {
               <div class="code-comment">// Connect</div>
             </div>
             <div class="code-line">
-              <div class="code-keyword">const</div> <div class="code-variable">state</div> <div class="code-operator">=</div> <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">state</div><div class="code-punctuation">.</div><div class="code-function">connect</div><div class="code-punctuation">()</div>
+              <div class="code-keyword">const</div>
+              <div class="code-variable">state</div>
+              <div class="code-operator">=</div>
+              <div class="code-variable">epos</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">state</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-function">connect</div>
+              <div class="code-punctuation">()</div>
             </div>
             <div class="code-line"></div>
             <div class="code-line">
               <div class="code-comment">// Modify</div>
             </div>
             <div class="code-line">
-              <div class="code-variable">state</div><div class="code-punctuation">.</div><div class="code-property">user</div> <div class="code-operator">=</div> <div class="code-punctuation">{</div> <div class="code-property">name</div><div class="code-operator">:</div> <div class="code-string">'Alex'</div> <div class="code-punctuation">}</div>
+              <div class="code-variable">state</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">user</div>
+              <div class="code-operator">=</div>
+              <div class="code-punctuation">{</div>
+              <div class="code-property">name</div>
+              <div class="code-operator">:</div>
+              <div class="code-string">'Alex'</div>
+              <div class="code-punctuation">}</div>
             </div>
             <div class="code-line">
-              <div class="code-variable">state</div><div class="code-punctuation">.</div><div class="code-property">items</div> <div class="code-operator">=</div> <div class="code-punctuation">[]</div>
+              <div class="code-variable">state</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">items</div>
+              <div class="code-operator">=</div>
+              <div class="code-punctuation">[]</div>
             </div>
             <div class="code-line">
-              <div class="code-variable">state</div><div class="code-punctuation">.</div><div class="code-property">items</div><div class="code-punctuation">.</div><div class="code-function">push</div><div class="code-punctuation">(</div><div class="code-punctuation">{</div> <div class="code-property">id</div><div class="code-operator">:</div> <div class="code-number">1</div><div class="code-punctuation">,</div> <div class="code-property">name</div><div class="code-operator">:</div> <div class="code-string">'Item 1'</div> <div class="code-punctuation">}</div><div class="code-punctuation">)</div>
+              <div class="code-variable">state</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-property">items</div>
+              <div class="code-punctuation">.</div>
+              <div class="code-function">push</div>
+              <div class="code-punctuation">(</div>
+              <div class="code-punctuation">{</div>
+              <div class="code-property">id</div>
+              <div class="code-operator">:</div>
+              <div class="code-number">1</div>
+              <div class="code-punctuation">,</div>
+              <div class="code-property">name</div>
+              <div class="code-operator">:</div>
+              <div class="code-string">'Item 1'</div>
+              <div class="code-punctuation">}</div>
+              <div class="code-punctuation">)</div>
             </div>
           </div>
         </div>
@@ -213,14 +262,35 @@ code {
             <div class="code-comment">// Store</div>
           </div>
           <div class="code-line">
-            <div class="code-keyword">await</div> <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">storage</div><div class="code-punctuation">.</div><div class="code-function">set</div><div class="code-punctuation">(</div><div class="code-string">'profile-pic'</div><div class="code-punctuation">,</div> <div class="code-variable">imageBlob</div><div class="code-punctuation">)</div>
+            <div class="code-keyword">await</div>
+            <div class="code-variable">epos</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-property">storage</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-function">set</div>
+            <div class="code-punctuation">(</div>
+            <div class="code-string">'profile-pic'</div>
+            <div class="code-punctuation">,</div>
+            <div class="code-variable">imageBlob</div>
+            <div class="code-punctuation">)</div>
           </div>
           <div class="code-line"></div>
           <div class="code-line">
             <div class="code-comment">// Load</div>
           </div>
           <div class="code-line">
-            <div class="code-keyword">const</div> <div class="code-variable">imageBlob</div> <div class="code-operator">=</div> <div class="code-keyword">await</div> <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">storage</div><div class="code-punctuation">.</div><div class="code-function">get</div><div class="code-punctuation">(</div><div class="code-string">'profile-pic'</div><div class="code-punctuation">)</div>
+            <div class="code-keyword">const</div>
+            <div class="code-variable">imageBlob</div>
+            <div class="code-operator">=</div>
+            <div class="code-keyword">await</div>
+            <div class="code-variable">epos</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-property">storage</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-function">get</div>
+            <div class="code-punctuation">(</div>
+            <div class="code-string">'profile-pic'</div>
+            <div class="code-punctuation">)</div>
           </div>
         </div>
       </div>
@@ -240,10 +310,32 @@ code {
             <div class="code-comment">// content-script.ts</div>
           </div>
           <div class="code-line">
-            <div class="code-keyword">const</div> <div class="code-variable">tabs</div> <div class="code-operator">=</div> <div class="code-keyword">await</div> <div class="code-variable">epos</div><div class="code-punctuation">.</div><div class="code-property">browser</div><div class="code-punctuation">.</div><div class="code-property">tabs</div><div class="code-punctuation">.</div><div class="code-function">query</div><div class="code-punctuation">(</div><div class="code-punctuation">{</div> <div class="code-property">active</div><div class="code-operator">:</div> <div class="code-boolean">true</div> <div class="code-punctuation">}</div><div class="code-punctuation">)</div>
+            <div class="code-keyword">const</div>
+            <div class="code-variable">tabs</div>
+            <div class="code-operator">=</div>
+            <div class="code-keyword">await</div>
+            <div class="code-variable">epos</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-property">browser</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-property">tabs</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-function">query</div>
+            <div class="code-punctuation">(</div>
+            <div class="code-punctuation">{</div>
+            <div class="code-property">active</div>
+            <div class="code-operator">:</div>
+            <div class="code-boolean">true</div>
+            <div class="code-punctuation">}</div>
+            <div class="code-punctuation">)</div>
           </div>
           <div class="code-line">
-            <div class="code-variable">console</div><div class="code-punctuation">.</div><div class="code-function">log</div><div class="code-punctuation">(</div><div class="code-variable">tabs</div><div class="code-punctuation">)</div>
+            <div class="code-variable">console</div>
+            <div class="code-punctuation">.</div>
+            <div class="code-function">log</div>
+            <div class="code-punctuation">(</div>
+            <div class="code-variable">tabs</div>
+            <div class="code-punctuation">)</div>
           </div>
         </div>
       </div>
@@ -266,49 +358,115 @@ code {
             <div class="code-punctuation">{</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-string">"name"</div><div class="code-operator">:</div> <div class="code-string">"My Extension"</div><div class="code-punctuation">,</div>
+            <div class="code-indent"></div>
+            <div class="code-string">"name"</div>
+            <div class="code-operator">:</div>
+            <div class="code-string">"My Extension"</div>
+            <div class="code-punctuation">,</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-string">"targets"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div>
+            <div class="code-indent"></div>
+            <div class="code-string">"targets"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">{</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">{</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"match"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"*://*.example.com/*"</div><div class="code-punctuation">],</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"match"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"*://*.example.com/*"</div>
+            <div class="code-punctuation">],</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"scripts"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"main.css"</div><div class="code-punctuation">,</div> <div class="code-string">"main.js"</div><div class="code-punctuation">]</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"scripts"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"main.css"</div>
+            <div class="code-punctuation">,</div>
+            <div class="code-string">"main.js"</div>
+            <div class="code-punctuation">]</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">},</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">},</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">{</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">{</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"match"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"&lt;popup&gt;"</div><div class="code-punctuation">],</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"match"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"&lt;popup&gt;"</div>
+            <div class="code-punctuation">],</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"scripts"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"popup.css"</div><div class="code-punctuation">,</div> <div class="code-string">"popup.js"</div><div class="code-punctuation">]</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"scripts"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"popup.css"</div>
+            <div class="code-punctuation">,</div>
+            <div class="code-string">"popup.js"</div>
+            <div class="code-punctuation">]</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">},</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">},</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">{</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">{</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"match"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"&lt;background&gt;"</div><div class="code-punctuation">],</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"match"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"&lt;background&gt;"</div>
+            <div class="code-punctuation">],</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-indent"></div><div class="code-string">"scripts"</div><div class="code-operator">:</div> <div class="code-punctuation">[</div><div class="code-string">"background.js"</div><div class="code-punctuation">]</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-string">"scripts"</div>
+            <div class="code-operator">:</div>
+            <div class="code-punctuation">[</div>
+            <div class="code-string">"background.js"</div>
+            <div class="code-punctuation">]</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-indent"></div><div class="code-punctuation">}</div>
+            <div class="code-indent"></div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">}</div>
           </div>
           <div class="code-line">
-            <div class="code-indent"></div><div class="code-punctuation">]</div>
+            <div class="code-indent"></div>
+            <div class="code-punctuation">]</div>
           </div>
           <div class="code-line">
             <div class="code-punctuation">}</div>

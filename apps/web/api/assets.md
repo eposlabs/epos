@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # epos.assets.\*
 
 `epos.assets` gives access to the files declared in the project's `assets` field.

@@ -1,18 +1,18 @@
 # Basics
 
-This guide covers the core ideas behind building extensions with Epos. To keep things simple, we will start with **plain JavaScript and CSS**. This lets you see the engine in action without a build step.
+This guide covers the core concepts of building extensions with Epos. To keep things simple, we will start with **plain JavaScript and CSS**. This lets you see the engine in action without a build step.
 
-Once you are comfortable with the fundamentals, the next step is the [Vite setup guide](/guide/vite), where you will add a proper development environment on top of this workflow.
+Once you are comfortable with these fundamentals, we will set up a development environment using [Vite](./vite).
 
 ## Workflow Overview
 
-Epos uses a different extension development workflow. Instead of being a CLI tool, Epos is a **browser extension that runs your code**.
+Epos uses a unique extension development workflow. Instead of being a CLI tool, Epos is a **browser extension that runs your code**.
 
-You connect a local folder to the Epos extension, and the engine injects your files into the browser in real time. It acts as a bridge between your code and the browser.
+You connect a local folder to the Epos extension, and the engine injects your files into the browser in real-time. It acts as a bridge between your code and the browser.
 
 Each folder connected to Epos is called a **project**. The engine can run any number of projects at the same time. You can manage and organize your projects in the dashboard at [app.epos.dev](https://app.epos.dev).
 
-Once you are ready to publish your extension, click the **Export** button in the dashboard. Epos will generate a standalone ZIP file that you can publish to the Chrome Web Store or other marketplaces.
+Once you are ready to publish your extension, click the **Export** button in the dashboard. Epos will generate a standalone ZIP file that you can publish to the Chrome Web Store or other extension marketplaces.
 
 ## Install Epos
 
@@ -118,9 +118,9 @@ Now, whenever you make changes, the page will reload automatically. You can use 
 
 ## Match Patterns
 
-The `matches` field follows the [Match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax used by browser extensions. This means you can use the wildcard `*` to match multiple subdomains or paths.
+The `matches` field follows the [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax used by browser extensions. This means you can use the wildcard `*` to match multiple subdomains or paths.
 
-For example, `*://*.example.com/*` means _all pages on example.com and its subdomains_.
+For example, `*://*.example.com/*` means _"all pages on example.com and its subdomains"_.
 
 Update `epos.json` to use this pattern:
 
@@ -138,17 +138,13 @@ Update `epos.json` to use this pattern:
 
 :::
 
-Now, the gold background is not limited to just the homepage. You can navigate to `https://example.com/anything` or `https://www.example.com`, and the engine will inject your styles.
+Now, the gold background is not limited to just the homepage. You can navigate to [`https://example.com/anything`](https://example.com/anything) or [`https://www.example.com`](https://www.example.com), and the engine will inject your styles.
 
-::: tip
-
-To match all websites, use `<allUrls>` match pattern.
-
-:::
+You can also match all websites with `<allUrls>` pattern.
 
 ## Load JavaScript
 
-Changing styles is useful, but let's add some JavaScript logic.
+Changing styles is fun and all, but let's add some JavaScript logic.
 
 Create `main.js`:
 
@@ -182,7 +178,7 @@ Update `epos.json` to load both `main.css` and `main.js` files:
 
 :::
 
-That's it. The page should now show "Hello, World!" on the gold background.
+That's it. The page should now show `Hello, World!` on the gold background.
 
 Note how `load` can be either a string or an array of strings. This is a common pattern in Epos config to keep things concise for simple cases, while still supporting more complex setups.
 
@@ -192,7 +188,7 @@ A very common extension UI is the popup that opens when the user clicks the exte
 
 In normal extension development, this usually means setting up a separate HTML file. Epos simplifies that by treating the popup as just another target.
 
-Just use `<popup>` in `matches`:
+Simply use `<popup>` in `matches`:
 
 ::: code-group
 
@@ -212,6 +208,23 @@ Clicking the Epos icon now opens your project as a popup.
 
 And do not worry about the extension icon. Epos uses a default icon during development. When you export your project, you can set a custom icon via `epos.json`. This is covered in the [Export](#exporting) section of this guide.
 
+## Popup Configuration
+
+By default, Epos uses a vertical `380x572` popup. You can change that by providing a `popup` in `epos.json`:
+
+::: code-group
+
+````json {4} [epos.json]
+{
+  "$schema": "https://epos.dev/schema.json",
+  "name": "My Extension",
+  "popup": { "width": 500, "height": 300 },
+  "matches": "<popup>",
+  "load": ["main.css", "main.js"],
+}
+
+:::
+
 ## Side Panel
 
 If you want a side panel instead of a popup, use `<sidePanel>`:
@@ -225,11 +238,11 @@ If you want a side panel instead of a popup, use `<sidePanel>`:
   "matches": "<sidePanel>",
   "load": ["main.css", "main.js"]
 }
-```
+````
 
 :::
 
-Now, clicking the extension icon will open your app in the browser side panel.
+This way, clicking the extension icon will open your app in the browser side panel.
 
 ## Multiple Matches
 
@@ -255,7 +268,7 @@ Now both the popup and the [example.com](https://example.com) pages will load yo
 
 When your project grows, you might want a more flexible setup. For example, you might want to load one set of files in the popup and a different set on the web page. This is where `targets` come in.
 
-Instead of one top-level `matches` and `load`, you can define several target objects, each with its own rules.
+Instead of one top-level `matches` and `load`, you can define several target objects, each with its own rules:
 
 ::: code-group
 
@@ -289,9 +302,9 @@ Instead of one top-level `matches` and `load`, you can define several target obj
 
 :::
 
-## Background Code
+## Background
 
-Most non-trivial extensions need some logic that runs in the background.
+Most non-trivial extensions need some logic that runs in the background. For example, we want to show an alert on extension startup.
 
 Create `background.js`:
 
@@ -348,9 +361,9 @@ This approach may seem unconventional, but it comes with two major advantages:
 
 - **Granular Reloading:** Epos can reload that background iframe without reloading the whole extension. This means your other contexts do not lose their state when the background refreshes.
 
-Epos still uses a Service Worker to run its own background logic. Your project's background code runs in the offscreen iframe, which is separate from the engine's Service Worker.
+Epos still uses a Service Worker to run its own background logic, but your project's background code always runs in the offscreen iframe.
 
-## Debugging Background Code
+## Debugging Background
 
 To inspect the background context:
 
@@ -368,9 +381,9 @@ Epos always injects your code as soon as possible, but it does not guarantee tha
 
 If you need that guarantee, use the `lite:` prefix for JavaScript files in `load`.
 
-In this mode, Epos uses a different injection strategy that ensures your code runs _before_ the page's own scripts.
+In this mode, Epos uses a different injection strategy to ensure your code executes _before_ any of the page's scripts.
 
-This is useful when you need to patch global functions or do some setup before the page starts running its own code. You can mix `lite:` and normal files in the same `load` array.
+This is useful when you need to patch global functions or do some setup before the page starts running its own code. You can mix `lite:` and normal files in the same `load` array:
 
 ::: code-group
 
@@ -389,7 +402,7 @@ In `lite:` mode, Epos injects the file as-is and does not expose its APIs inside
 
 ## Exporting
 
-When the project is ready, fill in the basic metadata in `epos.json`.
+When the project is ready, add `description` and `icon` to `epos.json`:
 
 ::: code-group
 
@@ -397,14 +410,9 @@ When the project is ready, fill in the basic metadata in `epos.json`.
 {
   "$schema": "https://epos.dev/schema.json",
   "name": "My Extension",
-  "description": "A short summary of what the extension does.",
-  "icon": "icon.png",
-  "targets": [
-    {
-      "matches": "<popup>",
-      "load": ["main.js"]
-    }
-  ]
+  "description": "A short summary of what the extension does.", // [!code ++]
+  "icon": "static/icon.svg", // [!code ++]
+  "targets": [...]
 }
 ```
 
@@ -412,12 +420,16 @@ When the project is ready, fill in the basic metadata in `epos.json`.
 
 Then click **Export** in [app.epos.dev](https://app.epos.dev).
 
-Epos downloads a ZIP file containing a normal Manifest V3 extension bundle. That exported bundle is what you test, upload, and publish.
+Epos will generate and download a ZIP file containing a normal Manifest V3 extension bundle. This bundle contains your project files, the engine files, and generated `manifest.json`.
 
-This is another important part of the Epos model: development is Epos-specific, but the output is still a normal browser extension.
+**Note:** The provided icon will be transformed to 128x128 PNG during export.
 
-## Next Step
+## Load the Exported ZIP
 
-You now know the basic Epos workflow: connect a local folder, describe your project in `epos.json`, load code into different targets, and export a regular browser extension when it is ready.
+Congratulations! You have built your first Epos extension.
 
-From here, you can move on to the [Vite setup guide](/guide/vite) to add React and TypeScript on top of the same workflow.
+You can load the exported ZIP file into your browser and see it in action:
+
+1. Open `chrome://extensions`.
+2. Enable **Developer mode** in the right-top corner.
+3. Drag and drop the ZIP onto the page.

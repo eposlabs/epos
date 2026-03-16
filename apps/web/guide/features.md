@@ -8,7 +8,7 @@ This page is a quick overview. Each feature has its own guide and API reference 
 
 `epos.bus` is the messaging layer for communication between the popup, background, side panel, web pages, and iframes.
 
-It is like `chrome.runtime.sendMessage`, but works across all contexts.
+It is like `chrome.runtime.sendMessage`, but much more powerful and easier to use.
 
 ```ts
 // background.ts
@@ -59,20 +59,21 @@ Read more in the [Storage](/guide/storage) guide.
 
 ## Extension API
 
-`epos.browser.*` mirrors supported `chrome.*` APIs and makes them available in all contexts.
+`epos.browser.*` mirrors `chrome.*` APIs and makes them available in all contexts.
 
 ```ts
 // content-script.ts
 const tabs = await epos.browser.tabs.query({})
 ```
 
-This is especially useful on web pages and in iframes, where the standard extension APIs are not available.
+You are no longer limited to any context restrictions. Just use `epos.browser` and it will work everywhere.
+
 
 Read more in the [Extension API](/guide/extension) guide.
 
 ## Simpler Project Setup
 
-`epos.json` replaces `manifest.json` and lets you define your extension in a simpler way. You tell Epos **what** files to load and **where**, and it handles the rest.
+`epos.json` replaces `manifest.json` and lets you define your extension in a simpler way. You tell Epos **which** files to load and **where**, and it handles the rest.
 
 ```json
 {

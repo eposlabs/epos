@@ -1,10 +1,8 @@
 # Frames
 
-`epos.frames` lets you create hidden background frames.
+`epos.frames` lets you manage hidden background frames.
 
 This is useful when you need to interact with a real web page in the background, not just fetch data from it.
-
-This guide explains the basic usage. For exact signatures, see the [Frames API Reference](/api/frames).
 
 ## Creating a Frame
 
@@ -32,13 +30,13 @@ To inspect created frames:
 
 ::: info
 
-Technically, `<background>` is also a background frame. But it is not managed by `epos.frames`. Epos manages that iframe internally, and you cannot create or remove it yourself.
+Technically, `<background>` is also a background frame. But it is not managed by `epos.frames`. Epos manages the background iframe automatically, you cannot create or remove it yourself.
 
 :::
 
 ## Running Code in Frames
 
-Usually, you also want some code to run inside the frame, not just open it. The setup is the same as with other Epos targets: you tell Epos **what** to load and **where**.
+Usually, you also want some code to run inside the frame, not just open it. The setup is the same as with other Epos targets: you tell Epos **which** files to load and **where**.
 
 Just prefix the URL pattern with `frame:`:
 
@@ -54,7 +52,7 @@ Just prefix the URL pattern with `frame:`:
 
 :::
 
-Epos then injects `dist/frame.js` into any matching `example.com` page running inside an `<iframe>`.
+In this setup, Epos injects `dist/frame.js` into any matching `example.com` page running inside an `<iframe>`.
 
 This applies to all matching iframes, not just ones created by `epos.frames`. If a page contains an iframe with a matching URL, Epos injects the script there as well.
 
@@ -70,7 +68,7 @@ When you no longer need a frame, remove it using `remove()`:
 await epos.frames.remove(frameId)
 ```
 
-Frames are not removed automatically. You manage them manually. The only exception is a full extension refresh.
+Frames are never removed automatically. You have to remove them manually. The only exception is a full extension refresh.
 
 ## Checking Frame Existence
 
@@ -86,10 +84,7 @@ console.log(exists) // true or false
 To get a list of all frames created by the current project, use `list()`:
 
 ```ts
-const frames = await epos.frames.list()
-for (const frame of frames) {
-  console.log(frame.id, frame.name, frame.url)
-}
+const frames = await epos.frames.list() // Array<{ id, name, url }>
 ```
 
 - `id` is the unique frame id.

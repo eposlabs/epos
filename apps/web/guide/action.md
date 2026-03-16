@@ -8,11 +8,9 @@ For many extensions, this click opens a popup or a side panel. But if your proje
 
 `action` is only relevant when your project does not have a popup or side panel.
 
-If your project has a `<popup>` target, clicking the icon opens the popup.
-
-If your project has a `<sidePanel>` target, clicking the icon opens the side panel.
-
-If neither of those targets exists, Epos looks at the `action` field.
+- If your project has a `<popup>` target, clicking the icon opens the popup.
+- If your project has a `<sidePanel>` target, clicking the icon opens the side panel.
+- If neither of those targets exists, Epos looks at the `action` field.
 
 ## `action: true`
 
@@ -58,7 +56,7 @@ When the icon is clicked, Epos opens that URL in a new tab. If the URL is alread
 
 This can be useful if your extension renders its UI on a regular web page instead of a popup or side panel. The toolbar icon then becomes a quick way to open that page.
 
-## Notes
+## Summary
 
 - `action` accepts only `true` or a valid URL string.
 - If your project has a `<popup>` or `<sidePanel>` target, `action` is ignored.

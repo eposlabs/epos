@@ -1,10 +1,10 @@
 # State Management
 
-`epos.state` gives you a shared object that is persisted and synchronized across extension contexts. You can change it like normal JavaScript data, and Epos handles the rest for you.
+`epos.state` gives you access to a shared state object. You can modify this object directly, and Epos will **automatically synchronize** changes arcross contexts.
 
-If your background changes state data, your popup will reflect that change immediately. If the user closes the extension or restarts the browser, the data is restored the next time they open it.
+If your background changes state data, your popup will reflect that change immediately.
 
-This guide focuses on the practical side of the API. For the full method list, see the [State API Reference](/api/state).
+All changes are also **persisted** in IndexedDB and restored when the extension reloads.
 
 ## Connect to State
 
@@ -19,7 +19,8 @@ The returned value behaves like a normal object, but it is automatically synced 
 ```ts
 const state = await epos.state.connect()
 
-// Modify like a normal object
+// Modify like a normal object.
+// All changes are automatically synced and persisted.
 state.count = 1
 state.items = []
 state.items.push('Hello')
@@ -67,7 +68,7 @@ This initial value is used only when the state does not already exist. If data i
 
 ## React Usage
 
-`epos.state` works naturally with React. The rule is simple: wrap components with `epos.component()` so they react to state changes.
+`epos.state` works naturally with React. The rule is simple: wrap components with `epos.component()` so they react to state changes:
 
 ```tsx
 const state = await epos.state.connect({ count: 0 })
@@ -98,7 +99,7 @@ const settingsState = await epos.state.connect('settings', { theme: 'dark' })
 
 ## Transactions
 
-You can change the state line by line, and that is completely fine:
+Making several changes to a state at once is completely fine:
 
 ```ts
 state.count += 1
@@ -120,13 +121,9 @@ This way only one synchronization event is triggered, and the update behaves lik
 
 ::: warning
 
-Transactions are synchronous. Do not use `await` inside them.
+- Transactions **must be synchronous**.
 
-:::
-
-::: warning
-
-If your transaction throws halfway through, changes made before the error are **not rolled back**.
+- If your transaction throws halfway through, changes made before the error are **not rolled back**.
 
 :::
 
@@ -134,7 +131,9 @@ If your transaction throws halfway through, changes made before the error are **
 
 If you need to run side effects when state changes, use `epos.state.reaction()`.
 
-It is a direct wrapper around MobX `reaction`, exposed on `epos.state` for convenience.
+It is a direct wrapper around MobX [`reaction`](https://mobx.js.org/reactions.html#reaction), exposed on `epos.state` for convenience.
+
+First argument is a function that returns the piece of state you want to track. The second argument is a function that runs when that piece of state changes:
 
 ```ts
 const state = await epos.state.connect({ count: 0 })
@@ -148,8 +147,6 @@ epos.state.reaction(
 ```
 
 This is useful when you need to react to state changes.
-
-Read more about `reaction` in the [official MobX docs](https://mobx.js.org/reactions.html#reaction).
 
 ## Local State
 
@@ -167,7 +164,7 @@ Local state is reactive, so React components wrapped with `epos.component()` wil
 
 As your app grows, the state shape may change. `connect()` accepts a versioner object so you can migrate old data.
 
-Let's say you have this default state:
+Let's say you have this state:
 
 ```ts
 const state = await epos.state.connect({ theme: 'light' })
@@ -179,7 +176,9 @@ But later you added a new `language` field:
 const state = await epos.state.connect({ theme: 'light', language: 'en' })
 ```
 
-New users will get the new field, but existing users will not, because their state is already stored. To fix that, add a versioner:
+New users will receive the `language` field because they start with the provided initial state. However, existing users will not, because Epos will load their previously stored state.
+
+To fix that, you can add a migration function that adds the missing `language` field for existing users:
 
 ```ts
 const state = await epos.state.connect(
@@ -194,13 +193,13 @@ const state = await epos.state.connect(
 
 You can have any number of migration functions. Each key must be a number that represents a version. The current state version is stored under the `:version` key. When `connect()` runs, Epos checks the stored version and applies all newer migrations in order.
 
-Inside a migration function, you can modify the state in any normal way. You can assign properties, `push()` or `splice()` arrays, and use `delete` when needed.
+Inside a migration function, you can modify the state in any way. You can assign properties, `push()` or `splice()` arrays, and use `delete` when needed.
 
 ## Models
 
-State can store plain objects and arrays, but it can also work with classes. These classes are called **models**.
+State can work not only with plain objects and arrays, but also with classes. These state classes are called **models**.
 
-Define a model like a regular JavaScript class:
+To define a model, just define a regular class:
 
 ```ts
 class User {
@@ -218,7 +217,7 @@ class User {
 }
 ```
 
-And register it with `epos.state.register()`:
+But to make Epos "see" that class, you need to `register()` it first:
 
 ```ts
 // Register User class as "User" model
@@ -228,7 +227,7 @@ epos.state.register({ User })
 epos.state.register({ Profile: User })
 ```
 
-It is important to register models _before_ connecting to state. Otherwise, Epos will not be able to restore them.
+It is important to register models _before_ calling `connect()`. Otherwise, Epos won't be able to restore data on the next load.
 
 ```ts
 // Register first
@@ -237,18 +236,20 @@ epos.state.register({ User })
 // Then connect
 const state = await epos.state.connect()
 
-// Now state can accept models
+// Use the model
 state.user = new User('Alice', 'Smith')
 console.log(state.user.fullName()) // Alice Smith
 ```
 
 When a model instance is stored in state, Epos adds an `@` key to that object. This key stores the model name. In the example above, `user['@'] === 'User'`.
 
-This `@` key is what lets Epos restore the model when the state is loaded from IndexedDB. It tells Epos which model to apply to that stored object. That is why models must be registered before connecting to state. If a model is missing, Epos throws an error by default. You can change that behavior by setting `options.allowMissingModels: true` in `epos.json`.
+This `@` key is what lets Epos restore the model when the state is loaded from IndexedDB. It tells Epos which model to apply to that stored object. That is why models must be registered before connecting to state.
+
+If Epos sees `@` key on an object, but can't find corresponding model, it will throw an error. You can change that behavior by setting `options: { allowMissingModels: true }` in `epos.json`.
 
 ## Model Lifecycle Hooks
 
-Epos also exposes a few symbols for more advanced model work:
+Epos also exposes a few symbols for more advanced work:
 
 - `epos.state.PARENT` lets you access a parent object or array.
 - `epos.state.ATTACH` runs when the object is attached to state.
@@ -275,13 +276,14 @@ class TodoItem {
 
 epos.state.register({ TodoItem })
 const state = await epos.state.connect({ todos: [] })
-state.todos.push(new TodoItem('Learn Epos')) // Logs "Added to state"
+const todo = new TodoItem('Learn Epos')
+state.todos.push(todo) // Logs "Added to state"
 state.todos[epos.state.PARENT] === state // true
 state.todos[0][epos.state.PARENT] === state.todos // true
 state.todos.pop() // Logs "Removed from state"
 ```
 
-This is advanced usage for building custom models on top of Epos state.
+This is advanced usage that can be useful for managing models life cycle. Most of the time you won't need it.
 
 ## Disconnecting State
 
@@ -309,8 +311,6 @@ await epos.state.remove() // Remove default state
 await epos.state.remove('cache') // Remove "cache" state
 ```
 
-Use `remove()` carefully. It permanently deletes all data, and the operation cannot be undone.
-
 ## Listing States
 
 `list()` shows information about existing states and whether they are currently connected:
@@ -331,7 +331,7 @@ Epos state is built on top of [MobX](https://mobx.js.org/) and [Yjs](https://yjs
 
 You do not need to know either library to use `epos.state`.
 
-But if you are already familiar with MobX, you can still use its APIs on state objects. For example:
+But if you are familiar with MobX, you can use its APIs on state objects. For example:
 
 ```ts
 import { autorun } from 'mobx'

@@ -1,3 +1,9 @@
+::: warning
+
+This is AI-generated draft based on Epos source code. Proper documentation is coming soon.
+
+:::
+
 # epos.dom.\*
 
 `epos.dom` exposes the DOM nodes that Epos creates for the current project.

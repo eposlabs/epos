@@ -2,11 +2,11 @@
 
 `epos.bus` is the messaging layer used to communicate between extension contexts. You can use the same API in the popup, background, side panel, web page, or iframes.
 
-The simple mental model is this:
+The most basic methods are:
 
-- `epos.bus.on()` listens for a message.
-- `epos.bus.send()` sends a message to other contexts.
-- `epos.bus.off()` removes a listener.
+- `epos.bus.on()` to listen for messages.
+- `epos.bus.send()` to send a message to other contexts.
+- `epos.bus.off()` to remove a listener.
 
 ::: info Why “bus”?
 
@@ -24,7 +24,7 @@ Browser extensions often need different messaging APIs, depending on where a mes
 
 The most common pattern is one context listening and another context sending.
 
-In this example, the background listens for `analytics:event`, and the popup sends it:
+In the example below, the background listens for `analytics:event`, and the popup sends it:
 
 ::: code-group
 
@@ -65,7 +65,7 @@ epos.render(<App />)
 
 :::
 
-That is the most common pattern. You pick an event name, attach a listener with `on()`, and send data with `send()`.
+That is the most common pattern. You choose any event name, attach a listener with `on()`, and send data with `send()`.
 
 ## Returning Data
 
@@ -85,7 +85,7 @@ const user = await epos.bus.send<User>('user:get', '42')
 console.log(user)
 ```
 
-If no listener responds, `send()` resolves to `undefined`.
+If there are no listeners, `send()` resolves to `undefined`.
 
 ## Local Events with `emit()`
 
@@ -93,27 +93,21 @@ If no listener responds, `send()` resolves to `undefined`.
 
 To trigger local listeners, use `epos.bus.emit()` instead:
 
-::: code-group
-
-```ts [popup.tsx]
+```ts
 epos.bus.on('modal:close', () => {
   console.log('Close modal')
 })
 
-await epos.bus.emit('modal:close')
+epos.bus.emit('modal:close')
 ```
 
-:::
-
-This is useful for local coordination when you do not need cross-context delivery.
+This can be useful for local coordination when you do not need cross-context delivery.
 
 ## Removing Listeners
 
 Use `epos.bus.off()` when a listener should stop receiving messages.
 
-::: code-group
-
-```ts [popup.tsx]
+```ts
 const handleUpdate = (value: number) => {
   console.log('Updated:', value)
 }
@@ -124,23 +118,17 @@ epos.bus.on('counter:update', handleUpdate)
 epos.bus.off('counter:update', handleUpdate)
 ```
 
-:::
-
 If you call `off()` without a callback, Epos removes all listeners for that event name in the current context.
 
 ## One-Time Listeners
 
 Sometimes an event should be handled only once. In that case, use `epos.bus.once()`:
 
-::: code-group
-
-```ts [popup.tsx]
+```ts
 epos.bus.once('auth:ready', () => {
   console.log('Auth is ready')
 })
 ```
-
-:::
 
 After the first call, the listener is removed automatically.
 
@@ -197,6 +185,21 @@ epos.bus.on('math:sum', sum)
 
 This keeps the event name string-based, while still giving you solid TypeScript support.
 
+## Providing `this`
+
+To set `this` for a listener, pass the context as the third argument to `on()`:
+
+```ts {8}
+const api = {
+  value: 42,
+  getValue () {
+    return this.value
+  }
+}
+
+epos.bus.on('api:getValue', api.getValue, api)
+```
+
 ## Exposing APIs
 
 If you have many related methods, exposing them all through `epos.bus.on()` can get tedious:
@@ -219,12 +222,6 @@ epos.bus.on('user:remove', userApi.removeUser, userApi)
 
 :::
 
-::: tip
-
-The third argument of `epos.bus.on()` sets `this` for the listener, so you do not need to `bind()` manually.
-
-:::
-
 To expose all methods at once, you can `register()` the API object and make it available to other contexts:
 
 ::: code-group
@@ -237,7 +234,7 @@ epos.bus.register('user', userApi)
 
 :::
 
-Then, in another context, you can `use()` that API by name:
+Then, in another context, you can `use()` that API by its name:
 
 ::: code-group
 
@@ -294,7 +291,7 @@ Epos does not serialize blobs as base64 strings. Instead, it uses a more efficie
 - Use `on()` and `send()` for normal cross-context messaging.
 - Use `emit()` for local-only events.
 - Use `once()` when an event should be handled a single time.
-- Use `setSignal()` and `waitSignal()` for readiness and synchronization.
+- Use `setSignal()` and `waitSignal()` for readiness.
 - Use `register()` and `use()` when you want to expose an API to another context.
 - Use `for()` to create a namespaced bus and avoid event name collisions.
 

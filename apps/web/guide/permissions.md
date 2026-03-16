@@ -1,6 +1,6 @@
 # Permissions
 
-Epos uses the same general permission model as normal browser extensions, but you declare those permissions in `epos.json` instead of `manifest.json`.
+Epos uses the same permission model as normal browser extensions, but you declare those permissions in `epos.json` instead of `manifest.json`.
 
 Some permissions are required for the engine to work, so they always end up in the resulting `manifest.json`. Most permissions, however, depend on your project's needs.
 
@@ -27,7 +27,7 @@ If your project uses a `<sidePanel>` target, Epos also adds:
 
 ## Supported Permissions
 
-Epos supports most common extension permissions, but not all of them. Here is the current list of supported permissions:
+Epos supports most common extension permissions, but not all of them. Here is the list of all supported permissions:
 
 - `alarms`
 - `background`
@@ -147,4 +147,4 @@ Notice that `<allUrls>` is also in camelCase, while standard `manifest.json` use
 
 If you put `downloads` in `optionalPermissions`, `epos.browser.downloads` stays unavailable until you request it and the user grants that permission.
 
-In short, the behavior is the same as with `chrome.*` APIs. Epos only changes how permissions are declared in `epos.json`.
+In short, the behavior is the same as with `chrome.*` APIs. Epos only slightly changes how permissions are declared in `epos.json`.

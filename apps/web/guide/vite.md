@@ -2,7 +2,7 @@
 
 This guide shows how to set up Epos with Vite, TypeScript, React, and Tailwind CSS.
 
-You can skip this guide and just select the `Vite` template when creating a new project in the dashboard. That sets up everything below for you. If you want to understand how it works or customize the setup, read on.
+You can skip this guide and just select the `Vite` template when creating a new project in the [app.epos.dev](https://app.epos.dev) dashboard. That sets up all the necessary configuration. If you want to understand how it works or customize the setup, read on.
 
 ## 1. Create a Vite Project
 
@@ -33,7 +33,6 @@ Follow the prompts to set up the project:
 1. **Project name:** Choose any name for your project.
 2. **Framework:** Select **Vanilla**. Do not select React here, because Epos already provides it.
 3. **Variant:** Choose your preference. This guide assumes you select **TypeScript**.
-4. **Use Vite 8:** Select **Yes**. Vite 8 uses [`rolldown`](https://rolldown.rs/) for bundling, which is much faster.
 
 ## 2. Install Epos
 
@@ -99,17 +98,14 @@ import { defineConfig } from 'vite'
 export default defineConfig(({ mode }) => ({
   plugins: [epos(), tailwindcss()],
   build: {
-    // Rebuild on changes when developing
     watch: mode === 'production' ? null : {},
-
     rolldownOptions: {
       input: {
-        // One entry point for now
+        // Single entry point for now
         main: './src/main.tsx',
       },
       output: {
-        // Use consistent file names for output
-        // (normally Vite adds hashes)
+        // Avoid hashes in file names
         entryFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
       },
@@ -237,7 +233,7 @@ yarn dev
 
 :::
 
-Vite now rebuilds whenever you change source files, and Epos picks up the updated `dist` output.
+Vite rebuilds your project whenever you change source files, and Epos picks up the updated `dist` output.
 
 ## 9. Multiple Entry Points
 
@@ -256,7 +252,7 @@ rolldownOptions: {
 
 :::
 
-Then load the matching built files in `epos.json`:
+Then load the corresponding built files in `epos.json`:
 
 ```json
 "targets": [
@@ -339,11 +335,3 @@ export default defineConfig(({ mode }) => ({
 ```
 
 Notice that `minify` is disabled for the normal Vite output and enabled for `vite-plugin-rebundle`. This way the files are minified only once, during rebundling.
-
-## Summary
-
-The basic idea of using Vite with Epos is simple:
-
-1. Use Vite to write built files into `dist`.
-2. Point `epos.json` at those built files.
-3. Run `vite build --mode development` while you work.
