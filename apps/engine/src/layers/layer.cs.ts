@@ -1,7 +1,7 @@
-import { App, type App as AppType } from '../app/app.cs.js'
-import { Libs, type Libs as LibsType } from '../libs/libs.cs.js'
-import { Projects, type Projects as ProjectsType } from '../projects/projects.cs.js'
-import { Utils, type Utils as UtilsType } from '../utils/utils.cs.js'
+import { App, type App as AppType } from '../units/app.cs.js'
+import { Libs, type Libs as LibsType } from '../units/libs.cs.js'
+import { Projects, type Projects as ProjectsType } from '../units/projects.cs.js'
+import { Utils, type Utils as UtilsType } from '../units/utils.cs.js'
 
 Object.assign(cs, {
   App,

@@ -1,5 +1,5 @@
-import { App, type App as AppType } from '../app/app.pm.js'
-import { Utils, type Utils as UtilsType } from '../utils/utils.pm.js'
+import { App, type App as AppType } from '../units/app.pm.js'
+import { Utils, type Utils as UtilsType } from '../units/utils.pm.js'
 
 Object.assign(pm, {
   App,

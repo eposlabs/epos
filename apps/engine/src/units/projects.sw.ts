@@ -1,5 +1,5 @@
 import type { Assets, Bundle, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
-import type { CsTabInfo } from '../bus/bus.gl.js'
+import type { CsTabInfo } from './bus.gl.js'
 import type { Address } from './project-target.sw.js'
 import type { Entry, Snapshot } from './project.sw.js'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'

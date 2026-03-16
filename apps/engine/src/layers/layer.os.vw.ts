@@ -1,4 +1,4 @@
-import { Libs, type Libs as LibsType } from '../libs/libs.os.vw.js'
+import { Libs, type Libs as LibsType } from '../units/libs.os.vw.js'
 
 Object.assign(osVw, {
   Libs,

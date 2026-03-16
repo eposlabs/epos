@@ -1,4 +1,4 @@
-import { ProjectsWatcher, type ProjectsWatcher as ProjectsWatcherType } from '../projects/projects-watcher.ex.os.vw.js'
+import { ProjectsWatcher, type ProjectsWatcher as ProjectsWatcherType } from '../units/projects-watcher.ex.os.vw.js'
 
 Object.assign(exOsVw, {
   ProjectsWatcher,

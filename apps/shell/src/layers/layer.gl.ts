@@ -1,13 +1,13 @@
 import { ProjectsCreation, type ProjectsCreation as ProjectsCreationType } from '../_backup/projects-creation.js'
-import { App, type App as AppType } from '../app/app.js'
-import { Idb, type Idb as IdbType } from '../idb/idb.js'
-import { Libs, type Libs as LibsType } from '../libs/libs.js'
-import { Permissions, type Permissions as PermissionsType } from '../permissions/permissions.js'
-import { Project, type Project as ProjectType } from '../projects/project.js'
-import { Projects, type Projects as ProjectsType } from '../projects/projects.js'
-import { Theme, type Theme as ThemeType } from '../theme/theme.js'
-import { UtilsFs, type UtilsFs as UtilsFsType } from '../utils/utils-fs.js'
-import { Utils, type Utils as UtilsType } from '../utils/utils.js'
+import { App, type App as AppType } from '../units/app.js'
+import { Idb, type Idb as IdbType } from '../units/idb.js'
+import { Libs, type Libs as LibsType } from '../units/libs.js'
+import { Permissions, type Permissions as PermissionsType } from '../units/permissions.js'
+import { Project, type Project as ProjectType } from '../units/project.js'
+import { Projects, type Projects as ProjectsType } from '../units/projects.js'
+import { Theme, type Theme as ThemeType } from '../units/theme.js'
+import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.js'
+import { Utils, type Utils as UtilsType } from '../units/utils.js'
 
 Object.assign(gl, {
   ProjectsCreation,
