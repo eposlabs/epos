@@ -1,31 +1,20 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-brand: hsl(65 100% 49%);
-  --color-brand: oklch(0.94 0.26 120.51);
+@theme {
   --color-brand: #e8ff00;
-  /* oklch(0.94 0.26 120.51) */
+  --color-divider: var(--vp-c-divider);
+  --color-main: var(--color-main);
+  --color-dim: var(--color-dim);
 }
 
 html:not(.dark) {
-  --vp-c-brand-1: oklch(0.71 0.23 132.2);
-  --vp-c-brand-2: oklch(0.71 0.23 132.2);
-  --vp-c-brand-3: oklch(0.71 0.23 132.2);
-
   --vp-c-brand-1: var(--color-emerald-600);
   --vp-c-brand-2: var(--color-emerald-600);
   --vp-c-brand-3: var(--color-emerald-600);
-  /* oklch(0.63 0.25 143.27) */
-  /* oklch(0.71 0.23 132.2) */
-
-  /* --vp-c-brand-1: oklch(0.56 0.34 133.56 / 1); */
-  /* --vp-c-brand-2: oklch(0.56 0.34 133.56 / 1); */
-  /* --vp-c-brand-3: oklch(0.56 0.34 133.56 / 1); */
-
-  /* var(--color-teal-600) */
-  /* oklch(0.76 0.25 133.97) */
-  /* oklch(0.6 0.18 131.81) */
+  --vp-c-gutter: var(--color-zinc-200);
+  --color-main: var(--color-black);
+  --color-dim: var(--color-zinc-500);
 }
 
 html.dark {
@@ -35,43 +24,23 @@ html.dark {
   --vp-button-brand-text: var(--color-black);
   --vp-button-brand-hover-text: var(--color-black);
   --vp-button-brand-active-text: var(--color-black);
+  --color-main: var(--color-white);
+  --color-dim: var(--color-zinc-500);
+  --vp-c-gutter: var(--vp-c-divider);
 }
 
-.main {
-  .name {
-    @apply font-semibold;
+.Layout:not(:has(.has-sidebar)) {
+  .VPNav {
+    @apply relative mx-auto max-w-5xl border-divider lg:border-r lg:border-l xl:max-w-7xl;
   }
-  .text {
-    @apply font-medium;
+  .VPNav .content-body {
+    @apply m-0 p-0;
   }
-  .tagline {
-    @apply font-normal!;
+  .VPNav .divider {
+    @apply hidden;
   }
-}
-
-.vp-doc {
-  strong {
-    @apply font-medium text-black dark:text-white;
-  }
-
-  a {
-    @apply font-normal underline-offset-4;
-  }
-
-  h1 {
-    @apply text-[40px]/[1.6] font-medium;
-  }
-
-  h2 {
-    @apply text-[30px]/[1.6] font-medium;
-  }
-
-  h3 {
-    @apply font-medium;
-  }
-
-  h4 {
-    @apply font-medium;
+  .VPContent {
+    @apply pt-0;
   }
 }
 
@@ -79,105 +48,23 @@ html.dark {
   @apply pb-15!;
 }
 
-.docs-landing-shell {
-  margin-inline: calc(50% - 50vw);
-  width: 100vw;
-}
-
-.docs-section {
-  @apply mx-auto max-w-7xl px-6 sm:px-8 lg:px-12;
-}
-
-.VPContent:not(:has(.has-sidebar)) {
-  @apply pt-0;
-}
-
-.VPNav:not(:has(.has-sidebar)) {
-  @apply relative overflow-hidden pb-px;
-}
-
-.VPNavBar:not(.has-sidebar) {
-  @apply mx-auto max-w-7xl border-zinc-200 border-l border-r;
-}
-
-/* Overrides */
-:root {
-  --vp-c-gutter: var(--vp-c-divider);
-  --vp-sidebar-bg-color: var(--vp-c-bg);
-
-  &.dark {
-    --color-accent: var(--color-brand);
-    --vp-c-bg: #16171d;
-    --vp-c-divider: #202333;
+.VPDoc {
+  strong {
+    @apply font-medium text-main;
   }
-
-  .VPNavBarTitle.has-sidebar .title {
-    @apply border-b-transparent;
+  a {
+    @apply font-normal underline-offset-4;
   }
-
-  .VPSidebar {
-    @apply mt-16 border-r border-(--vp-c-divider) pt-4.5 shadow-none;
+  h1 {
+    @apply text-[40px]/[1.6] font-medium;
   }
-
-  .VPNavBar.has-sidebar .divider {
-    @apply pl-0;
+  h2 {
+    @apply text-[30px]/[1.6] font-medium;
   }
-
-  .VPDoc .aside-container {
-    @apply border-l border-(--vp-c-divider);
+  h3 {
+    @apply font-medium;
   }
-
-  .VPDocAside .content {
-    @apply border-l-0 pl-8;
-  }
-  .VPDocAside .outline-marker {
-    @apply w-0.75 rounded-none;
-  }
-
-  .aside-container {
-    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 28px);
-  }
-
-  .VPFeatures .item {
-    @apply p-0;
-  }
-  .VPFeature {
-    @apply rounded-none border-(--vp-c-divider) bg-(--vp-c-bg);
-  }
-  .VPFeatures .item:nth-child(1) .VPFeature {
-    @apply border-r-0 border-b-0;
-  }
-  .VPFeatures .item:nth-child(2) .VPFeature {
-    @apply border-r-0 border-b-0;
-  }
-  .VPFeatures .item:nth-child(3) .VPFeature {
-    @apply border-b-0;
-  }
-  .VPFeatures .item:nth-child(4) .VPFeature {
-    @apply border-r-0;
-  }
-  .VPFeatures .item:nth-child(5) .VPFeature {
-    @apply border-r-0;
-  }
-
-  .vp-code-group .tabs label:first-of-type:last-child {
-    &::after {
-      @apply bg-black;
-    }
-    .dark &::after {
-      @apply bg-white/50;
-    }
-  }
-
-  .vp-code-group .tabs {
-    .dark & {
-      @apply bg-[#121317];
-    }
-  }
-
-  pre.shiki {
-    .dark & {
-      @apply bg-[#121317];
-    }
+  h4 {
+    @apply font-medium;
   }
 }
