@@ -28,11 +28,8 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "tailwindcss": "^4.2.1",
-    "vite": "^8.0.0-beta.18",
+    "vite": "^8.0.0",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-rebundle": "1.39.0"
-  },
-  "overrides": {
-    "vite": "^8.0.0-beta.18"
   }
 }

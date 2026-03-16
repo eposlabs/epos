@@ -11,13 +11,10 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",
-    "netlify-cli": "^24.0.1",
-    "oxc-minify": "^0.117.0",
+    "netlify-cli": "^24.2.0",
+    "oxc-minify": "^0.120.0",
     "tailwindcss": "^4.2.1",
-    "vite": "^8.0.0-beta.18",
+    "vite": "^8.0.0",
     "vitepress": "^2.0.0-alpha.12"
-  },
-  "overrides": {
-    "vite": "^8.0.0-beta.18"
   }
 }

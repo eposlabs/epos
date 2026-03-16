@@ -30,7 +30,7 @@ const steps = [
   @apply text-xl text-black;
 }
 .button {
-  @apply border px-9 py-3 text-sm font-medium text-black transition hover:bg-zinc-100;
+  @apply border px-11 py-2.5 text-base font-medium text-black transition hover:bg-zinc-100;
 }
 .code-block {
   @apply mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-5 text-zinc-900;
@@ -95,7 +95,7 @@ code {
           <div></div>
           that work across all execution contexts with no extra setup.
         </div>
-        <div class="mt-8 flex gap-4">
+        <div class="mt-8 flex gap-5">
           <a class="button bg-brand hover:bg-brand!" href="https://get.epos.dev">Install Epos</a>
           <a class="button" href="/guide">Get Started</a>
         </div>

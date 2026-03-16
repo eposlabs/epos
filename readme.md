@@ -1,8 +1,8 @@
-# ᛃ Epos
+# ᛃ epos
 
 Epos is an opinionated engine for building Chromium browser extensions with React.
 
-Unlike tools such as WXT or Plasmo, Epos is not mainly a framework you install from npm and wire together yourself. The engine itself is a browser extension. You connect a local folder, Epos runs your code directly in the browser, and when you are ready, it exports a standard Manifest V3 extension bundle.
+The engine itself is a browser extension. You connect a local folder to it, and Epos runs your code directly in the browser. When you are ready, it exports a standard Manifest V3 extension bundle.
 
 The goal is simple: less setup, fewer moving parts, and more high-level features built in from the start.
 
@@ -13,7 +13,7 @@ The goal is simple: less setup, fewer moving parts, and more high-level features
 - Built-in cross-context messaging.
 - Shared state with persistence and synchronization.
 - Key-value storage for files and data powered by IndexedDB.
-- Extension APIs available in every context
+- Extension APIs available in every context.
 - Simpler project config through `epos.json`.
 
 ## How It Works
