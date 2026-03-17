@@ -1,47 +1,35 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant md (@media (width < 1000px));
+@custom-variant sm (@media (width < 500px));
 
 @theme {
   --color-brand: #e8ff00;
+  --color-dim: var(--color-dim);
   --color-divider: var(--vp-c-divider);
   --color-main: var(--color-main);
-  --color-dim: var(--color-dim);
+  --breakpoint-*: initial;
 }
 
 html:not(.dark) {
+  --color-dim: var(--color-zinc-500);
+  --color-main: var(--color-black);
   --vp-c-brand-1: var(--color-emerald-600);
   --vp-c-brand-2: var(--color-emerald-600);
   --vp-c-brand-3: var(--color-emerald-600);
   --vp-c-gutter: var(--color-zinc-200);
-  --color-main: var(--color-black);
-  --color-dim: var(--color-zinc-500);
 }
 
 html.dark {
+  --color-dim: var(--color-zinc-500);
+  --color-main: var(--color-white);
+  --vp-button-brand-active-text: var(--color-black);
+  --vp-button-brand-hover-text: var(--color-black);
+  --vp-button-brand-text: var(--color-black);
   --vp-c-brand-1: var(--color-brand);
   --vp-c-brand-2: var(--color-brand);
   --vp-c-brand-3: var(--color-brand);
-  --vp-button-brand-text: var(--color-black);
-  --vp-button-brand-hover-text: var(--color-black);
-  --vp-button-brand-active-text: var(--color-black);
-  --color-main: var(--color-white);
-  --color-dim: var(--color-zinc-500);
   --vp-c-gutter: var(--vp-c-divider);
-}
-
-.Layout:not(:has(.has-sidebar)) {
-  .VPNav {
-    @apply relative mx-auto max-w-5xl border-divider lg:border-r lg:border-l xl:max-w-7xl;
-  }
-  .VPNav .content-body {
-    @apply m-0 p-0;
-  }
-  .VPNav .divider {
-    @apply hidden;
-  }
-  .VPContent {
-    @apply pt-0;
-  }
 }
 
 .VPSidebar {

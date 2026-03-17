@@ -1,6 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
-import Landing from './components/landing.vue'
 import './custom.css'
+import Landing from './landing.vue'
 
 export default {
   extends: DefaultTheme,
