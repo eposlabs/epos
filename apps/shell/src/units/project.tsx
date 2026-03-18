@@ -1,42 +1,18 @@
-// import { Alert, AlertDescription } from '@/components/ui/alert.js'
-// import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
-// import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.js'
-// import { Label } from '@/components/ui/label.js'
-import { Separator } from '@/components/ui/separator.js'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
-import { Spinner } from '@/components/ui/spinner.js'
-// import { Switch } from '@/components/ui/switch.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertCircle } from 'lucide-react'
 
 export type Template = 'base'
 
 export class Project extends gl.Unit {
-  get view() {
-    return {
-      id: this.id,
-      name: this.spec.name,
-      slug: this.spec.slug,
-      enabled: this.enabled,
-      debug: this.debug,
-      connected: !!this.state.handle,
-      ready: this.state.ready,
-      hydrating: this.state.hydrating,
-      template: this.state.template,
-      error: this.state.error ? this.state.error.message : null,
-    }
-  }
-
   spec: Spec
   manifest: Manifest
   debug: boolean
   enabled: boolean
-  // specText: string | null = null
-  // assetsInfo: Record<string, { size: number }> = {}
-  // sourcesInfo: Record<string, { size: number }> = {}
+  specText: string | null = null
+  assets: { path: string; size: number }[] = []
+  sources: { path: string; size: number; minified?: boolean }[] = []
 
   constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
@@ -50,7 +26,6 @@ export class Project extends gl.Unit {
   get state() {
     return {
       ready: false,
-      hydrating: false,
       connecting: false,
       error: null as Error | null,
       handle: null as FileSystemDirectoryHandle | null,
@@ -85,22 +60,30 @@ export class Project extends gl.Unit {
     return this.$projects.selectedId === this.id
   }
 
+  /** List of file paths used by the project. */
   get paths() {
     const assetPaths = this.spec.assets
     const resourcePaths = this.spec.targets.flatMap(target => target.resources.map(resource => resource.path))
     return ['epos.json', ...assetPaths, ...resourcePaths]
   }
 
-  async attach() {
-    this.hydrate = this.$.utils.enqueue(this.hydrate)
+  // MARK: Life Cycle
+  // ============================================================================
+
+  async init() {
+    this.refresh = this.$.utils.enqueue(this.refresh)
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
     if (handle) await this.setHandle(handle)
     this.state.ready = true
   }
 
-  async detach() {
+  async dispose() {
     await this.setHandle(null)
+    this.unobserve()
   }
+
+  // MARK: Actions
+  // ============================================================================
 
   update(updates: Omit<ProjectBase, 'id'>) {
     this.spec = updates.spec
@@ -128,33 +111,31 @@ export class Project extends gl.Unit {
   async connect() {
     if (this.state.connecting) return
     this.state.connecting = true
-    await this.safe(() => this._connect(this.state.template))
-    this.state.connecting = false
-  }
 
-  private async _connect(template: Template | null) {
-    const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
-    if (!handle) return
+    await this.safe(async () => {
+      const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
+      if (!handle) return
 
-    if (!template) {
+      const template = this.state.template
+      if (template) {
+        const files = this.inert.templates[template]
+        for (const file of files) {
+          const exists = await this.$.utils.fs.fileExists(handle, file.path)
+          if (exists && !file.optional) {
+            throw new Error(`Failed to initialize from "${template}" template: ${file.path} already exists`)
+          }
+          if (!exists) {
+            const blob = await epos.assets.get(`/templates/${template}/${file.path}`)
+            if (!blob) throw this.never()
+            await this.$.utils.fs.writeFile(handle, file.path, blob)
+          }
+        }
+      }
+
       await this.setHandle(handle)
-      return
-    }
+    })
 
-    const files = this.inert.templates[template]
-    for (const file of files) {
-      const exists = await this.$.utils.fs.fileExists(handle, file.path)
-      if (exists && !file.optional) {
-        throw new Error(`Failed to initialize from "${template}" template: ${file.path} already exists`)
-      }
-      if (!exists) {
-        const blob = await epos.assets.get(`/templates/${template}/${file.path}`)
-        if (!blob) throw this.never()
-        await this.$.utils.fs.writeFile(handle, file.path, blob)
-      }
-    }
-
-    await this.setHandle(handle)
+    this.state.connecting = false
   }
 
   async disconnect() {
@@ -163,7 +144,57 @@ export class Project extends gl.Unit {
     await this.setHandle(null)
   }
 
+  async refresh() {
+    await this.safe(async () => {
+      this.state.error = null
+
+      // Read epos.json
+      const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
+      if (readError) throw new Error('Failed to read epos.json', { cause: readError })
+      this.specText = specText
+
+      // Parse epos.json
+      const [spec, parseError] = this.$.utils.safeSync(() => this.$.libs.parseSpecJson(specText))
+      if (parseError) throw new Error('Failed to parse epos.json', { cause: parseError })
+
+      // Read assets
+      this.assets = []
+      const assets: Assets = {}
+      for (const path of spec.assets) {
+        const file = await this.readFile(path)
+        assets[path] = file
+        this.assets.push({ path, size: file.size })
+      }
+
+      // Read sources
+      this.sources = []
+      const sources: Sources = {}
+      for (const target of spec.targets) {
+        for (const resource of target.resources) {
+          if (sources[resource.path]) continue
+          const file = await this.readFile(resource.path)
+          const content = await file.text()
+          sources[resource.path] = content
+          this.sources.push({
+            path: resource.path,
+            size: file.size,
+            ...(resource.path.endsWith('.js') && { minified: this.isMinifiedJs(content) }),
+          })
+        }
+      }
+
+      // Update project
+      await epos.projects.update(this.id, { spec, sources, assets })
+    })
+  }
+
   async export() {
+    const unminifiedJsSource = this.sources.find(source => source.path.endsWith('.js') && !source.minified)
+    if (unminifiedJsSource) {
+      const ok = confirm(`Unminified: ${unminifiedJsSource.path}. Export anyway?`)
+      if (!ok) return
+    }
+
     const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
@@ -172,11 +203,14 @@ export class Project extends gl.Unit {
     URL.revokeObjectURL(url)
   }
 
+  // MARK: Internals
+  // ============================================================================
+
   private async setHandle(handle: FileSystemDirectoryHandle | null) {
     if (handle) {
       await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
-      await this.hydrate()
+      await this.refresh()
       this.observe()
     } else {
       await this.$.idb.delete('epos-shell', 'handles', this.id)
@@ -197,7 +231,7 @@ export class Project extends gl.Unit {
 
       const observer = new FileSystemObserver(() => {
         clearTimeout(timer)
-        timer = setTimeout(() => this.hydrate())
+        timer = setTimeout(() => this.refresh())
       })
 
       observer.observe(handle)
@@ -209,50 +243,6 @@ export class Project extends gl.Unit {
     if (this.state.observers.length === 0) return
     for (const observer of this.state.observers) observer.disconnect()
     this.state.observers = []
-  }
-
-  private async hydrate() {
-    try {
-      this.state.error = null
-      this.state.hydrating = true
-
-      // Read epos.json
-      const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
-      if (readError) throw new Error('Failed to read epos.json', { cause: readError })
-      this.specText = specText
-
-      // Parse epos.json
-      const [spec, parseError] = this.$.utils.safeSync(() => this.$.libs.parseSpecJson(specText))
-      if (parseError) throw new Error('Failed to parse epos.json', { cause: parseError })
-
-      // Read assets
-      this.assetsInfo = {}
-      const assets: Assets = {}
-      for (const path of spec.assets) {
-        const file = await this.readFile(path)
-        assets[path] = file
-        this.assetsInfo[path] = { size: file.size }
-      }
-
-      // Read sources
-      this.sourcesInfo = {}
-      const sources: Sources = {}
-      for (const target of spec.targets) {
-        for (const resource of target.resources) {
-          if (sources[resource.path]) continue
-          const file = await this.readFileAsText(resource.path)
-          sources[resource.path] = file
-          this.sourcesInfo[resource.path] = { size: file.length }
-        }
-      }
-
-      // Update project
-      await epos.projects.update(this.id, { spec, sources, assets })
-    } catch (e) {
-      this.state.error = this.$.utils.is.error(e) ? e : new Error(String(e))
-    } finally {
-      this.state.hydrating = false
-    }
   }
 
   private async readFile(path: string) {
@@ -272,10 +262,34 @@ export class Project extends gl.Unit {
     return handle
   }
 
-  hasUnminifiedSources(): boolean {
-    // Check if sources look unminified (have readable structure)
-    // Conservative approach: assume sources are unminified if they're readable
-    return Object.keys(this.sourcesInfo).length > 0
+  private isMinifiedJs(js: string) {
+    const source = js.trim()
+    const lines = source.split(/\r?\n/)
+    const nonEmptyLines = lines.filter(line => line.trim().length > 0)
+    if (nonEmptyLines.length === 0) return false
+
+    const lengths = nonEmptyLines.map(line => line.length)
+    const totalLength = lengths.reduce((sum, length) => sum + length, 0)
+    const averageLineLength = totalLength / nonEmptyLines.length
+    const maxLineLength = Math.max(...lengths)
+    const longLineRatio = nonEmptyLines.filter(line => line.length >= 160).length / nonEmptyLines.length
+    const isIndentedOrClosingLine = (line: string) => /^( {2,}|\t)/.test(line) || /^\s*[}\])]/.test(line)
+    const indentedLineRatio = nonEmptyLines.filter(isIndentedOrClosingLine).length / nonEmptyLines.length
+    const whitespaceRatio = (source.match(/\s/g)?.length ?? 0) / source.length
+    const punctuationRatio = (source.match(/[;{},]/g)?.length ?? 0) / source.length
+
+    if (nonEmptyLines.length === 1) return maxLineLength >= 500 || whitespaceRatio < 0.12
+    if (maxLineLength >= 1000) return true
+
+    let score = 0
+    if (averageLineLength >= 140) score += 2
+    if (longLineRatio >= 0.5) score += 2
+    if (maxLineLength >= 320) score += 1
+    if (whitespaceRatio <= 0.18) score += 1
+    if (indentedLineRatio <= 0.1) score += 1
+    if (punctuationRatio >= 0.18) score += 1
+
+    return score >= 4
   }
 
   private async safe(fn: Fn) {
@@ -288,9 +302,32 @@ export class Project extends gl.Unit {
   // ===========================================================================
 
   View() {
+    return <this.DevView />
+  }
+
+  private DevView() {
     return (
       <div className="m-4">
-        <pre className="border border-black p-4 text-sm">{JSON.stringify(this.view, null, 2)}</pre>
+        <pre className="border border-black p-4 text-sm">
+          {JSON.stringify(
+            {
+              id: this.id,
+              name: this.spec.name,
+              slug: this.spec.slug,
+              enabled: this.enabled,
+              debug: this.debug,
+              connected: !!this.state.handle,
+              ready: this.state.ready,
+              template: this.state.template,
+              observers: this.state.observers.length,
+              error: this.state.error ? this.state.error.message : null,
+              assets: this.assets,
+              sources: this.sources,
+            },
+            null,
+            2,
+          )}
+        </pre>
         <div className="mt-4 flex gap-1">
           <Button onClick={() => this.toggle()}>toggle</Button>
           <Button onClick={() => this.toggleDebug()}>toggle debug</Button>
@@ -298,7 +335,7 @@ export class Project extends gl.Unit {
           <Button onClick={() => this.connect()}>connect</Button>
           <Button onClick={() => this.disconnect()}>disconnect</Button>
           <Button onClick={() => this.export()}>export</Button>
-          <Button onClick={() => this.hydrate()}>hydrate</Button>
+          <Button onClick={() => this.refresh()}>refresh</Button>
         </div>
       </div>
     )
@@ -325,535 +362,5 @@ export class Project extends gl.Unit {
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {
-    1(this: any) {
-      this.fs = {}
-      this.handleId = null
-    },
-    2(this: any) {
-      delete this.handleId
-      this.handle = null
-    },
-    4(this: any) {
-      delete this.handle
-      this.handle = null
-    },
-    6() {
-      this.specText = null
-    },
-    7() {
-      this.assetsInfo = {}
-    },
-    8() {
-      this.sourcesInfo = {}
-    },
-    9(this: any) {
-      this.exporter = {}
-    },
-    10(this: any) {
-      delete this.exporter
-    },
-    11(this: any) {
-      delete this.mode
-      this.debug = false
-    },
-    12(this: any) {
-      this.manifest = null
-    },
-    13() {},
-    14() {
-      this.ui = {}
-    },
-    15() {
-      delete this.ui
-    },
-  }
-
-  // ============================================================================
-  // ============================================================================
-  // ============================================================================
-  // ============================================================================
-
-  // MARK: OLD
-  // ============================================================================
-
-  LoadingView() {
-    if (this.state.initialized) return null
-    return (
-      <div className="flex size-full items-center justify-center">
-        <Spinner />
-      </div>
-    )
-  }
-
-  NoDirectoryView() {
-    if (!this.state.initialized) return null
-    if (this.state.handle) return null
-
-    return (
-      <div className="flex size-full flex-col items-center justify-center gap-6 p-8">
-        <this.HeaderView />
-
-        <div className="text-center">
-          <h2 className="text-xl font-semibold">No Directory Connected</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Connect a directory to load your project files</p>
-        </div>
-
-        {this.state.error && (
-          <Alert variant="destructive" className="w-full max-w-md">
-            <AlertCircle className="size-4" />
-            <AlertDescription>{this.state.error.message}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="w-full max-w-md space-y-3">
-          <div className="space-y-2 rounded-lg bg-muted p-4 text-sm">
-            <p className="font-medium">How it works:</p>
-            <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
-              <li>Click "Connect Directory" below</li>
-              <li>Select the folder where your project files are located</li>
-              <li>The kit will automatically load epos.json, assets, and sources</li>
-            </ol>
-          </div>
-
-          <Button onClick={() => this.connectDir()} className="w-full" size="sm">
-            <IconFolderOpen className="mr-2 size-4" />
-            Connect Directory
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  MainView() {
-    if (!this.state.initialized) return null
-    // return (
-    //   <div className="flex h-full flex-col p-6">
-    //     <this.HeaderView />
-    //     <this.ContentView />
-    //   </div>
-    // )
-
-    return (
-      <div className="flex h-full flex-col gap-4 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex items-center gap-2">
-              {this.state.error && (
-                <div className="flex items-center gap-1 rounded bg-destructive/10 px-2 py-1 text-xs text-destructive">
-                  <IconAlertCircle className="size-3" />
-                  Error
-                </div>
-              )}
-              {this.state.hydrating && (
-                <div className="flex items-center gap-1 rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-500">
-                  <Spinner className="size-3" />
-                  hydrating
-                </div>
-              )}
-            </div>
-            {/* Directory and Reconnect */}
-            <div className="flex items-center gap-2 rounded border border-border bg-muted/30 px-3 py-2 text-xs">
-              <span className="font-medium">Directory:</span>
-              <span className="text-muted-foreground">./{this.state.handle?.name || 'unknown'}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => this.connectDir()}
-                className="ml-2 px-2 py-0.5 text-xs"
-                title="Reconnect to a different directory"
-              >
-                <IconRefresh className="size-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {this.state.error && (
-          <Alert variant="destructive">
-            <IconAlertCircle className="size-4" />
-            {/* <AlertDescription>
-              <p className="font-medium">{this.state.error.message}</p>
-              {this.state.error.cause ? (
-                <p className="mt-1 text-xs opacity-90">
-                  {
-                    (this.state.error.cause instanceof Error
-                      ? this.state.error.cause.message
-                      : String(this.state.error.cause)) as any
-                  }
-                </p>
-              ) : null}
-            </AlertDescription> */}
-          </Alert>
-        )}
-
-        <div>
-          {/* Tabs */}
-          <div className="flex gap-2 border-b">
-            {(['spec', 'sources', 'assets', 'manifest'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => (this.state.activeTab = tab)}
-                className={cn(
-                  'border-b-2 px-3 py-2 text-sm font-medium transition-colors',
-                  this.state.activeTab === tab
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {tab === 'spec' && 'epos.json'}
-                {tab === 'sources' && 'Sources'}
-                {tab === 'assets' && 'Assets'}
-                {tab === 'manifest' && 'Manifest'}
-              </button>
-            ))}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-auto">
-            {this.state.activeTab === 'spec' && <this.SpecTabView />}
-            {this.state.activeTab === 'manifest' && <this.ManifestTabView />}
-            {this.state.activeTab === 'assets' && <this.AssetsTabView />}
-            {this.state.activeTab === 'sources' && <this.SourcesTabView />}
-          </div>
-
-          {/* Footer with controls */}
-          <div className="flex flex-col gap-4 border-t pt-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-6">
-                {/* Toggles */}
-                <Label className="flex items-center gap-3">
-                  <div className="text-sm font-medium">Enabled</div>
-                  <Switch checked={this.enabled} onCheckedChange={() => this.toggleEnabled()} />
-                </Label>
-
-                <Separator orientation="vertical" className="h-6" />
-
-                <Label className="flex items-center gap-3">
-                  <div className="text-sm font-medium">Debug</div>
-                  <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} />
-                </Label>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => (this.state.showExportDialog = true)}>
-                  <IconDownload className="mr-1 size-4" />
-                  Export
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => this.remove()}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <IconTrash className="mr-1 size-4" />
-                  Remove
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Export Dialog */}
-          <Sheet open={this.state.showExportDialog} onOpenChange={opened => (this.state.showExportDialog = opened)}>
-            <SheetContent side="right" className="flex w-full flex-col overflow-hidden sm:max-w-2xl">
-              <SheetHeader>
-                <SheetTitle>Export Project</SheetTitle>
-                <SheetDescription>
-                  Review the contents before exporting {this.spec.slug}-{this.spec.version}.zip
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="flex-1 space-y-4 overflow-auto">
-                {/* Unminified sources warning */}
-                {this.hasUnminifiedSources() && (
-                  <Alert className="border-yellow-500/50 bg-yellow-500/5">
-                    <IconAlertCircle className="size-4 text-yellow-600" />
-                    <AlertDescription className="text-yellow-700">
-                      <p className="font-medium">Sources are not minified</p>
-                      <p className="mt-1 text-xs">Consider minifying your sources before exporting for production use.</p>
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Manifest */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold">Manifest</h3>
-                  <pre className="max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
-                    {JSON.stringify(this.manifest, null, 2)}
-                  </pre>
-                </div>
-
-                <Separator />
-
-                {/* Assets */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold">Assets ({this.spec.assets.length})</h3>
-                  <div className="space-y-1 text-xs">
-                    {this.spec.assets.length === 0 ? (
-                      <p className="text-muted-foreground">No assets</p>
-                    ) : (
-                      <>
-                        {this.spec.assets.map(path => (
-                          <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
-                            <code className="text-muted-foreground">{path}</code>
-                            <span className="font-medium">
-                              {this.assetsInfo[path] ? `${(this.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
-                          <span>Total Assets</span>
-                          <span>
-                            {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)}{' '}
-                            KB
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Sources */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold">Sources ({Object.keys(this.sourcesInfo).length})</h3>
-                  <div className="space-y-1 text-xs">
-                    {Object.keys(this.sourcesInfo).length === 0 ? (
-                      <p className="text-muted-foreground">No sources</p>
-                    ) : (
-                      <>
-                        {Object.keys(this.sourcesInfo).map(path => (
-                          <div key={path} className="flex items-center justify-between rounded bg-muted/50 px-2 py-1">
-                            <code className="text-muted-foreground">{path}</code>
-                            <span className="font-medium">
-                              {this.sourcesInfo[path] ? `${(this.sourcesInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="flex items-center justify-between border-t px-2 py-2 text-xs font-medium">
-                          <span>Total Sources</span>
-                          <span>
-                            {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)}{' '}
-                            KB
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 border-t pt-4">
-                <Button variant="outline" onClick={() => (this.state.showExportDialog = false)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    this.export()
-                    this.state.showExportDialog = false
-                  }}
-                  className="flex-1"
-                >
-                  <IconDownload className="mr-1 size-4" />
-                  Export Now
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
-    )
-  }
-
-  private HeaderView() {
-    return (
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-xl">{this.spec.name}</h1>
-          <div className="mt-1.5 flex gap-2">
-            <Badge variant="secondary" className="select-none">
-              {this.spec.slug}
-            </Badge>
-            <Badge variant="secondary" className="select-none">
-              v{this.spec.version}
-            </Badge>
-          </div>
-        </div>
-        <div className="">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => this.remove()}
-            className="text-destructive hover:text-destructive"
-          >
-            <IconTrash className="mr-1 size-4" />
-            Remove
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  ConnectView() {
-    return (
-      <div className="flex grow items-center justify-center">
-        <Card className="w-90">
-          <CardHeader>
-            <CardTitle>Connect Your Project</CardTitle>
-            <CardDescription>
-              To get started, please select the folder where your project files are located.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button className="w-full" onClick={this.connectDir}>
-              <IconFolderOpen /> Choose Folder
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
-
-  ContentView() {
-    return (
-      <div className="relative mt-6 grow border border-dashed border-border p-6">
-        <div className="absolute top-0 left-0 flex">
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            {this.spec.slug}
-          </div>
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            v{this.spec.version}
-          </div>
-          <div className="flex items-center gap-2 border-r border-b border-dashed border-border p-2 text-xs">
-            <IconDownload className="size-3" />
-            Export
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 flex">
-          <div className="flex items-center gap-2 border-b border-l border-dashed border-border p-2 text-xs text-destructive">
-            <IconTrash className="size-3" />
-            Remove
-          </div>
-        </div>
-      </div>
-    )
-
-    if (!this.state.handle) return <this.ConnectView />
-    if (this.state.error) return <this.ErrorView />
-    return <div>CONNECTED AS {this.state.handle?.name}</div>
-  }
-
-  ErrorView() {
-    return (
-      <div className="mt-6">
-        <Alert variant="destructive" className="w-full">
-          <IconAlertCircle className="size-4" />
-          <AlertDescription>Error: {this.state.error?.message}</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
-  SpecTabView() {
-    return (
-      <div className="h-full overflow-hidden">
-        {this.specText ? (
-          <pre className="h-full overflow-auto rounded border bg-muted p-4 font-mono text-xs">{this.specText}</pre>
-        ) : (
-          <div className="rounded bg-muted/50 p-4 text-sm text-muted-foreground">No epos.json loaded</div>
-        )}
-      </div>
-    )
-  }
-
-  ManifestTabView() {
-    return (
-      <div className="h-full overflow-hidden">
-        <pre className="h-full overflow-auto rounded border bg-muted p-4 font-mono text-xs">
-          {JSON.stringify(this.manifest, null, 2)}
-        </pre>
-      </div>
-    )
-  }
-
-  AssetsTabView() {
-    return (
-      <div className="flex h-full flex-col overflow-hidden">
-        {this.spec.assets.length === 0 ? (
-          <div className="rounded bg-muted/50 p-4 text-sm text-muted-foreground">No assets in this project</div>
-        ) : (
-          <div className="flex-1 overflow-auto">
-            <table className="w-full border-collapse">
-              <thead className="sticky top-0 bg-muted/50">
-                <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Path</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.spec.assets.map(path => (
-                  <tr key={path} className="border-b border-border/50 transition-colors hover:bg-muted/30">
-                    <td className="px-4 py-2 font-mono text-xs text-foreground">{path}</td>
-                    <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                      {this.assetsInfo[path] ? `${(this.assetsInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="border-t border-border bg-muted/30">
-                <tr>
-                  <td className="px-4 py-2 text-xs font-medium">Total Assets</td>
-                  <td className="px-4 py-2 text-right text-xs font-medium">
-                    {(Object.values(this.assetsInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  SourcesTabView() {
-    return (
-      <div className="flex h-full flex-col overflow-hidden">
-        {Object.keys(this.sourcesInfo).length === 0 ? (
-          <div className="rounded bg-muted/50 p-4 text-sm text-muted-foreground">No sources in this project</div>
-        ) : (
-          <div className="flex-1 overflow-auto">
-            <table className="w-full border-collapse">
-              <thead className="sticky top-0 bg-muted/50">
-                <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Path</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(this.sourcesInfo).map(path => (
-                  <tr key={path} className="border-b border-border/50 transition-colors hover:bg-muted/30">
-                    <td className="px-4 py-2 font-mono text-xs text-foreground">{path}</td>
-                    <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                      {this.sourcesInfo[path] ? `${(this.sourcesInfo[path].size / 1024).toFixed(2)} KB` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="border-t border-border bg-muted/30">
-                <tr>
-                  <td className="px-4 py-2 text-xs font-medium">Total Sources</td>
-                  <td className="px-4 py-2 text-right text-xs font-medium">
-                    {(Object.values(this.sourcesInfo).reduce((acc, info) => acc + info.size, 0) / 1024).toFixed(2)} KB
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </div>
-    )
-  }
+  static versioner: any = {}
 }

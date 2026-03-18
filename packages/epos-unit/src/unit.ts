@@ -10,7 +10,7 @@ export const _parent_ = Symbol('parent')
 export const _attached_ = Symbol('attached')
 export const _disposers_ = Symbol('disposers')
 export const _ancestors_ = Symbol('ancestors')
-export const _attachQueue_ = Symbol('attachQueue')
+export const _initQueue_ = Symbol('initQueue')
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10)
 
 export type Node<T> = Unit<T> | Obj | Arr
@@ -27,7 +27,7 @@ export class Unit<TRoot = unknown> {
   declare [_attached_]: boolean;
   declare [_disposers_]: Set<() => void>;
   declare [_ancestors_]: Map<Ctor, unknown>;
-  declare [_attachQueue_]?: (() => void)[]
+  declare [_initQueue_]?: (() => void)[]
 
   static defineVersioner<T extends Unit>(this: Ctor<T>, versioner: Versioner<T>) {
     return versioner
@@ -45,16 +45,19 @@ export class Unit<TRoot = unknown> {
     prepareState(this)
     prepareInert(this)
     preparePrototypeProperties(this)
-    scheduleAndFlushAttach(this)
+    handleInitQueue(this)
+    this[_attached_] = true
   }
 
   [epos.state.DETACH]() {
     // Run disposers
     this[_disposers_].forEach(disposer => disposer())
 
-    // Run detach method
-    const detach = Reflect.get(this, 'detach')
-    if (is.function(detach)) detach()
+    // Run `dispose` method
+    const dispose = Reflect.get(this, 'dispose')
+    if (is.function(dispose)) dispose()
+
+    this[_attached_] = false
   }
 
   /**
@@ -236,25 +239,22 @@ function preparePrototypeProperties<T>(unit: Unit<T>) {
   }
 }
 
-function scheduleAndFlushAttach<T>(unit: Unit<T>) {
-  // Queue `attach` methods on the highest unattached ancestor (might be self).
-  // This way `attach` methods are called after all versioners have been applied in the entire subtree.
-  const attach = Reflect.get(unit, 'attach')
-  if (is.function(attach)) {
+function handleInitQueue<T>(unit: Unit<T>) {
+  // Queue `init` methods on the highest unattached ancestor (might be self).
+  // This way `init` methods are called after all versioners have been applied in the entire subtree.
+  const init = Reflect.get(unit, 'init')
+  if (is.function(init)) {
     const head = findUnattachedRoot(unit)
     if (!head) throw unit.never()
-    const attachQueue = ensureAccessor(head, _attachQueue_, [])
-    attachQueue.push(() => attach.call(unit))
+    const initQueue = ensureAccessor(head, _initQueue_, [])
+    initQueue.push(() => init.call(unit))
   }
 
-  // Release attach queue
-  if (unit[_attachQueue_]) {
-    unit[_attachQueue_].forEach(attach => attach())
-    delete unit[_attachQueue_]
+  // Release init queue
+  if (unit[_initQueue_]) {
+    unit[_initQueue_].forEach(init => init())
+    delete unit[_initQueue_]
   }
-
-  // Mark as attached
-  unit[_attached_] = true
 }
 
 // MARK: Helpers

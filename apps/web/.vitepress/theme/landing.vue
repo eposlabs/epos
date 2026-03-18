@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Snippet from './snippet.vue'
+
 const steps = [
   { index: '01', title: 'Install', description: 'Install Epos from the Chrome Web Store.' },
   { index: '02', title: 'Connect', description: 'Connect a local project folder.' },
@@ -39,55 +41,6 @@ const steps = [
   @apply transition hover:bg-zinc-100 dark:border-white/20 dark:hover:bg-zinc-800;
 }
 
-.code-block {
-  @apply mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-5 text-zinc-900;
-  @apply relative dark:border-zinc-800 dark:bg-black dark:text-white;
-}
-.code-label {
-  @apply absolute top-2 right-2 font-mono text-sm text-zinc-500;
-}
-.code {
-  @apply space-y-1 font-mono text-[15px] leading-7 text-zinc-900 dark:text-zinc-100;
-}
-.code-line {
-  @apply min-h-7;
-}
-.code-line > div:not(.code-indent) {
-  @apply inline;
-}
-.code-indent {
-  @apply inline-block w-[2ch];
-}
-.code-comment {
-  @apply text-zinc-400 dark:text-dim;
-}
-.code-keyword {
-  @apply text-sky-700 dark:text-cyan-300;
-}
-.code-function {
-  @apply text-blue-700 dark:text-sky-300;
-}
-.code-variable {
-  @apply text-zinc-900 dark:text-zinc-100;
-}
-.code-property {
-  @apply text-amber-700 dark:text-amber-200;
-}
-.code-string {
-  @apply text-emerald-700 dark:text-emerald-300;
-}
-.code-number {
-  @apply text-orange-700 dark:text-orange-300;
-}
-.code-boolean {
-  @apply text-orange-700 dark:text-orange-300;
-}
-.code-operator {
-  @apply text-zinc-600 dark:text-zinc-300;
-}
-.code-punctuation {
-  @apply text-dim dark:text-zinc-400;
-}
 code {
   @apply rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-sm text-zinc-800;
 }
@@ -171,6 +124,20 @@ code {
     </div>
 
     <div class="flex border-t border-divider">
+      <div class="box flex flex-col items-center">
+        <!-- <div class="eyebrow">SIMPLE SETUP</div> -->
+        <h2 class="h2 mt-4">Reimagine extension development.</h2>
+        <p class="prose mt-6 max-w-3xl">
+          With Epos, you can develop your extension directly in the browser with zero setup. Just connect a local folder and
+          Epos will run your code with hot module replacement, so you can see your changes in real time as you edit.
+        </p>
+        <div class="w-xl">
+          <Snippet type="epos.json" />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex border-t border-divider">
       <div class="box flex">
         <div>
           <div class="eyebrow">MESSAGING</div>
@@ -183,43 +150,8 @@ code {
         </div>
 
         <div class="flex flex-col">
-          <div class="code-block">
-            <div class="code-label">background.ts</div>
-            <div class="code">
-              <div class="code-line">
-                <div class="code-variable">epos</div>
-                <div class="code-punctuation">.</div>
-                <div class="code-property">bus</div>
-                <div class="code-punctuation">.</div>
-                <div class="code-function">on</div>
-                <div class="code-punctuation">(</div>
-                <div class="code-string">'event'</div>
-                <div class="code-punctuation">,</div>
-                <div> </div>
-                <div class="code-variable">handler</div>
-                <div class="code-punctuation">)</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="code-block">
-            <div class="code-label">content-script.ts</div>
-            <div class="code">
-              <div class="code-line">
-                <div class="code-variable">epos</div>
-                <div class="code-punctuation">.</div>
-                <div class="code-property">bus</div>
-                <div class="code-punctuation">.</div>
-                <div class="code-function">send</div>
-                <div class="code-punctuation">(</div>
-                <div class="code-string">'event'</div>
-                <div class="code-punctuation">,</div>
-                <div> </div>
-                <div class="code-variable">data</div>
-                <div class="code-punctuation">)</div>
-              </div>
-            </div>
-          </div>
+          <Snippet type="bus.on" />
+          <Snippet type="bus.send" />
         </div>
       </div>
     </div>

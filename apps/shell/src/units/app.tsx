@@ -19,7 +19,7 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
 
-  async attach() {
+  async init() {
     this.removeUrlPath()
     await this.ensureSinglePinnedTab()
   }

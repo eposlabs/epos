@@ -27,7 +27,7 @@ export class Projects extends gl.Unit {
     return this.dict[this.selectedId] ?? null
   }
 
-  async attach() {
+  async init() {
     epos.projects.watch(() => this.refresh())
     await this.refresh()
   }
