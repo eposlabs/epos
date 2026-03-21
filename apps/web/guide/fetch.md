@@ -36,7 +36,7 @@ const data = await res.json()
 `epos.fetch()` is similar to normal `fetch()`, but it is not identical.
 
 - Streaming responses are not supported.
-- Some `RequestInit` fields are missing.
-- Some `Response` fields and methods are missing.
+- Some request parameters are missing.
+- Some response fields and methods are missing.
 
 All supported fields and methods are typed in TypeScript, so your editor can help you avoid unsupported features.

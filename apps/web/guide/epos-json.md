@@ -368,7 +368,7 @@ These are treated as the same path:
 - `./dist/main.js`
 - `/dist/main.js`
 
-Out-of-root-directory paths such as `../somewhere/file.js` are not allowed.
+Out-of-root paths such as `../somewhere/file.js` are not allowed.
 
 ## Camel Case Only
 

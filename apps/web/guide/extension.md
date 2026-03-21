@@ -16,7 +16,7 @@ There are two reasons for the name:
 
 ## The Same APIs
 
-`epos.browser` does not give you a new APIs to learn. For supported APIs, it is a one-to-one mirror of `chrome.*`. For example:
+`epos.browser` does not give you a new APIs to learn. It is a one-to-one mirror of `chrome.*`. For example:
 
 ```ts
 const tabs = await epos.browser.tabs.query({ active: true })
@@ -44,7 +44,7 @@ When using Epos, you can not access `chrome` directly. Always use `epos.browser`
 
 For example, `epos.browser.downloads.*` needs the `downloads` permission, and `epos.browser.cookies.*` needs the `cookies` permission.
 
-To request or inspect permissions at runtime, use `epos.browser.permissions`:
+To request or inspect permissions at runtime, use `epos.browser.permissions.request()`:
 
 ::: code-group
 
@@ -72,7 +72,7 @@ if (granted) {
 
 :::
 
-To learn more about supported permissions, see the [Permissions](/guide/permissions) guide.
+To learn more about permissions, see the [Permissions](/guide/permissions) guide.
 
 ## Supported APIs
 

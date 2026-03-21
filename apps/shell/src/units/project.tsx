@@ -1,7 +1,28 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
+import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty.js'
+import { Item, ItemContent } from '@/components/ui/item.js'
+import { Separator } from '@/components/ui/separator.js'
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
+import { Spinner } from '@/components/ui/spinner.js'
+import { Switch } from '@/components/ui/switch.js'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
+import {
+  AlertCircle,
+  Download,
+  FileCode2,
+  FileJson2,
+  FolderOpen,
+  FolderPlus,
+  RefreshCw,
+  Trash2,
+  Unplug,
+} from 'lucide-react'
 
 export type Template = 'base'
 
@@ -31,6 +52,8 @@ export class Project extends gl.Unit {
       handle: null as FileSystemDirectoryHandle | null,
       observers: [] as FileSystemObserver[],
       template: null as Template | null,
+      exportOpen: false,
+      activeTab: 'spec' as 'spec' | 'manifest',
     }
   }
 
@@ -108,15 +131,15 @@ export class Project extends gl.Unit {
     await epos.projects.remove(this.id)
   }
 
-  async connect() {
+  async connect(template: Template | null = null) {
     if (this.state.connecting) return
     this.state.connecting = true
+    this.state.template = template
 
     await this.safe(async () => {
-      const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'read' }))
+      const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: template ? 'readwrite' : 'read' }))
       if (!handle) return
 
-      const template = this.state.template
       if (template) {
         const files = this.inert.templates[template]
         for (const file of files) {
@@ -136,6 +159,7 @@ export class Project extends gl.Unit {
     })
 
     this.state.connecting = false
+    this.state.template = null
   }
 
   async disconnect() {
@@ -298,46 +322,450 @@ export class Project extends gl.Unit {
     return [result, error] as const
   }
 
+  private get totalAssetBytes() {
+    return this.assets.reduce((sum, asset) => sum + asset.size, 0)
+  }
+
+  private get totalSourceBytes() {
+    return this.sources.reduce((sum, source) => sum + source.size, 0)
+  }
+
+  private get errorCauseText() {
+    const cause = this.state.error?.cause
+    if (!cause) return null
+    return cause instanceof Error ? cause.message : String(cause)
+  }
+
+  private formatBytes(bytes: number) {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
   // MARK: Views
   // ===========================================================================
 
   View() {
-    return <this.DevView />
+    if (!this.state.ready) return <this.LoadingView />
+    return (
+      <div className="h-full">
+        <Item variant="outline">
+          <ItemContent>
+            <div className="text-2xl">{this.spec.name}</div>
+            <div className="mt-2 flex gap-1">
+              <Badge variant="outline">{this.spec.slug}</Badge>
+              <Badge variant="outline">v{this.spec.version}</Badge>
+              <Badge variant="outline">id:{this.id.slice(0, 8)}</Badge>
+            </div>
+          </ItemContent>
+        </Item>
+
+        <Tabs defaultValue="overview" className="mt-4">
+          <TabsList variant="line">
+            <TabsTrigger value="overview">epos.json</TabsTrigger>
+            <TabsTrigger value="analytics">manifest.json</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+          {/* <this.HeaderView /> */}
+          {/* {!!this.state.error && <this.ErrorView />} */}
+          {/* {this.state.handle ? <this.ConnectedView /> : <this.DisconnectedView />} */}
+        </div>
+        {/* <this.ExportSheet /> */}
+      </div>
+    )
   }
 
-  private DevView() {
+  private LoadingView() {
     return (
-      <div className="m-4">
-        <pre className="border border-black p-4 text-sm">
-          {JSON.stringify(
-            {
-              id: this.id,
-              name: this.spec.name,
-              slug: this.spec.slug,
-              enabled: this.enabled,
-              debug: this.debug,
-              connected: !!this.state.handle,
-              ready: this.state.ready,
-              template: this.state.template,
-              observers: this.state.observers.length,
-              error: this.state.error ? this.state.error.message : null,
-              assets: this.assets,
-              sources: this.sources,
-            },
-            null,
-            2,
-          )}
-        </pre>
-        <div className="mt-4 flex gap-1">
-          <Button onClick={() => this.toggle()}>toggle</Button>
-          <Button onClick={() => this.toggleDebug()}>toggle debug</Button>
-          <Button onClick={() => this.remove()}>remove</Button>
-          <Button onClick={() => this.connect()}>connect</Button>
-          <Button onClick={() => this.disconnect()}>disconnect</Button>
-          <Button onClick={() => this.export()}>export</Button>
-          <Button onClick={() => this.refresh()}>refresh</Button>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <Spinner className="size-6" />
       </div>
+    )
+  }
+
+  private HeaderView() {
+    return (
+      <section className="border">
+        <div className="flex flex-col gap-5 p-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={this.state.error ? 'destructive' : this.state.handle ? 'default' : 'outline'}>
+                {this.state.error ? 'Error' : this.state.handle ? 'Connected' : 'Disconnected'}
+              </Badge>
+              <Badge variant="outline">
+                {this.state.observers.length} watcher{this.state.observers.length === 1 ? '' : 's'}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <div className="text-2xl font-semibold tracking-tight">{this.spec.name}</div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline">{this.spec.slug}</Badge>
+                <Badge variant="outline">v{this.spec.version}</Badge>
+                <div>ID {this.id.slice(0, 8)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 xl:max-w-xl xl:justify-end">
+            <label className="flex items-center gap-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <span>Enabled</span>
+              <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} aria-label="Toggle project enabled" />
+            </label>
+            <label className="flex items-center gap-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <span>Debug</span>
+              <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} aria-label="Toggle project debug" />
+            </label>
+            <Button variant="outline" onClick={() => this.refresh()} disabled={!this.state.handle || this.state.connecting}>
+              <RefreshCw className={cn(this.state.connecting && 'animate-spin')} />
+              Refresh
+            </Button>
+            {this.state.handle ? (
+              <Button variant="outline" onClick={() => this.disconnect()}>
+                <Unplug />
+                Disconnect
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => this.connect()} disabled={this.state.connecting}>
+                {this.state.connecting ? <Spinner /> : <FolderOpen />}
+                Connect Folder
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => (this.state.exportOpen = true)} disabled={!this.state.handle}>
+              <Download />
+              Export
+            </Button>
+            <Button variant="destructive" onClick={() => this.remove()}>
+              <Trash2 />
+              Remove
+            </Button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  private ErrorView() {
+    return (
+      <Alert variant="destructive">
+        <div className="flex items-start gap-2">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <div className="space-y-1">
+            <AlertTitle>{this.state.error?.message || 'Project error'}</AlertTitle>
+            {this.errorCauseText && <AlertDescription>{this.errorCauseText}</AlertDescription>}
+          </div>
+        </div>
+      </Alert>
+    )
+  }
+
+  private DisconnectedView() {
+    return (
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+        <section className="border">
+          <Empty className="items-start p-6 text-left">
+            <EmptyHeader className="max-w-none items-start">
+              <EmptyMedia variant="icon">
+                <FolderOpen />
+              </EmptyMedia>
+              <EmptyTitle>Connect a project folder</EmptyTitle>
+              <EmptyDescription className="max-w-xl text-left">
+                Pick an existing folder that contains epos.json and the referenced source files, or scaffold a base template
+                into an empty directory.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent className="max-w-none items-start gap-3 text-left">
+              <div className="grid w-full gap-3 md:grid-cols-2">
+                <Button onClick={() => this.connect()} disabled={this.state.connecting}>
+                  {this.state.connecting && this.state.template === null ? <Spinner /> : <FolderOpen />}
+                  Connect Existing Folder
+                </Button>
+                <Button variant="outline" onClick={() => this.connect('base')} disabled={this.state.connecting}>
+                  {this.state.connecting && this.state.template === 'base' ? <Spinner /> : <FolderPlus />}
+                  Initialize Base Template
+                </Button>
+              </div>
+              <div className="grid w-full gap-3 border p-4 md:grid-cols-3">
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase">Template</div>
+                  <div className="mt-1 text-sm">Base</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase">Creates</div>
+                  <div className="mt-1 text-sm">Vite entry, background script, CSS, config</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase">Permission</div>
+                  <div className="mt-1 text-sm">Requires folder write access once</div>
+                </div>
+              </div>
+            </EmptyContent>
+          </Empty>
+        </section>
+
+        <section className="border p-5">
+          <div className="text-sm font-medium">Project Snapshot</div>
+          <div className="mt-4 grid gap-3">
+            <this.StatTile
+              label="Targets"
+              value={String(this.spec.targets.length)}
+              detail="Execution surfaces defined in epos.json"
+            />
+            <this.StatTile
+              label="Assets"
+              value={String(this.spec.assets.length)}
+              detail="Static files referenced by the project"
+            />
+            <this.StatTile
+              label="Permissions"
+              value={String(this.spec.permissions.length)}
+              detail="Required extension permissions"
+            />
+            <this.StatTile
+              label="Host Permissions"
+              value={String(this.spec.hostPermissions.length)}
+              detail="Declared host patterns"
+            />
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  private ConnectedView() {
+    return (
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.85fr)]">
+        <section className="border">
+          <div className="flex items-center gap-2 p-4">
+            <Button
+              variant={this.state.activeTab === 'spec' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => (this.state.activeTab = 'spec')}
+            >
+              epos.json
+            </Button>
+            <Button
+              variant={this.state.activeTab === 'manifest' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => (this.state.activeTab = 'manifest')}
+            >
+              manifest.json
+            </Button>
+          </div>
+          <Separator />
+          {this.state.activeTab === 'spec' ? (
+            <this.JsonPanel
+              title="epos.json"
+              description="Raw project spec loaded from the connected folder."
+              inset={false}
+            >
+              {this.specText || 'No epos.json loaded'}
+            </this.JsonPanel>
+          ) : (
+            <this.JsonPanel
+              title="manifest.json"
+              description="Resolved manifest that will be used for export."
+              inset={false}
+            >
+              {JSON.stringify(this.manifest, null, 2)}
+            </this.JsonPanel>
+          )}
+        </section>
+
+        <section className="border">
+          <this.FileListView
+            title="Sources"
+            icon={<FileCode2 className="size-4" />}
+            items={this.sources.map(source => ({
+              path: source.path,
+              detail: `${this.formatBytes(source.size)}${source.path.endsWith('.js') ? (source.minified ? ' • minified' : ' • unminified') : ''}`,
+              tone: source.path.endsWith('.js') && !source.minified ? 'warning' : 'default',
+            }))}
+            emptyText="No sources loaded"
+          />
+          <Separator />
+          <this.FileListView
+            title="Assets"
+            icon={<FileJson2 className="size-4" />}
+            items={this.assets.map(asset => ({ path: asset.path, detail: this.formatBytes(asset.size) }))}
+            emptyText="No assets declared"
+          />
+        </section>
+      </div>
+    )
+  }
+
+  private StatTile({
+    label,
+    value,
+    detail,
+    boxed = true,
+  }: {
+    label: string
+    value: string
+    detail: string
+    boxed?: boolean
+  }) {
+    return (
+      <div className={cn('bg-background p-4', boxed && 'border')}>
+        <div className="text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">{label}</div>
+        <div className="mt-2 text-lg font-semibold">{value}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
+      </div>
+    )
+  }
+
+  private FileListView({
+    title,
+    icon,
+    items,
+    emptyText,
+  }: {
+    title: string
+    icon: React.ReactNode
+    items: { path: string; detail: string; tone?: 'default' | 'warning' }[]
+    emptyText: string
+  }) {
+    return (
+      <div className="bg-background">
+        <div className="flex items-center gap-2 p-4 text-sm font-medium">
+          {icon}
+          {title}
+          <span className="text-xs font-normal text-muted-foreground">{items.length}</span>
+        </div>
+        <Separator />
+        {items.length === 0 ? (
+          <div className="p-4 text-xs text-muted-foreground">{emptyText}</div>
+        ) : (
+          <div className="max-h-96 overflow-auto">
+            {items.map(item => (
+              <div key={item.path} className="flex items-start justify-between gap-3 border-b px-4 py-3 last:border-b-0">
+                <div className="min-w-0">
+                  <div className="truncate font-mono text-xs">{item.path}</div>
+                </div>
+                <div
+                  className={cn(
+                    'shrink-0 text-[11px] text-muted-foreground',
+                    item.tone === 'warning' && 'text-amber-700 dark:text-amber-400',
+                  )}
+                >
+                  {item.detail}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  private JsonPanel({
+    title,
+    description,
+    children,
+    inset = true,
+  }: {
+    title: string
+    description: string
+    children: string
+    inset?: boolean
+  }) {
+    return (
+      <section className={cn(inset && 'border')}>
+        <div className="p-4">
+          <div className="text-sm font-medium">{title}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{description}</div>
+        </div>
+        {inset && <Separator />}
+        <pre className="max-h-104 overflow-auto p-4 font-mono text-[11px] leading-5">{children}</pre>
+      </section>
+    )
+  }
+
+  private ExportSheet() {
+    return (
+      <Sheet open={this.state.exportOpen} onOpenChange={open => (this.state.exportOpen = open)}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>Export Project</SheetTitle>
+            <SheetDescription>
+              Review the current manifest, file totals, and source quality before exporting {this.spec.slug}-
+              {this.spec.version}.zip.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
+            <section className="grid gap-px border bg-border sm:grid-cols-2">
+              <this.StatTile
+                label="Archive"
+                value={`${this.spec.slug}-${this.spec.version}.zip`}
+                detail="Generated filename"
+                boxed={false}
+              />
+              <this.StatTile
+                label="Manifest Keys"
+                value={String(Object.keys(this.manifest ?? {}).length)}
+                detail="Resolved manifest entries"
+                boxed={false}
+              />
+              <this.StatTile
+                label="Assets"
+                value={String(this.assets.length)}
+                detail={this.formatBytes(this.totalAssetBytes)}
+                boxed={false}
+              />
+              <this.StatTile
+                label="Sources"
+                value={String(this.sources.length)}
+                detail={this.formatBytes(this.totalSourceBytes)}
+                boxed={false}
+              />
+            </section>
+
+            <this.JsonPanel title="Manifest" description="Resolved manifest payload included in the export archive.">
+              {JSON.stringify(this.manifest, null, 2)}
+            </this.JsonPanel>
+
+            <section className="border">
+              <div className="grid gap-px bg-border lg:grid-cols-2">
+                <this.FileListView
+                  title="Assets"
+                  icon={<FileJson2 className="size-4" />}
+                  items={this.assets.map(asset => ({ path: asset.path, detail: this.formatBytes(asset.size) }))}
+                  emptyText="No assets will be exported"
+                />
+                <this.FileListView
+                  title="Sources"
+                  icon={<FileCode2 className="size-4" />}
+                  items={this.sources.map(source => ({
+                    path: source.path,
+                    detail: `${this.formatBytes(source.size)}${source.path.endsWith('.js') ? (source.minified ? ' • minified' : ' • unminified') : ''}`,
+                    tone: source.path.endsWith('.js') && !source.minified ? 'warning' : 'default',
+                  }))}
+                  emptyText="No sources will be exported"
+                />
+              </div>
+            </section>
+          </div>
+
+          <SheetFooter>
+            <Button variant="outline" onClick={() => (this.state.exportOpen = false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                await this.export()
+                this.state.exportOpen = false
+              }}
+              disabled={!this.state.handle}
+            >
+              <Download />
+              Export Now
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     )
   }
 

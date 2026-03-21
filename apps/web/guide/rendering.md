@@ -6,7 +6,7 @@ It assumes you are already familiar with the [Epos basics](/guide/basics) and ha
 
 ::: info
 
-Epos is designed to work **exclusively with React**. You can use other UI libraries, but some of its core features are built with React in mind.
+Epos is designed to work **exclusively with React**. You can use other UI libraries, but some of the core Epos features are built with React in mind.
 
 :::
 

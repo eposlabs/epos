@@ -30,7 +30,7 @@ To inspect created frames:
 
 ::: info
 
-Technically, `<background>` is also a background frame. But it is not managed by `epos.frames`. Epos manages the background iframe automatically, you cannot create or remove it yourself.
+Technically, `<background>` is also a frame. But it is not managed by `epos.frames`. Epos manages this frame internally, you cannot create or remove it yourself.
 
 :::
 
@@ -112,4 +112,4 @@ Epos takes that into account and configures frames for maximum compatibility wit
 
 - Epos sets broad `allow` and `sandbox` attributes so frames can use as much functionality as possible.
 - It also adds a temporary network rule that removes `X-Frame-Options` for the target frame, which makes embedding possible. When the frame is removed, Epos removes that rule too.
-- It also sets the frame width and height to match your screen by default, so content inside is rendered the same way it would be in a normal tab.
+- The engine sets the frame width and height to match your screen by default, so content inside is rendered the same way it would be in a normal tab.

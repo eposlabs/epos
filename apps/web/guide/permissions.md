@@ -4,7 +4,7 @@ Epos uses the same permission model as normal browser extensions, but you declar
 
 Some permissions are required for the engine to work, so they always end up in the resulting `manifest.json`. Most permissions, however, depend on your project's needs.
 
-If you are not familiar with browser extension permissions, you can read the [Chrome permissions docs](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions) or the [MDN documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
+If you are not familiar with browser extension permissions, you can read the [Chrome permissions docs](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions) or the [MDN version](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
 
 ## Engine Permissions
 

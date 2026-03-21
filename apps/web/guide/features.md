@@ -2,7 +2,7 @@
 
 Epos comes with a set of high-level features that are preconfigured to work across all execution contexts with no extra setup.
 
-This page is a quick overview. Each feature has its own guide and API reference if you want the full details.
+This page is a quick overview of some of them. Each feature has its own guide and API reference if you want the full details.
 
 ## Messaging
 
@@ -33,10 +33,11 @@ Read more in the [Messaging](/guide/messaging) guide.
 
 ```ts
 // Connect to a shared state
-const state = await epos.state.connect({ count: 0, items: [] })
+const state = await epos.state.connect()
 
 // Use it like a normal object, changes are synced and persisted
-state.count += 1
+state.count = 10
+state.items = []
 state.items.push('Hello')
 ```
 
@@ -57,7 +58,7 @@ It also supports files, blobs, and other binary data. It is available in all con
 
 Read more in the [Storage](/guide/storage) guide.
 
-## Extension API
+## Extension APIs
 
 `epos.browser.*` mirrors `chrome.*` APIs and makes them available in all contexts.
 
@@ -68,8 +69,7 @@ const tabs = await epos.browser.tabs.query({})
 
 You are no longer limited to any context restrictions. Just use `epos.browser` and it will work everywhere.
 
-
-Read more in the [Extension API](/guide/extension) guide.
+Read more in the [Extension APIs](/guide/extension) guide.
 
 ## Simpler Project Setup
 

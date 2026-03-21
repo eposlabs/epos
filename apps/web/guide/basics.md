@@ -182,6 +182,12 @@ That's it. The page should now show `Hello, World!` on the gold background.
 
 Note how `load` can be either a string or an array of strings. This is a common pattern in Epos config to keep things concise for simple cases, while still supporting more complex setups.
 
+## Epos API
+
+Inside your JavaScript code, you can access the Epos API through the `epos` variable. You do not need to import anything. Epos injects the API into your code automatically.
+
+For now, it is enough to know that `epos` is there when you need Epos-specific functionality. We will cover the API later.
+
 ## Popup
 
 A very common extension UI is the popup that opens when the user clicks the extension icon.

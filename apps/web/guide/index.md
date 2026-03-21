@@ -20,7 +20,7 @@ Once installed, the workflow is straightforward:
 
 Epos is not a universal framework. It focuses on a specific tech stack to **reduce setup and complexity**.
 
-The engine rethinks how extensions are built, making trade-offs that allow a **smoother developer experience** and  **powerful built-in features**.
+The engine rethinks how extensions are built, making trade-offs that allow a **smoother developer experience** and **powerful built-in features**.
 
 Epos prioritizes ease of use for the **most common use cases**, even if that means giving up some flexibility.
 
@@ -31,7 +31,7 @@ At a high level, Epos gives you:
 - A cross-context **messaging system**.
 - **Shared state** with persistence and sync.
 - **Storage** for files and other data.
-- **Chrome APIs** available in any context.
+- **Extension APIs** available in any context.
 - Automatic **script injection** + Shadow DOM.
 - A **simpler setup** through `epos.json`.
 

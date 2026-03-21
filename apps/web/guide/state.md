@@ -89,17 +89,17 @@ When `state.count` changes in any context, the `Counter` component reflects that
 
 ## Multiple States
 
-For most projects, one shared state is enough. If you want to separate different kinds of data, you can create named states:
+For most projects, one shared state is enough. If you want to separate different kinds of data, you can create named states. Just pass a **name as the first argument** to `connect()`:
 
 ```ts
-const appState = await epos.state.connect({ count: 0 })
+const mainState = await epos.state.connect({ count: 0 })
 const cacheState = await epos.state.connect('cache', { users: [] })
 const settingsState = await epos.state.connect('settings', { theme: 'dark' })
 ```
 
 ## Transactions
 
-Making several changes to a state at once is completely fine:
+Making changes to a state one by one is completely fine:
 
 ```ts
 state.count += 1
@@ -107,7 +107,9 @@ state.user = { name: 'Alice' }
 state.items.push('New item')
 ```
 
-Just remember that every change triggers synchronization. To reduce the overhead, use `transaction()` to batch several changes together:
+Just remember that every change triggers synchronization. The example above triggers three separate synchronization events.
+
+To reduce the overhead, use `transaction()` to batch several changes together:
 
 ```ts
 epos.state.transaction(() => {

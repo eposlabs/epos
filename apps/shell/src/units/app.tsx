@@ -62,8 +62,8 @@ export class App extends gl.Unit {
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <TooltipProvider>
           <this.SidebarView />
-          <Separator orientation="vertical" />
-          <this.ContentView />
+          {/* <Separator orientation="vertical" /> */}
+          <this.BodyView />
         </TooltipProvider>
       </SidebarProvider>
     )
@@ -71,12 +71,12 @@ export class App extends gl.Unit {
 
   private SidebarView() {
     return (
-      <Sidebar collapsible="none">
+      <Sidebar collapsible="offcanvas" variant="floating">
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
-                <this.Logo />
+                <this.LogoView />
                 <div>[epos]</div>
                 <div className="ml-auto text-muted-foreground">v1.8</div>
               </SidebarMenuButton>
@@ -93,15 +93,15 @@ export class App extends gl.Unit {
     )
   }
 
-  private ContentView() {
+  private BodyView() {
     return (
-      <SidebarInset className="overflow-auto">
+      <SidebarInset className="overflow-auto p-4">
         <this.projects.View />
       </SidebarInset>
     )
   }
 
-  private Logo() {
+  private LogoView() {
     return (
       <svg className="text-brand" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="128" height="128" rx="64" fill="currentColor" />
