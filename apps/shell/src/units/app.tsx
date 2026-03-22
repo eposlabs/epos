@@ -18,6 +18,7 @@ export class App extends gl.Unit {
   theme = new gl.Theme(this)
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
+  highlight = new gl.Highlight(this)
 
   async init() {
     document.documentElement.classList.add('antialiased')
@@ -62,6 +63,7 @@ export class App extends gl.Unit {
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
         <TooltipProvider delayDuration={500} disableHoverableContent={true}>
+          <this.highlight.StyleView />
           <this.SidebarView />
           <this.BodyView />
         </TooltipProvider>
@@ -115,5 +117,9 @@ export class App extends gl.Unit {
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {}
+  static versioner: any = {
+    20() {
+      this.highlight = new gl.Highlight(this)
+    },
+  }
 }

@@ -1,5 +1,6 @@
 import { ProjectsCreation, type ProjectsCreation as ProjectsCreationType } from '../_backup/projects-creation.js'
 import { App, type App as AppType } from '../units/app.js'
+import { Highlight, type Highlight as HighlightType } from '../units/highlight.js'
 import { Idb, type Idb as IdbType } from '../units/idb.js'
 import { Libs, type Libs as LibsType } from '../units/libs.js'
 import { Permissions, type Permissions as PermissionsType } from '../units/permissions.js'
@@ -12,6 +13,7 @@ import { Utils, type Utils as UtilsType } from '../units/utils.js'
 Object.assign(gl, {
   ProjectsCreation,
   App,
+  Highlight,
   Idb,
   Libs,
   Permissions,
@@ -28,6 +30,7 @@ declare global {
   interface Gl {
     ProjectsCreation: typeof ProjectsCreation
     App: typeof App
+    Highlight: typeof Highlight
     Idb: typeof Idb
     Libs: typeof Libs
     Permissions: typeof Permissions
@@ -41,6 +44,7 @@ declare global {
   interface gl {
     ProjectsCreation: ProjectsCreation
     App: App
+    Highlight: Highlight
     Idb: Idb
     Libs: Libs
     Permissions: Permissions
@@ -54,6 +58,7 @@ declare global {
   namespace gl {
     export type ProjectsCreation = ProjectsCreationType
     export type App = AppType
+    export type Highlight = HighlightType
     export type Idb = IdbType
     export type Libs = LibsType
     export type Permissions = PermissionsType

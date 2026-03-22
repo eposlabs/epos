@@ -39,4 +39,13 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }
+function TooltipWrap({ children, text }: { children: React.ReactNode; text: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent>{text}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipWrap }

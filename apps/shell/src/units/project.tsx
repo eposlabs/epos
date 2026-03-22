@@ -22,14 +22,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog.js'
+import { Field, FieldLabel } from '@/components/ui/field.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
 import { Spinner } from '@/components/ui/spinner.js'
 import { Switch } from '@/components/ui/switch.js'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
+import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertTriangle, FileBracesCorner, Folder, Package, Settings2, Trash2 } from 'lucide-react'
+import { AlertTriangle, Package, RefreshCw, Trash2 } from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -67,6 +68,7 @@ export class Project extends gl.Unit {
       showRemoveDialog: false,
       showExportDialog: false,
       selectedTabId: 'spec' as TabId,
+      updatedAt: null as Date | null,
     }
   }
 
@@ -126,6 +128,7 @@ export class Project extends gl.Unit {
     this.manifest = updates.manifest
     this.debug = updates.debug
     this.enabled = updates.enabled
+    this.state.updatedAt = new Date()
   }
 
   select() {
@@ -370,14 +373,11 @@ export class Project extends gl.Unit {
           />
           <div className="truncate pr-9 font-normal">{this.spec.name}</div>
         </SidebarMenuButton>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="absolute right-2 h-4.5">
-              <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} size="sm" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{this.enabled ? 'Disable' : 'Enable'}</TooltipContent>
-        </Tooltip>
+        <TooltipWrap text={this.enabled ? 'Disable' : 'Enable'}>
+          <div className="absolute right-2 h-4.5">
+            <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} size="sm" />
+          </div>
+        </TooltipWrap>
       </SidebarMenuItem>
     )
   }
@@ -394,6 +394,43 @@ export class Project extends gl.Unit {
   }
 
   private HeaderView() {
+    return (
+      <div className="flex w-full flex-col gap-1.5">
+        <div className="flex justify-between">
+          <this.NameView />
+          <this.ActionsView />
+        </div>
+        <div className="flex justify-between">
+          <this.BadgesView />
+          <this.TimestampView />
+        </div>
+      </div>
+    )
+  }
+
+  private NameView() {
+    return <div className="text-xl/[32px]">{this.spec.name}</div>
+  }
+
+  private BadgesView() {
+    return (
+      <div className="flex gap-1.5 font-mono">
+        <this.StatusBadgeView />
+        <Badge variant="secondary">{this.spec.slug}</Badge>
+        <Badge variant="secondary">v{this.spec.version}</Badge>
+      </div>
+    )
+  }
+
+  private StatusBadgeView() {
+    const dot = (className?: string) => <div className={cn('mr-0.5 size-1.25 rounded-full bg-current', className)} />
+    if (!this.enabled) return <Badge variant="secondary">{dot('bg-muted-foreground')} disabled</Badge>
+    if (!this.state.handle) return <Badge variant="yellow">{dot()} not connected</Badge>
+    if (this.state.error) return <Badge variant="destructive">{dot()} error</Badge>
+    return <Badge variant="green">{dot()} connected</Badge>
+  }
+
+  private ActionsView() {
     const onRemoveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (e.shiftKey) {
         this.remove()
@@ -403,34 +440,38 @@ export class Project extends gl.Unit {
     }
 
     return (
-      <div className="flex w-full">
-        <div>
-          <div className="text-xl">{this.spec.name}</div>
-          <div className="mt-1.5 flex gap-1.5 font-mono">
-            <this.StatusBadgeView />
-            <Badge variant="secondary">{this.spec.slug}</Badge>
-            <Badge variant="secondary">v{this.spec.version}</Badge>
-          </div>
-        </div>
-        <div className="ml-auto flex gap-3">
+      <div className="flex gap-2">
+        <TooltipWrap text="Delete project">
           <Button variant="outline" onClick={onRemoveClick}>
             <Trash2 />
           </Button>
-          <Button variant="default" onClick={() => this.toggleExportDialog()}>
-            <Package />
-            Export
+        </TooltipWrap>
+        <TooltipWrap text="Refresh project">
+          <Button variant="outline" onClick={() => this.refresh()}>
+            <RefreshCw />
           </Button>
-        </div>
+        </TooltipWrap>
+        <Button variant="default" onClick={() => this.toggleExportDialog()}>
+          <Package />
+          Export
+        </Button>
       </div>
     )
   }
 
-  private StatusBadgeView() {
-    const dot = (className?: string) => <div className={cn('mr-0.5 size-1.25 rounded-full bg-current', className)} />
-    if (this.state.error) return <Badge variant="destructive">{dot()} Error</Badge>
-    if (!this.enabled) return <Badge variant="secondary">{dot('bg-muted-foreground')} Disabled</Badge>
-    if (!this.state.handle) return <Badge variant="yellow">{dot()} Not Connected</Badge>
-    return <Badge variant="green">{dot()} Connected</Badge>
+  private TimestampView() {
+    if (!this.enabled) return null
+    if (!this.state.handle) return null
+    if (!this.state.updatedAt) return null
+    const hh = this.state.updatedAt.getHours().toString().padStart(2, '0')
+    const mm = this.state.updatedAt.getMinutes().toString().padStart(2, '0')
+    const ss = this.state.updatedAt.getSeconds().toString().padStart(2, '0')
+    const ms = this.state.updatedAt.getMilliseconds().toString().padStart(3, '0')
+    return (
+      <div className="text-xs/[20px] text-neutral-400 not-first:font-mono dark:text-neutral-600">
+        Updated at {hh}:{mm}:{ss}:{ms}
+      </div>
+    )
   }
 
   private ContentView() {
@@ -438,12 +479,38 @@ export class Project extends gl.Unit {
     // epos.json | manifest.json | Files | Settings
     // in settings: debug (use production libs) and connected directory
 
+    const { title, description, View } = {
+      spec: {
+        title: 'epos.json',
+        description: 'View and edit your project specification file (epos.json)',
+        View: this.SpecView,
+      },
+      manifest: {
+        title: 'Extension Manifest',
+        description: 'View your project manifest file (manifest.json) generated by epos based on your spec',
+        View: this.ManifestView,
+      },
+      files: {
+        title: 'Project Files',
+        description: 'View your project source files and assets',
+        View: this.FilesView,
+      },
+      settings: {
+        title: 'Project Settings',
+        description: 'Configure your project settings and preferences',
+        View: this.SettingsView,
+      },
+    }[this.state.selectedTabId]
+
     return (
-      <Card className="relative grow">
-        <this.SpecView />
-        <this.ManifestView />
-        <this.FilesView />
-        <this.SettingsView />
+      <Card className="relative gap-0 p-0">
+        <CardHeader className="border-b p-4">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <View />
+        </CardContent>
 
         <Tabs
           value={this.state.selectedTabId}
@@ -501,56 +568,25 @@ export class Project extends gl.Unit {
   }
 
   private SpecView() {
-    if (this.state.selectedTabId !== 'spec') return null
-    return (
-      <>
-        <CardHeader>
-          <CardTitle>epos.json</CardTitle>
-          <CardDescription>Project specification file</CardDescription>
-        </CardHeader>
-        <CardContent className="grow">
-          <this.JsonView json={this.specText ?? '—'} />
-        </CardContent>
-      </>
-    )
+    return <this.$.highlight.JsonView value={this.specText ?? '—'} />
   }
 
   private ManifestView() {
-    if (this.state.selectedTabId !== 'manifest') return null
-    return (
-      <>
-        <CardHeader>
-          <CardTitle>Manifest</CardTitle>
-          <CardDescription>Project manifest file</CardDescription>
-        </CardHeader>
-        <CardContent></CardContent>
-      </>
-    )
+    return <this.$.highlight.JsonView value={JSON.stringify(this.manifest, null, 2)} />
   }
 
   private FilesView() {
-    if (this.state.selectedTabId !== 'files') return null
-    return (
-      <>
-        <CardHeader>
-          <CardTitle>Files</CardTitle>
-          <CardDescription>Project source files and assets</CardDescription>
-        </CardHeader>
-        <CardContent></CardContent>
-      </>
-    )
+    return <div>FILES</div>
   }
 
   private SettingsView() {
-    if (this.state.selectedTabId !== 'settings') return null
     return (
-      <>
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>Project settings and configuration</CardDescription>
-        </CardHeader>
-        <CardContent></CardContent>
-      </>
+      <div>
+        <Field>
+          <FieldLabel>Debug Mode</FieldLabel>
+          <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} />
+        </Field>
+      </div>
     )
   }
 

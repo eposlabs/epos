@@ -20,6 +20,7 @@
     "epos-devkit": "1.4.0",
     "epos-unit": "1.28.0",
     "fflate": "^0.8.2",
+    "highlight.js": "^11.11.1",
     "lucide-react": "^0.577.0",
     "radix-ui": "^1.4.3",
     "strip-json-comments": "^5.0.3",
