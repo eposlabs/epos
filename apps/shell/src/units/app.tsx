@@ -1,15 +1,15 @@
-import { Separator } from '@/components/ui/separator.js'
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
 } from '@/components/ui/sidebar.js'
 import { TooltipProvider } from '@/components/ui/tooltip.js'
+import { cn } from '@/lib/utils.js'
+import type { ClassValue } from 'clsx'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -20,8 +20,9 @@ export class App extends gl.Unit {
   permissions = new gl.Permissions(this)
 
   async init() {
+    document.documentElement.classList.add('antialiased')
     this.removeUrlPath()
-    await this.ensureSinglePinnedTab()
+    // await this.ensureSinglePinnedTab()
   }
 
   async exportKit() {
@@ -60,9 +61,8 @@ export class App extends gl.Unit {
     if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
       <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={500} disableHoverableContent={true}>
           <this.SidebarView />
-          {/* <Separator orientation="vertical" /> */}
           <this.BodyView />
         </TooltipProvider>
       </SidebarProvider>
@@ -71,20 +71,15 @@ export class App extends gl.Unit {
 
   private SidebarView() {
     return (
-      <Sidebar collapsible="offcanvas" variant="floating">
-        <SidebarHeader>
+      <Sidebar variant="sidebar">
+        <SidebarHeader className="border-b">
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton inert={true} className="hover:bg-transparent active:bg-transparent">
-                <this.LogoView />
-                <div>[epos]</div>
-                <div className="ml-auto text-muted-foreground">v1.8</div>
-              </SidebarMenuButton>
+            <SidebarMenuItem className="flex items-center p-1 font-mono text-xs font-semibold">
+              <this.LogoView className="size-4.5" />
+              <div className="ml-2">[epos]</div>
+              <div className="ml-auto text-muted-foreground">v1.8</div>
             </SidebarMenuItem>
           </SidebarMenu>
-          <div className="px-2">
-            <Separator />
-          </div>
         </SidebarHeader>
         <SidebarContent>
           <this.projects.SidebarView />
@@ -95,15 +90,15 @@ export class App extends gl.Unit {
 
   private BodyView() {
     return (
-      <SidebarInset className="overflow-auto p-4">
+      <SidebarInset className="overflow-auto">
         <this.projects.View />
       </SidebarInset>
     )
   }
 
-  private LogoView() {
+  private LogoView({ className }: { className: ClassValue }) {
     return (
-      <svg className="text-brand" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className={cn('text-brand', className)} viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="128" height="128" rx="64" fill="currentColor" />
         <path
           d="M74.8675 29.7121L64.6329 38.5719L59.159 35.9408L43.5694 52.2261L62.3624 73.2293L68.0828 69.4925L72.6646 76.7304L57.2828 86.523L30 54.2192L60.1817 23L74.8675 29.7121Z"
@@ -120,25 +115,5 @@ export class App extends gl.Unit {
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {
-    13() {},
-    14() {
-      this.ui = {}
-    },
-    15() {
-      this.devkit = {}
-    },
-    16() {
-      this.devkit = {}
-    },
-    17() {
-      this.devkit = {}
-    },
-    18() {
-      delete this.devkit
-    },
-    19() {
-      delete this.ui
-    },
-  }
+  static versioner: any = {}
 }

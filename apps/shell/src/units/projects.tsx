@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button.js'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty.js'
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -8,7 +6,7 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar.js'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
-import { FolderCode, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
@@ -88,46 +86,57 @@ export class Projects extends gl.Unit {
 
   SidebarView() {
     return (
-      <SidebarGroup>
-        {/* Empty */}
-        {this.empty && (
-          <Empty className="justify-start">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <FolderCode />
-              </EmptyMedia>
-              <EmptyTitle>No Projects Yet</EmptyTitle>
-              <EmptyDescription>
-                You haven't created any projects yet. Get started by creating your first project.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent className="flex-row justify-center gap-2">
-              <Button onClick={() => this.create()}>Create Project</Button>
-            </EmptyContent>
-          </Empty>
-        )}
+      <>
+        <this.SidebarMainView />
+        <this.SidebarEmptyView />
+      </>
+    )
+  }
 
-        {/* Non-empty */}
-        {!this.empty && (
-          <>
-            <SidebarGroupLabel>Projects</SidebarGroupLabel>
-            <Tooltip delayDuration={400}>
-              <TooltipTrigger asChild>
-                <SidebarGroupAction title="Create project" onClick={() => this.create()}>
-                  <Plus /> <span className="sr-only">Create project</span>
-                </SidebarGroupAction>
-              </TooltipTrigger>
-              <TooltipContent>Create project</TooltipContent>
-            </Tooltip>
-            <SidebarGroupContent>
-              <SidebarMenu className="gap-1">
-                {this.list.map(project => (
-                  <project.SidebarView key={project.id} />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </>
-        )}
+  private SidebarMainView() {
+    if (this.empty) return null
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Projects</SidebarGroupLabel>
+        <Tooltip delayDuration={400}>
+          <TooltipTrigger asChild>
+            <SidebarGroupAction title="Create project" onClick={() => this.create()}>
+              <Plus /> <span className="sr-only">Create project</span>
+            </SidebarGroupAction>
+          </TooltipTrigger>
+          <TooltipContent>Create project</TooltipContent>
+        </Tooltip>
+        <SidebarGroupContent>
+          <SidebarMenu className="gap-1">
+            {this.list.map(project => (
+              <project.SidebarView key={project.id} />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    )
+  }
+
+  private SidebarEmptyView() {
+    if (!this.empty) return null
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Projects</SidebarGroupLabel>
+        <Tooltip delayDuration={400}>
+          <TooltipTrigger asChild>
+            <SidebarGroupAction title="Create project" onClick={() => this.create()}>
+              <Plus /> <span className="sr-only">Create project</span>
+            </SidebarGroupAction>
+          </TooltipTrigger>
+          <TooltipContent>Create project</TooltipContent>
+        </Tooltip>
+        <SidebarGroupContent>
+          <SidebarMenu className="gap-1">
+            {this.list.map(project => (
+              <project.SidebarView key={project.id} />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
       </SidebarGroup>
     )
   }
@@ -135,36 +144,5 @@ export class Projects extends gl.Unit {
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {
-    1(this: any) {
-      this.list = []
-    },
-    2() {
-      this.selectedId = null
-    },
-    4(this: any) {
-      delete this.list
-      this.dict = {}
-    },
-    5() {
-      this.creation = new gl.ProjectsCreation(this)
-    },
-    6() {
-      this.ui = {}
-    },
-    7() {
-      this.ui = {}
-      this.actions = {}
-    },
-    8() {
-      this.ui = {}
-      delete this.actions
-    },
-    9() {
-      delete this.ui
-    },
-    10() {
-      delete this.creation
-    },
-  }
+  static versioner: any = {}
 }

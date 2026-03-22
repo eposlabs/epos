@@ -10,7 +10,7 @@ export class Bus extends gl.Unit {
   pageToken: string | null = null // For secure `cs` <-> `ex` communication
   actions: gl.BusAction[] = [] // Registered actions
   utils = new gl.BusUtils(this)
-  rpcNames = new Set<string>()
+  registeredNames = new Set<string>()
   serializer = new gl.BusSerializer(this)
   extBridge = new gl.BusExtBridge(this)
   pageBridge = new gl.BusPageBridge(this)
@@ -143,10 +143,10 @@ export class Bus extends gl.Unit {
   }
 
   register(name: string, api: Obj<any>) {
-    if (this.rpcNames.has(name)) return
-    this.rpcNames.add(name)
+    if (this.registeredNames.has(name)) return
+    this.registeredNames.add(name)
 
-    this.on(`Bus.rpc[${name}]`, (key: string, ...args: unknown[]) => {
+    this.on(`Bus.remote[${name}]`, (key: string, ...args: unknown[]) => {
       const fn: unknown = api[key]
       if (!this.$.utils.is.function(fn)) throw new Error(`Method not found: '${key}'`)
       return fn.call(api, ...args)
@@ -154,16 +154,16 @@ export class Bus extends gl.Unit {
   }
 
   unregister(name: string) {
-    if (!this.rpcNames.has(name)) return
-    this.rpcNames.delete(name)
-    this.off(`Bus.rpc[${name}]`)
+    if (!this.registeredNames.has(name)) return
+    this.registeredNames.delete(name)
+    this.off(`Bus.remote[${name}]`)
   }
 
   use<T extends Obj<any>>(name: string) {
     const target = {}
     return new Proxy(target, {
       get: (_, key: string) => {
-        return (...args: unknown[]) => this.send(`Bus.rpc[${name}]`, key, ...args)
+        return (...args: unknown[]) => this.send(`Bus.remote[${name}]`, key, ...args)
       },
     }) as BusService<T>
   }

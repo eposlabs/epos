@@ -1,30 +1,39 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog.js'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty.js'
-import { Item, ItemContent } from '@/components/ui/item.js'
-import { Separator } from '@/components/ui/separator.js'
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.js'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
 import { Spinner } from '@/components/ui/spinner.js'
 import { Switch } from '@/components/ui/switch.js'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import {
-  AlertCircle,
-  Download,
-  FileCode2,
-  FileJson2,
-  FolderOpen,
-  FolderPlus,
-  RefreshCw,
-  Trash2,
-  Unplug,
-} from 'lucide-react'
+import { AlertTriangle, FileBracesCorner, Folder, Package, Settings2, Trash2 } from 'lucide-react'
 
+export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
+export type TemplateChoice = 'empty' | Template
 
 export class Project extends gl.Unit {
   spec: Spec
@@ -33,7 +42,8 @@ export class Project extends gl.Unit {
   enabled: boolean
   specText: string | null = null
   assets: { path: string; size: number }[] = []
-  sources: { path: string; size: number; minified?: boolean }[] = []
+  jsSources: { path: string; size: number; minified: boolean }[] = []
+  cssSources: { path: string; size: number }[] = []
 
   constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
@@ -51,9 +61,12 @@ export class Project extends gl.Unit {
       error: null as Error | null,
       handle: null as FileSystemDirectoryHandle | null,
       observers: [] as FileSystemObserver[],
-      template: null as Template | null,
-      exportOpen: false,
-      activeTab: 'spec' as 'spec' | 'manifest',
+      template: 'empty' as TemplateChoice,
+      connectingTemplate: null as TemplateChoice | null,
+      exportConfirmOpen: false,
+      showRemoveDialog: false,
+      showExportDialog: false,
+      selectedTabId: 'spec' as TabId,
     }
   }
 
@@ -131,10 +144,22 @@ export class Project extends gl.Unit {
     await epos.projects.remove(this.id)
   }
 
+  toggleRemoveDialog() {
+    this.state.showRemoveDialog = !this.state.showRemoveDialog
+  }
+
+  toggleExportDialog() {
+    this.state.showExportDialog = !this.state.showExportDialog
+  }
+
+  selectTab(tabId: TabId) {
+    this.state.selectedTabId = tabId
+  }
+
   async connect(template: Template | null = null) {
     if (this.state.connecting) return
     this.state.connecting = true
-    this.state.template = template
+    this.state.connectingTemplate = template ?? 'empty'
 
     await this.safe(async () => {
       const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: template ? 'readwrite' : 'read' }))
@@ -159,7 +184,7 @@ export class Project extends gl.Unit {
     })
 
     this.state.connecting = false
-    this.state.template = null
+    this.state.connectingTemplate = null
   }
 
   async disconnect() {
@@ -191,7 +216,8 @@ export class Project extends gl.Unit {
       }
 
       // Read sources
-      this.sources = []
+      this.jsSources = []
+      this.cssSources = []
       const sources: Sources = {}
       for (const target of spec.targets) {
         for (const resource of target.resources) {
@@ -199,11 +225,11 @@ export class Project extends gl.Unit {
           const file = await this.readFile(resource.path)
           const content = await file.text()
           sources[resource.path] = content
-          this.sources.push({
-            path: resource.path,
-            size: file.size,
-            ...(resource.path.endsWith('.js') && { minified: this.isMinifiedJs(content) }),
-          })
+          if (resource.path.endsWith('.js')) {
+            this.jsSources.push({ path: resource.path, size: file.size, minified: this.isMinifiedJs(content) })
+          } else if (resource.path.endsWith('.css')) {
+            this.cssSources.push({ path: resource.path, size: file.size })
+          }
         }
       }
 
@@ -213,12 +239,6 @@ export class Project extends gl.Unit {
   }
 
   async export() {
-    const unminifiedJsSource = this.sources.find(source => source.path.endsWith('.js') && !source.minified)
-    if (unminifiedJsSource) {
-      const ok = confirm(`Unminified: ${unminifiedJsSource.path}. Export anyway?`)
-      if (!ok) return
-    }
-
     const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
@@ -322,468 +342,291 @@ export class Project extends gl.Unit {
     return [result, error] as const
   }
 
-  private get totalAssetBytes() {
-    return this.assets.reduce((sum, asset) => sum + asset.size, 0)
-  }
-
-  private get totalSourceBytes() {
-    return this.sources.reduce((sum, source) => sum + source.size, 0)
-  }
-
-  private get errorCauseText() {
-    const cause = this.state.error?.cause
-    if (!cause) return null
-    return cause instanceof Error ? cause.message : String(cause)
-  }
-
-  private formatBytes(bytes: number) {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  }
-
   // MARK: Views
   // ===========================================================================
 
   View() {
-    if (!this.state.ready) return <this.LoadingView />
     return (
-      <div className="h-full">
-        <Item variant="outline">
-          <ItemContent>
-            <div className="text-2xl">{this.spec.name}</div>
-            <div className="mt-2 flex gap-1">
-              <Badge variant="outline">{this.spec.slug}</Badge>
-              <Badge variant="outline">v{this.spec.version}</Badge>
-              <Badge variant="outline">id:{this.id.slice(0, 8)}</Badge>
-            </div>
-          </ItemContent>
-        </Item>
-
-        <Tabs defaultValue="overview" className="mt-4">
-          <TabsList variant="line">
-            <TabsTrigger value="overview">epos.json</TabsTrigger>
-            <TabsTrigger value="analytics">manifest.json</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-          {/* <this.HeaderView /> */}
-          {/* {!!this.state.error && <this.ErrorView />} */}
-          {/* {this.state.handle ? <this.ConnectedView /> : <this.DisconnectedView />} */}
-        </div>
-        {/* <this.ExportSheet /> */}
+      <div className="flex h-full flex-col">
+        <this.MainView />
+        <this.LoadingView />
+        <this.RemoveDialogView />
+        <this.ExportDialogView />
       </div>
-    )
-  }
-
-  private LoadingView() {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner className="size-6" />
-      </div>
-    )
-  }
-
-  private HeaderView() {
-    return (
-      <section className="border">
-        <div className="flex flex-col gap-5 p-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={this.state.error ? 'destructive' : this.state.handle ? 'default' : 'outline'}>
-                {this.state.error ? 'Error' : this.state.handle ? 'Connected' : 'Disconnected'}
-              </Badge>
-              <Badge variant="outline">
-                {this.state.observers.length} watcher{this.state.observers.length === 1 ? '' : 's'}
-              </Badge>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-semibold tracking-tight">{this.spec.name}</div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline">{this.spec.slug}</Badge>
-                <Badge variant="outline">v{this.spec.version}</Badge>
-                <div>ID {this.id.slice(0, 8)}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 xl:max-w-xl xl:justify-end">
-            <label className="flex items-center gap-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
-              <span>Enabled</span>
-              <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} aria-label="Toggle project enabled" />
-            </label>
-            <label className="flex items-center gap-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
-              <span>Debug</span>
-              <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} aria-label="Toggle project debug" />
-            </label>
-            <Button variant="outline" onClick={() => this.refresh()} disabled={!this.state.handle || this.state.connecting}>
-              <RefreshCw className={cn(this.state.connecting && 'animate-spin')} />
-              Refresh
-            </Button>
-            {this.state.handle ? (
-              <Button variant="outline" onClick={() => this.disconnect()}>
-                <Unplug />
-                Disconnect
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={() => this.connect()} disabled={this.state.connecting}>
-                {this.state.connecting ? <Spinner /> : <FolderOpen />}
-                Connect Folder
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => (this.state.exportOpen = true)} disabled={!this.state.handle}>
-              <Download />
-              Export
-            </Button>
-            <Button variant="destructive" onClick={() => this.remove()}>
-              <Trash2 />
-              Remove
-            </Button>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  private ErrorView() {
-    return (
-      <Alert variant="destructive">
-        <div className="flex items-start gap-2">
-          <AlertCircle className="mt-0.5 size-4 shrink-0" />
-          <div className="space-y-1">
-            <AlertTitle>{this.state.error?.message || 'Project error'}</AlertTitle>
-            {this.errorCauseText && <AlertDescription>{this.errorCauseText}</AlertDescription>}
-          </div>
-        </div>
-      </Alert>
-    )
-  }
-
-  private DisconnectedView() {
-    return (
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-        <section className="border">
-          <Empty className="items-start p-6 text-left">
-            <EmptyHeader className="max-w-none items-start">
-              <EmptyMedia variant="icon">
-                <FolderOpen />
-              </EmptyMedia>
-              <EmptyTitle>Connect a project folder</EmptyTitle>
-              <EmptyDescription className="max-w-xl text-left">
-                Pick an existing folder that contains epos.json and the referenced source files, or scaffold a base template
-                into an empty directory.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent className="max-w-none items-start gap-3 text-left">
-              <div className="grid w-full gap-3 md:grid-cols-2">
-                <Button onClick={() => this.connect()} disabled={this.state.connecting}>
-                  {this.state.connecting && this.state.template === null ? <Spinner /> : <FolderOpen />}
-                  Connect Existing Folder
-                </Button>
-                <Button variant="outline" onClick={() => this.connect('base')} disabled={this.state.connecting}>
-                  {this.state.connecting && this.state.template === 'base' ? <Spinner /> : <FolderPlus />}
-                  Initialize Base Template
-                </Button>
-              </div>
-              <div className="grid w-full gap-3 border p-4 md:grid-cols-3">
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground uppercase">Template</div>
-                  <div className="mt-1 text-sm">Base</div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground uppercase">Creates</div>
-                  <div className="mt-1 text-sm">Vite entry, background script, CSS, config</div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground uppercase">Permission</div>
-                  <div className="mt-1 text-sm">Requires folder write access once</div>
-                </div>
-              </div>
-            </EmptyContent>
-          </Empty>
-        </section>
-
-        <section className="border p-5">
-          <div className="text-sm font-medium">Project Snapshot</div>
-          <div className="mt-4 grid gap-3">
-            <this.StatTile
-              label="Targets"
-              value={String(this.spec.targets.length)}
-              detail="Execution surfaces defined in epos.json"
-            />
-            <this.StatTile
-              label="Assets"
-              value={String(this.spec.assets.length)}
-              detail="Static files referenced by the project"
-            />
-            <this.StatTile
-              label="Permissions"
-              value={String(this.spec.permissions.length)}
-              detail="Required extension permissions"
-            />
-            <this.StatTile
-              label="Host Permissions"
-              value={String(this.spec.hostPermissions.length)}
-              detail="Declared host patterns"
-            />
-          </div>
-        </section>
-      </div>
-    )
-  }
-
-  private ConnectedView() {
-    return (
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.85fr)]">
-        <section className="border">
-          <div className="flex items-center gap-2 p-4">
-            <Button
-              variant={this.state.activeTab === 'spec' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => (this.state.activeTab = 'spec')}
-            >
-              epos.json
-            </Button>
-            <Button
-              variant={this.state.activeTab === 'manifest' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => (this.state.activeTab = 'manifest')}
-            >
-              manifest.json
-            </Button>
-          </div>
-          <Separator />
-          {this.state.activeTab === 'spec' ? (
-            <this.JsonPanel
-              title="epos.json"
-              description="Raw project spec loaded from the connected folder."
-              inset={false}
-            >
-              {this.specText || 'No epos.json loaded'}
-            </this.JsonPanel>
-          ) : (
-            <this.JsonPanel
-              title="manifest.json"
-              description="Resolved manifest that will be used for export."
-              inset={false}
-            >
-              {JSON.stringify(this.manifest, null, 2)}
-            </this.JsonPanel>
-          )}
-        </section>
-
-        <section className="border">
-          <this.FileListView
-            title="Sources"
-            icon={<FileCode2 className="size-4" />}
-            items={this.sources.map(source => ({
-              path: source.path,
-              detail: `${this.formatBytes(source.size)}${source.path.endsWith('.js') ? (source.minified ? ' • minified' : ' • unminified') : ''}`,
-              tone: source.path.endsWith('.js') && !source.minified ? 'warning' : 'default',
-            }))}
-            emptyText="No sources loaded"
-          />
-          <Separator />
-          <this.FileListView
-            title="Assets"
-            icon={<FileJson2 className="size-4" />}
-            items={this.assets.map(asset => ({ path: asset.path, detail: this.formatBytes(asset.size) }))}
-            emptyText="No assets declared"
-          />
-        </section>
-      </div>
-    )
-  }
-
-  private StatTile({
-    label,
-    value,
-    detail,
-    boxed = true,
-  }: {
-    label: string
-    value: string
-    detail: string
-    boxed?: boolean
-  }) {
-    return (
-      <div className={cn('bg-background p-4', boxed && 'border')}>
-        <div className="text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">{label}</div>
-        <div className="mt-2 text-lg font-semibold">{value}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
-      </div>
-    )
-  }
-
-  private FileListView({
-    title,
-    icon,
-    items,
-    emptyText,
-  }: {
-    title: string
-    icon: React.ReactNode
-    items: { path: string; detail: string; tone?: 'default' | 'warning' }[]
-    emptyText: string
-  }) {
-    return (
-      <div className="bg-background">
-        <div className="flex items-center gap-2 p-4 text-sm font-medium">
-          {icon}
-          {title}
-          <span className="text-xs font-normal text-muted-foreground">{items.length}</span>
-        </div>
-        <Separator />
-        {items.length === 0 ? (
-          <div className="p-4 text-xs text-muted-foreground">{emptyText}</div>
-        ) : (
-          <div className="max-h-96 overflow-auto">
-            {items.map(item => (
-              <div key={item.path} className="flex items-start justify-between gap-3 border-b px-4 py-3 last:border-b-0">
-                <div className="min-w-0">
-                  <div className="truncate font-mono text-xs">{item.path}</div>
-                </div>
-                <div
-                  className={cn(
-                    'shrink-0 text-[11px] text-muted-foreground',
-                    item.tone === 'warning' && 'text-amber-700 dark:text-amber-400',
-                  )}
-                >
-                  {item.detail}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  private JsonPanel({
-    title,
-    description,
-    children,
-    inset = true,
-  }: {
-    title: string
-    description: string
-    children: string
-    inset?: boolean
-  }) {
-    return (
-      <section className={cn(inset && 'border')}>
-        <div className="p-4">
-          <div className="text-sm font-medium">{title}</div>
-          <div className="mt-1 text-xs text-muted-foreground">{description}</div>
-        </div>
-        {inset && <Separator />}
-        <pre className="max-h-104 overflow-auto p-4 font-mono text-[11px] leading-5">{children}</pre>
-      </section>
-    )
-  }
-
-  private ExportSheet() {
-    return (
-      <Sheet open={this.state.exportOpen} onOpenChange={open => (this.state.exportOpen = open)}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl">
-          <SheetHeader>
-            <SheetTitle>Export Project</SheetTitle>
-            <SheetDescription>
-              Review the current manifest, file totals, and source quality before exporting {this.spec.slug}-
-              {this.spec.version}.zip.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
-            <section className="grid gap-px border bg-border sm:grid-cols-2">
-              <this.StatTile
-                label="Archive"
-                value={`${this.spec.slug}-${this.spec.version}.zip`}
-                detail="Generated filename"
-                boxed={false}
-              />
-              <this.StatTile
-                label="Manifest Keys"
-                value={String(Object.keys(this.manifest ?? {}).length)}
-                detail="Resolved manifest entries"
-                boxed={false}
-              />
-              <this.StatTile
-                label="Assets"
-                value={String(this.assets.length)}
-                detail={this.formatBytes(this.totalAssetBytes)}
-                boxed={false}
-              />
-              <this.StatTile
-                label="Sources"
-                value={String(this.sources.length)}
-                detail={this.formatBytes(this.totalSourceBytes)}
-                boxed={false}
-              />
-            </section>
-
-            <this.JsonPanel title="Manifest" description="Resolved manifest payload included in the export archive.">
-              {JSON.stringify(this.manifest, null, 2)}
-            </this.JsonPanel>
-
-            <section className="border">
-              <div className="grid gap-px bg-border lg:grid-cols-2">
-                <this.FileListView
-                  title="Assets"
-                  icon={<FileJson2 className="size-4" />}
-                  items={this.assets.map(asset => ({ path: asset.path, detail: this.formatBytes(asset.size) }))}
-                  emptyText="No assets will be exported"
-                />
-                <this.FileListView
-                  title="Sources"
-                  icon={<FileCode2 className="size-4" />}
-                  items={this.sources.map(source => ({
-                    path: source.path,
-                    detail: `${this.formatBytes(source.size)}${source.path.endsWith('.js') ? (source.minified ? ' • minified' : ' • unminified') : ''}`,
-                    tone: source.path.endsWith('.js') && !source.minified ? 'warning' : 'default',
-                  }))}
-                  emptyText="No sources will be exported"
-                />
-              </div>
-            </section>
-          </div>
-
-          <SheetFooter>
-            <Button variant="outline" onClick={() => (this.state.exportOpen = false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                await this.export()
-                this.state.exportOpen = false
-              }}
-              disabled={!this.state.handle}
-            >
-              <Download />
-              Export Now
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
     )
   }
 
   SidebarView() {
     return (
-      <SidebarMenuItem>
-        <SidebarMenuButton isActive={this.selected} onClick={() => this.select()}>
+      <SidebarMenuItem className="relative flex h-9! items-center rounded-lg hover:bg-sidebar-accent">
+        <SidebarMenuButton isActive={this.selected} onClick={() => this.select()} className="h-full">
           <div
             className={cn(
-              'ml-0.5 size-1 rounded-full bg-green-500',
-              this.state.error && 'bg-red-500',
-              !this.enabled && 'bg-gray-500',
-              !this.state.handle && 'bg-gray-500',
+              'mx-0.5 size-1.25 shrink-0 rounded-full bg-green-600 dark:bg-green-300',
+              this.state.error && 'bg-destructive',
+              !this.state.handle && 'bg-amber-600 dark:bg-amber-300',
+              !this.enabled && 'bg-muted-foreground',
             )}
           />
-          <div className="truncate">{this.spec.name}</div>
+          <div className="truncate pr-9 font-normal">{this.spec.name}</div>
         </SidebarMenuButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="absolute right-2 h-4.5">
+              <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} size="sm" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{this.enabled ? 'Disable' : 'Enable'}</TooltipContent>
+        </Tooltip>
       </SidebarMenuItem>
+    )
+  }
+
+  private MainView() {
+    if (!this.state.ready) return null
+
+    return (
+      <div className="flex h-full w-full flex-col gap-6 p-6 pt-4">
+        <this.HeaderView />
+        <this.ContentView />
+      </div>
+    )
+  }
+
+  private HeaderView() {
+    const onRemoveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (e.shiftKey) {
+        this.remove()
+      } else {
+        this.toggleRemoveDialog()
+      }
+    }
+
+    return (
+      <div className="flex w-full">
+        <div>
+          <div className="text-xl">{this.spec.name}</div>
+          <div className="mt-1.5 flex gap-1.5 font-mono">
+            <this.StatusBadgeView />
+            <Badge variant="secondary">{this.spec.slug}</Badge>
+            <Badge variant="secondary">v{this.spec.version}</Badge>
+          </div>
+        </div>
+        <div className="ml-auto flex gap-3">
+          <Button variant="outline" onClick={onRemoveClick}>
+            <Trash2 />
+          </Button>
+          <Button variant="default" onClick={() => this.toggleExportDialog()}>
+            <Package />
+            Export
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  private StatusBadgeView() {
+    const dot = (className?: string) => <div className={cn('mr-0.5 size-1.25 rounded-full bg-current', className)} />
+    if (this.state.error) return <Badge variant="destructive">{dot()} Error</Badge>
+    if (!this.enabled) return <Badge variant="secondary">{dot('bg-muted-foreground')} Disabled</Badge>
+    if (!this.state.handle) return <Badge variant="yellow">{dot()} Not Connected</Badge>
+    return <Badge variant="green">{dot()} Connected</Badge>
+  }
+
+  private ContentView() {
+    // TODO: instead of cards, use TABS
+    // epos.json | manifest.json | Files | Settings
+    // in settings: debug (use production libs) and connected directory
+
+    return (
+      <Card className="relative grow">
+        <this.SpecView />
+        <this.ManifestView />
+        <this.FilesView />
+        <this.SettingsView />
+
+        <Tabs
+          value={this.state.selectedTabId}
+          onValueChange={tabId => this.selectTab(tabId as TabId)}
+          className="absolute top-4 right-4"
+        >
+          <TabsList variant="default" className="gap-1">
+            <TabsTrigger value="spec">epos.json</TabsTrigger>
+            <TabsTrigger value="manifest">Manifest</TabsTrigger>
+            <TabsTrigger value="files">Files</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </Card>
+    )
+
+    return (
+      <div className="mt-6 flex grow flex-col gap-6">
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>Warning</AlertTitle>
+          <AlertDescription className="wrap-anywhere">
+            This is a read-only view of your project files. To edit the files, connect the project to a directory on your
+            computer.
+          </AlertDescription>
+        </Alert>
+        <div className="flex gap-6">
+          <div className="flex h-full w-100 shrink-0 flex-col gap-6">
+            <Card className="h-50">
+              <CardContent>DIRECTORY</CardContent>
+            </Card>
+            <Card className="grow">
+              <CardContent>SOURCES</CardContent>
+            </Card>
+          </div>
+          <Card>
+            <CardContent>
+              <Tabs defaultValue="spec">
+                <TabsList>
+                  <TabsTrigger value="spec">epos.json</TabsTrigger>
+                  <TabsTrigger value="manifest">manifest.json</TabsTrigger>
+                </TabsList>
+                <TabsContent value="spec">
+                  <this.JsonView json={this.specText ?? '—'} />
+                </TabsContent>
+                <TabsContent value="manifest">
+                  <this.JsonView json={JSON.stringify(this.manifest, null, 2)} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  private SpecView() {
+    if (this.state.selectedTabId !== 'spec') return null
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>epos.json</CardTitle>
+          <CardDescription>Project specification file</CardDescription>
+        </CardHeader>
+        <CardContent className="grow">
+          <this.JsonView json={this.specText ?? '—'} />
+        </CardContent>
+      </>
+    )
+  }
+
+  private ManifestView() {
+    if (this.state.selectedTabId !== 'manifest') return null
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>Manifest</CardTitle>
+          <CardDescription>Project manifest file</CardDescription>
+        </CardHeader>
+        <CardContent></CardContent>
+      </>
+    )
+  }
+
+  private FilesView() {
+    if (this.state.selectedTabId !== 'files') return null
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>Files</CardTitle>
+          <CardDescription>Project source files and assets</CardDescription>
+        </CardHeader>
+        <CardContent></CardContent>
+      </>
+    )
+  }
+
+  private SettingsView() {
+    if (this.state.selectedTabId !== 'settings') return null
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>Settings</CardTitle>
+          <CardDescription>Project settings and configuration</CardDescription>
+        </CardHeader>
+        <CardContent></CardContent>
+      </>
+    )
+  }
+
+  private LoadingView() {
+    if (this.state.ready) return null
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Spinner className="size-6" />
+      </div>
+    )
+  }
+
+  private RemoveDialogView() {
+    if (!this.state.showRemoveDialog) return null
+    return (
+      <AlertDialog open={true} onOpenChange={() => this.toggleRemoveDialog()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <Trash2 className="size-4.5" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete {this.spec.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the project. The files on your computer will not be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => this.remove()}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )
+  }
+
+  private ExportDialogView() {
+    if (!this.state.showExportDialog) return null
+    const unminifiedJsSource = this.jsSources.find(source => !source.minified)
+
+    return (
+      <Dialog open={true} onOpenChange={() => this.toggleExportDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Project</DialogTitle>
+            <DialogDescription>Generate standalone extension ZIP bundle.</DialogDescription>
+            {unminifiedJsSource && (
+              <Alert variant="warning" className="mt-1">
+                <AlertTriangle />
+                <AlertTitle>Unminified JS detected</AlertTitle>
+                <AlertDescription className="wrap-anywhere">
+                  <span className="font-medium">{unminifiedJsSource.path}</span> is not minified. Probably your project is
+                  not built for production.
+                </AlertDescription>
+              </Alert>
+            )}
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="default" onClick={() => this.export()}>
+              {unminifiedJsSource ? 'Export Anyway' : 'Export'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  JsonView({ json }: { json: string }) {
+    return (
+      <pre className="max-h-[650px] overflow-auto rounded-md bg-card p-4">
+        <code>{json}</code>
+      </pre>
     )
   }
 

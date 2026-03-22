@@ -251,6 +251,12 @@ If Epos sees `@` key on an object, but can't find corresponding model, it will t
 
 ## Model Lifecycle Hooks
 
+::: warning
+
+This is advanced feature that most users won't need.
+
+:::
+
 Epos also exposes a few symbols for more advanced work:
 
 - `epos.state.PARENT` lets you access a parent object or array.
@@ -284,8 +290,6 @@ state.todos[epos.state.PARENT] === state // true
 state.todos[0][epos.state.PARENT] === state.todos // true
 state.todos.pop() // Logs "Removed from state"
 ```
-
-This is advanced usage that can be useful for managing models life cycle. Most of the time you won't need it.
 
 ## Disconnecting State
 
