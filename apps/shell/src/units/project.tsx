@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/alert-dialog.js'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
+import { ButtonGroup } from '@/components/ui/button-group.js'
 import { Button } from '@/components/ui/button.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.js'
 import {
@@ -22,7 +23,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog.js'
-import { Field, FieldLabel } from '@/components/ui/field.js'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from '@/components/ui/field.js'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item.js'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group.js'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js'
+import { Separator } from '@/components/ui/separator.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
 import { Spinner } from '@/components/ui/spinner.js'
 import { Switch } from '@/components/ui/switch.js'
@@ -30,7 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertTriangle, Package, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertCircle, AlertTriangle, BookOpen, FolderOpen, Library, Package, RefreshCw, Trash2, Unplug } from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -45,6 +59,7 @@ export class Project extends gl.Unit {
   assets: { path: string; size: number }[] = []
   jsSources: { path: string; size: number; minified: boolean }[] = []
   cssSources: { path: string; size: number }[] = []
+  selectedTabId: TabId = 'spec'
 
   constructor(parent: gl.Unit, params: ProjectBase) {
     super(parent)
@@ -67,7 +82,6 @@ export class Project extends gl.Unit {
       exportConfirmOpen: false,
       showRemoveDialog: false,
       showExportDialog: false,
-      selectedTabId: 'spec' as TabId,
       updatedAt: null as Date | null,
     }
   }
@@ -156,7 +170,7 @@ export class Project extends gl.Unit {
   }
 
   selectTab(tabId: TabId) {
-    this.state.selectedTabId = tabId
+    this.selectedTabId = tabId
   }
 
   async connect(template: Template | null = null) {
@@ -350,7 +364,7 @@ export class Project extends gl.Unit {
 
   View() {
     return (
-      <div className="flex h-full flex-col">
+      <div className="mx-auto flex h-full w-full max-w-200 flex-col">
         <this.MainView />
         <this.LoadingView />
         <this.RemoveDialogView />
@@ -365,8 +379,9 @@ export class Project extends gl.Unit {
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()} className="h-full">
           <div
             className={cn(
-              'mx-0.5 size-1.25 shrink-0 rounded-full bg-green-600 dark:bg-green-300',
+              'mx-0.5 size-1.25 shrink-0 rounded-full',
               this.state.error && 'bg-destructive',
+              !this.state.error && 'bg-green-600 dark:bg-green-300',
               !this.state.handle && 'bg-amber-600 dark:bg-amber-300',
               !this.enabled && 'bg-muted-foreground',
             )}
@@ -388,6 +403,7 @@ export class Project extends gl.Unit {
     return (
       <div className="flex h-full w-full flex-col gap-6 p-6 pt-4">
         <this.HeaderView />
+        <this.ErrorView />
         <this.ContentView />
       </div>
     )
@@ -423,11 +439,11 @@ export class Project extends gl.Unit {
   }
 
   private StatusBadgeView() {
-    const dot = (className?: string) => <div className={cn('mr-0.5 size-1.25 rounded-full bg-current', className)} />
+    const dot = (className?: string) => <div className={cn('mr-0.5 size-1 rounded-full bg-current', className)} />
     if (!this.enabled) return <Badge variant="secondary">{dot('bg-muted-foreground')} disabled</Badge>
-    if (!this.state.handle) return <Badge variant="yellow">{dot()} not connected</Badge>
+    if (!this.state.handle) return <Badge variant="amber">{dot()} not connected</Badge>
     if (this.state.error) return <Badge variant="destructive">{dot()} error</Badge>
-    return <Badge variant="green">{dot()} connected</Badge>
+    return <Badge variant="green">{dot()} live</Badge>
   }
 
   private ActionsView() {
@@ -446,7 +462,7 @@ export class Project extends gl.Unit {
             <Trash2 />
           </Button>
         </TooltipWrap>
-        <TooltipWrap text="Refresh project">
+        <TooltipWrap text="Reload project">
           <Button variant="outline" onClick={() => this.refresh()}>
             <RefreshCw />
           </Button>
@@ -469,101 +485,72 @@ export class Project extends gl.Unit {
     const ms = this.state.updatedAt.getMilliseconds().toString().padStart(3, '0')
     return (
       <div className="text-xs/[20px] text-neutral-400 not-first:font-mono dark:text-neutral-600">
-        Updated at {hh}:{mm}:{ss}:{ms}
+        updated at {hh}:{mm}:{ss}:{ms}
       </div>
     )
   }
 
-  private ContentView() {
-    // TODO: instead of cards, use TABS
-    // epos.json | manifest.json | Files | Settings
-    // in settings: debug (use production libs) and connected directory
+  private ErrorView() {
+    if (!this.state.error) return null
+    const cause = this.state.error.cause
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="size-4" />
+        <AlertTitle>{this.state.error.message}</AlertTitle>
+        {!!cause && <AlertDescription>{this.$.utils.is.error(cause) ? cause.message : String(cause)}</AlertDescription>}
+      </Alert>
+    )
+  }
 
+  private ContentView() {
     const { title, description, View } = {
       spec: {
         title: 'epos.json',
-        description: 'View and edit your project specification file (epos.json)',
+        description: `Raw content of the epos.json file.`,
         View: this.SpecView,
       },
       manifest: {
-        title: 'Extension Manifest',
-        description: 'View your project manifest file (manifest.json) generated by epos based on your spec',
+        title: 'manifest.json',
+        description: `Generated extension manifest based on epos.json.`,
         View: this.ManifestView,
       },
       files: {
         title: 'Project Files',
-        description: 'View your project source files and assets',
+        description: 'View information about project files.',
         View: this.FilesView,
       },
       settings: {
         title: 'Project Settings',
-        description: 'Configure your project settings and preferences',
+        description: 'Manage project preferences.',
         View: this.SettingsView,
       },
-    }[this.state.selectedTabId]
+    }[this.selectedTabId]
 
     return (
       <Card className="relative gap-0 p-0">
-        <CardHeader className="border-b p-4">
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4">
-          <View />
-        </CardContent>
-
         <Tabs
-          value={this.state.selectedTabId}
+          value={this.selectedTabId}
           onValueChange={tabId => this.selectTab(tabId as TabId)}
           className="absolute top-4 right-4"
         >
           <TabsList variant="default" className="gap-1">
             <TabsTrigger value="spec">epos.json</TabsTrigger>
-            <TabsTrigger value="manifest">Manifest</TabsTrigger>
+            <TabsTrigger value="manifest">manifest.json</TabsTrigger>
             <TabsTrigger value="files">Files</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
         </Tabs>
-      </Card>
-    )
 
-    return (
-      <div className="mt-6 flex grow flex-col gap-6">
-        <Alert variant="destructive">
-          <AlertTriangle />
-          <AlertTitle>Warning</AlertTitle>
-          <AlertDescription className="wrap-anywhere">
-            This is a read-only view of your project files. To edit the files, connect the project to a directory on your
-            computer.
-          </AlertDescription>
-        </Alert>
-        <div className="flex gap-6">
-          <div className="flex h-full w-100 shrink-0 flex-col gap-6">
-            <Card className="h-50">
-              <CardContent>DIRECTORY</CardContent>
-            </Card>
-            <Card className="grow">
-              <CardContent>SOURCES</CardContent>
-            </Card>
+        <CardHeader className="border-b p-4">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="min-h-0 overflow-auto p-0">
+          <div className="w-full min-w-fit p-4">
+            <View />
           </div>
-          <Card>
-            <CardContent>
-              <Tabs defaultValue="spec">
-                <TabsList>
-                  <TabsTrigger value="spec">epos.json</TabsTrigger>
-                  <TabsTrigger value="manifest">manifest.json</TabsTrigger>
-                </TabsList>
-                <TabsContent value="spec">
-                  <this.JsonView json={this.specText ?? '—'} />
-                </TabsContent>
-                <TabsContent value="manifest">
-                  <this.JsonView json={JSON.stringify(this.manifest, null, 2)} />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -580,13 +567,151 @@ export class Project extends gl.Unit {
   }
 
   private SettingsView() {
+    if (!this.state.handle) return null
+
     return (
-      <div>
-        <Field>
-          <FieldLabel>Debug Mode</FieldLabel>
-          <Switch checked={this.debug} onCheckedChange={() => this.toggleDebug()} />
-        </Field>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="text-sm font-medium">Connected Folder</div>
+            <div className="text-sm text-muted-foreground">Local folder where project files are located.</div>
+          </div>
+          <div className="flex gap-2">
+            <ButtonGroup>
+              <Button variant="outline" size="sm">
+                <FolderOpen />
+                ./{this.state.handle.name}
+              </Button>
+              <Button variant="outline" size="sm">
+                Disconnect
+              </Button>
+            </ButtonGroup>
+          </div>
+        </div>
+        <Separator />
+        <div className="flex justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="text-sm font-medium">Built-in Libraries</div>
+            <div className="text-sm text-muted-foreground">
+              <div>Choose which builds of React, MobX, and Yjs to use.</div>
+              <div className="mt-1 flex items-center gap-1.5 opacity-40">
+                <AlertCircle className="size-3.5 shrink-0" />
+                Does not affect the exported bundle
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Select value={this.debug ? 'development' : 'production'} onValueChange={value => this.toggleDebug()}>
+              <SelectTrigger size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectGroup>
+                  <SelectItem value="development">Development</SelectItem>
+                  <SelectItem value="production">Production</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
+    )
+
+    return (
+      <FieldGroup className="max-w-sm">
+        <FieldSet>
+          <FieldLabel>
+            <FolderOpen className="size-4" />
+            Connected Folder
+          </FieldLabel>
+          <FieldDescription>
+            Currently connected folder. To select another folder, disconnect the current one first.
+          </FieldDescription>
+          <FieldGroup>
+            <this.ConnectedFolderView />
+          </FieldGroup>
+        </FieldSet>
+        <FieldSeparator />
+        <FieldSet>
+          <FieldLabel>
+            <BookOpen className="size-4" />
+            Built-in Libs
+          </FieldLabel>
+          <FieldDescription>Choose which version of built-in libraries to use (React, MobX, Yjs).</FieldDescription>
+          <FieldGroup>
+            <Field>
+              <RadioGroup defaultValue="plus" className="max-w-sm">
+                <FieldLabel htmlFor="plus-plan">
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldTitle>Development</FieldTitle>
+                      <FieldDescription>Use unminified dev builds.</FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem value="plus" id="plus-plan" />
+                  </Field>
+                </FieldLabel>
+                <FieldLabel htmlFor="pro-plan">
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldTitle>Production</FieldTitle>
+                      <FieldDescription>Use minified production builds.</FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem value="pro" id="pro-plan" />
+                  </Field>
+                </FieldLabel>
+              </RadioGroup>
+            </Field>
+          </FieldGroup>
+          <FieldDescription className="flex gap-2">
+            <AlertCircle className="relative top-0.5 size-4 shrink-0" />
+            This option does not affect the exported bundle which always uses production builds.
+          </FieldDescription>
+        </FieldSet>
+      </FieldGroup>
+    )
+  }
+
+  private ConnectedFolderView() {
+    if (!this.state.handle) return null
+
+    // return (
+    //   <Field>
+    //     <FieldTitle>Connected Folder</FieldTitle>
+    //     <FieldContent>
+    //       <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+    //         <FolderOpen className="size-4" />
+    //         <div className="flex flex-col">
+    //           <div className="text-sm">./{this.state.handle.name}</div>
+    //           <div className="text-xs text-muted-foreground">Currently connected folder.</div>
+    //         </div>
+    //       </div>
+    //     </FieldContent>
+    //   </Field>
+    // )
+
+    // return (
+    //   <div className="flex min-w-[400px] justify-between">
+    //     <div>
+    //       <FolderOpen className="mr-2 inline size-4" />
+    //       Connected Folder
+    //     </div>
+    //     <div>./{this.state.handle.name}</div>
+    //   </div>
+    // )
+    return (
+      <Item variant="outline" className="min-w-[400px]">
+        {/* <ItemMedia variant="icon">
+          <FolderOpen />
+        </ItemMedia> */}
+        <ItemContent>
+          <ItemTitle>./{this.state.handle.name}</ItemTitle>
+        </ItemContent>
+        <ItemActions>
+          <Button size="sm" variant="outline">
+            Disconnect
+          </Button>
+        </ItemActions>
+      </Item>
     )
   }
 
@@ -633,7 +758,7 @@ export class Project extends gl.Unit {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Export Project</DialogTitle>
-            <DialogDescription>Generate standalone extension ZIP bundle.</DialogDescription>
+            <DialogDescription>Generate a standalone extension ZIP bundle.</DialogDescription>
             {unminifiedJsSource && (
               <Alert variant="warning" className="mt-1">
                 <AlertTriangle />
@@ -658,16 +783,12 @@ export class Project extends gl.Unit {
     )
   }
 
-  JsonView({ json }: { json: string }) {
-    return (
-      <pre className="max-h-[650px] overflow-auto rounded-md bg-card p-4">
-        <code>{json}</code>
-      </pre>
-    )
-  }
-
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {}
+  static versioner: any = {
+    1() {
+      this.selectedTabId = 'spec'
+    },
+  }
 }

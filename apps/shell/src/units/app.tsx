@@ -76,8 +76,8 @@ export class App extends gl.Unit {
       <Sidebar variant="sidebar">
         <SidebarHeader className="border-b">
           <SidebarMenu>
-            <SidebarMenuItem className="flex items-center p-1 font-mono text-xs font-semibold">
-              <this.LogoView className="size-4.5" />
+            <SidebarMenuItem className="flex items-center p-2 font-mono text-xs font-semibold">
+              <this.LogoView className="size-4" />
               <div className="ml-2">[epos]</div>
               <div className="ml-auto text-muted-foreground">v1.8</div>
             </SidebarMenuItem>

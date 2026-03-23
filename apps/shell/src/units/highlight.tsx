@@ -13,10 +13,6 @@ export class Highlight extends gl.Unit {
   }
 
   JsonView({ value }: { value: string }) {
-    return (
-      <pre>
-        <code dangerouslySetInnerHTML={{ __html: hljs.highlight(value, { language: 'json' }).value }} />
-      </pre>
-    )
+    return <pre dangerouslySetInnerHTML={{ __html: hljs.highlight(value, { language: 'json' }).value }} />
   }
 }
