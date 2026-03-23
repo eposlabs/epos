@@ -61,7 +61,7 @@ export class App extends gl.Unit {
   View() {
     if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
-      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '22rem' } as React.CSSProperties}>
         <TooltipProvider delayDuration={500} disableHoverableContent={true}>
           <this.highlight.StyleView />
           <this.SidebarView />

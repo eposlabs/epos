@@ -44,7 +44,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertCircle, AlertTriangle, BookOpen, FolderOpen, Library, Package, RefreshCw, Trash2, Unplug } from 'lucide-react'
+import {
+  AlertCircle,
+  AlertTriangle,
+  Book,
+  BookOpen,
+  FolderOpen,
+  Library,
+  Package,
+  RefreshCw,
+  Trash2,
+  Unplug,
+} from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -515,42 +526,33 @@ export class Project extends gl.Unit {
         View: this.ManifestView,
       },
       files: {
-        title: 'Project Files',
-        description: 'View information about project files.',
+        title: 'Files',
+        description: 'Project sources and assets.',
         View: this.FilesView,
       },
       settings: {
-        title: 'Project Settings',
-        description: 'Manage project preferences.',
+        title: 'Settings',
+        description: 'Configure project settings.',
         View: this.SettingsView,
       },
     }[this.selectedTabId]
 
     return (
-      <Card className="relative gap-0 p-0">
-        <Tabs
-          value={this.selectedTabId}
-          onValueChange={tabId => this.selectTab(tabId as TabId)}
-          className="absolute top-4 right-4"
-        >
-          <TabsList variant="default" className="gap-1">
+      <div className="flex flex-col gap-3">
+        <Tabs value={this.selectedTabId} onValueChange={tabId => this.selectTab(tabId as TabId)}>
+          <TabsList variant="line" className="gap-1">
             <TabsTrigger value="spec">epos.json</TabsTrigger>
             <TabsTrigger value="manifest">manifest.json</TabsTrigger>
             <TabsTrigger value="files">Files</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
         </Tabs>
-
-        <CardHeader className="border-b p-4">
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-0 overflow-auto p-0">
-          <div className="w-full min-w-fit p-4">
+        <div className="min-h-0 overflow-auto rounded-xl border-card bg-card p-0 text-sm ring-1 ring-foreground/10">
+          <div className="w-full min-w-fit p-5">
             <View />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
@@ -559,7 +561,16 @@ export class Project extends gl.Unit {
   }
 
   private ManifestView() {
-    return <this.$.highlight.JsonView value={JSON.stringify(this.manifest, null, 2)} />
+    return (
+      <div className="flex flex-col">
+        <div className="">
+          <this.$.highlight.JsonView value={JSON.stringify(this.manifest, null, 2)} />
+        </div>
+        <div className="absolute top-0 right-0 rounded-bl-xl border-b border-l px-3 py-1.5 text-sm text-muted-foreground">
+          Generated manifest.json based on the epos.json.
+        </div>
+      </div>
+    )
   }
 
   private FilesView() {
@@ -570,11 +581,14 @@ export class Project extends gl.Unit {
     if (!this.state.handle) return null
 
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <div className="flex justify-between">
           <div className="flex flex-col gap-1">
-            <div className="text-sm font-medium">Connected Folder</div>
-            <div className="text-sm text-muted-foreground">Local folder where project files are located.</div>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FolderOpen className="size-3.5" />
+              Connected Folder
+            </div>
+            <div className="text-sm text-muted-foreground">Local folder where project files are located</div>
           </div>
           <div className="flex gap-2">
             <ButtonGroup>
@@ -591,11 +605,14 @@ export class Project extends gl.Unit {
         <Separator />
         <div className="flex justify-between">
           <div className="flex flex-col gap-1">
-            <div className="text-sm font-medium">Built-in Libraries</div>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Book className="size-3.5" />
+              Built-in Libraries
+            </div>
             <div className="text-sm text-muted-foreground">
-              <div>Choose which builds of React, MobX, and Yjs to use.</div>
+              <div>Choose which builds of React, MobX, and Yjs to use</div>
               <div className="mt-1 flex items-center gap-1.5 opacity-40">
-                <AlertCircle className="size-3.5 shrink-0" />
+                {/* <AlertCircle className="size-3.5 shrink-0" /> */}
                 Does not affect the exported bundle
               </div>
             </div>
