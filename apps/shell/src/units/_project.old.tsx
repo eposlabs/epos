@@ -1,3 +1,17 @@
+// if (template) {
+//   const files = this.inert.templates[template]
+//   for (const file of files) {
+//     const exists = await this.$.utils.fs.fileExists(handle, file.path)
+//     if (exists && !file.optional) {
+//       throw new Error(`Failed to initialize from "${template}" template: ${file.path} already exists`)
+//     }
+//     if (!exists) {
+//       const blob = await epos.assets.get(`/templates/${template}/${file.path}`)
+//       if (!blob) throw this.never()
+//       await this.$.utils.fs.writeFile(handle, file.path, blob)
+//     }
+//   }
+// }
 import {
   AlertDialog,
   AlertDialogAction,
