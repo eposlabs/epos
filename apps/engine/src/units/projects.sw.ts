@@ -250,6 +250,7 @@ export class Projects extends sw.Unit {
       } else if (this.$.utils.is.string(project.spec.action)) {
         await this.$.medium.openTab(project.spec.action)
       }
+      return
     }
 
     // Process action by `epos-shell` if installed

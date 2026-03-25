@@ -1,12 +1,7 @@
-import {
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-} from '@/components/ui/sidebar.js'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.js'
-import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button.js'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty.js'
+import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar.js'
+import { FolderCode, Plus } from 'lucide-react'
 
 export class Projects extends gl.Unit {
   dict: { [projectId: string]: gl.Project } = {}
@@ -14,10 +9,6 @@ export class Projects extends gl.Unit {
 
   get list() {
     return Object.values(this.dict)
-  }
-
-  get empty() {
-    return this.list.length === 0
   }
 
   get selected() {
@@ -80,64 +71,47 @@ export class Projects extends gl.Unit {
   // ============================================================================
 
   View() {
-    if (!this.selected) return null
+    if (!this.selected) return <this.EmptyView />
     return <this.selected.View />
   }
 
   SidebarView() {
-    return (
-      <>
-        <this.SidebarMainView />
-        <this.SidebarEmptyView />
-      </>
-    )
-  }
-
-  private SidebarMainView() {
-    if (this.empty) return null
+    if (this.list.length === 0) return null
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <Tooltip delayDuration={400}>
-          <TooltipTrigger asChild>
-            <SidebarGroupAction title="Create project" onClick={() => this.create()}>
-              <Plus /> <span className="sr-only">Create project</span>
-            </SidebarGroupAction>
-          </TooltipTrigger>
-          <TooltipContent>Create project</TooltipContent>
-        </Tooltip>
-        <SidebarGroupContent>
+        <SidebarGroupContent className="flex flex-col gap-3">
           <SidebarMenu className="gap-1">
             {this.list.map(project => (
               <project.SidebarView key={project.id} />
             ))}
           </SidebarMenu>
+          <Button size="sm" variant="outline" onClick={() => this.create()}>
+            <Plus className="mr-2 -ml-3" />
+            Add Project
+          </Button>
         </SidebarGroupContent>
       </SidebarGroup>
     )
   }
 
-  private SidebarEmptyView() {
-    if (!this.empty) return null
+  private EmptyView() {
+    if (this.list.length > 0) return null
     return (
-      <SidebarGroup>
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <Tooltip delayDuration={400}>
-          <TooltipTrigger asChild>
-            <SidebarGroupAction title="Create project" onClick={() => this.create()}>
-              <Plus /> <span className="sr-only">Create project</span>
-            </SidebarGroupAction>
-          </TooltipTrigger>
-          <TooltipContent>Create project</TooltipContent>
-        </Tooltip>
-        <SidebarGroupContent>
-          <SidebarMenu className="gap-1">
-            {this.list.map(project => (
-              <project.SidebarView key={project.id} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FolderCode />
+          </EmptyMedia>
+          <EmptyTitle>No Projects Yet</EmptyTitle>
+          <EmptyDescription>
+            You haven&apos;t created any projects yet. Get started by creating your first project.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className="flex-row justify-center gap-2">
+          <Button onClick={() => this.create()}>Create Project</Button>
+        </EmptyContent>
+      </Empty>
     )
   }
 

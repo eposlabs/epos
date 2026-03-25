@@ -131,8 +131,16 @@
 /* MARK: Custom
 // ============================================================================ */
 
+@custom-variant squircle {
+  @supports (corner-shape: squircle) {
+    corner-shape: squircle;
+    @slot;
+  }
+}
+
 :root {
   color: var(--color-foreground);
+  /* --sidebar: var(--card); */
 }
 
 @theme inline {

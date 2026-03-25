@@ -13,7 +13,7 @@
 
   "targets": [
     {
-      "matches": ["frame:*://*.example.com/*", "<popup>"],
+      "matches": ["https://epos.dev/@x1"],
       "load": ["/x1.js"]
     }
     // {

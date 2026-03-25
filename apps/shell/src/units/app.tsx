@@ -23,7 +23,7 @@ export class App extends gl.Unit {
   async init() {
     document.documentElement.classList.add('antialiased')
     this.removeUrlPath()
-    // await this.ensureSinglePinnedTab()
+    await this.ensureSinglePinnedTab()
   }
 
   async exportKit() {
@@ -61,8 +61,8 @@ export class App extends gl.Unit {
   View() {
     if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
-      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '22rem' } as React.CSSProperties}>
-        <TooltipProvider delayDuration={500} disableHoverableContent={true}>
+      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+        <TooltipProvider delayDuration={500}>
           <this.highlight.StyleView />
           <this.SidebarView />
           <this.BodyView />

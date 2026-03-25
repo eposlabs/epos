@@ -1,6 +1,6 @@
 # Vite Setup
 
-This guide shows how to set up Epos with Vite, TypeScript, React, and Tailwind CSS.
+This guide shows how to set up Epos with Vite, TypeScript, and Tailwind CSS.
 
 You can skip this guide and just select the `Vite` template when creating a new project in the [app.epos.dev](https://app.epos.dev) dashboard. That sets up all the necessary configuration. If you want to understand how it works or customize the setup, read on.
 

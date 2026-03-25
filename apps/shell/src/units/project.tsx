@@ -11,9 +11,7 @@ import {
 } from '@/components/ui/alert-dialog.js'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
-import { ButtonGroup } from '@/components/ui/button-group.js'
 import { Button } from '@/components/ui/button.js'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.js'
 import {
   Dialog,
   DialogClose,
@@ -23,39 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog.js'
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldSet,
-  FieldTitle,
-} from '@/components/ui/field.js'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item.js'
+import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field.js'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group.js'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js'
 import { Separator } from '@/components/ui/separator.js'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar.js'
 import { Spinner } from '@/components/ui/spinner.js'
 import { Switch } from '@/components/ui/switch.js'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import {
-  AlertCircle,
-  AlertTriangle,
-  Book,
-  BookOpen,
-  FolderOpen,
-  Library,
-  Package,
-  RefreshCw,
-  Trash2,
-  Unplug,
-} from 'lucide-react'
+import { AlertTriangle, Bolt, BookText, File, Folder, FolderOpen, Layers, Package, RefreshCw, Trash2 } from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -93,6 +70,7 @@ export class Project extends gl.Unit {
       exportConfirmOpen: false,
       showRemoveDialog: false,
       showExportDialog: false,
+      showConnectDialog: false,
       updatedAt: null as Date | null,
     }
   }
@@ -160,16 +138,19 @@ export class Project extends gl.Unit {
     this.$projects.selectedId = this.id
   }
 
-  async toggle() {
-    await epos.projects.update(this.id, { enabled: !this.enabled })
+  async setEnabled(value: boolean) {
+    await epos.projects.update(this.id, { enabled: value })
   }
 
-  async toggleDebug() {
-    await epos.projects.update(this.id, { debug: !this.debug })
+  async setDebug(value: boolean) {
+    await epos.projects.update(this.id, { debug: value })
   }
 
   async remove() {
     await epos.projects.remove(this.id)
+    const firstProject = this.$projects.list[0]
+    console.warn(this.$projects.list)
+    if (firstProject) firstProject.select()
   }
 
   toggleRemoveDialog() {
@@ -178,6 +159,10 @@ export class Project extends gl.Unit {
 
   toggleExportDialog() {
     this.state.showExportDialog = !this.state.showExportDialog
+  }
+
+  toggleConnectDialog() {
+    this.state.showConnectDialog = !this.state.showConnectDialog
   }
 
   selectTab(tabId: TabId) {
@@ -375,11 +360,12 @@ export class Project extends gl.Unit {
 
   View() {
     return (
-      <div className="mx-auto flex h-full w-full max-w-200 flex-col">
+      <div className="mx-auto flex h-full w-full max-w-180 flex-col">
         <this.MainView />
         <this.LoadingView />
         <this.RemoveDialogView />
         <this.ExportDialogView />
+        <this.ConnectDialogView />
       </div>
     )
   }
@@ -399,9 +385,9 @@ export class Project extends gl.Unit {
           />
           <div className="truncate pr-9 font-normal">{this.spec.name}</div>
         </SidebarMenuButton>
-        <TooltipWrap text={this.enabled ? 'Disable' : 'Enable'}>
+        <TooltipWrap text={this.enabled ? 'Enabled' : 'Disabled'}>
           <div className="absolute right-2 h-4.5">
-            <Switch checked={this.enabled} onCheckedChange={() => this.toggle()} size="sm" />
+            <Switch checked={this.enabled} onCheckedChange={value => this.setEnabled(value)} size="sm" />
           </div>
         </TooltipWrap>
       </SidebarMenuItem>
@@ -412,9 +398,10 @@ export class Project extends gl.Unit {
     if (!this.state.ready) return null
 
     return (
-      <div className="flex h-full w-full flex-col gap-6 p-6 pt-4">
+      <div className="flex size-full flex-col gap-4 p-4">
         <this.HeaderView />
         <this.ErrorView />
+        <this.TabsView />
         <this.ContentView />
       </div>
     )
@@ -422,7 +409,7 @@ export class Project extends gl.Unit {
 
   private HeaderView() {
     return (
-      <div className="flex w-full flex-col gap-1.5">
+      <div className="flex w-full flex-col gap-1.5 border-b pb-4">
         <div className="flex justify-between">
           <this.NameView />
           <this.ActionsView />
@@ -441,7 +428,7 @@ export class Project extends gl.Unit {
 
   private BadgesView() {
     return (
-      <div className="flex gap-1.5 font-mono">
+      <div className="flex gap-1.5 font-mono select-none">
         <this.StatusBadgeView />
         <Badge variant="secondary">{this.spec.slug}</Badge>
         <Badge variant="secondary">v{this.spec.version}</Badge>
@@ -458,21 +445,9 @@ export class Project extends gl.Unit {
   }
 
   private ActionsView() {
-    const onRemoveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (e.shiftKey) {
-        this.remove()
-      } else {
-        this.toggleRemoveDialog()
-      }
-    }
-
+    if (!this.state.handle) return null
     return (
       <div className="flex gap-2">
-        <TooltipWrap text="Delete project">
-          <Button variant="outline" onClick={onRemoveClick}>
-            <Trash2 />
-          </Button>
-        </TooltipWrap>
         <TooltipWrap text="Reload project">
           <Button variant="outline" onClick={() => this.refresh()}>
             <RefreshCw />
@@ -495,8 +470,8 @@ export class Project extends gl.Unit {
     const ss = this.state.updatedAt.getSeconds().toString().padStart(2, '0')
     const ms = this.state.updatedAt.getMilliseconds().toString().padStart(3, '0')
     return (
-      <div className="text-xs/[20px] text-neutral-400 not-first:font-mono dark:text-neutral-600">
-        updated at {hh}:{mm}:{ss}:{ms}
+      <div className="font-mono text-xs/[20px] text-muted-foreground">
+        Updated at {hh}:{mm}:{ss}:{ms}
       </div>
     )
   }
@@ -505,120 +480,325 @@ export class Project extends gl.Unit {
     if (!this.state.error) return null
     const cause = this.state.error.cause
     return (
-      <Alert variant="destructive">
-        <AlertTriangle className="size-4" />
-        <AlertTitle>{this.state.error.message}</AlertTitle>
-        {!!cause && <AlertDescription>{this.$.utils.is.error(cause) ? cause.message : String(cause)}</AlertDescription>}
-      </Alert>
+      <div className="flex gap-2.5 border-l-3 border-destructive bg-destructive/10 py-2 pr-4 pl-2.5 text-sm text-destructive">
+        <AlertTriangle className="relative top-0.5 size-4 shrink-0" />
+        <div className="space-y-1">
+          <div className="font-medium">{this.state.error.message}</div>
+          {!!cause && <div>{this.$.utils.is.error(cause) ? cause.message : String(cause)}</div>}
+        </div>
+      </div>
+    )
+  }
+
+  private TabsView() {
+    if (!this.state.handle) return null
+
+    return (
+      <Tabs value={this.selectedTabId} onValueChange={tabId => this.selectTab(tabId as TabId)} className="select-none">
+        <TabsList variant="default" className="gap-1">
+          <TabsTrigger value="spec" className="_pb-4">
+            epos.json
+          </TabsTrigger>
+          <TabsTrigger value="manifest" className="_pb-4">
+            manifest.json
+          </TabsTrigger>
+          <TabsTrigger value="files" className="_pb-4">
+            Files
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="_pb-4">
+            Settings
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     )
   }
 
   private ContentView() {
-    const { title, description, View } = {
-      spec: {
-        title: 'epos.json',
-        description: `Raw content of the epos.json file.`,
-        View: this.SpecView,
-      },
-      manifest: {
-        title: 'manifest.json',
-        description: `Generated extension manifest based on epos.json.`,
-        View: this.ManifestView,
-      },
-      files: {
-        title: 'Files',
-        description: 'Project sources and assets.',
-        View: this.FilesView,
-      },
-      settings: {
-        title: 'Settings',
-        description: 'Configure project settings.',
-        View: this.SettingsView,
-      },
-    }[this.selectedTabId]
+    return (
+      <>
+        {/* <div className="_p-4 mb-4 rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium">Setup Project</div>
+          <div className="mt-1 max-w-sm text-sm text-muted-foreground">
+            To get started, connect a local folder containing your project files, or initialize a new project from a
+            template.
+          </div>
+        </div> */}
+        <div className="overflow-auto rounded-xl border bg-card">
+          <this.SetupView />
+          <this.SpecView />
+          <this.ManifestView />
+          <this.FilesView />
+          <this.SettingsView />
+        </div>
+      </>
+    )
+  }
+
+  private SetupView() {
+    if (this.state.handle) return null
+
+    // return (
+    //   <div className="flex flex-col">
+    //     <div className="flex justify-between p-4">
+    //       <div className="flex flex-col gap-1">
+    //         <div className="flex items-center gap-2 text-sm font-medium">Connect Folder</div>
+    //         <div className="space-y-0.5 text-sm text-muted-foreground">
+    //           <div>The project has to be connected to a folder on your computer.</div>
+    //         </div>
+    //       </div>
+    //     </div>
+    //     <Separator />
+    //     <div className="flex justify-between p-4">
+    //       <div className="flex flex-col gap-1">
+    //         <div className="flex items-center gap-2 text-sm font-medium">
+    //           <Layers className="size-3.5" />
+    //           Use Template
+    //           <Badge variant="secondary" className="font-mono text-xs">
+    //             recommended
+    //           </Badge>
+    //         </div>
+    //         <div className="space-y-0.5 text-sm text-muted-foreground">Vite + TypeScript + Tailwind CSS</div>
+    //       </div>
+    //       <div className="flex gap-2">
+    //         <Switch checked={true} onCheckedChange={() => {}} />
+    //       </div>
+    //     </div>
+    //     <Separator />
+    //     <div className="grid w-full grid-cols-2 gap-4 p-4">
+    //       <Button size="lg" onClick={() => this.toggleConnectDialog()}>
+    //         <FolderOpen />
+    //         Select Folder
+    //         {/* <ArrowRight /> */}
+    //       </Button>
+    //       <Button variant="outline" size="lg" onClick={() => this.remove()}>
+    //         Delete
+    //       </Button>
+    //     </div>
+    //     {/* <Separator />
+    //     <div className="flex justify-between p-4">
+    //       <div className="flex flex-col gap-1">
+    //         <div className="flex items-center gap-2 text-sm font-medium">
+    //           <Bolt className="size-3.5" />
+    //           Manual
+    //         </div>
+    //         <div className="max-w-md space-y-0.5 text-sm text-muted-foreground">
+    //           Just connect folder. Select this option if you are connecting existing Epos project or want to set it up
+    //           manually.
+    //         </div>
+    //       </div>
+    //       <div className="flex gap-2">
+    //         <Button size="sm" onClick={() => this.toggleConnectDialog()} className="gap-1.5">
+    //           Select Folder <ArrowRight />
+    //         </Button>
+    //       </div>
+    //     </div>
+    //     <Separator />
+    //     <div className="flex justify-between p-4">
+    //       <div className="flex flex-col gap-1">
+    //         <div className="flex items-center gap-2 text-sm font-medium">
+    //           <Trash2 className="size-3.5" />
+    //           Delete Project
+    //         </div>
+    //         <div className="space-y-0.5 text-sm text-muted-foreground">Delete this project from project list.</div>
+    //       </div>
+    //       <div className="flex gap-2">
+    //         <Button variant="destructive" size="sm" onClick={() => this.remove()}>
+    //           Delete
+    //         </Button>
+    //       </div>
+    //     </div> */}
+    //   </div>
+    // )
 
     return (
-      <div className="flex flex-col gap-3">
-        <Tabs value={this.selectedTabId} onValueChange={tabId => this.selectTab(tabId as TabId)}>
-          <TabsList variant="line" className="gap-1">
-            <TabsTrigger value="spec">epos.json</TabsTrigger>
-            <TabsTrigger value="manifest">manifest.json</TabsTrigger>
-            <TabsTrigger value="files">Files</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="min-h-0 overflow-auto rounded-xl border-card bg-card p-0 text-sm ring-1 ring-foreground/10">
-          <div className="w-full min-w-fit p-5">
-            <View />
+      <div className="flex flex-col">
+        <div className="p-4 pb-5">
+          <div className="flex items-center text-sm font-medium">
+            {/* <Info className="mr-2 size-3.5" /> */}
+            Connect Folder
           </div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            The project has to be connected to a folder on your computer.
+          </div>
+
+          <RadioGroup defaultValue="comfortable" className="mt-5 w-fit max-w-md space-y-2">
+            <Field orientation="horizontal">
+              <RadioGroupItem value="default" id="desc-r1" />
+              <FieldContent>
+                <FieldLabel htmlFor="desc-r1">
+                  Use Template
+                  <Layers className="size-3.5" />
+                  {/* <Badge variant="secondary" className="pl-1 font-mono text-xs">
+                    recommended
+                  </Badge> */}
+                </FieldLabel>
+                <FieldDescription>
+                  Initialize preconfigured project structure.
+                  <br />
+                  Vite + TypeScript + Tailwind CSS.
+                  {/* Initialize preconfigured project structure with Vite, TypeScript, and Tailwind CSS. */}
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field orientation="horizontal">
+              <RadioGroupItem value="comfortable" id="desc-r2" />
+              <FieldContent>
+                <FieldLabel htmlFor="desc-r2">
+                  Manual Setup <Bolt className="size-3.5" />
+                </FieldLabel>
+                <FieldDescription>
+                  Just connect a folder. Select this option if you are connecting existing Epos project or want to set it up
+                  manually.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </RadioGroup>
+
+          {/* <RadioGroup defaultValue="plus" className="mt-4 max-w-sm">
+            <FieldLabel htmlFor="plus-plan">
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>Default Template</FieldTitle>
+                  <FieldDescription>Vite + TypeScript + Tailwind CSS</FieldDescription>
+                </FieldContent>
+                <RadioGroupItem value="plus" id="plus-plan" />
+              </Field>
+            </FieldLabel>
+            <FieldLabel htmlFor="pro-plan">
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>No Template</FieldTitle>
+                  <FieldDescription>Just connect local folder</FieldDescription>
+                </FieldContent>
+                <RadioGroupItem value="pro" id="pro-plan" />
+              </Field>
+            </FieldLabel>
+          </RadioGroup> */}
+
+          {/* <ol className="mt-2 ml-4 flex list-decimal flex-col gap-1 text-sm text-muted-foreground">
+            <li>Select folder</li>
+            <li>Or use template</li>
+          </ol> */}
+          {/* <div className="mt-1 max-w-sm text-sm text-muted-foreground">
+            1. To get started, connect a local folder containing your project files, or initialize a new project from a
+            template.
+          </div>
+          <div className="mt-1 max-w-sm text-sm text-muted-foreground">
+            2. To get started, connect a local folder containing your project files, or initialize a new project from a
+            template.
+          </div> */}
+        </div>
+        {/* <Separator />
+        <Field orientation="horizontal" className="p-4">
+          <FieldContent>
+            <FieldLabel htmlFor="switch-focus-mode" className="flex items-center">
+              <Layers className="size-3.5" />
+              Use Template
+            </FieldLabel>
+            <FieldDescription>Vite + TypeScript + Tailwind CSS</FieldDescription>
+          </FieldContent>
+          <Switch id="switch-focus-mode" />
+        </Field>
+        <Separator /> */}
+
+        <Separator />
+        <div className="grid w-full grid-cols-2 gap-4 p-4">
+          <Button size="lg" onClick={() => this.toggleConnectDialog()}>
+            <FolderOpen />
+            Select Folder
+            {/* <ArrowRight /> */}
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => this.remove()}>
+            Delete
+          </Button>
         </div>
       </div>
     )
   }
 
   private SpecView() {
-    return <this.$.highlight.JsonView value={this.specText ?? '—'} />
+    if (!this.state.handle) return null
+    if (this.selectedTabId !== 'spec') return null
+    return <this.JsonView json={this.specText ?? '—'} />
   }
 
   private ManifestView() {
+    if (!this.state.handle) return null
+    if (this.selectedTabId !== 'manifest') return null
     return (
-      <div className="flex flex-col">
-        <div className="">
-          <this.$.highlight.JsonView value={JSON.stringify(this.manifest, null, 2)} />
-        </div>
-        <div className="absolute top-0 right-0 rounded-bl-xl border-b border-l px-3 py-1.5 text-sm text-muted-foreground">
-          Generated manifest.json based on the epos.json.
+      <this.JsonView json={JSON.stringify(this.manifest, null, 2)} title="Automatically generated based on the epos.json" />
+    )
+  }
+
+  private FilesView() {
+    if (!this.state.handle) return null
+    if (this.selectedTabId !== 'files') return null
+
+    const allFiles = [...this.jsSources, ...this.cssSources, ...this.assets]
+    const uniqueFiles = [...new Map(allFiles.map(file => [file.path, file])).values()]
+
+    return (
+      <div className="px-0 py-0 text-sm">
+        {uniqueFiles.map(file => (
+          <div key={file.path} className="flex items-center border-b p-4">
+            <File className="mr-2 size-3.5" />
+            <div>{file.path}</div>
+            <div className="ml-auto font-mono">{(file.size / 1024).toFixed(2)} KB</div>
+          </div>
+        ))}
+        <div className="flex items-center p-4">
+          <div className="text-muted-foreground">
+            Total {uniqueFiles.length} {uniqueFiles.length === 1 ? 'file' : 'files'}
+          </div>
+          <div className="ml-auto font-mono text-muted-foreground">
+            {(uniqueFiles.reduce((sum, file) => sum + file.size, 0) / 1024).toFixed(2)} KB
+          </div>
         </div>
       </div>
     )
   }
 
-  private FilesView() {
-    return <div>FILES</div>
-  }
-
   private SettingsView() {
     if (!this.state.handle) return null
+    if (this.selectedTabId !== 'settings') return null
 
     return (
-      <div className="flex flex-col gap-5">
-        <div className="flex justify-between">
+      <div className="flex flex-col">
+        <div className="flex justify-between p-4">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-sm font-medium">
               <FolderOpen className="size-3.5" />
               Connected Folder
             </div>
-            <div className="text-sm text-muted-foreground">Local folder where project files are located</div>
+            <div className="text-sm text-muted-foreground">Local folder where project files are located.</div>
           </div>
           <div className="flex gap-2">
-            <ButtonGroup>
-              <Button variant="outline" size="sm">
-                <FolderOpen />
-                ./{this.state.handle.name}
-              </Button>
-              <Button variant="outline" size="sm">
-                Disconnect
-              </Button>
-            </ButtonGroup>
+            <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.5">
+              <Folder />
+              <div className="max-w-30 truncate">{this.state.handle.name}</div>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => this.disconnect()}>
+              Disconnect
+            </Button>
           </div>
         </div>
         <Separator />
-        <div className="flex justify-between">
+        <div className="flex justify-between p-4">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Book className="size-3.5" />
-              Built-in Libraries
+              <BookText className="size-3.5" />
+              Library Builds
             </div>
-            <div className="text-sm text-muted-foreground">
-              <div>Choose which builds of React, MobX, and Yjs to use</div>
-              <div className="mt-1 flex items-center gap-1.5 opacity-40">
-                {/* <AlertCircle className="size-3.5 shrink-0" /> */}
-                Does not affect the exported bundle
-              </div>
+            <div className="space-y-0.5 text-sm text-muted-foreground">
+              <div>Choose which builds of React, MobX, and Yjs to use.</div>
+              <div>This option does not affect the exported bundle.</div>
             </div>
           </div>
           <div className="flex gap-2">
-            <Select value={this.debug ? 'development' : 'production'} onValueChange={value => this.toggleDebug()}>
+            <Select
+              value={this.debug ? 'development' : 'production'}
+              onValueChange={value => this.setDebug(value === 'development')}
+            >
               <SelectTrigger size="sm">
                 <SelectValue />
               </SelectTrigger>
@@ -631,104 +811,22 @@ export class Project extends gl.Unit {
             </Select>
           </div>
         </div>
+        <Separator />
+        <div className="flex justify-between p-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Trash2 className="size-3.5" />
+              Delete Project
+            </div>
+            <div className="space-y-0.5 text-sm text-muted-foreground">Files on your computer won't be removed.</div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="destructive" size="sm" onClick={() => this.toggleRemoveDialog()}>
+              Delete
+            </Button>
+          </div>
+        </div>
       </div>
-    )
-
-    return (
-      <FieldGroup className="max-w-sm">
-        <FieldSet>
-          <FieldLabel>
-            <FolderOpen className="size-4" />
-            Connected Folder
-          </FieldLabel>
-          <FieldDescription>
-            Currently connected folder. To select another folder, disconnect the current one first.
-          </FieldDescription>
-          <FieldGroup>
-            <this.ConnectedFolderView />
-          </FieldGroup>
-        </FieldSet>
-        <FieldSeparator />
-        <FieldSet>
-          <FieldLabel>
-            <BookOpen className="size-4" />
-            Built-in Libs
-          </FieldLabel>
-          <FieldDescription>Choose which version of built-in libraries to use (React, MobX, Yjs).</FieldDescription>
-          <FieldGroup>
-            <Field>
-              <RadioGroup defaultValue="plus" className="max-w-sm">
-                <FieldLabel htmlFor="plus-plan">
-                  <Field orientation="horizontal">
-                    <FieldContent>
-                      <FieldTitle>Development</FieldTitle>
-                      <FieldDescription>Use unminified dev builds.</FieldDescription>
-                    </FieldContent>
-                    <RadioGroupItem value="plus" id="plus-plan" />
-                  </Field>
-                </FieldLabel>
-                <FieldLabel htmlFor="pro-plan">
-                  <Field orientation="horizontal">
-                    <FieldContent>
-                      <FieldTitle>Production</FieldTitle>
-                      <FieldDescription>Use minified production builds.</FieldDescription>
-                    </FieldContent>
-                    <RadioGroupItem value="pro" id="pro-plan" />
-                  </Field>
-                </FieldLabel>
-              </RadioGroup>
-            </Field>
-          </FieldGroup>
-          <FieldDescription className="flex gap-2">
-            <AlertCircle className="relative top-0.5 size-4 shrink-0" />
-            This option does not affect the exported bundle which always uses production builds.
-          </FieldDescription>
-        </FieldSet>
-      </FieldGroup>
-    )
-  }
-
-  private ConnectedFolderView() {
-    if (!this.state.handle) return null
-
-    // return (
-    //   <Field>
-    //     <FieldTitle>Connected Folder</FieldTitle>
-    //     <FieldContent>
-    //       <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
-    //         <FolderOpen className="size-4" />
-    //         <div className="flex flex-col">
-    //           <div className="text-sm">./{this.state.handle.name}</div>
-    //           <div className="text-xs text-muted-foreground">Currently connected folder.</div>
-    //         </div>
-    //       </div>
-    //     </FieldContent>
-    //   </Field>
-    // )
-
-    // return (
-    //   <div className="flex min-w-[400px] justify-between">
-    //     <div>
-    //       <FolderOpen className="mr-2 inline size-4" />
-    //       Connected Folder
-    //     </div>
-    //     <div>./{this.state.handle.name}</div>
-    //   </div>
-    // )
-    return (
-      <Item variant="outline" className="min-w-[400px]">
-        {/* <ItemMedia variant="icon">
-          <FolderOpen />
-        </ItemMedia> */}
-        <ItemContent>
-          <ItemTitle>./{this.state.handle.name}</ItemTitle>
-        </ItemContent>
-        <ItemActions>
-          <Button size="sm" variant="outline">
-            Disconnect
-          </Button>
-        </ItemActions>
-      </Item>
     )
   }
 
@@ -752,7 +850,7 @@ export class Project extends gl.Unit {
             </AlertDialogMedia>
             <AlertDialogTitle>Delete {this.spec.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the project. The files on your computer will not be affected.
+              This will permanently delete the project. The files on your computer will not be removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -779,7 +877,7 @@ export class Project extends gl.Unit {
             {unminifiedJsSource && (
               <Alert variant="warning" className="mt-1">
                 <AlertTriangle />
-                <AlertTitle>Unminified JS detected</AlertTitle>
+                <AlertTitle>Unminified code detected</AlertTitle>
                 <AlertDescription className="wrap-anywhere">
                   <span className="font-medium">{unminifiedJsSource.path}</span> is not minified. Probably your project is
                   not built for production.
@@ -797,6 +895,51 @@ export class Project extends gl.Unit {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    )
+  }
+
+  private ConnectDialogView() {
+    if (!this.state.showConnectDialog) return null
+
+    return (
+      <Dialog open={true} onOpenChange={() => this.toggleConnectDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect Folder</DialogTitle>
+            <DialogDescription>Connect a local folder to your project.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="default" onClick={() => this.connect()}>
+              Select Folder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  private JsonView({ json, title }: { json: string; title?: string }) {
+    return (
+      <div className="relative size-full text-sm">
+        {title && (
+          <div
+            className={cn(
+              'absolute top-0 right-0 rounded-bl-xl border-b border-l bg-neutral-100 px-2.5 py-1.5 font-mono text-xs',
+              'text-muted-foreground dark:bg-neutral-800',
+            )}
+          >
+            {title}
+          </div>
+        )}
+        <div className="size-full overflow-auto">
+          <div className="h-fit w-fit pt-4 pr-8 pb-8 pl-4">
+            <this.$.highlight.JsonView value={json} />
+          </div>
+        </div>
+      </div>
     )
   }
 
