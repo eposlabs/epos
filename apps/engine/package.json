@@ -27,12 +27,12 @@
   },
   "devDependencies": {
     "@eposlabs/layerer": "1.26.0",
-    "@tailwindcss/vite": "^4.2.1",
-    "@types/chrome": "^0.1.37",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/chrome": "^0.1.38",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.1",
-    "vite": "^8.0.0",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.2",
     "vite-plugin-rebundle": "1.39.0"
   }
 }
