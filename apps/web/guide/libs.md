@@ -8,13 +8,13 @@ They are exposed through `epos.libs`, and with the Epos Vite plugin you can impo
 
 Epos includes these libraries:
 
-- `react` - React.
-- `react-dom` - Base React DOM package.
-- `react-dom/client` - Client-side React DOM APIs.
-- `react/jsx-runtime` - React JSX runtime.
-- `mobx` - State management and reactivity.
-- `mobx-react-lite` - React bindings for MobX.
-- `yjs` - State synchronization.
+- `react` `19.2.4` - React.
+- `react-dom` `19.2.4` - Base React DOM package.
+- `react-dom/client` `19.2.4` - Client-side React DOM APIs.
+- `react/jsx-runtime` `19.2.4` - React JSX runtime.
+- `mobx` `6.15.0` - State management and reactivity.
+- `mobx-react-lite` `4.1.1` - React bindings for MobX.
+- `yjs` `13.6.30` - State synchronization.
 
 All of them are included in the exported extension. You do not need to install them separately.
 

@@ -4,7 +4,7 @@ import hljsDarkCss from 'highlight.js/styles/github-dark-dimmed.css?raw'
 import hljsLightCss from 'highlight.js/styles/github.css?raw'
 
 export class Highlight extends gl.Unit {
-  attach() {
+  init() {
     hljs.registerLanguage('json', jsonLanguage)
   }
 
