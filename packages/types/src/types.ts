@@ -6,6 +6,7 @@ declare global {
   type Fn<T = unknown> = types.Fn<T>
   type AsyncFn<T = unknown> = types.AsyncFn<T>
   type Ctor<T = unknown> = types.Ctor<T>
+  type StrictExtract<T, U extends T> = types.StrictExtract<T, U>
 }
 
 export {}

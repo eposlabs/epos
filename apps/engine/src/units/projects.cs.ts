@@ -44,8 +44,8 @@ export class Projects extends cs.Unit {
     if (css) this.injectCss(css)
 
     // Inject JS
-    const csTabInfo = await this.$.bus.csGetTabInfo()
-    const js = await this.sw.getJs(address, csTabInfo)
+    const { tabId, windowId } = await this.$.bus.getTabInfo()
+    const js = await this.sw.getJs(address, { tabId, windowId, busPageToken: this.$.bus.pageToken })
     if (js) this.injectJs(js)
   }
 

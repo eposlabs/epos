@@ -523,7 +523,7 @@ export class Project extends gl.Unit {
               Library Builds
             </div>
             <div className="mt-1 space-y-0.5 text-sm text-muted-foreground">
-              <div>Choose which builds of React, MobX, and Yjs to use.</div>
+              <div>Which builds of built-in libs to use (React, MobX, and others).</div>
               <div>This option does not affect the exported bundle.</div>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import type { Assets, Bundle, Project, ProjectQuery, ProjectSettings, Sources, Spec } from 'epos'
-import type { CsTabInfo } from './bus.gl.js'
 import type { Address } from './project-target.sw.js'
 import type { Entry, Snapshot } from './project.sw.js'
 import tamperPatchWindowJs from './projects-tamper-patch-window.sw.js?raw'
@@ -166,7 +165,7 @@ export class Projects extends sw.Unit {
     return await project.export()
   }
 
-  getJs(address?: Address, csTabInfo?: CsTabInfo) {
+  getJs(address?: Address, meta?: { tabId: number; windowId: number; busPageToken: string | null }) {
     const projects = this.listEnabled.filter(project => project.test(address))
     const defJsList = projects.map(project => project.getDefJs(address)).filter(this.$.utils.is.present)
     if (defJsList.length === 0) return null
@@ -186,9 +185,9 @@ export class Projects extends sw.Unit {
 
     return [
       `(() => {`,
-      `  this.__eposTabId = ${JSON.stringify(csTabInfo?.tabId ?? -1)};`,
-      `  this.__eposWindowId = ${JSON.stringify(csTabInfo?.windowId ?? -1)};`,
-      `  this.__eposBusPageToken = ${JSON.stringify(csTabInfo?.pageToken ?? null)};`,
+      `  this.__eposTabId = ${JSON.stringify(meta?.tabId ?? -1)};`,
+      `  this.__eposWindowId = ${JSON.stringify(meta?.windowId ?? -1)};`,
+      `  this.__eposBusPageToken = ${JSON.stringify(meta?.busPageToken ?? null)};`,
       `  this.__eposProjectDefs = [${defJsList.join(',')}];`,
       `  ${engineJs};`,
       `})()`,
@@ -208,9 +207,20 @@ export class Projects extends sw.Unit {
   }
 
   async getEntries(address?: Address) {
+    // Respond with the specified project entry for `<page>`
+    let projectId: string | null = null
+    if (address) {
+      const url = new URL(this.getAddressUrl(address))
+      if (url.origin === location.origin && url.searchParams.get('locus') === 'page') {
+        projectId = url.searchParams.get('id')
+        if (!projectId) throw this.never('id param is required for page locus')
+      }
+    }
+
     const entries: Entries = {}
 
     for (const project of this.listEnabled) {
+      if (projectId && project.id !== projectId) continue
       const entry = await project.getEntry(address)
       entries[entry.id] = entry
     }
@@ -247,6 +257,10 @@ export class Projects extends sw.Unit {
       if (project.spec.action === true) {
         const projectEposBus = this.$.bus.for(`ProjectEpos[${project.id}]`)
         await projectEposBus.send(':action', tab)
+      } else if (project.spec.action === '<page>') {
+        const url = this.$.env.url.view({ locus: 'page', id: project.id })
+        const fullUrl = this.$.browser.runtime.getURL(url)
+        await this.$.medium.openTab(fullUrl)
       } else if (this.$.utils.is.string(project.spec.action)) {
         await this.$.medium.openTab(project.spec.action)
       }
@@ -391,9 +405,14 @@ export class Projects extends sw.Unit {
     return js.includes('epos.libs.reactJsxRuntime') || js.includes('React.createElement')
   }
 
+  private getAddressUrl(address: Address) {
+    if (address.startsWith('frame:')) return address.replace('frame:', '')
+    return address
+  }
+
   private getAddressOrigin(address: Address) {
-    if (address.startsWith('frame:')) address = address.replace('frame:', '')
-    return new URL(address).origin
+    const url = this.getAddressUrl(address)
+    return new URL(url).origin
   }
 
   private async minifyJs(js: string) {

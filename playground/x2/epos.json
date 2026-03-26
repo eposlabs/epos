@@ -4,6 +4,11 @@
   "slug": "x2",
   "version": "0.0.2",
   "action": "https://epos.dev/@x2",
-  "matches": ["<popup>", "https://epos.dev/@x2"],
-  "load": "x2.js"
+
+  "targets": [
+    {
+      "matches": ["<popup>", "https://epos.dev/@x2"],
+      "load": "x2.js"
+    }
+  ]
 }

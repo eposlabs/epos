@@ -56,17 +56,19 @@ export class ProjectTarget extends sw.Unit {
     const isExtensionPage = origin === location.origin
     if (!isExtensionPage) return false
 
-    // For `view.html` page, match by locus in the URL params
+    // For `view.html` page, match by locus in the URL params and, optionally, by project id
     if (pathname === '/view.html') {
       const urlLocus = searchParams.get('locus')
-      return match.value === urlLocus
+      const urlProjectId = searchParams.get('id')
+      return match.value === urlLocus && (!urlProjectId || this.$project.id === urlProjectId)
     }
 
-    // For `project.html` page, match by locus and, optionally, by project id in the URL params
+    // For `project.html` page, match by locus and by project id in the URL params
     if (pathname === '/project.html') {
       const urlLocus = searchParams.get('locus')
       const urlProjectId = searchParams.get('id')
-      return match.value === urlLocus && (!urlProjectId || urlProjectId === this.$project.id)
+      if (!urlProjectId) throw this.never()
+      return match.value === urlLocus && this.$project.id === urlProjectId
     }
 
     // For `offscreen.html` page, match only `<background>` pattern

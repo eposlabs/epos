@@ -1,3 +1,5 @@
+import type { TabInfo } from './bus.gl.js'
+
 export const EXT_REQUEST = ':EPOS_BUS_EXT_REQUEST'
 
 export type ExtRequest = {

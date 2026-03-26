@@ -6,7 +6,7 @@ When normal `fetch()` fails due to CORS restrictions, `epos.fetch()` will work.
 
 ## Why It Exists
 
-If your code runs on a page like `example.com` and tries to fetch another origin like `google.com`, the request will fail because of CORS restrictions. This is normal web security behavior.
+If your extension runs on a page like `example.com` and tries to fetch another origin like `google.com`, the request will fail because of CORS restrictions. This is normal web security behavior.
 
 Extensions can bypass that restriction. If your extension has permission to access `google.com`, it can make the request. Use `epos.fetch()` instead of `fetch()`, and Epos will route the request through the extension.
 

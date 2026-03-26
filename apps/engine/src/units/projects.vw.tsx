@@ -1,3 +1,4 @@
+import type { TabInfo } from './bus.gl.js'
 import type { WatcherData } from './projects-watcher.ex.os.vw'
 
 export class Projects extends vw.Unit {
@@ -6,18 +7,26 @@ export class Projects extends vw.Unit {
   selectedProjectId = localStorage.getItem('Projects.selectedProjectId')
   sw = this.use<sw.Projects>('sw')
   bus = this.$.bus.for('Projects')
+  private _tabInfo: TabInfo | null = null
 
   get list() {
     return Object.values(this.dict)
   }
 
+  get tabInfo() {
+    if (!this._tabInfo) throw this.never()
+    return this._tabInfo
+  }
+
   async init() {
+    this._tabInfo = await this.getTabInfo()
     await this.watcher.init()
   }
 
-  getTabInfo(): TabInfo {
-    const tabId = Number(this.$.env.params.tabId)
-    const windowId = Number(this.$.env.params.windowId)
+  private async getTabInfo() {
+    if (this.$.env.extParams.locus === 'page') return await this.$.bus.getTabInfo()
+    const tabId = Number(this.$.env.extParams.tabId)
+    const windowId = Number(this.$.env.extParams.windowId)
     if (!tabId || !windowId) throw this.never()
     return { tabId, windowId }
   }
@@ -76,8 +85,7 @@ export class Projects extends vw.Unit {
   }
 
   private async openSidePanel() {
-    const { tabId, windowId } = this.getTabInfo()
-    await this.$.medium.openSidePanel(tabId, windowId)
+    await this.$.medium.openSidePanel(this.tabInfo.tabId, this.tabInfo.windowId)
     self.close()
   }
 

@@ -27,8 +27,6 @@ export class ProjectWatcher extends gl.Unit {
     if (!this.$project.connected) return
     if (this.state.observers.length > 0) return
 
-    console.warn('start')
-
     let timer = -1
     for (const path of this.$project.paths) {
       const [handle] = await this.$.utils.safe(() => this.$project.getFileHandle(path))

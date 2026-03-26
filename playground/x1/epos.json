@@ -3,7 +3,7 @@
   "name": "Test Project x1",
   "slug": "x1-test",
   "version": "0.0.1",
-  "action": "https://epos.dev/@x1",
+  "action": "<page>",
   "popup": { "width": 500, "height": 500 },
 
   "permissions": ["downloads"],
@@ -13,7 +13,7 @@
 
   "targets": [
     {
-      "matches": ["https://epos.dev/@x1"],
+      "matches": "<page>",
       "load": ["/x1.js"]
     }
     // {

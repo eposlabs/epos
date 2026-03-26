@@ -2,8 +2,9 @@ import { ensureArray, is, safeSync, unique, type Obj } from '@eposlabs/utils'
 import { matchPattern } from 'browser-extension-url-match'
 import stripJsonComments from 'strip-json-comments'
 
-export type Action = true | string
+export type Url = string
 export type Path = string
+export type Action = true | '<page>' | Url
 export type Match = LocusMatch | TopMatch | FrameMatch
 export type MatchPattern = UrlMatchPattern | '<all_urls>'
 export type UrlMatchPattern = string // e.g. `*://*.example.com/*`
@@ -45,7 +46,7 @@ export type Target = {
 
 export type LocusMatch = {
   context: 'locus'
-  value: 'popup' | 'sidePanel' | 'background'
+  value: Locus
 }
 
 export type TopMatch = {
@@ -63,6 +64,7 @@ export type Resource = {
   path: Path
 }
 
+export type Locus = 'page' | 'popup' | 'sidePanel' | 'background'
 export type Permission = (typeof schema)['permissions'][number]
 export type OptionalPermission = (typeof schema)['optionalPermissions'][number]
 
@@ -251,6 +253,7 @@ const parseAction = (spec: Obj, targets: Target[]): Action | null => {
   const action = spec.action ?? null
   if (action === null) return null
   if (action === true) return true
+  if (action === '<page>') return '<page>'
 
   if (!is.string(action)) throw new Error(`'action' must be a URL or true`)
   if (!isValidUrl(action)) throw new Error(`Invalid 'action' URL: '${JSON.stringify(action)}'`)
@@ -349,6 +352,7 @@ const parseMatches = (target: Obj): Match[] => {
 const parseMatch = (match: unknown): Match | Match[] => {
   if (!is.string(match)) throw new Error(`Invalid match pattern: '${JSON.stringify(match)}'`)
 
+  if (match === '<page>') return { context: 'locus', value: 'page' }
   if (match === '<popup>') return { context: 'locus', value: 'popup' }
   if (match === '<sidePanel>') return { context: 'locus', value: 'sidePanel' }
   if (match === '<background>') return { context: 'locus', value: 'background' }

@@ -6,7 +6,7 @@ export class Medium extends swVw.Unit {
       this.$.bus.on('Medium.isPopupOpen', () => true)
       this.$.bus.on('Medium.closePopup', () => self.close())
     } else if (this.$.env.is.vwSidePanel) {
-      const tabId = Number(this.$.env.params.tabId)
+      const tabId = Number(this.$.env.extParams.tabId)
       if (!tabId) throw this.never()
       this.$.bus.on(`Medium.isSidePanelOpen[${tabId}]`, () => true)
     }

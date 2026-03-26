@@ -1,9 +1,9 @@
 import type { BusService } from 'epos'
 import type { Target } from './bus-action.gl'
 
+export type TabInfo = { tabId: number; windowId: number }
 export type FnArgsOrArr<T> = T extends Fn ? Parameters<T> : Arr
 export type FnResultOrValue<T> = T extends Fn ? ReturnType<T> : T
-export type CsTabInfo = TabInfo & { pageToken: string | null }
 
 export class Bus extends gl.Unit {
   peerId = this.$.utils.generateId()
@@ -223,21 +223,14 @@ export class Bus extends gl.Unit {
     }
   }
 
-  async csGetTabInfo(): Promise<CsTabInfo> {
-    if (!this.$.env.is.cs) throw this.never()
-
-    let tabInfo: TabInfo
-    if (this.$.env.is.csTop) {
+  async getTabInfo() {
+    if (this.$.env.is.csTop || this.$.env.is.vw) {
       const result = await this.extBridge.send<TabInfo>('Bus.getTabInfo')
       if (!result) throw this.never()
-      tabInfo = result
-    } else if (this.$.env.is.csFrame) {
-      tabInfo = { tabId: -1, windowId: -1 }
-    } else {
-      throw this.never()
+      return { tabId: result.tabId, windowId: result.windowId }
     }
 
-    return { ...tabInfo, pageToken: this.pageToken }
+    return { tabId: -1, windowId: -1 }
   }
 
   private async executeProxyActions(name: string, ...args: unknown[]) {

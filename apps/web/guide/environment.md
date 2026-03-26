@@ -49,10 +49,10 @@ For background code and iframes, these values are `-1`.
 `epos.env.project` contains information about the current project:
 
 - `id` - the internal project ID.
-- `debug` - whether the project is running in debug mode.
-- `enabled` - whether the project is enabled.
 - `spec` - the normalized `epos.json`.
-- `manifest` - the generated `manifest.json` content used for export.
+- `manifest` - the generated `manifest.json` used for export.
+- `enabled` - whether the project is enabled in the [app.epos.dev](https://app.epos.dev) dashboard.
+- `debug` - whether the dev builds of built-in libraries are used (React, MobX, etc.).
 
 Example:
 
@@ -61,8 +61,10 @@ console.log(epos.env.project.id)
 console.log(epos.env.project.spec.name)
 
 if (epos.env.project.debug) {
-  console.log('Debug mode is on')
+  console.log('Using dev builds of built-in libraries')
 }
 ```
 
 `spec` is useful when your code needs to read its own `epos.json` configuration. `manifest` is mostly useful for inspection and debugging.
+
+`debug` can be changed in the [app.epos.dev](https://app.epos.dev) dashboard. It is used only during development and has no effect on the exported bundle. It is turned on by default and can be turned off to test how your app runs with production builds.

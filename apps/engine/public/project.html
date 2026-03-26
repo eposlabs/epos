@@ -14,8 +14,7 @@
     </style>
     <script type="module">
       const { searchParams } = new URL(location.href)
-      const debug = searchParams.get('debug')
-      if (!debug) throw new Error(`Missing 'debug' parameter`)
+      const debug = searchParams.get('debug') ?? 'false'
       if (debug !== 'true' && debug !== 'false') throw new Error(`Invalid 'debug' parameter: '${debug}'`)
       const script = document.createElement('script')
       script.src = debug === 'true' ? '/exd.js' : '/exp.js'

@@ -71,9 +71,16 @@ export class Projects extends ex.Unit {
     }
   }
 
-  // Use `-1` instead of `null` to use `epos.browser.tabs.*` / `epos.browser.windows.*` without extra checks
-  private getTabInfo(): TabInfo {
-    // Top context? -> Get tab id and window id from the injected global variables
+  // Why `-1` instead of `null`? To allow `epos.browser.tabs.*` / `epos.browser.windows.*` without extra checks
+  private getTabInfo() {
+    // Extension page (project.html)? -> Get tab info from the URL params
+    if (this.$.env.is.exExtension) {
+      const tabId = Number(this.$.env.extParams.tabId ?? -1) // Absent for offscreen frames
+      const windowId = Number(this.$.env.extParams.windowId ?? -1) // Absent for offscreen frames
+      return { tabId, windowId }
+    }
+
+    // Website top context? -> Get tab info from the injected global variables
     if (this.$.env.is.exTop) {
       const tabId = self.__eposTabId
       const windowId = self.__eposWindowId
@@ -81,17 +88,8 @@ export class Projects extends ex.Unit {
       return { tabId, windowId }
     }
 
-    // Extension frame? -> Get tab id and window id from URL params
-    else if (this.$.env.is.exExtension) {
-      const tabId = Number(this.$.env.params.tabId ?? -1) // Absent for offscreen frames
-      const windowId = Number(this.$.env.params.windowId ?? -1) // Absent for offscreen frames
-      return { tabId, windowId }
-    }
-
-    // External frame? -> No tab id and window id
-    else {
-      return { tabId: -1, windowId: -1 }
-    }
+    // Website iframe? -> No tab info
+    return { tabId: -1, windowId: -1 }
   }
 
   private async injectJs(js: string) {

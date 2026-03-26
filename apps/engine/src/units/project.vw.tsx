@@ -28,42 +28,45 @@ export class Project extends vw.Unit {
   async processAction() {
     if (!this.spec.action) return
 
-    // Action is a URL? -> Open this URL
-    if (this.$.utils.is.string(this.spec.action)) {
-      const actionTab = (await this.$.browser.tabs.query({ url: this.spec.action }))[0]
-      if (actionTab) {
-        await this.$.browser.tabs.update(actionTab.id, { active: true })
-      } else {
-        await this.$.browser.tabs.create({ url: this.spec.action, active: true })
-      }
-      if (this.$.env.is.vwPopup) self.close()
-    }
-
     // Action is `true`? -> Send `:action` event
-    else {
-      const { tabId } = this.$projects.getTabInfo()
-      const tab = await this.$.browser.tabs.get(tabId)
+    if (this.spec.action === true) {
+      const tab = await this.$.browser.tabs.get(this.$projects.tabInfo.tabId)
       const projectEposBus = this.$.bus.for(`ProjectEpos[${this.id}]`)
       await projectEposBus.send(':action', tab)
+      if (this.$.env.is.vwPopup) self.close()
+      return
+    }
+
+    // Action is `<page>`? -> Open project's page
+    if (this.spec.action === '<page>') {
+      const url = this.$.env.url.view({ id: this.id, locus: 'page' })
+      const fullUrl = this.$.browser.runtime.getURL(url)
+      await this.$.medium.openTab(fullUrl)
+      if (this.$.env.is.vwPopup) self.close()
+      return
+    }
+
+    // Action is a URL? -> Open this URL
+    if (this.$.utils.is.string(this.spec.action)) {
+      await this.$.medium.openTab(this.spec.action)
       if (this.$.env.is.vwPopup) self.close()
     }
   }
 
   private getSrc() {
     if (!this.visited) return 'about:blank'
-    const { tabId, windowId } = this.$projects.getTabInfo()
     return this.$.env.url.project({
       id: this.id,
-      debug: this.debug,
       locus: this.getLocus(),
-      tabId: tabId,
-      windowId: windowId,
+      debug: this.debug,
+      tabId: this.$projects.tabInfo.tabId,
+      windowId: this.$projects.tabInfo.windowId,
     })
   }
 
   private getLocus() {
-    const locus = this.$.env.params.locus
-    if (locus !== 'popup' && locus !== 'sidePanel') throw this.never()
+    const locus = this.$.env.extParams.locus
+    if (locus !== 'page' && locus !== 'popup' && locus !== 'sidePanel') throw this.never()
     return locus
   }
 

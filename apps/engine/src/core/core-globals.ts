@@ -25,7 +25,6 @@ declare global {
   }
 
   type Url = string
-  type TabInfo = { tabId: number; windowId: number }
   type PartialEpos = Omit<Epos, 'projects'> & { projects?: Epos['projects'] }
 
   type ProjectDef = {
