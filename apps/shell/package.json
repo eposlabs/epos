@@ -21,7 +21,7 @@
     "epos-unit": "1.28.0",
     "fflate": "^0.8.2",
     "highlight.js": "^11.11.1",
-    "lucide-react": "^1.6.0",
+    "lucide-react": "^1.7.0",
     "radix-ui": "^1.4.3",
     "strip-json-comments": "^5.0.3",
     "tailwind-merge": "^3.5.0",
@@ -34,7 +34,7 @@
     "@types/wicg-file-system-access": "^2023.10.7",
     "shadcn": "^4.1.0",
     "tailwindcss": "^4.2.2",
-    "vite": "^8.0.2",
+    "vite": "^8.0.3",
     "vite-plugin-rebundle": "1.39.0"
   }
 }
