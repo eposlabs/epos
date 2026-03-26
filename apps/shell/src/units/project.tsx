@@ -255,33 +255,18 @@ export class Project extends gl.Unit {
   }
 
   private isMinifiedJs(js: string) {
-    const source = js.trim()
-    const lines = source.split(/\r?\n/)
-    const nonEmptyLines = lines.filter(line => line.trim().length > 0)
-    if (nonEmptyLines.length === 0) return false
+    if (js.length < 100) return false
 
-    const lengths = nonEmptyLines.map(line => line.length)
-    const totalLength = lengths.reduce((sum, length) => sum + length, 0)
-    const averageLineLength = totalLength / nonEmptyLines.length
-    const maxLineLength = Math.max(...lengths)
-    const longLineRatio = nonEmptyLines.filter(line => line.length >= 160).length / nonEmptyLines.length
-    const isIndentedOrClosingLine = (line: string) => /^( {2,}|\t)/.test(line) || /^\s*[}\])]/.test(line)
-    const indentedLineRatio = nonEmptyLines.filter(isIndentedOrClosingLine).length / nonEmptyLines.length
-    const whitespaceRatio = (source.match(/\s/g)?.length ?? 0) / source.length
-    const punctuationRatio = (source.match(/[;{},]/g)?.length ?? 0) / source.length
+    const lines = js.split(/\r?\n/)
+    const avgLineLength = js.length / lines.length
 
-    if (nonEmptyLines.length === 1) return maxLineLength >= 500 || whitespaceRatio < 0.12
-    if (maxLineLength >= 1000) return true
+    const spaceCount = (js.match(/ /g) || []).length
+    const spaceRatio = spaceCount / js.length
 
-    let score = 0
-    if (averageLineLength >= 140) score += 2
-    if (longLineRatio >= 0.5) score += 2
-    if (maxLineLength >= 320) score += 1
-    if (whitespaceRatio <= 0.18) score += 1
-    if (indentedLineRatio <= 0.1) score += 1
-    if (punctuationRatio >= 0.18) score += 1
+    const isLongLine = avgLineLength > 250
+    const hasFewSpaces = spaceRatio < 0.05
 
-    return score >= 4
+    return isLongLine || hasFewSpaces
   }
 
   // MARK: Views
