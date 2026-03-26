@@ -66,6 +66,7 @@ export class Project extends gl.Unit {
       selectedTabId: 'spec' as TabId,
       showRemoveDialog: false,
       showExportDialog: false,
+      exporting: false,
     }
   }
 
@@ -207,12 +208,16 @@ export class Project extends gl.Unit {
   }
 
   async export() {
+    if (this.state.exporting) return
+    this.state.exporting = true
     const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
     const filename = `${this.spec.slug}-${this.spec.version}.zip`
     await epos.browser.downloads.download({ url, filename })
     URL.revokeObjectURL(url)
+    this.state.exporting = false
+    this.state.showExportDialog = false
   }
 
   private setError(title: string, error: Error) {
@@ -616,7 +621,7 @@ export class Project extends gl.Unit {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button variant="default" onClick={() => this.export()}>
+            <Button variant="default" disabled={this.state.exporting} onClick={() => this.export()}>
               {unminifiedJsSource ? 'Export Anyway' : 'Export'}
             </Button>
           </DialogFooter>
