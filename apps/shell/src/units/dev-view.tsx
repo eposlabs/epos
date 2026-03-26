@@ -26,7 +26,7 @@ export const DevView = epos.component(({ target }: { target: Obj<any> }) => {
     <div className="m-4 flex flex-col gap-4">
       <div className="space-y-2 rounded bg-muted p-4 text-sm">
         <p className="font-medium">Fields</p>
-        {fields.map(([key, descriptor]) => (
+        {fields.map(([key]) => (
           <div key={key} className="flex items-start gap-2">
             <code className="text-xs text-muted-foreground">{key}</code>
             <pre className="flex-1 overflow-auto rounded bg-muted/50 p-2 text-xs">{JSON.stringify(target[key])}</pre>

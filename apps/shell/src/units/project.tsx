@@ -88,13 +88,6 @@ export class Project extends gl.Unit {
     return 'connected'
   }
 
-  /** List of file paths used by the project. */
-  get paths() {
-    const assetPaths = this.spec.assets
-    const resourcePaths = this.spec.targets.flatMap(target => target.resources.map(resource => resource.path))
-    return ['epos.json', ...assetPaths, ...resourcePaths]
-  }
-
   async init() {
     this.reload = this.$.utils.enqueue(this.reload)
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
@@ -112,7 +105,6 @@ export class Project extends gl.Unit {
     this.debug = updates.debug
     this.enabled = updates.enabled
     this.state.updatedAt = new Date()
-    this.watcher.restart()
   }
 
   select() {
@@ -161,6 +153,7 @@ export class Project extends gl.Unit {
 
   async reload() {
     this.state.error = null
+    this.watcher.stopFileObservers()
 
     // Read epos.json
     const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
@@ -183,6 +176,7 @@ export class Project extends gl.Unit {
       const [file, readError] = await this.$.utils.safe(() => this.readFile(path))
       if (readError) return this.setError(`Failed to read asset: ${path}`, readError)
       assets[path] = file
+      void this.watcher.startFileObserver(path, file)
       this.assets.push({ path, size: file.size })
     }
 
@@ -198,6 +192,7 @@ export class Project extends gl.Unit {
         const [content, parseError] = await this.$.utils.safe(() => file.text())
         if (parseError) return this.setError(`Failed to read file: ${resource.path}`, parseError)
         sources[resource.path] = content
+        void this.watcher.startFileObserver(resource.path, file)
         if (resource.path.endsWith('.js')) {
           this.jsSources.push({ path: resource.path, size: file.size, minified: this.isMinifiedJs(content) })
         } else if (resource.path.endsWith('.css')) {
@@ -228,12 +223,12 @@ export class Project extends gl.Unit {
     if (handle) {
       await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
+      this.watcher.startGlobalObserver()
       await this.reload()
-      this.watcher.start()
     } else {
       await this.$.idb.delete('epos-shell', 'handles', this.id)
       this.state.handle = null
-      this.watcher.stop()
+      this.watcher.stopGlobalObserver()
     }
   }
 
@@ -346,13 +341,11 @@ export class Project extends gl.Unit {
           {/* Actions */}
           {this.connected && (
             <div className="flex gap-2">
-              {this.enabled && (
-                <TooltipWrap text="Reload project">
-                  <Button variant="outline" onClick={() => this.reload()}>
-                    <RefreshCw />
-                  </Button>
-                </TooltipWrap>
-              )}
+              <TooltipWrap text="Reload project">
+                <Button variant="outline" onClick={() => this.reload()}>
+                  <RefreshCw />
+                </Button>
+              </TooltipWrap>
               <Button variant="default" onClick={() => this.toggleExportDialog()}>
                 <Package />
                 Export

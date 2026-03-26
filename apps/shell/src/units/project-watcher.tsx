@@ -5,49 +5,76 @@ export class ProjectWatcher extends gl.Unit {
 
   get state() {
     return {
-      observers: [] as FileSystemObserver[],
+      globalObserver: null as FileSystemObserver | null,
+      fileObservers: [] as FileSystemObserver[],
+      reloadTimer: -1,
     }
-  }
-
-  init() {
-    this.start()
   }
 
   dispose() {
-    this.stop()
+    this.stopFileObservers()
+    this.stopGlobalObserver()
   }
 
-  restart() {
-    if (!this.$project.state.handle) return
-    this.stop()
-    void this.start()
-  }
+  startGlobalObserver() {
+    if (this.state.globalObserver) return
+    if (!this.$project.state.handle) throw this.never()
 
-  async start() {
-    if (!this.$project.connected) return
-    if (this.state.observers.length > 0) return
-
-    let timer = -1
-    for (const path of this.$project.paths) {
-      const [handle] = await this.$.utils.safe(() => this.$project.getFileHandle(path))
-      if (!handle) {
-        console.warn('failed', path)
+    this.state.globalObserver = new FileSystemObserver(records => {
+      // Error? -> Reload
+      if (this.$project.state.error) {
+        this.scheduleReload()
+        return
       }
-      const observer = new FileSystemObserver(() => {
-        clearTimeout(timer)
-        timer = setTimeout(() => this.$project.reload())
-      })
 
-      observer.observe(handle)
-      this.state.observers.push(observer)
-    }
+      // epos.json changed? -> Reload
+      for (const record of records) {
+        const path = record.relativePathComponents.join('/')
+        if (path === 'epos.json') {
+          this.scheduleReload()
+        }
+      }
+    })
+
+    this.state.globalObserver.observe(this.$project.state.handle, { recursive: true })
   }
 
-  stop() {
-    if (this.state.observers.length === 0) return
-    for (const observer of this.state.observers) {
-      observer.disconnect()
-    }
-    this.state.observers = []
+  stopGlobalObserver() {
+    if (!this.state.globalObserver) return
+    this.state.globalObserver.disconnect()
+    this.state.globalObserver = null
+  }
+
+  async startFileObserver(path: string, file: File) {
+    const hash = await this.getFileHash(file)
+    const [handle] = await this.$.utils.safe(() => this.$project.getFileHandle(path))
+    if (!handle) throw this.never()
+
+    const observer = new FileSystemObserver(async () => {
+      const [file2] = await this.$.utils.safe(() => handle.getFile())
+      if (!file2) return this.scheduleReload()
+      const hash2 = await this.getFileHash(file2)
+      if (hash !== hash2) return this.scheduleReload()
+    })
+
+    observer.observe(handle)
+    this.state.fileObservers.push(observer)
+  }
+
+  stopFileObservers() {
+    this.state.fileObservers.forEach(observer => observer.disconnect())
+    this.state.fileObservers = []
+  }
+
+  private scheduleReload() {
+    clearTimeout(this.state.reloadTimer)
+    this.state.reloadTimer = this.setTimeout(() => this.$project.reload())
+  }
+
+  private async getFileHash(file: File) {
+    const fileBuffer = await file.arrayBuffer()
+    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer)
+    const hashHex = [...new Uint8Array(hashBuffer)].map(byte => byte.toString(16).padStart(2, '0')).join('')
+    return hashHex
   }
 }
