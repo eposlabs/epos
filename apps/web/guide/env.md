@@ -53,6 +53,7 @@ For background code and iframes, these values are `-1`.
 - `manifest` - the generated `manifest.json` used for export.
 - `enabled` - whether the project is enabled in the [app.epos.dev](https://app.epos.dev) dashboard.
 - `debug` - whether the dev builds of built-in libraries are used (React, MobX, etc.).
+- `pageUrl` - the URL of the `<page>` target. Read more in the [Action guide](./action.md#action-page).
 
 Example:
 

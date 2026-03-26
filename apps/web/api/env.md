@@ -71,10 +71,11 @@ epos.env.isBackground: boolean
 ```ts
 epos.env.project: {
   id: string
-  debug: boolean
-  enabled: boolean
   spec: Spec
   manifest: chrome.runtime.ManifestV3
+  enabled: boolean
+  debug: boolean
+  pageUrl: string
 }
 ```
 
@@ -83,10 +84,11 @@ Information about the current project.
 ### Fields
 
 - `id` — the internal project id.
-- `debug` — whether the project is running in debug mode.
-- `enabled` — whether the project is enabled.
 - `spec` — the normalized `epos.json` content.
 - `manifest` — the generated Manifest V3 object used for export.
+- `enabled` — whether the project is enabled.
+- `debug` — whether the dev builds of built-in libraries are used (React, MobX, etc.).
+- `pageUrl` — the URL of the `<page>` target.
 
 ### Example
 

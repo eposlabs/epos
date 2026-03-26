@@ -101,23 +101,43 @@ Path to your icon file. If you do not provide one, Epos logo will be used.
 
 `action` controls what happens when the extension icon is clicked.
 
+Available variants: `true`, `<page>`, or a valid URL.
+
+### 1. `action: true`
+
+Epos sends an `:action` bus event when the extension icon is clicked. You can listen to it with `epos.bus.on(':action', ...)`.
+
 ```json
 {
   "action": true
 }
 ```
 
-With `true`, Epos sends an `:action` bus event that you can listen to with `epos.bus.on(':action', ...)`.
+### 2. `action: <page>`
 
-You can also provide a URL, which opens in a new tab when the icon is clicked:
+Epos opens your extension page in a new tab when the icon is clicked.
 
 ```json
 {
-  "action": "https://example.com/help"
+  "action": "<page>"
 }
 ```
 
+### 3. `action: URL`
+
+Epos opens the specified URL in a new tab when the icon is clicked.
+
+```json
+{
+  "action": "https://example.com"
+}
+```
+
+::: warning
+
 If your project has a `<popup>` or `<sidePanel>` target, `action` is ignored.
+
+:::
 
 ## `popup`
 
@@ -228,11 +248,12 @@ It describes where the code should load. You can use special Epos contexts or no
 
 ### Special Epos Contexts
 
-There are three special contexts:
+There are four special contexts:
 
 - `<popup>`
 - `<sidePanel>`
 - `<background>`
+- `<page>`
 
 Example:
 
