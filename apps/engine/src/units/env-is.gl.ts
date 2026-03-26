@@ -21,6 +21,7 @@ export class EnvIs extends gl.Unit {
   exExtension = this.ex && location.protocol === 'chrome-extension:'
 
   // `vw` variations
+  vwPage = this.vw && new URLSearchParams(location.search).get('locus') === 'page'
   vwPopup = this.vw && new URLSearchParams(location.search).get('locus') === 'popup'
   vwSidePanel = this.vw && new URLSearchParams(location.search).get('locus') === 'sidePanel'
 }

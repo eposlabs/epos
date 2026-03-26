@@ -340,8 +340,8 @@ export class Projects extends sw.Unit {
     }
 
     const unregisterAllServiceWorkers = async () => {
-      const regs = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(regs.map(r => r.unregister()))
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map(registration => registration.unregister()))
       location.reload()
     }
 

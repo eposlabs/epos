@@ -102,7 +102,7 @@ export class Projects extends vw.Unit {
     return (
       <div
         className={cn(
-          'flex flex-col font-[system-ui] text-[12px] font-medium',
+          'flex size-full flex-col font-[system-ui] text-[12px] font-medium',
           this.$.env.is.vwSidePanel && 'h-screen w-screen',
         )}
       >

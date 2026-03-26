@@ -18,6 +18,11 @@ export class Project extends vw.Unit {
     this.hasSidePanel = params.hasSidePanel
   }
 
+  private get autoreload() {
+    if (!this.$.env.is.vwPage) return true
+    return new URL(location.href).searchParams.has('autoreload')
+  }
+
   update(updates: Omit<Entry, 'id'>) {
     this.debug = updates.debug
     this.spec = updates.spec
@@ -90,7 +95,7 @@ export class Project extends vw.Unit {
     if (selected) this.visited = true
     return (
       <iframe
-        key={this.hash}
+        key={this.autoreload ? this.hash : this.id}
         name={this.spec.slug}
         data-project-id={this.id}
         src={this.getSrc()}

@@ -45,7 +45,7 @@ export class App extends vw.Unit {
 
     return (
       <props.context.Provider value={renderId}>
-        <div className="size-fit">
+        <div className={this.$.utils.cn('size-fit', this.$.env.is.vwPage && 'h-screen! w-screen!')}>
           <this.$.projects.View />
         </div>
       </props.context.Provider>
