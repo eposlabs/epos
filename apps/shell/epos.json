@@ -31,6 +31,7 @@
   ],
 
   "assets": [
+    "dist/vite.svg",
     "dist/icon.svg",
     "dist/icon.png",
     "templates/base/public/epos.svg",

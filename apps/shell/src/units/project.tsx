@@ -132,37 +132,8 @@ export class Project extends gl.Unit {
     this.state.selectedTabId = tabId
   }
 
-  openBrowserFlagsPage() {
-    epos.browser.tabs.create({ url: 'about://flags/#file-system-access-api' })
-  }
-
   async connect() {
-    if (!window.showDirectoryPicker || true) {
-      toast.error('File System API unavailable', {
-        className: 'items-start!',
-        icon: <AlertCircle className="relative top-0.75 size-4" />,
-        description: (
-          <ol className="list-ind mt-2 flex list-decimal flex-col gap-1">
-            <li>
-              Open{' '}
-              <a
-                target="_blank"
-                onClick={e => {
-                  e.preventDefault()
-                  this.openBrowserFlagsPage()
-                }}
-                className="cursor-pointer underline underline-offset-4"
-              >
-                about://flags
-              </a>
-            </li>
-            <li>Enable File System Access API</li>
-          </ol>
-        ),
-      })
-      return
-    }
-
+    if (!window.showDirectoryPicker) return this.showFileSystemApiUnavailableToast()
     const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'readwrite' }))
     if (handle) await this.setHandle(handle)
   }
@@ -287,6 +258,32 @@ export class Project extends gl.Unit {
     return isLongLine || hasFewSpaces
   }
 
+  private showFileSystemApiUnavailableToast() {
+    const aboutFlags = (
+      <a
+        target="_blank"
+        onClick={e => {
+          e.preventDefault()
+          epos.browser.tabs.create({ url: 'about://flags/#file-system-access-api' })
+        }}
+        className="cursor-pointer underline underline-offset-4"
+      >
+        about://flags
+      </a>
+    )
+
+    toast.error('File System API unavailable', {
+      className: 'items-start!',
+      icon: <AlertCircle className="relative top-0.75 size-4" />,
+      description: (
+        <ol className="mt-1 flex list-inside list-decimal flex-col gap-1.5">
+          <li>Open {aboutFlags}</li>
+          <li>Enable File System Access API</li>
+        </ol>
+      ),
+    })
+  }
+
   // MARK: Views
   // ===========================================================================
 
@@ -316,11 +313,20 @@ export class Project extends gl.Unit {
           />
           <div className="truncate pr-9 font-normal">{this.spec.name}</div>
         </SidebarMenuButton>
-        <TooltipWrap text={this.enabled ? 'Enabled' : 'Disabled'}>
-          <div className="absolute right-2 h-4.5">
-            <Switch checked={this.enabled} onCheckedChange={value => this.setEnabled(value)} size="sm" />
-          </div>
-        </TooltipWrap>
+        {this.setup.completed && (
+          <TooltipWrap text={this.enabled ? 'Enabled' : 'Disabled'}>
+            <div className="absolute right-2.5 h-4.5">
+              <Switch checked={this.enabled} onCheckedChange={value => this.setEnabled(value)} size="sm" />
+            </div>
+          </TooltipWrap>
+        )}
+        {!this.setup.completed && (
+          <TooltipWrap text="Delete project">
+            <Button variant="link" className="absolute right-1.25 hover:text-destructive" onClick={() => this.remove()}>
+              <Trash2 className="size-3.75" />
+            </Button>
+          </TooltipWrap>
+        )}
       </SidebarMenuItem>
     )
   }
@@ -363,11 +369,13 @@ export class Project extends gl.Unit {
                 Export
               </Button>
             )}
-            {!this.setup.completed && (
-              <Button variant="outline" onClick={() => this.remove()} className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]">
-                <Trash2 /> Delete
-              </Button>
-            )}
+            {/* {!this.setup.completed && (
+              <TooltipWrap text="Delete project">
+                <Button variant="ghost" onClick={() => this.remove()} className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]">
+                  <Trash2 /> Delete
+                </Button>
+              </TooltipWrap>
+            )} */}
           </div>
         </div>
 
@@ -424,7 +432,7 @@ export class Project extends gl.Unit {
     }
 
     return (
-      <TooltipWrap text="The project is connected to a local folder. Changes are being watched in real-time.">
+      <TooltipWrap text="The project is connected to a local folder. Changes are being watched and applied in real-time.">
         <Badge variant="green">
           <div className="mr-0.5 size-1 rounded-full bg-current" /> active
         </Badge>
@@ -473,7 +481,7 @@ export class Project extends gl.Unit {
 
   private ContentView() {
     return (
-      <Card className="-mt-px border p-0 ring-0">
+      <Card className="-mt-px overflow-visible border p-0 ring-0">
         <this.setup.View />
         <this.SpecView />
         <this.ManifestView />

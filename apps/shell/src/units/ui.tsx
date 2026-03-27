@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils.js'
-import type { ReactNode } from '@tabler/icons-react'
 import { AlertTriangle } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 export class Ui extends gl.Unit {
   Error(props: { title: ReactNode; description?: ReactNode; className?: string }) {

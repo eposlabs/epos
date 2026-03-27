@@ -1,5 +1,6 @@
 {
   "name": "My Extension",
+  "slug": "x3",
   "assets": ["dist/epos.svg"],
   "targets": [
     {

@@ -13,7 +13,6 @@
     "@eposlabs/idb": "1.24.0",
     "@eposlabs/types": "1.23.0",
     "@eposlabs/utils": "1.23.0",
-    "@tabler/icons-react": "^3.40.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "epos": "1.58.0",
@@ -34,7 +33,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "@types/chrome": "^0.1.38",
     "@types/wicg-file-system-access": "^2023.10.7",
-    "shadcn": "^4.1.0",
+    "shadcn": "^4.1.1",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-rebundle": "1.39.0"
