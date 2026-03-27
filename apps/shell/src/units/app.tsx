@@ -10,6 +10,8 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { ClassValue } from 'clsx'
+import { SquareArrowOutUpRight } from 'lucide-react'
+import type { CSSProperties } from 'react'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -59,16 +61,14 @@ export class App extends gl.Unit {
   // ============================================================================
 
   View() {
-    if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
+    if (location.host === 'epos.dev' && location.pathname === '/@learn') {
+      return <this.permissions.View />
+    }
+
     return (
       <SidebarProvider
-        className="bg-grid h-screen"
-        style={
-          {
-            '--sidebar-width': '19rem',
-            '--grid-offset-x': `calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--spacing-project)) / 2)`,
-          } as React.CSSProperties
-        }
+        style={{ '--sidebar-width': '19rem' } as CSSProperties}
+        className="app-grid-bg bg-grid h-screen min-w-205"
       >
         <TooltipProvider delayDuration={500}>
           <this.highlight.StyleView />
@@ -81,16 +81,19 @@ export class App extends gl.Unit {
 
   private SidebarView() {
     return (
-      <Sidebar variant="sidebar">
-        <SidebarHeader className="border-b">
-          <SidebarMenu>
-            <SidebarMenuItem className="flex items-center p-2 font-mono text-xs font-semibold">
-              <this.LogoView className="size-4" />
-              <div className="ml-2">[epos]</div>
-              <div className="ml-auto text-muted-foreground">v1.8</div>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
+      <Sidebar collapsible="none" className="border-r">
+        <a href="https://epos.dev/" target="_blank" className="group">
+          <SidebarHeader className="border-b">
+            <SidebarMenu>
+              <SidebarMenuItem className="flex items-center p-2 font-mono text-xs font-semibold">
+                <this.LogoView className="size-4" />
+                <div className="ml-2">[epos]</div>
+                <SquareArrowOutUpRight className="ml-2 size-3.5 transition-opacity not-group-hover:opacity-0" />
+                <div className="ml-auto text-muted-foreground">v1.8</div>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarHeader>
+        </a>
         <SidebarContent>
           <this.projects.SidebarView />
         </SidebarContent>

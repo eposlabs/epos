@@ -140,22 +140,20 @@
 
 :root {
   color: var(--color-foreground);
-  --grid-size: 32px;
-  --grid-color: var(--color-neutral-50);
-  --grid-offset-x: 0px;
   --sidebar: var(--card);
 }
 
-.dark {
-  --grid-color: oklch(0.17 0 0);
-}
-
-.bg-grid {
+.app-grid-bg {
+  --grid-size: 32px;
+  --grid-color: var(--color-neutral-50);
   background-image:
     linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
-  background-position: var(--grid-offset-x) 0;
+  background-position: calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--spacing-project)) / 2) 0;
+  .dark & {
+    --grid-color: oklch(0.17 0 0);
+  }
 }
 
 @theme {
