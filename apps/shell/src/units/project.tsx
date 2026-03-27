@@ -31,7 +31,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertTriangle, Blocks, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertCircle, AlertTriangle, Blocks, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -131,7 +132,37 @@ export class Project extends gl.Unit {
     this.state.selectedTabId = tabId
   }
 
+  openBrowserFlagsPage() {
+    epos.browser.tabs.create({ url: 'about://flags/#file-system-access-api' })
+  }
+
   async connect() {
+    if (!window.showDirectoryPicker || true) {
+      toast.error('File System API unavailable', {
+        className: 'items-start!',
+        icon: <AlertCircle className="relative top-0.75 size-4" />,
+        description: (
+          <ol className="list-ind mt-2 flex list-decimal flex-col gap-1">
+            <li>
+              Open{' '}
+              <a
+                target="_blank"
+                onClick={e => {
+                  e.preventDefault()
+                  this.openBrowserFlagsPage()
+                }}
+                className="cursor-pointer underline underline-offset-4"
+              >
+                about://flags
+              </a>
+            </li>
+            <li>Enable File System Access API</li>
+          </ol>
+        ),
+      })
+      return
+    }
+
     const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'readwrite' }))
     if (handle) await this.setHandle(handle)
   }

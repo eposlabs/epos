@@ -7,6 +7,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from '@/components/ui/sidebar.js'
+import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { ClassValue } from 'clsx'
@@ -75,6 +76,7 @@ export class App extends gl.Unit {
           <this.highlight.StyleView />
           <this.SidebarView />
           <this.BodyView />
+          <Toaster richColors={true} />
         </TooltipProvider>
       </SidebarProvider>
     )

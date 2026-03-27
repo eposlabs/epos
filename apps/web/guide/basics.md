@@ -2,7 +2,7 @@
 
 This guide covers the core concepts of building extensions with Epos. To keep things simple, we will start with **plain JavaScript and CSS**. This lets you see the engine in action without a build step.
 
-Once you are comfortable with these fundamentals, we will set up a development environment using [Vite](./vite).
+Once you are comfortable with these fundamentals, we will set up a development environment using [Vite](/guide/setup).
 
 ## Workflow Overview
 
