@@ -30,7 +30,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertTriangle, BookText, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertTriangle, Blocks, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 export type Template = 'base'
@@ -274,7 +274,7 @@ export class Project extends gl.Unit {
 
   View() {
     return (
-      <div className="mx-auto flex h-full w-full max-w-180 flex-col">
+      <div className="mx-auto flex h-full w-full max-w-project flex-col">
         <this.MainView />
         <this.LoadingView />
         <this.RemoveDialogView />
@@ -323,16 +323,20 @@ export class Project extends gl.Unit {
     const dot = (className?: string) => <div className={cn('mr-0.5 size-1 rounded-full bg-current', className)} />
 
     return (
-      <div className="flex w-full flex-col gap-1.5 border-b pb-4">
+      <div className="flex w-full flex-col gap-3 border-b pb-4">
         <div className="flex justify-between">
           {/* Name */}
-          <div className="text-xl/[32px]">{this.spec.name}</div>
+          <div className="flex h-8 items-end text-xl">{this.spec.name}</div>
 
           {/* Actions */}
           {this.connected && (
             <div className="flex gap-2">
               <TooltipWrap text="Reload project">
-                <Button variant="outline" onClick={() => this.reload()}>
+                <Button
+                  variant="outline"
+                  onClick={() => this.reload()}
+                  className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]"
+                >
                   <RefreshCw />
                 </Button>
               </TooltipWrap>
@@ -348,7 +352,19 @@ export class Project extends gl.Unit {
           {/* Badges */}
           <div className="flex gap-1.5 font-mono select-none">
             {this.status === 'error' && <Badge variant="destructive">{dot()} error</Badge>}
-            {this.status === 'connected' && <Badge variant="green">{dot()} live</Badge>}
+            {this.status === 'connected' && (
+              <TooltipWrap
+                text={
+                  <>
+                    The project is connected to a local folder.
+                    <br />
+                    Changes are being watched in real-time.
+                  </>
+                }
+              >
+                <Badge variant="green">{dot()} live</Badge>
+              </TooltipWrap>
+            )}
             {this.status === 'disconnected' && <Badge variant="amber">{dot()} not connected</Badge>}
             {this.status === 'disabled' && <Badge variant="secondary">{dot('bg-muted-foreground')} disabled</Badge>}
             <Badge variant="secondary">{this.spec.slug}</Badge>
@@ -357,6 +373,7 @@ export class Project extends gl.Unit {
 
           {/* Timestamp */}
           {(() => {
+            if (!this.connected) return null
             if (!this.state.updatedAt) return null
             const hh = this.state.updatedAt.getHours().toString().padStart(2, '0')
             const mm = this.state.updatedAt.getMinutes().toString().padStart(2, '0')
@@ -416,7 +433,7 @@ export class Project extends gl.Unit {
 
   private ContentView() {
     return (
-      <div className="overflow-auto rounded-xl border bg-card">
+      <div className="-mt-px overflow-auto rounded-xl border bg-card">
         <this.setup.View />
         <this.SpecView />
         <this.ManifestView />
@@ -499,15 +516,15 @@ export class Project extends gl.Unit {
         </div>
 
         {/* Library Builds */}
-        <div className="flex justify-between border-b p-4">
+        <div className="group flex justify-between border-b p-4">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium">
-              <BookText className="size-3.5" />
-              Library Builds
+              <Blocks className="size-3.5" />
+              Epos Build
             </div>
-            <div className="mt-1 space-y-0.5 text-sm text-muted-foreground">
-              <div>Which builds of built-in libs to use (React, MobX, and others).</div>
-              <div>This option does not affect the exported bundle.</div>
+            <div className="mt-1 max-w-md space-y-0.5 text-sm text-muted-foreground">
+              Select which Epos build to use, including its built-in libraries like React and MobX. This option does not
+              affect the exported bundle.
             </div>
           </div>
           <div>
@@ -621,8 +638,8 @@ export class Project extends gl.Unit {
         {title && (
           <div
             className={cn(
-              'absolute top-0 right-0 rounded-bl-xl border-b border-l bg-neutral-100 px-2.5 py-1.5 font-mono text-xs',
-              'text-muted-foreground dark:bg-neutral-800',
+              'absolute top-0 right-0 rounded-bl-xl border-b border-l bg-neutral-50 px-2.5 py-1.5 font-mono text-xs',
+              'text-muted-foreground dark:bg-neutral-900',
             )}
           >
             {title}

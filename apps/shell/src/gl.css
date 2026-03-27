@@ -140,11 +140,27 @@
 
 :root {
   color: var(--color-foreground);
-  /* --sidebar: var(--card); */
+  --grid-size: 32px;
+  --grid-color: var(--color-neutral-50);
+  --grid-offset-x: 0px;
+  --sidebar: var(--card);
 }
 
-@theme inline {
+.dark {
+  --grid-color: oklch(0.17 0 0);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  background-position: var(--grid-offset-x) 0;
+}
+
+@theme {
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --color-brand: #e9ff01;
+  --spacing-project: calc(var(--spacing) * 176 + 1px);
 }

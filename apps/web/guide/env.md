@@ -52,8 +52,12 @@ For background code and iframes, these values are `-1`.
 - `spec` - the normalized `epos.json`.
 - `manifest` - the generated `manifest.json` used for export.
 - `enabled` - whether the project is enabled in the [app.epos.dev](https://app.epos.dev) dashboard.
-- `debug` - whether the dev builds of built-in libraries are used (React, MobX, etc.).
+- `debug` - whether the dev build of the engine is used, `true` by default.
 - `pageUrl` - the URL of the `<page>` target. Read more in the [Action guide](./action.md#action-page).
+
+`spec` is useful when your code needs to read its own `epos.json` configuration. `manifest` is mostly useful for inspection and debugging.
+
+`debug` can be changed in the [app.epos.dev](https://app.epos.dev) dashboard. It is always `false` for the exported bundle. Turn it off during development to test how your app behaves with the engine production build, including production builds of built-in libraries like React and MobX.
 
 Example:
 
@@ -61,11 +65,7 @@ Example:
 console.log(epos.env.project.id)
 console.log(epos.env.project.spec.name)
 
-if (epos.env.project.debug) {
-  console.log('Using dev builds of built-in libraries')
+if (!epos.env.project.debug) {
+  console.log('Using Epos production build')
 }
 ```
-
-`spec` is useful when your code needs to read its own `epos.json` configuration. `manifest` is mostly useful for inspection and debugging.
-
-`debug` can be changed in the [app.epos.dev](https://app.epos.dev) dashboard. It is used only during development and has no effect on the exported bundle. It is turned on by default and can be turned off to test how your app runs with production builds.

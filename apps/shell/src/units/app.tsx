@@ -61,7 +61,15 @@ export class App extends gl.Unit {
   View() {
     if (location.host === 'epos.dev' && location.pathname === '/@learn') return <this.permissions.View />
     return (
-      <SidebarProvider className="h-screen" style={{ '--sidebar-width': '19rem' } as React.CSSProperties}>
+      <SidebarProvider
+        className="bg-grid h-screen"
+        style={
+          {
+            '--sidebar-width': '19rem',
+            '--grid-offset-x': `calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--spacing-project)) / 2)`,
+          } as React.CSSProperties
+        }
+      >
         <TooltipProvider delayDuration={500}>
           <this.highlight.StyleView />
           <this.SidebarView />
@@ -92,7 +100,7 @@ export class App extends gl.Unit {
 
   private BodyView() {
     return (
-      <SidebarInset className="overflow-auto">
+      <SidebarInset className="overflow-auto bg-transparent">
         <this.projects.View />
       </SidebarInset>
     )

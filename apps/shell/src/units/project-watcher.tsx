@@ -30,9 +30,8 @@ export class ProjectWatcher extends gl.Unit {
       // epos.json changed? -> Reload
       for (const record of records) {
         const path = record.relativePathComponents.join('/')
-        if (path === 'epos.json') {
-          this.scheduleReload()
-        }
+        const pathMovedFrom = record.relativePathMovedFrom?.join('/') ?? null
+        if (path === 'epos.json' || pathMovedFrom === 'epos.json') this.scheduleReload()
       }
     })
 

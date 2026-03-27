@@ -87,7 +87,7 @@ Information about the current project.
 - `spec` — the normalized `epos.json` content.
 - `manifest` — the generated Manifest V3 object used for export.
 - `enabled` — whether the project is enabled.
-- `debug` — whether the dev builds of built-in libraries are used (React, MobX, etc.).
+- `debug` — whether the dev build of the engine is used, `true` by default.
 - `pageUrl` — the URL of the `<page>` target.
 
 ### Example
