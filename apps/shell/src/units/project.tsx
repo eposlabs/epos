@@ -12,6 +12,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
+import { Card } from '@/components/ui/card.js'
 import {
   Dialog,
   DialogClose,
@@ -78,17 +79,6 @@ export class Project extends gl.Unit {
     return this.$projects.selectedId === this.id
   }
 
-  get connected() {
-    return !!this.state.handle
-  }
-
-  get status() {
-    if (!this.enabled) return 'disabled'
-    if (!this.connected) return 'disconnected'
-    if (this.state.error) return 'error'
-    return 'connected'
-  }
-
   async init() {
     this.reload = this.$.utils.enqueue(this.reload)
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
@@ -127,17 +117,17 @@ export class Project extends gl.Unit {
   }
 
   toggleRemoveDialog() {
-    if (!this.connected) return
+    if (!this.setup.completed) return
     this.state.showRemoveDialog = !this.state.showRemoveDialog
   }
 
   toggleExportDialog() {
-    if (!this.connected) return
+    if (!this.setup.completed) return
     this.state.showExportDialog = !this.state.showExportDialog
   }
 
   selectTab(tabId: TabId) {
-    if (!this.connected) return
+    if (!this.setup.completed) return
     this.state.selectedTabId = tabId
   }
 
@@ -146,13 +136,9 @@ export class Project extends gl.Unit {
     if (handle) await this.setHandle(handle)
   }
 
-  async disconnect() {
-    if (!this.state.handle) return
-    this.state.error = null
-    await this.setHandle(null)
-  }
-
   async reload() {
+    if (!this.setup.completed) return
+
     this.state.error = null
     this.watcher.stopFileObservers()
 
@@ -228,6 +214,7 @@ export class Project extends gl.Unit {
     if (handle) {
       await this.$.idb.set('epos-shell', 'handles', this.id, handle)
       this.state.handle = handle
+      this.watcher.stopGlobalObserver()
       this.watcher.startGlobalObserver()
       await this.reload()
     } else {
@@ -292,7 +279,7 @@ export class Project extends gl.Unit {
               'mx-0.5 size-1.25 shrink-0 rounded-full',
               this.state.error && 'bg-destructive',
               !this.state.error && 'bg-green-600 dark:bg-green-300',
-              !this.connected && 'bg-amber-600 dark:bg-amber-300',
+              !this.setup.completed && 'bg-amber-600 dark:bg-amber-300',
               !this.enabled && 'bg-muted-foreground',
             )}
           />
@@ -320,8 +307,6 @@ export class Project extends gl.Unit {
   }
 
   private HeaderView() {
-    const dot = (className?: string) => <div className={cn('mr-0.5 size-1 rounded-full bg-current', className)} />
-
     return (
       <div className="flex w-full flex-col gap-3 border-b pb-4">
         <div className="flex justify-between">
@@ -329,8 +314,8 @@ export class Project extends gl.Unit {
           <div className="flex h-8 items-end text-xl">{this.spec.name}</div>
 
           {/* Actions */}
-          {this.connected && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {this.setup.completed && (
               <TooltipWrap text="Reload project">
                 <Button
                   variant="outline"
@@ -340,40 +325,32 @@ export class Project extends gl.Unit {
                   <RefreshCw />
                 </Button>
               </TooltipWrap>
+            )}
+            {this.setup.completed && (
               <Button variant="default" onClick={() => this.toggleExportDialog()}>
                 <Package />
                 Export
               </Button>
-            </div>
-          )}
+            )}
+            {!this.setup.completed && (
+              <Button variant="outline" onClick={() => this.remove()} className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]">
+                <Trash2 /> Delete
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-between">
           {/* Badges */}
-          <div className="flex gap-1.5 font-mono select-none">
-            {this.status === 'error' && <Badge variant="destructive">{dot()} error</Badge>}
-            {this.status === 'connected' && (
-              <TooltipWrap
-                text={
-                  <>
-                    The project is connected to a local folder.
-                    <br />
-                    Changes are being watched in real-time.
-                  </>
-                }
-              >
-                <Badge variant="green">{dot()} live</Badge>
-              </TooltipWrap>
-            )}
-            {this.status === 'disconnected' && <Badge variant="amber">{dot()} not connected</Badge>}
-            {this.status === 'disabled' && <Badge variant="secondary">{dot('bg-muted-foreground')} disabled</Badge>}
+          <div className="flex gap-2 font-mono select-none">
+            <this.StatusBadgeView />
             <Badge variant="secondary">{this.spec.slug}</Badge>
             <Badge variant="secondary">v{this.spec.version}</Badge>
           </div>
 
           {/* Timestamp */}
           {(() => {
-            if (!this.connected) return null
+            if (!this.setup.completed) return null
             if (!this.state.updatedAt) return null
             const hh = this.state.updatedAt.getHours().toString().padStart(2, '0')
             const mm = this.state.updatedAt.getMinutes().toString().padStart(2, '0')
@@ -390,23 +367,55 @@ export class Project extends gl.Unit {
     )
   }
 
+  private StatusBadgeView() {
+    if (!this.enabled) {
+      return (
+        <Badge variant="secondary">
+          <div className="mr-0.5 size-1 rounded-full bg-muted-foreground" /> disabled
+        </Badge>
+      )
+    }
+
+    if (!this.setup.completed) {
+      return (
+        <Badge variant="amber">
+          <div className="mr-0.5 size-1 rounded-full bg-current" /> not connected
+        </Badge>
+      )
+    }
+
+    if (this.state.error) {
+      return (
+        <Badge variant="destructive" className="bg-red-100 dark:bg-[#3c1c1d]">
+          <div className="mr-0.5 size-1 rounded-full bg-current" /> error
+        </Badge>
+      )
+    }
+
+    return (
+      <TooltipWrap text="The project is connected to a local folder. Changes are being watched in real-time.">
+        <Badge variant="green">
+          <div className="mr-0.5 size-1 rounded-full bg-current" /> active
+        </Badge>
+      </TooltipWrap>
+    )
+  }
+
   private ErrorView() {
     if (!this.enabled) return null
-    if (!this.connected) return null
+    if (!this.setup.completed) return null
     if (!this.state.error) return null
     return (
-      <div className="flex border-l-3 border-destructive bg-destructive/10 py-2 pr-4 pl-2.5 text-sm text-destructive">
-        <AlertTriangle className="relative top-0.5 mr-2.5 size-4 shrink-0" />
-        <div>
-          <div className="font-medium">{this.state.error.title}</div>
-          {this.state.error.message && <div className="mt-1">{this.state.error.message}</div>}
-        </div>
-      </div>
+      <this.$.ui.Error
+        title={this.state.error.title}
+        description={this.state.error.message}
+        className="bg-red-100 dark:bg-[#3c1c1d]"
+      />
     )
   }
 
   private TabsView() {
-    if (!this.connected) return null
+    if (!this.setup.completed) return null
     return (
       <Tabs
         value={this.state.selectedTabId}
@@ -433,41 +442,57 @@ export class Project extends gl.Unit {
 
   private ContentView() {
     return (
-      <div className="-mt-px overflow-auto rounded-xl border bg-card">
+      <Card className="-mt-px border p-0 ring-0">
         <this.setup.View />
         <this.SpecView />
         <this.ManifestView />
         <this.FilesView />
         <this.SettingsView />
-      </div>
+      </Card>
     )
   }
 
   private SpecView() {
-    if (!this.connected) return null
+    if (!this.setup.completed) return null
     if (this.state.selectedTabId !== 'spec') return null
-    if (this.specText) return <this.JsonView json={this.specText} />
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>File Not Found</EmptyTitle>
-          <EmptyDescription>epos.json file is missing from the project directory.</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )
+
+    if (!this.specText) {
+      return (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>Not Found</EmptyTitle>
+            <EmptyDescription>epos.json file is missing from the project directory.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )
+    }
+
+    return <this.JsonView json={this.specText} />
   }
 
   private ManifestView() {
-    if (!this.connected) return null
+    if (!this.setup.completed) return null
     if (this.state.selectedTabId !== 'manifest') return null
     return <this.JsonView json={JSON.stringify(this.manifest, null, 2)} title="generated based on the epos.json" />
   }
 
   private FilesView() {
-    if (!this.connected) return null
+    if (!this.setup.completed) return null
     if (this.state.selectedTabId !== 'files') return null
     const allFiles = [...this.jsSources, ...this.cssSources, ...this.assets]
     const uniqueFiles = [...new Map(allFiles.map(file => [file.path, file])).values()]
+
+    if (uniqueFiles.length === 0) {
+      return (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>No Files</EmptyTitle>
+            <EmptyDescription>Project does not contain any files.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )
+    }
+
     return (
       <div className="px-0 py-0 text-sm">
         {uniqueFiles.map(file => (
@@ -490,8 +515,9 @@ export class Project extends gl.Unit {
   }
 
   private SettingsView() {
-    if (!this.state.handle) return null
+    if (!this.setup.completed) return null
     if (this.state.selectedTabId !== 'settings') return null
+    if (!this.state.handle) throw this.never()
 
     return (
       <div className="flex flex-col">
@@ -504,15 +530,10 @@ export class Project extends gl.Unit {
             </div>
             <div className="mt-1 text-sm text-muted-foreground">Local folder where project files are located.</div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.5">
-              <Folder />
-              <div className="max-w-30 truncate">{this.state.handle.name}</div>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => this.disconnect()}>
-              Disconnect
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.75 text-sm font-normal">
+            <Folder />
+            <div className="max-w-30 truncate">{this.state.handle.name}</div>
+          </Button>
         </div>
 
         {/* Library Builds */}
@@ -527,22 +548,20 @@ export class Project extends gl.Unit {
               affect the exported bundle.
             </div>
           </div>
-          <div>
-            <Select
-              value={this.debug ? 'development' : 'production'}
-              onValueChange={value => this.setDebug(value === 'development')}
-            >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                <SelectGroup>
-                  <SelectItem value="development">Development</SelectItem>
-                  <SelectItem value="production">Production</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={this.debug ? 'development' : 'production'}
+            onValueChange={value => this.setDebug(value === 'development')}
+          >
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="development">Development</SelectItem>
+                <SelectItem value="production">Production</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Delete */}
@@ -554,11 +573,9 @@ export class Project extends gl.Unit {
             </div>
             <div className="mt-1 text-sm text-muted-foreground">Files on your computer won't be removed.</div>
           </div>
-          <div>
-            <Button variant="destructive" size="sm" onClick={() => this.toggleRemoveDialog()}>
-              Delete
-            </Button>
-          </div>
+          <Button variant="destructive" size="sm" onClick={() => this.toggleRemoveDialog()}>
+            Delete
+          </Button>
         </div>
       </div>
     )
@@ -584,7 +601,7 @@ export class Project extends gl.Unit {
             </AlertDialogMedia>
             <AlertDialogTitle>Delete {this.spec.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the project. The files on your computer will not be removed.
+              This will permanently delete the project. The files on your computer won't be removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

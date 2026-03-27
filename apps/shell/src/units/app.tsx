@@ -21,6 +21,7 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
   highlight = new gl.Highlight(this)
+  ui = new gl.Ui(this)
 
   async init() {
     document.documentElement.classList.add('antialiased')
@@ -88,7 +89,7 @@ export class App extends gl.Unit {
               <SidebarMenuItem className="flex items-center p-2 font-mono text-xs font-semibold">
                 <this.LogoView className="size-4" />
                 <div className="ml-2">[epos]</div>
-                <SquareArrowOutUpRight className="ml-2 size-3.5 transition-opacity not-group-hover:opacity-0" />
+                <SquareArrowOutUpRight className="ml-2 size-3.5 transition not-group-hover:opacity-0" />
                 <div className="ml-auto text-muted-foreground">v1.8</div>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -131,6 +132,9 @@ export class App extends gl.Unit {
   static versioner: any = {
     20() {
       this.highlight = new gl.Highlight(this)
+    },
+    21() {
+      this.ui = new gl.Ui(this)
     },
   }
 }

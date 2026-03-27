@@ -84,7 +84,7 @@ Suggested starting points:
 - Overview: `apps/web/guide/index.md`
 - Basics: `apps/web/guide/basics.md`
 - Features: `apps/web/guide/features.md`
-- Vite setup: `apps/web/guide/vite.md`
+- Vite setup: `apps/web/guide/setup.md`
 
 ## Monorepo Layout
 

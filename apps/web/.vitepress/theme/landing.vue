@@ -1,5 +1,43 @@
 <script setup lang="ts">
-import Snippet from './snippet.vue'
+// @ts-ignore
+import snippetEposJson from './snippets/epos.json?raw'
+// @ts-ignore
+import snippetBusOn from './snippets/bus-on.js?raw'
+
+import { createHighlighter } from 'shiki'
+
+createHighlighter({
+  themes: ['github-light', 'github-dark'],
+  langs: ['json', 'javascript'],
+}).then(highlighter => {
+  const highlight = (code: string, lang: 'json' | 'javascript') => {
+    return highlighter.codeToHtml(code, { lang, theme: 'github-light' })
+  }
+
+  document.querySelectorAll('.highlight').forEach(el => {
+    const code = el.textContent || ''
+    const lang = el.getAttribute('data-lang') as 'json' | 'javascript'
+    el.innerHTML = highlight(code, lang)
+  })
+})
+
+const spec = {
+  'name': 'My Extension',
+  'targets': [
+    {
+      'matches': '*://*.example.com/*',
+      'load': ['main.css', 'main.js'],
+    },
+    {
+      'matches': '<popup>',
+      'load': ['popup.css', 'popup.js'],
+    },
+    {
+      'matches': '<background>',
+      'load': ['background.js'],
+    },
+  ],
+}
 
 const steps = [
   { index: '01', title: 'Install', description: 'Install Epos from the Chrome Web Store.' },
@@ -132,7 +170,7 @@ code {
           Epos will run your code with hot module replacement, so you can see your changes in real time as you edit.
         </p>
         <div class="w-xl">
-          <Snippet type="epos.json" />
+          <pre class="highlight" data-lang="json">{{ snippetEposJson }}</pre>
         </div>
       </div>
     </div>
@@ -150,8 +188,8 @@ code {
         </div>
 
         <div class="flex flex-col">
-          <Snippet type="bus.on" />
-          <Snippet type="bus.send" />
+          <pre class="highlight" data-lang="js">{{ snippetBusOn }}</pre>
+          <pre class="highlight" data-lang="js">epos.bus.send('event', data)</pre>
         </div>
       </div>
     </div>

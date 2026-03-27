@@ -71,7 +71,8 @@ export class Projects extends gl.Unit {
   // ============================================================================
 
   View() {
-    if (!this.selected) return <this.EmptyView />
+    if (this.list.length === 0) return <this.WelcomeView />
+    if (!this.selected) return null
     return <this.selected.View />
   }
 
@@ -95,8 +96,16 @@ export class Projects extends gl.Unit {
     )
   }
 
-  private EmptyView() {
-    if (this.list.length > 0) return null
+  private WelcomeView() {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-lg">Welcome</div>
+          <Button onClick={() => this.create()}>Create Project</Button>
+        </div>
+      </div>
+    )
+
     return (
       <Empty>
         <EmptyHeader>

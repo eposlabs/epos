@@ -1,4 +1,4 @@
-# Vite Setup
+# Setup
 
 This guide shows how to set up Epos with Vite, TypeScript, and Tailwind CSS.
 

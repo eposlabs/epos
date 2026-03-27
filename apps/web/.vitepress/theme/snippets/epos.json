@@ -1,0 +1,17 @@
+{
+  "name": "My Extension",
+  "targets": [
+    {
+      "matches": "*://*.example.com/*",
+      "load": ["main.css", "main.js"]
+    },
+    {
+      "matches": "<popup>",
+      "load": ["popup.css", "popup.js"]
+    },
+    {
+      "matches": "<background>",
+      "load": ["background.js"]
+    }
+  ]
+}
