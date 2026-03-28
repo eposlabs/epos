@@ -25,8 +25,7 @@ export class App extends sw.Unit {
 
   private logInfo() {
     if (!this.shell.isInstalled()) return
-    const guideUrl = 'https://epos.dev/guide'
-    const title = `ᛃ epos is running | ${guideUrl}`
+    const title = `ᛃ epos is running | https://epos.dev`
     const subtitle = `To inspect background processes, open offscreen.html from the extension details page`
     this.$.utils.info({ title, subtitle, timestamp: true })
   }

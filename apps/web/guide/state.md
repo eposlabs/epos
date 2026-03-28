@@ -125,7 +125,7 @@ This way only one synchronization event is triggered, and the update behaves lik
 
 - Transactions **must be synchronous**.
 
-- If your transaction throws halfway through, changes made before the error are **not rolled back**.
+- If a transaction throws halfway through, changes made before the error are **not rolled back**.
 
 :::
 
@@ -148,7 +148,7 @@ epos.state.reaction(
 )
 ```
 
-This is useful when you need to react to state changes.
+This is useful when you need to react to certain state changes.
 
 ## Local State
 

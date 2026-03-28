@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button.js'
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card.js'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js'
 import { Separator } from '@/components/ui/separator.js'
-import { Folder, FolderOpen, Layers } from 'lucide-react'
+import { ArrowRight, Folder, FolderOpen, Layers } from 'lucide-react'
 
 export class ProjectSetup extends gl.Unit {
   completed = false
@@ -37,13 +37,13 @@ export class ProjectSetup extends gl.Unit {
           {this.$project.state.handle && (
             <Button
               size="lg"
-              className="px-4"
+              className="px-5"
               onClick={() => {
                 this.completed = true
                 this.$project.reload()
               }}
             >
-              Start
+              Start <ArrowRight className="size-3.5" />
             </Button>
           )}
         </div>
@@ -97,15 +97,16 @@ export class ProjectSetup extends gl.Unit {
             <Layers className="size-3.5" />
             Template
           </div>
-          <div className="mt-1 max-w-sm text-sm text-muted-foreground">Pick a starter kit or start with a blank slate.</div>
+          <div className="mt-1 max-w-sm text-sm text-muted-foreground">Pick a starter kit or use manual setup.</div>
         </div>
         <div>
-          <Select defaultValue="default">
+          <Select defaultValue="none">
             <SelectTrigger id="plan" size="sm" className="**:[img]:mr-0.5">
               <SelectValue placeholder="Select a template" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
+                <SelectItem value="none">No Template</SelectItem>
                 <SelectItem value="default" disabled>
                   <img src={epos.assets.url('dist/vite.svg')} className="size-4" />
                   <div className="flex gap-0.75">
@@ -115,9 +116,6 @@ export class ProjectSetup extends gl.Unit {
                     <div>+</div>
                     <div>Tailwind</div>
                   </div>
-                </SelectItem>
-                <SelectItem value="none" className="pl-8">
-                  No Template
                 </SelectItem>
               </SelectGroup>
             </SelectContent>

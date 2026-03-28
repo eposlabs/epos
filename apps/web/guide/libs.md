@@ -34,7 +34,7 @@ const { jsx } = epos.libs.reactJsxRuntime
 
 ## Setting Up Vite
 
-As explained in the [Vite guide](/guide/vite), you should use the `epos/vite` plugin so Vite resolves these libraries to the built-in Epos versions instead of trying to load them from `node_modules`.
+As explained in the [Setup guide](/guide/setup), you should use the `epos/vite` plugin so Vite resolves these libraries to the built-in Epos versions instead of trying to load them from `node_modules`.
 
 ::: code-group
 

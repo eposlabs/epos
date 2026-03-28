@@ -1,6 +1,6 @@
 {
   "name": "epos-devkit",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -18,11 +18,11 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "1.23.0",
+    "@eposlabs/utils": "1.25.0",
     "@tabler/icons-react": "^3.41.0",
     "clsx": "^2.1.1",
-    "epos": "1.58.0",
-    "epos-unit": "1.28.0",
+    "epos": "1.60.0",
+    "epos-unit": "1.30.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
@@ -30,6 +30,6 @@
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-rebundle": "1.39.0"
+    "vite-plugin-rebundle": "1.41.0"
   }
 }

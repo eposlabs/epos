@@ -14,11 +14,11 @@ createHighlighter({
     return highlighter.codeToHtml(code, { lang, theme: 'github-light' })
   }
 
-  document.querySelectorAll('.highlight').forEach(el => {
-    const code = el.textContent || ''
-    const lang = el.getAttribute('data-lang') as 'json' | 'javascript'
-    el.innerHTML = highlight(code, lang)
-  })
+  // document.querySelectorAll('.highlight').forEach(el => {
+  //   const code = el.textContent || ''
+  //   const lang = el.getAttribute('data-lang') as 'json' | 'javascript'
+  //   el.innerHTML = highlight(code, lang)
+  // })
 })
 
 const spec = {
@@ -142,6 +142,7 @@ code {
       </div>
     </div>
 
+    <!--
     <div class="flex border-t border-divider">
       <div class="box w-1/2">
         <div class="eyebrow">WHAT IS EPOS?</div>
@@ -163,7 +164,7 @@ code {
 
     <div class="flex border-t border-divider">
       <div class="box flex flex-col items-center">
-        <!-- <div class="eyebrow">SIMPLE SETUP</div> -->
+        <div class="eyebrow">SIMPLE SETUP</div>
         <h2 class="h2 mt-4">Reimagine extension development.</h2>
         <p class="prose mt-6 max-w-3xl">
           With Epos, you can develop your extension directly in the browser with zero setup. Just connect a local folder and
@@ -206,5 +207,6 @@ code {
     </div>
 
     <div class="flex h-100 border-t border-divider"></div>
+    -->
   </div>
 </template>
