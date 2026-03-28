@@ -10,6 +10,7 @@ import { Projects, type Projects as ProjectsType } from '../units/projects.js'
 import { Theme, type Theme as ThemeType } from '../units/theme.js'
 import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.js'
 import { Utils, type Utils as UtilsType } from '../units/utils.js'
+import { Welcome, type Welcome as WelcomeType } from '../units/welcome.js'
 
 Object.assign(gl, {
   App,
@@ -24,6 +25,7 @@ Object.assign(gl, {
   Theme,
   UtilsFs,
   Utils,
+  Welcome,
 })
 
 declare global {
@@ -42,6 +44,7 @@ declare global {
     Theme: typeof Theme
     UtilsFs: typeof UtilsFs
     Utils: typeof Utils
+    Welcome: typeof Welcome
   }
 
   interface gl {
@@ -57,6 +60,7 @@ declare global {
     Theme: Theme
     UtilsFs: UtilsFs
     Utils: Utils
+    Welcome: Welcome
   }
 
   namespace gl {
@@ -72,5 +76,6 @@ declare global {
     export type Theme = ThemeType
     export type UtilsFs = UtilsFsType
     export type Utils = UtilsType
+    export type Welcome = WelcomeType
   }
 }

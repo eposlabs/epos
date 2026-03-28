@@ -141,18 +141,18 @@
 :root {
   color: var(--color-foreground);
   --sidebar: var(--card);
+  --project-width: calc(44rem + 1px);
 }
 
-.app-grid-bg {
-  --grid-size: 32px;
-  --grid-color: var(--color-neutral-50);
+.lattice {
+  --lattice-size: 32px;
+  --lattice-color: var(--color-neutral-50);
   background-image:
-    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
-  background-position: calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--spacing-project)) / 2) 0;
+    linear-gradient(to right, var(--lattice-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lattice-color) 1px, transparent 1px);
+  background-size: var(--lattice-size) var(--lattice-size);
   .dark & {
-    --grid-color: oklch(0.17 0 0);
+    --lattice-color: oklch(0.17 0 0);
   }
 }
 
@@ -160,5 +160,4 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --color-brand: #e9ff01;
-  --spacing-project: calc(var(--spacing) * 176 + 1px);
 }

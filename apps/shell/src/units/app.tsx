@@ -11,7 +11,6 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import { SquareArrowOutUpRight } from 'lucide-react'
-import type { CSSProperties } from 'react'
 
 export class App extends gl.Unit {
   libs = new gl.Libs(this)
@@ -21,6 +20,7 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
   highlight = new gl.Highlight(this)
+  welcome = new gl.Welcome(this)
 
   async init() {
     document.documentElement.classList.add('antialiased')
@@ -68,16 +68,25 @@ export class App extends gl.Unit {
     }
 
     return (
-      <SidebarProvider
-        style={{ '--sidebar-width': '19rem' } as CSSProperties}
-        className="app-grid-bg bg-grid h-screen min-w-205"
-      >
-        <TooltipProvider delayDuration={500}>
-          <this.highlight.SetupView />
-          <this.SidebarView />
-          <this.BodyView />
-          <Toaster richColors={true} />
-        </TooltipProvider>
+      <TooltipProvider delayDuration={500}>
+        {this.welcome.show && <this.welcome.View />}
+        {!this.welcome.show && <this.MainView />}
+      </TooltipProvider>
+    )
+  }
+
+  private MainView() {
+    const style = {
+      '--sidebar-width': '19rem',
+      backgroundPosition: `calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--project-width)) / 2) 0`,
+    } as React.CSSProperties
+
+    return (
+      <SidebarProvider style={style} className="lattice h-screen min-w-205">
+        <this.highlight.SetupView />
+        <this.SidebarView />
+        <this.BodyView />
+        <Toaster richColors={true} />
       </SidebarProvider>
     )
   }
@@ -145,6 +154,10 @@ export class App extends gl.Unit {
     },
     22() {
       delete this.ui
+    },
+    23() {
+      this.welcome = new gl.Welcome(this)
+      this.welcome.show = false
     },
   }
 }

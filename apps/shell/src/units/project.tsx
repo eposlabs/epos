@@ -244,8 +244,6 @@ export class Project extends gl.Unit {
   }
 
   private isMinifiedJs(js: string) {
-    if (js.length < 100) return false
-
     const lines = js.split(/\r?\n/)
     const avgLineLength = js.length / lines.length
 
@@ -300,7 +298,7 @@ export class Project extends gl.Unit {
     if (this.dev) return <this.DevView />
 
     return (
-      <div className="mx-auto w-full max-w-project">
+      <div className="mx-auto w-full max-w-(--project-width)">
         {this.state.ready && <this.MainView />}
         {!this.state.ready && <this.LoadingView />}
         <this.DeleteDialogView />
@@ -606,7 +604,7 @@ export class Project extends gl.Unit {
     if (!this.state.handle) return null
     return (
       <this.Section Icon={FolderOpen} title="Connected Folder" description="Local folder where project files are located.">
-        <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.75 text-sm font-normal">
+        <Button variant="outline" size="sm" onClick={() => this.connect()}>
           <Folder />
           <div className="max-w-30 truncate">{this.state.handle.name}</div>
         </Button>
@@ -727,7 +725,7 @@ export class Project extends gl.Unit {
     return <div className={cn('-mt-px rounded-xl border bg-card text-sm', props.className)}>{props.children}</div>
   }
 
-  private Section(props: {
+  Section(props: {
     Icon: React.ComponentType<{ className?: string }>
     title: string
     description: React.ReactNode
