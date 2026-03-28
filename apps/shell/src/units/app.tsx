@@ -73,7 +73,7 @@ export class App extends gl.Unit {
         className="app-grid-bg bg-grid h-screen min-w-205"
       >
         <TooltipProvider delayDuration={500}>
-          <this.highlight.StyleView />
+          <this.highlight.Styles />
           <this.SidebarView />
           <this.BodyView />
           <Toaster richColors={true} />
@@ -106,7 +106,7 @@ export class App extends gl.Unit {
 
   private BodyView() {
     return (
-      <SidebarInset className="overflow-auto bg-transparent">
+      <SidebarInset className="overflow-auto bg-transparent pb-40">
         <this.projects.View />
       </SidebarInset>
     )

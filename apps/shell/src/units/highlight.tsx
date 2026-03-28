@@ -8,11 +8,11 @@ export class Highlight extends gl.Unit {
     hljs.registerLanguage('json', jsonLanguage)
   }
 
-  StyleView() {
+  Styles() {
     return <style>{this.$.theme.value === 'light' ? hljsLightCss : hljsDarkCss}</style>
   }
 
-  JsonView({ value }: { value: string }) {
+  Json({ value }: { value: string }) {
     return <pre dangerouslySetInnerHTML={{ __html: hljs.highlight(value, { language: 'json' }).value }} />
   }
 }

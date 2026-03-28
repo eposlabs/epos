@@ -12,7 +12,6 @@ export class ProjectSetup extends gl.Unit {
   }
 
   View() {
-    if (this.completed) return null
     return (
       <div className="relative flex flex-col">
         {/* <CardHeader className="p-0">

@@ -12,7 +12,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
-import { Card } from '@/components/ui/card.js'
 import {
   Dialog,
   DialogClose,
@@ -66,7 +65,7 @@ export class Project extends gl.Unit {
       handle: null as FileSystemDirectoryHandle | null,
       updatedAt: null as Date | null,
       selectedTabId: 'spec' as TabId,
-      showRemoveDialog: false,
+      showDeleteDialog: false,
       showExportDialog: false,
       exporting: false,
     }
@@ -105,21 +104,22 @@ export class Project extends gl.Unit {
 
   async setEnabled(value: boolean) {
     await epos.projects.update(this.id, { enabled: value })
+    if (value) await this.reload()
   }
 
   async setDebug(value: boolean) {
     await epos.projects.update(this.id, { debug: value })
   }
 
-  async remove() {
+  async delete() {
     await epos.projects.remove(this.id)
     const firstProject = this.$projects.list[0]
     if (firstProject) firstProject.select()
   }
 
-  toggleRemoveDialog() {
+  toggleDeleteDialog() {
     if (!this.setup.completed) return
-    this.state.showRemoveDialog = !this.state.showRemoveDialog
+    this.state.showDeleteDialog = !this.state.showDeleteDialog
   }
 
   toggleExportDialog() {
@@ -288,11 +288,14 @@ export class Project extends gl.Unit {
   // ===========================================================================
 
   View() {
+    // @ts-ignore
+    if (this.dev) return <this.DevView />
+
     return (
-      <div className="mx-auto flex h-full w-full max-w-project flex-col">
-        <this.MainView />
-        <this.LoadingView />
-        <this.RemoveDialogView />
+      <div className="mx-auto w-full max-w-project">
+        {this.state.ready && <this.MainView />}
+        {!this.state.ready && <this.LoadingView />}
+        <this.DeleteDialogView />
         <this.ExportDialogView />
       </div>
     )
@@ -301,6 +304,7 @@ export class Project extends gl.Unit {
   SidebarView() {
     return (
       <SidebarMenuItem className="relative flex h-9! items-center rounded-lg hover:bg-sidebar-accent">
+        {/* Status + Name */}
         <SidebarMenuButton isActive={this.selected} onClick={() => this.select()} className="h-full">
           <div
             className={cn(
@@ -313,16 +317,20 @@ export class Project extends gl.Unit {
           />
           <div className="truncate pr-9 font-normal">{this.spec.name}</div>
         </SidebarMenuButton>
+
+        {/* Toggle Switch */}
         {this.setup.completed && (
           <TooltipWrap text={this.enabled ? 'Enabled' : 'Disabled'}>
-            <div className="absolute right-2.5 h-4.5">
+            <div className="absolute right-2.5 flex">
               <Switch checked={this.enabled} onCheckedChange={value => this.setEnabled(value)} size="sm" />
             </div>
           </TooltipWrap>
         )}
+
+        {/* Delete Button */}
         {!this.setup.completed && (
           <TooltipWrap text="Delete project">
-            <Button variant="link" className="absolute right-1.25 hover:text-destructive" onClick={() => this.remove()}>
+            <Button variant="link" className="absolute right-1.25 hover:text-destructive" onClick={() => this.delete()}>
               <Trash2 className="size-3.75" />
             </Button>
           </TooltipWrap>
@@ -334,11 +342,19 @@ export class Project extends gl.Unit {
   private MainView() {
     if (!this.state.ready) return null
     return (
-      <div className="flex size-full flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         <this.HeaderView />
-        <this.ErrorView />
-        <this.TabsView />
-        <this.ContentView />
+        {!this.setup.completed && <this.setup.View />}
+        {this.setup.completed && (
+          <>
+            <this.ErrorView />
+            <this.TabsView />
+            {this.state.selectedTabId === 'spec' && <this.SpecView />}
+            {this.state.selectedTabId === 'manifest' && <this.ManifestView />}
+            {this.state.selectedTabId === 'files' && <this.FilesView />}
+            {this.state.selectedTabId === 'settings' && <this.SettingsView />}
+          </>
+        )}
       </div>
     )
   }
@@ -347,62 +363,40 @@ export class Project extends gl.Unit {
     return (
       <div className="flex w-full flex-col gap-3 border-b pb-4">
         <div className="flex justify-between">
-          {/* Name */}
           <div className="flex h-8 items-end text-xl">{this.spec.name}</div>
-
-          {/* Actions */}
           <div className="flex gap-2">
-            {this.setup.completed && (
-              <TooltipWrap text="Reload project">
-                <Button
-                  variant="outline"
-                  onClick={() => this.reload()}
-                  className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]"
-                >
-                  <RefreshCw />
-                </Button>
-              </TooltipWrap>
-            )}
-            {this.setup.completed && (
-              <Button variant="default" onClick={() => this.toggleExportDialog()}>
-                <Package />
-                Export
-              </Button>
-            )}
-            {/* {!this.setup.completed && (
-              <TooltipWrap text="Delete project">
-                <Button variant="ghost" onClick={() => this.remove()} className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]">
-                  <Trash2 /> Delete
-                </Button>
-              </TooltipWrap>
-            )} */}
+            {this.setup.completed && <this.ReloadButtonView />}
+            {this.setup.completed && <this.ExportButtonView />}
           </div>
         </div>
-
         <div className="flex justify-between">
-          {/* Badges */}
           <div className="flex gap-2 font-mono select-none">
             <this.StatusBadgeView />
             <Badge variant="secondary">{this.spec.slug}</Badge>
             <Badge variant="secondary">v{this.spec.version}</Badge>
           </div>
-
-          {/* Timestamp */}
-          {(() => {
-            if (!this.setup.completed) return null
-            if (!this.state.updatedAt) return null
-            const hh = this.state.updatedAt.getHours().toString().padStart(2, '0')
-            const mm = this.state.updatedAt.getMinutes().toString().padStart(2, '0')
-            const ss = this.state.updatedAt.getSeconds().toString().padStart(2, '0')
-            const ms = this.state.updatedAt.getMilliseconds().toString().padStart(3, '0')
-            return (
-              <div className="font-mono text-xs/[20px] text-muted-foreground">
-                Updated at {hh}:{mm}:{ss}:{ms}
-              </div>
-            )
-          })()}
+          {this.setup.completed && <this.TimestampView />}
         </div>
       </div>
+    )
+  }
+
+  private ReloadButtonView() {
+    return (
+      <TooltipWrap text="Reload project">
+        <Button variant="outline" onClick={() => this.reload()} className="dark:bg-[#151515] dark:hover:bg-[#1c1c1c]">
+          <RefreshCw />
+        </Button>
+      </TooltipWrap>
+    )
+  }
+
+  private ExportButtonView() {
+    return (
+      <Button variant="default" onClick={() => this.toggleExportDialog()}>
+        <Package />
+        Export
+      </Button>
     )
   }
 
@@ -440,9 +434,20 @@ export class Project extends gl.Unit {
     )
   }
 
+  private TimestampView() {
+    if (!this.state.updatedAt) return null
+    const hh = this.state.updatedAt.getHours().toString().padStart(2, '0')
+    const mm = this.state.updatedAt.getMinutes().toString().padStart(2, '0')
+    const ss = this.state.updatedAt.getSeconds().toString().padStart(2, '0')
+    const ms = this.state.updatedAt.getMilliseconds().toString().padStart(3, '0')
+    return (
+      <div className="font-mono text-xs/[20px] text-muted-foreground">
+        Updated at {hh}:{mm}:{ss}:{ms}
+      </div>
+    )
+  }
+
   private ErrorView() {
-    if (!this.enabled) return null
-    if (!this.setup.completed) return null
     if (!this.state.error) return null
     return (
       <this.$.ui.Error
@@ -454,7 +459,6 @@ export class Project extends gl.Unit {
   }
 
   private TabsView() {
-    if (!this.setup.completed) return null
     return (
       <Tabs
         value={this.state.selectedTabId}
@@ -479,61 +483,66 @@ export class Project extends gl.Unit {
     )
   }
 
-  private ContentView() {
-    return (
-      <Card className="-mt-px overflow-visible border p-0 ring-0">
-        <this.setup.View />
-        <this.SpecView />
-        <this.ManifestView />
-        <this.FilesView />
-        <this.SettingsView />
-      </Card>
-    )
-  }
-
   private SpecView() {
-    if (!this.setup.completed) return null
-    if (this.state.selectedTabId !== 'spec') return null
-
     if (!this.specText) {
       return (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>Not Found</EmptyTitle>
-            <EmptyDescription>epos.json file is missing from the project directory.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <this.Card>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>Not Found</EmptyTitle>
+              <EmptyDescription>epos.json file is missing from the project directory.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </this.Card>
       )
     }
 
-    return <this.JsonView json={this.specText} />
+    return (
+      <this.Card className="p-4">
+        <this.$.highlight.Json value={this.specText} />
+      </this.Card>
+    )
   }
 
   private ManifestView() {
-    if (!this.setup.completed) return null
-    if (this.state.selectedTabId !== 'manifest') return null
-    return <this.JsonView json={JSON.stringify(this.manifest, null, 2)} title="generated based on the epos.json" />
+    return (
+      <this.Card className="relative overflow-hidden">
+        <div
+          className={cn(
+            'absolute top-0 right-0 rounded-bl-xl border-b border-l bg-neutral-50 px-2.5 py-1.5 font-mono text-xs',
+            'text-muted-foreground dark:bg-neutral-900',
+          )}
+        >
+          generated based on the epos.json
+        </div>
+        <div className="w-full overflow-x-auto">
+          <div className="w-fit p-4 pr-8">
+            <this.$.highlight.Json value={JSON.stringify(this.manifest, null, 2)} />
+          </div>
+        </div>
+      </this.Card>
+    )
   }
 
   private FilesView() {
-    if (!this.setup.completed) return null
-    if (this.state.selectedTabId !== 'files') return null
     const allFiles = [...this.jsSources, ...this.cssSources, ...this.assets]
     const uniqueFiles = [...new Map(allFiles.map(file => [file.path, file])).values()]
 
     if (uniqueFiles.length === 0) {
       return (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>No Files</EmptyTitle>
-            <EmptyDescription>Project does not contain any files.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <this.Card>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No Files</EmptyTitle>
+              <EmptyDescription>Project does not contain any files.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </this.Card>
       )
     }
 
     return (
-      <div className="px-0 py-0 text-sm">
+      <this.Card>
         {uniqueFiles.map(file => (
           <div key={file.path} className="flex items-center p-4 not-last:border-b">
             <File className="mr-2 size-3.5" />
@@ -549,90 +558,85 @@ export class Project extends gl.Unit {
             </div>
           </div>
         )}
-      </div>
+      </this.Card>
     )
   }
 
   private SettingsView() {
-    if (!this.setup.completed) return null
-    if (this.state.selectedTabId !== 'settings') return null
-    if (!this.state.handle) throw this.never()
+    return (
+      <this.Card>
+        <this.SettingsFolderView />
+        <this.SettingsDebugView />
+        <this.SettingsDeleteView />
+      </this.Card>
+    )
+  }
+
+  private SettingsFolderView() {
+    if (!this.state.handle) return null
+    return (
+      <this.Section Icon={FolderOpen} title="Connected Folder" description="Local folder where project files are located.">
+        <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.75 text-sm font-normal">
+          <Folder />
+          <div className="max-w-30 truncate">{this.state.handle.name}</div>
+        </Button>
+      </this.Section>
+    )
+  }
+
+  private SettingsDebugView() {
+    const description = (
+      <>
+        Select which Epos build to use, including its built-in libraries like React and MobX. This option does not affect
+        the exported bundle.
+      </>
+    )
 
     return (
-      <div className="flex flex-col">
-        {/* Connected Folder */}
-        <div className="flex justify-between border-b p-4">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FolderOpen className="size-3.5" />
-              Connected Folder
-            </div>
-            <div className="mt-1 text-sm text-muted-foreground">Local folder where project files are located.</div>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => this.connect()} className="gap-1.75 text-sm font-normal">
-            <Folder />
-            <div className="max-w-30 truncate">{this.state.handle.name}</div>
-          </Button>
-        </div>
+      <this.Section Icon={Blocks} title="Epos Build" description={description}>
+        <Select
+          value={this.debug ? 'development' : 'production'}
+          onValueChange={value => this.setDebug(value === 'development')}
+        >
+          <SelectTrigger size="sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="development">Development</SelectItem>
+              <SelectItem value="production">Production</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </this.Section>
+    )
+  }
 
-        {/* Library Builds */}
-        <div className="group flex justify-between border-b p-4">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Blocks className="size-3.5" />
-              Epos Build
-            </div>
-            <div className="mt-1 max-w-md space-y-0.5 text-sm text-muted-foreground">
-              Select which Epos build to use, including its built-in libraries like React and MobX. This option does not
-              affect the exported bundle.
-            </div>
-          </div>
-          <Select
-            value={this.debug ? 'development' : 'production'}
-            onValueChange={value => this.setDebug(value === 'development')}
-          >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="development">Development</SelectItem>
-                <SelectItem value="production">Production</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Delete */}
-        <div className="flex justify-between p-4">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Trash2 className="size-3.5" />
-              Delete Project
-            </div>
-            <div className="mt-1 text-sm text-muted-foreground">Files on your computer won't be removed.</div>
-          </div>
-          <Button variant="destructive" size="sm" onClick={() => this.toggleRemoveDialog()}>
-            Delete
-          </Button>
-        </div>
-      </div>
+  private SettingsDeleteView() {
+    return (
+      <this.Section
+        Icon={Trash2}
+        title="Delete Project"
+        description="Permanently delete the project. Files on your computer won't be removed."
+      >
+        <Button variant="destructive" size="sm" onClick={() => this.toggleDeleteDialog()}>
+          Delete
+        </Button>
+      </this.Section>
     )
   }
 
   private LoadingView() {
-    if (this.state.ready) return null
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex size-full items-center justify-center">
         <Spinner className="size-6" />
       </div>
     )
   }
 
-  private RemoveDialogView() {
-    if (!this.state.showRemoveDialog) return null
+  private DeleteDialogView() {
     return (
-      <AlertDialog open={true} onOpenChange={() => this.toggleRemoveDialog()}>
+      <AlertDialog open={this.state.showDeleteDialog} onOpenChange={() => this.toggleDeleteDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
@@ -645,7 +649,7 @@ export class Project extends gl.Unit {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => this.remove()}>
+            <AlertDialogAction variant="destructive" onClick={() => this.delete()}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -655,11 +659,9 @@ export class Project extends gl.Unit {
   }
 
   private ExportDialogView() {
-    if (!this.state.showExportDialog) return null
     const unminifiedJsSource = this.jsSources.find(source => !source.minified)
-
     return (
-      <Dialog open={true} onOpenChange={() => this.toggleExportDialog()}>
+      <Dialog open={this.state.showExportDialog} onOpenChange={() => this.toggleExportDialog()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Export Project</DialogTitle>
@@ -688,23 +690,78 @@ export class Project extends gl.Unit {
     )
   }
 
-  private JsonView({ json, title }: { json: string; title?: string }) {
+  private Card(props: { children: React.ReactNode; className?: string }) {
+    return <div className={cn('-mt-px rounded-xl border bg-card text-sm', props.className)}>{props.children}</div>
+  }
+
+  private Section(props: {
+    Icon: React.ComponentType<{ className?: string }>
+    title: string
+    description: React.ReactNode
+    children: React.ReactNode
+    className?: string
+  }) {
     return (
-      <div className="relative size-full text-sm">
-        {title && (
-          <div
-            className={cn(
-              'absolute top-0 right-0 rounded-bl-xl border-b border-l bg-neutral-50 px-2.5 py-1.5 font-mono text-xs',
-              'text-muted-foreground dark:bg-neutral-900',
-            )}
-          >
-            {title}
+      <div className={cn('flex justify-between gap-8 p-4 not-last:border-b', props.className)}>
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <props.Icon className="size-3.5" />
+            {props.title}
           </div>
-        )}
-        <div className="size-full overflow-auto">
-          <div className="h-fit w-fit pt-4 pr-8 pb-8 pl-4">
-            <this.$.highlight.JsonView value={json} />
-          </div>
+          <div className="mt-1 text-sm text-muted-foreground">{props.description}</div>
+        </div>
+        <div>{props.children}</div>
+      </div>
+    )
+  }
+
+  DevView() {
+    return (
+      <div className="flex flex-col gap-4 p-4 *:border *:bg-neutral-50 dark:*:bg-neutral-900">
+        <div>
+          <this.setup.View />
+        </div>
+        <div>
+          <this.SettingsView />
+        </div>
+        <div>
+          <this.SidebarView />
+        </div>
+        <div>
+          <this.DeleteDialogView />
+        </div>
+        <div>
+          <this.ExportDialogView />
+        </div>
+        <div>
+          <this.HeaderView />
+        </div>
+        <div>
+          <this.StatusBadgeView />
+        </div>
+        <div>
+          <this.ErrorView />
+        </div>
+        <div>
+          <this.TabsView />
+        </div>
+        <div>
+          <this.SpecView />
+        </div>
+        <div>
+          <this.ManifestView />
+        </div>
+        <div>
+          <this.FilesView />
+        </div>
+        <div>
+          <this.SettingsView />
+        </div>
+        <div>
+          <this.MainView />
+        </div>
+        <div className="h-15">
+          <this.LoadingView />
         </div>
       </div>
     )
