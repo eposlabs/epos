@@ -10,7 +10,6 @@ import {
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
-import type { ClassValue } from 'clsx'
 import { SquareArrowOutUpRight } from 'lucide-react'
 import type { CSSProperties } from 'react'
 
@@ -30,9 +29,11 @@ export class App extends gl.Unit {
     await this.ensureSinglePinnedTab()
   }
 
-  async exportKit() {
-    const project = this.projects.list.find(project => project.spec.slug === 'kit')
-    if (!project) return
+  async exportShell() {
+    const eposProjects = await epos.projects.list()
+    const shell = eposProjects.find(project => project.spec.slug === 'epos-shell')
+    if (!shell) return
+    const project = new gl.Project(this, shell)
     await project.export()
   }
 
@@ -73,7 +74,7 @@ export class App extends gl.Unit {
         className="app-grid-bg bg-grid h-screen min-w-205"
       >
         <TooltipProvider delayDuration={500}>
-          <this.highlight.Styles />
+          <this.highlight.SetupView />
           <this.SidebarView />
           <this.BodyView />
           <Toaster richColors={true} />
@@ -89,7 +90,7 @@ export class App extends gl.Unit {
           <SidebarHeader className="border-b">
             <SidebarMenu>
               <SidebarMenuItem className="flex items-center p-2 font-mono text-xs font-semibold">
-                <this.LogoView className="size-4" />
+                <this.Logo className="size-4" />
                 <div className="ml-2">[epos]</div>
                 <SquareArrowOutUpRight className="ml-2 size-3.5 transition not-group-hover:opacity-0" />
                 <div className="ml-auto text-muted-foreground">v1.8</div>
@@ -97,7 +98,7 @@ export class App extends gl.Unit {
             </SidebarMenu>
           </SidebarHeader>
         </a>
-        <SidebarContent>
+        <SidebarContent className="pb-10">
           <this.projects.SidebarView />
         </SidebarContent>
       </Sidebar>
@@ -112,9 +113,14 @@ export class App extends gl.Unit {
     )
   }
 
-  private LogoView({ className }: { className: ClassValue }) {
+  private Logo(props: { className?: string }) {
     return (
-      <svg className={cn('text-brand', className)} viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className={cn('text-brand', props.className)}
+        viewBox="0 0 128 128"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <rect width="128" height="128" rx="64" fill="currentColor" />
         <path
           d="M74.8675 29.7121L64.6329 38.5719L59.159 35.9408L43.5694 52.2261L62.3624 73.2293L68.0828 69.4925L72.6646 76.7304L57.2828 86.523L30 54.2192L60.1817 23L74.8675 29.7121Z"

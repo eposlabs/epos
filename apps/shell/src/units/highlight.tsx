@@ -8,7 +8,7 @@ export class Highlight extends gl.Unit {
     hljs.registerLanguage('json', jsonLanguage)
   }
 
-  Styles() {
+  SetupView() {
     return <style>{this.$.theme.value === 'light' ? hljsLightCss : hljsDarkCss}</style>
   }
 

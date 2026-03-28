@@ -542,7 +542,17 @@ export class Project extends gl.Unit {
     }
 
     return (
-      <this.Card>
+      <this.Card className="overflow-hidden">
+        <div className="flex items-center border-b bg-neutral-50 p-4 font-medium dark:bg-neutral-800/30">
+          <div>
+            <span className="">
+              Total: {uniqueFiles.length} {uniqueFiles.length === 1 ? 'file' : 'files'}
+            </span>
+          </div>
+          <div className="ml-auto font-mono">
+            {(uniqueFiles.reduce((sum, file) => sum + file.size, 0) / 1024).toFixed(2)} KB
+          </div>
+        </div>
         {uniqueFiles.map(file => (
           <div key={file.path} className="flex items-center p-4 not-last:border-b">
             <File className="mr-2 size-3.5" />
@@ -550,14 +560,6 @@ export class Project extends gl.Unit {
             <div className="ml-auto font-mono">{(file.size / 1024).toFixed(2)} KB</div>
           </div>
         ))}
-        {uniqueFiles.length > 1 && (
-          <div className="flex items-center p-4">
-            <div className="text-muted-foreground">Total {uniqueFiles.length} files</div>
-            <div className="ml-auto font-mono text-muted-foreground">
-              {(uniqueFiles.reduce((sum, file) => sum + file.size, 0) / 1024).toFixed(2)} KB
-            </div>
-          </div>
-        )}
       </this.Card>
     )
   }

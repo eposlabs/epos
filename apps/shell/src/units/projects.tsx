@@ -42,22 +42,22 @@ export class Projects extends gl.Unit {
 
   private async refresh() {
     // Get projects data from epos
-    const projectsData = await epos.projects.list({ sources: true })
+    const eposProjects = await epos.projects.list({ sources: true })
 
     // Update existing projects and add new ones
-    for (const projectData of projectsData) {
-      if (projectData.id === epos.env.project.id) continue
-      const project = this.dict[projectData.id]
+    for (const eposProject of eposProjects) {
+      if (eposProject.id === epos.env.project.id) continue
+      const project = this.dict[eposProject.id]
       if (project) {
-        project.update(projectData)
+        project.update(eposProject)
       } else {
-        this.dict[projectData.id] = new gl.Project(this, projectData)
+        this.dict[eposProject.id] = new gl.Project(this, eposProject)
       }
     }
 
     // Remove deleted projects
     for (const projectId in this.dict) {
-      const exists = projectsData.find(projectData => projectData.id === projectId)
+      const exists = eposProjects.find(eposProject => eposProject.id === projectId)
       if (!exists) delete this.dict[projectId]
     }
 
