@@ -21,7 +21,6 @@ export class App extends gl.Unit {
   projects = new gl.Projects(this)
   permissions = new gl.Permissions(this)
   highlight = new gl.Highlight(this)
-  ui = new gl.Ui(this)
 
   async init() {
     document.documentElement.classList.add('antialiased')
@@ -142,7 +141,10 @@ export class App extends gl.Unit {
       this.highlight = new gl.Highlight(this)
     },
     21() {
-      this.ui = new gl.Ui(this)
+      this.ui = {}
+    },
+    22() {
+      delete this.ui
     },
   }
 }

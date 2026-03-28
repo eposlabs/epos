@@ -8,7 +8,6 @@ import { ProjectWatcher, type ProjectWatcher as ProjectWatcherType } from '../un
 import { Project, type Project as ProjectType } from '../units/project.js'
 import { Projects, type Projects as ProjectsType } from '../units/projects.js'
 import { Theme, type Theme as ThemeType } from '../units/theme.js'
-import { Ui, type Ui as UiType } from '../units/ui.js'
 import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.js'
 import { Utils, type Utils as UtilsType } from '../units/utils.js'
 
@@ -23,7 +22,6 @@ Object.assign(gl, {
   Project,
   Projects,
   Theme,
-  Ui,
   UtilsFs,
   Utils,
 })
@@ -42,7 +40,6 @@ declare global {
     Project: typeof Project
     Projects: typeof Projects
     Theme: typeof Theme
-    Ui: typeof Ui
     UtilsFs: typeof UtilsFs
     Utils: typeof Utils
   }
@@ -58,7 +55,6 @@ declare global {
     Project: Project
     Projects: Projects
     Theme: Theme
-    Ui: Ui
     UtilsFs: UtilsFs
     Utils: Utils
   }
@@ -74,7 +70,6 @@ declare global {
     export type Project = ProjectType
     export type Projects = ProjectsType
     export type Theme = ThemeType
-    export type Ui = UiType
     export type UtilsFs = UtilsFsType
     export type Utils = UtilsType
   }

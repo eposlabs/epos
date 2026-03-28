@@ -11,12 +11,15 @@ export class UtilsFs extends gl.Unit {
 
     let cursor = root
     for (const dir of dirs) {
-      const [nextHandle] = await this.$.utils.safe(() => cursor.getDirectoryHandle(dir, options))
-      if (!nextHandle) return null
+      const [nextHandle, error] = await this.$.utils.safe(() => cursor.getDirectoryHandle(dir, options))
+      if (error?.name === 'NotFoundError') return null
+      if (error) throw error
       cursor = nextHandle
     }
 
-    const [fileHandle] = await this.$.utils.safe(() => cursor.getFileHandle(name, options))
+    const [fileHandle, error] = await this.$.utils.safe(() => cursor.getFileHandle(name, options))
+    if (error?.name === 'NotFoundError') return null
+    if (error) throw error
     if (!fileHandle) return null
 
     return fileHandle

@@ -9,7 +9,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog.js'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
+import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert.js'
 import { Badge } from '@/components/ui/badge.js'
 import { Button } from '@/components/ui/button.js'
 import {
@@ -61,7 +61,7 @@ export class Project extends gl.Unit {
   get state() {
     return {
       ready: false,
-      error: null as { title: string; message: string } | null,
+      error: null as { name: string; message: string | null } | null,
       handle: null as FileSystemDirectoryHandle | null,
       updatedAt: null as Date | null,
       selectedTabId: 'spec' as TabId,
@@ -82,12 +82,13 @@ export class Project extends gl.Unit {
   async init() {
     this.reload = this.$.utils.enqueue(this.reload)
     const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
-    if (handle) await this.setHandle(handle)
+    if (handle) this.useHandle(handle)
     this.state.ready = true
   }
 
   async dispose() {
-    await this.setHandle(null)
+    await this.$.idb.delete('epos-shell', 'handles', this.id)
+    this.watcher.stopGlobalObserver()
   }
 
   update(updates: Omit<ProjectBase, 'id'>) {
@@ -133,9 +134,10 @@ export class Project extends gl.Unit {
   }
 
   async connect() {
-    if (!window.showDirectoryPicker) return this.showFileSystemApiUnavailableToast()
-    const [handle] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'readwrite' }))
-    if (handle) await this.setHandle(handle)
+    if (!window.showDirectoryPicker) return this.showFileSystemUnavailableToast()
+    const [handle, error] = await this.$.utils.safe(() => showDirectoryPicker({ mode: 'readwrite' }))
+    if (error?.name === 'NotAllowedError') return this.showFileSystemNotAllowedToast()
+    if (handle) await this.useHandle(handle)
   }
 
   async reload() {
@@ -146,10 +148,7 @@ export class Project extends gl.Unit {
 
     // Read epos.json
     const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
-    if (readError) {
-      this.specText = null
-      return this.setError('Failed to read epos.json', readError)
-    }
+    if (readError) return this.setError('Failed to read epos.json', readError)
 
     // Save spec text
     this.specText = specText
@@ -208,22 +207,23 @@ export class Project extends gl.Unit {
     this.state.showExportDialog = false
   }
 
-  private setError(title: string, error: Error) {
-    this.state.error = { title, message: error.message }
+  private async useHandle(handle: FileSystemDirectoryHandle) {
+    await this.$.idb.set('epos-shell', 'handles', this.id, handle)
+    this.state.handle = handle
+
+    const access = await handle.queryPermission({ mode: 'readwrite' })
+    if (access !== 'granted') {
+      this.setError('FOLDER_ACCESS_REVOKED')
+      return
+    }
+
+    this.watcher.stopGlobalObserver()
+    this.watcher.startGlobalObserver()
+    await this.reload()
   }
 
-  private async setHandle(handle: FileSystemDirectoryHandle | null) {
-    if (handle) {
-      await this.$.idb.set('epos-shell', 'handles', this.id, handle)
-      this.state.handle = handle
-      this.watcher.stopGlobalObserver()
-      this.watcher.startGlobalObserver()
-      await this.reload()
-    } else {
-      await this.$.idb.delete('epos-shell', 'handles', this.id)
-      this.state.handle = null
-      this.watcher.stopGlobalObserver()
-    }
+  private setError(name: string, error?: Error) {
+    this.state.error = { name, message: error?.message ?? null }
   }
 
   private async readFile(path: string) {
@@ -258,7 +258,7 @@ export class Project extends gl.Unit {
     return isLongLine || hasFewSpaces
   }
 
-  private showFileSystemApiUnavailableToast() {
+  private showFileSystemUnavailableToast() {
     const aboutFlags = (
       <a
         target="_blank"
@@ -281,6 +281,14 @@ export class Project extends gl.Unit {
           <li>Enable File System Access API</li>
         </ol>
       ),
+    })
+  }
+
+  private showFileSystemNotAllowedToast() {
+    toast.error('File system access disabled', {
+      className: 'items-start!',
+      icon: <AlertCircle className="relative top-0.75 size-4" />,
+      description: <div>You have file system access disabled in your browser settings. Please enable it to continue.</div>,
     })
   }
 
@@ -449,12 +457,30 @@ export class Project extends gl.Unit {
 
   private ErrorView() {
     if (!this.state.error) return null
+
+    if (this.state.error.name === 'FOLDER_ACCESS_REVOKED') {
+      return (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>Folder access revoked</AlertTitle>
+          <AlertDescription className="wrap-anywhere">
+            The project lost access to its folder. Please reconnect the folder or update your browser permissions.
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="outline" size="sm" onClick={() => this.connect()}>
+              Reconnect
+            </Button>
+          </AlertAction>
+        </Alert>
+      )
+    }
+
     return (
-      <this.$.ui.Error
-        title={this.state.error.title}
-        description={this.state.error.message}
-        className="bg-red-100 dark:bg-[#3c1c1d]"
-      />
+      <Alert variant="destructive">
+        <AlertTriangle />
+        <AlertTitle>{this.state.error.name}</AlertTitle>
+        <AlertDescription className="wrap-anywhere">{this.state.error.message}</AlertDescription>
+      </Alert>
     )
   }
 
@@ -498,8 +524,10 @@ export class Project extends gl.Unit {
     }
 
     return (
-      <this.Card className="p-4">
-        <this.$.highlight.Json value={this.specText} />
+      <this.Card className="overflow-x-auto">
+        <div className="w-fit p-4 pr-8">
+          <this.$.highlight.Json value={this.specText} />
+        </div>
       </this.Card>
     )
   }
@@ -692,6 +720,9 @@ export class Project extends gl.Unit {
     )
   }
 
+  // MARK: UI Elements
+  // ============================================================================
+
   private Card(props: { children: React.ReactNode; className?: string }) {
     return <div className={cn('-mt-px rounded-xl border bg-card text-sm', props.className)}>{props.children}</div>
   }
@@ -710,7 +741,7 @@ export class Project extends gl.Unit {
             <props.Icon className="size-3.5" />
             {props.title}
           </div>
-          <div className="mt-1 text-sm text-muted-foreground">{props.description}</div>
+          <div className="mt-1 max-w-md text-sm text-muted-foreground">{props.description}</div>
         </div>
         <div>{props.children}</div>
       </div>
