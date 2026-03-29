@@ -1,4 +1,5 @@
 {
+  "$schema": "https://epos.dev/schema.json",
   "name": "My Extension",
   "assets": ["dist/epos.svg"],
   "targets": [

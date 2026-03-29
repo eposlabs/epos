@@ -148,14 +148,26 @@ Update to use the build command:
 
 This uses Vite as a bundler that writes files into `dist`.
 
-## 6. Create the Entry Files
+## 6. Add `jsx` to `tsconfig.json`
+
+Add the `jsx` option to `tsconfig.json` to enable JSX syntax:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx", // [!code ++]
+    ...
+  },
+  "include": ["src"]
+}
+```
+
+## 7. Create the Entry Files
 
 Remove the files that Vite created for the starter app:
 
-- `src/counter.ts`
-- `src/main.ts`
-- `src/style.css`
-- `src/typescript.svg`
+- `src/*`
+- `public/*`
 - `index.html`
 
 Create `src/main.tsx` and `src/main.css`:
@@ -186,7 +198,7 @@ epos.render(<App />)
 
 The `import 'epos'` line gives your editor types and autocomplete for the Epos API.
 
-## 7. Create `epos.json`
+## 8. Create `epos.json`
 
 Tell Epos to load the built files from `dist`.
 
@@ -209,7 +221,7 @@ Tell Epos to load the built files from `dist`.
 
 Notice that `epos.json` points to bundled `dist` files, not `src` files.
 
-## 8. Start the Build
+## 9. Start the Build
 
 Run the development build:
 
@@ -235,7 +247,7 @@ yarn dev
 
 Vite rebuilds your project whenever you change source files, and Epos picks up the updated `dist` output.
 
-## 9. Multiple Entry Points
+## 10. Multiple Entry Points
 
 If your project has more than one entry point, add them all to `input`:
 
@@ -271,7 +283,7 @@ Then load the corresponding built files in `epos.json`:
 ]
 ```
 
-## 10. Shared Chunks and `vite-plugin-rebundle`
+## 11. Shared Chunks and `vite-plugin-rebundle`
 
 With multiple entry points, Vite may extract shared code into extra chunk files. That is normally ok, but Epos cannot load those chunks directly because they are imported dynamically.
 

@@ -86,10 +86,12 @@ export class Projects extends gl.Unit {
               ))}
             </SidebarMenu>
           )}
-          <Button size="sm" variant="outline" onClick={() => this.create()} className="first:mt-1">
-            <Plus className="mr-2 -ml-3" />
-            Add Project
-          </Button>
+          <div className="first:mt-1">
+            <Button size="sm" variant="outline" onClick={() => this.create()} className="w-full">
+              <Plus className="mr-2 -ml-3" />
+              Add Project
+            </Button>
+          </div>
         </SidebarGroupContent>
       </SidebarGroup>
     )
