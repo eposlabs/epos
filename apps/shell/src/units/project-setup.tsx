@@ -1,134 +1,150 @@
 import { Button } from '@/components/ui/button.js'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group.js'
+import { Separator } from '@/components/ui/separator.js'
+import { cn } from '@/lib/utils.js'
 import { ArrowRight, Folder, FolderOpen, Layers } from 'lucide-react'
+
+export type Template = 'vite' | 'none'
 
 export class ProjectSetup extends gl.Unit {
   completed = false
+  template: Template = 'vite'
 
   get $project() {
     return this.closest(gl.Project)!
   }
 
+  async start() {
+    this.completed = true
+    await this.$project.reload()
+  }
+
+  selectTemplate(value: Template) {
+    this.template = value
+  }
+
+  // MARK: Views
+  // ============================================================================
+
   View() {
     return (
-      <div className="rounded-xl border bg-card px-4 py-3">
-        <div className="mb-4">
-          <div className="text-lg font-semibold">Project Setup Title</div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            This is a placeholder description for the project setup process.
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <this.Step index="01">
-            <this.FolderSelect />
-          </this.Step>
-          <this.Step index="02" hidden={!this.$project.state.handle}>
-            <this.DropdownView />
-          </this.Step>
-          <this.Step index="03" isLast hidden={!this.$project.state.handle}>
-            <this.StartView />
-          </this.Step>
-        </div>
-      </div>
-    )
-  }
-
-  Step(props: { index: string; children: React.ReactNode; isLast?: boolean; hidden?: boolean }) {
-    if (props.hidden) return null
-
-    return (
-      <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3">
-        <div className="relative flex justify-center pt-4">
-          {!props.isLast && <div className="absolute top-12 bottom-0 w-px bg-border" />}
-          <div className="font-mono text-lg tracking-[0.14em] text-muted-foreground/80">{props.index}</div>
-        </div>
-        <div className="pb-5">{props.children}</div>
-      </div>
-    )
-  }
-
-  FolderSelect() {
-    return (
-      <this.$project.Section
-        Icon={FolderOpen}
-        title="Select Folder"
-        description="Choose a folder on your computer for the project."
-        className="border-none"
-      >
-        {this.$project.state.handle && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => this.$project.connect()}
-            className="_gap-1.75 _text-sm _font-normal"
-          >
-            <Folder className="size-3.5" />
-            <div className="max-w-30 truncate">{this.$project.state.handle.name}</div>
-          </Button>
-        )}
-        {!this.$project.state.handle && (
-          <Button variant="default" size="sm" onClick={() => this.$project.connect()}>
-            Select Folder
-          </Button>
-        )}
-      </this.$project.Section>
-    )
-  }
-
-  DropdownView() {
-    if (!this.$project.state.handle) return null
-
-    return (
-      <this.$project.Section
-        Icon={Layers}
-        title="Choose Template"
-        description="Pick a starter kit or use manual setup."
-        className="border-none"
-      >
-        <Select defaultValue="none">
-          <SelectTrigger id="plan" size="sm" className="**:[img]:mr-0.5">
-            <SelectValue placeholder="Select a template" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="none">No Template</SelectItem>
-              <SelectItem value="default" disabled>
-                <img src={epos.assets.url('dist/vite.svg')} className="size-4" />
-                <div className="flex gap-0.75">
-                  <div>Vite</div>
-                  <div>+</div>
-                  <div>TS</div>
-                  <div>+</div>
-                  <div>Tailwind</div>
-                </div>
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </this.$project.Section>
-    )
-  }
-
-  StartView() {
-    return (
-      <div className="flex items-start pt-4">
-        <Button
-          size="lg"
-          className="px-5"
-          onClick={() => {
-            this.completed = true
-            this.$project.reload()
-          }}
+      <div className="rounded-xl border bg-card">
+        <this.FolderView />
+        <div
+          className={cn(
+            'h-0 overflow-hidden transition-all duration-500 [interpolate-size:allow-keywords]',
+            this.$project.state.handle && 'h-auto',
+          )}
         >
-          Start <ArrowRight className="size-3.5" />
+          <Separator />
+          <this.TemplateView />
+          <Separator />
+          <this.FooterView />
+        </div>
+      </div>
+    )
+  }
+
+  private FolderView() {
+    return (
+      <div className="p-4 text-sm">
+        <div className="flex items-center gap-2 font-medium">
+          <FolderOpen className="size-3.5" />
+          Choose Folder
+        </div>
+        <div className="mt-1 max-w-md text-muted-foreground">To get started, select a folder for your project.</div>
+        <div className="mt-2.5">
+          {!this.$project.state.handle && (
+            <Button variant="default" size="sm" onClick={() => this.$project.connect()}>
+              Select Folder
+            </Button>
+          )}
+          {this.$project.state.handle && (
+            <Button variant="outline" size="sm" onClick={() => this.$project.connect()}>
+              <Folder />
+              <div className="max-w-30 truncate">{this.$project.state.handle.name}</div>
+            </Button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  private TemplateView() {
+    return (
+      <div className="p-4 text-sm">
+        <div className="flex items-center gap-2 font-medium">
+          <Layers className="size-3.5" />
+          Choose Template
+        </div>
+        <div className="mt-1 max-w-md text-muted-foreground">Pick a starter kit or use manual setup.</div>
+        <div className="mt-2.5 flex gap-2">
+          <RadioGroup
+            value={this.template}
+            onValueChange={(value: Template) => this.selectTemplate(value)}
+            className="w-fit"
+          >
+            <label className="flex items-center gap-3">
+              <RadioGroupItem value="vite" />
+              <div className="flex items-center gap-0.75">
+                <div>Vite</div>
+                <div>+</div>
+                <div>TypeScript</div>
+                <div>+</div>
+                <div>Tailwind CSS</div>
+              </div>
+            </label>
+            <label className="flex items-center gap-3">
+              <RadioGroupItem value="none" id="r2" />
+              <div>No Template</div>
+            </label>
+          </RadioGroup>
+        </div>
+      </div>
+    )
+  }
+
+  DevView() {
+    return (
+      <div className="flex flex-col gap-4 p-4 *:border">
+        <div>
+          <this.FolderView />
+        </div>
+        <div>
+          <this.TemplateView />
+        </div>
+        <div>
+          <this.FooterView />
+        </div>
+        <div>
+          <this.View />
+        </div>
+      </div>
+    )
+  }
+
+  private FooterView() {
+    if (!this.$project.state.handle) return null
+    return (
+      <div className="p-4">
+        <Button size="lg" onClick={() => this.start()}>
+          {this.template === 'vite' && `Setup Template in “${this.$project.state.handle.name}” Folder`}
+          {this.template === 'none' && `Connect “${this.$project.state.handle.name}” Folder`}
+          <ArrowRight className="size-4" />
         </Button>
       </div>
     )
   }
 
+  // MARK: Versioner
+  // ============================================================================
+
   static versioner: any = {
     1() {
       this.completed = false
+    },
+    2() {
+      this.template = 'vite'
     },
   }
 }

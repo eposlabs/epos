@@ -34,8 +34,6 @@ import { AlertCircle, AlertTriangle, Blocks, File, Folder, FolderOpen, Package, 
 import { toast } from 'sonner'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
-export type Template = 'base'
-export type TemplateChoice = 'empty' | Template
 
 export class Project extends gl.Unit {
   spec: Spec
@@ -336,7 +334,7 @@ export class Project extends gl.Unit {
         {/* Delete Button */}
         {!this.setup.completed && (
           <TooltipWrap text="Delete project">
-            <Button variant="link" className="absolute right-1.25 hover:text-destructive" onClick={() => this.delete()}>
+            <Button variant="link" className="absolute right-1 hover:text-destructive" onClick={() => this.delete()}>
               <Trash2 className="size-3.75" />
             </Button>
           </TooltipWrap>
@@ -369,7 +367,9 @@ export class Project extends gl.Unit {
     return (
       <div className="flex w-full flex-col gap-3 border-b pb-4">
         <div className="flex justify-between">
-          <div className="flex h-8 items-end text-xl">{this.spec.name}</div>
+          <div className="flex h-8 items-end text-xl" onClick={() => (this.state.handle = null)}>
+            {this.spec.name}
+          </div>
           <div className="flex gap-2">
             {this.setup.completed && <this.ReloadButtonView />}
             {this.setup.completed && <this.ExportButtonView />}
@@ -603,12 +603,16 @@ export class Project extends gl.Unit {
   private SettingsFolderView() {
     if (!this.state.handle) return null
     return (
-      <this.Section Icon={FolderOpen} title="Connected Folder" description="Local folder where project files are located.">
+      <this.SettingsSection
+        Icon={FolderOpen}
+        title="Connected Folder"
+        description="Local folder where project files are located."
+      >
         <Button variant="outline" size="sm" onClick={() => this.connect()}>
           <Folder />
           <div className="max-w-30 truncate">{this.state.handle.name}</div>
         </Button>
-      </this.Section>
+      </this.SettingsSection>
     )
   }
 
@@ -621,7 +625,7 @@ export class Project extends gl.Unit {
     )
 
     return (
-      <this.Section Icon={Blocks} title="Epos Build" description={description}>
+      <this.SettingsSection Icon={Blocks} title="Epos Build" description={description}>
         <Select
           value={this.debug ? 'development' : 'production'}
           onValueChange={value => this.setDebug(value === 'development')}
@@ -636,13 +640,13 @@ export class Project extends gl.Unit {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </this.Section>
+      </this.SettingsSection>
     )
   }
 
   private SettingsDeleteView() {
     return (
-      <this.Section
+      <this.SettingsSection
         Icon={Trash2}
         title="Delete Project"
         description="Permanently delete the project. Files on your computer won't be removed."
@@ -650,7 +654,7 @@ export class Project extends gl.Unit {
         <Button variant="destructive" size="sm" onClick={() => this.toggleDeleteDialog()}>
           Delete
         </Button>
-      </this.Section>
+      </this.SettingsSection>
     )
   }
 
@@ -725,7 +729,7 @@ export class Project extends gl.Unit {
     return <div className={cn('-mt-px rounded-xl border bg-card text-sm', props.className)}>{props.children}</div>
   }
 
-  Section(props: {
+  private SettingsSection(props: {
     Icon: React.ComponentType<{ className?: string }>
     title: string
     description: React.ReactNode
