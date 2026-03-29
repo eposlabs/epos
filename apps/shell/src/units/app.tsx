@@ -115,7 +115,7 @@ export class App extends gl.Unit {
 
   private BodyView() {
     return (
-      <SidebarInset className="overflow-auto bg-transparent pb-40">
+      <SidebarInset className="overflow-auto bg-transparent">
         <this.projects.View />
       </SidebarInset>
     )

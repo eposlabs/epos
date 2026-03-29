@@ -296,7 +296,7 @@ export class Project extends gl.Unit {
     if (this.dev) return <this.DevView />
 
     return (
-      <div className="mx-auto w-full max-w-(--project-width)">
+      <div className="mx-auto min-h-full w-full max-w-(--project-width)">
         {this.state.ready && <this.MainView />}
         {!this.state.ready && <this.LoadingView />}
         <this.DeleteDialogView />
@@ -346,7 +346,7 @@ export class Project extends gl.Unit {
   private MainView() {
     if (!this.state.ready) return null
     return (
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4 p-4 pb-20">
         <this.HeaderView />
         {!this.setup.completed && <this.setup.View />}
         {this.setup.completed && (

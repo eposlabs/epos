@@ -13,7 +13,7 @@
 
   "targets": [
     {
-      "matches": "<page>",
+      "matches": ["<popup>", "<page>"],
       "load": ["/x1.js"]
     }
     // {

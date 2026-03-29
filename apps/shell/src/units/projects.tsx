@@ -100,5 +100,10 @@ export class Projects extends gl.Unit {
   // MARK: Versioner
   // ============================================================================
 
-  static versioner: any = {}
+  static versioner: any = {
+    13() {
+      delete this.list
+      this.dict = {}
+    },
+  }
 }

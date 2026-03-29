@@ -10,6 +10,25 @@ export class ProjectSetup extends gl.Unit {
   completed = false
   template: Template = 'vite'
 
+  get inert() {
+    return {
+      templates: {
+        vite: [
+          'templates/vite/public/epos.svg',
+          'templates/vite/public/index.html',
+          'templates/vite/src/background.ts',
+          'templates/vite/src/main.css',
+          'templates/vite/src/main.tsx',
+          'templates/vite/.gitignore',
+          'templates/vite/epos.json',
+          'templates/vite/package.json',
+          'templates/vite/tsconfig.json',
+          'templates/vite/vite.config.ts',
+        ],
+      },
+    }
+  }
+
   get $project() {
     return this.closest(gl.Project)!
   }
@@ -50,7 +69,7 @@ export class ProjectSetup extends gl.Unit {
       <div className="p-4 text-sm">
         <div className="flex items-center gap-2 font-medium">
           <FolderOpen className="size-3.5" />
-          Choose Folder
+          Select Folder
         </div>
         <div className="mt-1 max-w-md text-muted-foreground">To get started, select a folder for your project.</div>
         <div className="mt-2.5">
@@ -129,7 +148,7 @@ export class ProjectSetup extends gl.Unit {
       <div className="p-4">
         <Button size="lg" onClick={() => this.start()}>
           {this.template === 'vite' && `Setup Template in “${this.$project.state.handle.name}” Folder`}
-          {this.template === 'none' && `Connect “${this.$project.state.handle.name}” Folder`}
+          {this.template === 'none' && `Just Connect “${this.$project.state.handle.name}” Folder`}
           <ArrowRight className="size-4" />
         </Button>
       </div>

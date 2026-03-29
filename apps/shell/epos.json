@@ -4,13 +4,10 @@
   "slug": "epos-shell",
   "version": "1.8",
   "description": "Web Extension Engine.",
-
   "options": {
     "allowProjectsApi": true,
     "allowMissingModels": true
   },
-
-  "hostPermissions": ["<allUrls>"],
   "permissions": [
     "background",
     "browsingData",
@@ -22,26 +19,24 @@
     "sidePanel",
     "storage"
   ],
-
+  "hostPermissions": ["<allUrls>"],
   "targets": [
     {
       "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
       "load": ["dist/fonts.css", "dist/gl.css", "dist/gl.js"]
     }
   ],
-
   "assets": [
-    "dist/vite.svg",
     "dist/icon.svg",
     "dist/icon.png",
-    "templates/base/public/epos.svg",
-    "templates/base/src/background.ts",
-    "templates/base/src/main.css",
-    "templates/base/src/main.tsx",
-    "templates/base/.gitignore",
-    "templates/base/epos.json",
-    "templates/base/package.json",
-    "templates/base/tsconfig.json",
-    "templates/base/vite.config.ts"
+    "templates/vite/public/epos.svg",
+    "templates/vite/src/background.ts",
+    "templates/vite/src/main.css",
+    "templates/vite/src/main.tsx",
+    "templates/vite/.gitignore",
+    "templates/vite/epos.json",
+    "templates/vite/package.json",
+    "templates/vite/tsconfig.json",
+    "templates/vite/vite.config.ts"
   ]
 }
