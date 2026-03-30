@@ -1,19 +1,21 @@
-Epos helps you build Chromium browser extensions with a simpler development workflow and built-in high-level APIs.
+Epos is an extension for building Chromium extensions with React. Connect your local folder to Epos and start developing. When ready, just click "Export" to get a standalone ZIP file that you can publish.
 
-Connect a local folder to the extension and see the results directly in the browser. When your project is ready, export it as a standard extension bundle.
+⚡ What Epos gives you:
 
-Epos gives you a zero-config workflow with built-in features such as:
+- A cross-context messaging system.
+- Shared state with persistence and sync.
+- Storage for files and other data.
+- Extension APIs available in any context.
+- Automatic script injection + Shadow DOM.
+- A simpler setup through epos.json.
 
-• Cross-context messaging.
-• Shared reactive state with persistence and synchronization.
-• Persistent storage for data and files.
+⚠️ Core Constraints:
 
-How to get started:
+- React: Epos is built around React.
+- Chromium: Firefox and Safari are not supported.
+- Manifest V3: No support for the legacy Manifest V2.
+- No HMR: Live reload is available, but hot module replacement is not.
+- No Source Maps: Epos injects its runtime into your code, so source maps do not work.
+- Permissions: Certain manifest permissions are required and cannot be omitted.
 
-1. Install Epos.
-2. Click the extension icon to open the dashboard.
-3. Connect your local project folder.
-4. Start developing. Epos runs your code in the browser as you edit.
-5. Export your project when it is ready to ship.
-
-Learn more at https://epos.dev/guide
+To try it out, install Epos and follow the guide https://epos.dev/guide/basics
