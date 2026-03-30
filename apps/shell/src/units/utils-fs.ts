@@ -57,7 +57,7 @@ export class UtilsFs extends gl.Unit {
 
   async writeFile(root: FileSystemDirectoryHandle, path: string, contents: Blob | string) {
     const fileHandle = await this.getFileHandle(root, path, { create: true })
-    if (!fileHandle) throw this.never()
+    if (!fileHandle) throw new Error(`Failed to create file: ${path}`)
     const writable = await fileHandle.createWritable()
     await writable.write(contents)
     await writable.close()

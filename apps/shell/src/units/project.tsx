@@ -30,8 +30,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.js'
 import { TooltipWrap } from '@/components/ui/tooltip.js'
 import { cn } from '@/lib/utils.js'
 import type { Assets, Manifest, ProjectBase, Sources, Spec } from 'epos'
-import { AlertCircle, AlertTriangle, Blocks, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { AlertTriangle, Blocks, File, Folder, FolderOpen, Package, RefreshCw, Trash2 } from 'lucide-react'
 
 export type TabId = 'spec' | 'manifest' | 'files' | 'settings'
 
@@ -138,8 +137,8 @@ export class Project extends gl.Unit {
     if (handle) await this.useHandle(handle)
   }
 
-  async reload() {
-    if (!this.setup.completed) return
+  async reload(force = false) {
+    if (!force && !this.setup.completed) return
 
     this.state.error = null
     this.watcher.stopFileObservers()
@@ -268,9 +267,7 @@ export class Project extends gl.Unit {
       </a>
     )
 
-    toast.error('File System API unavailable', {
-      className: 'items-start!',
-      icon: <AlertCircle className="relative top-0.75 size-4" />,
+    this.$.toast.error('File System API unavailable', {
       description: (
         <ol className="mt-1 flex list-inside list-decimal flex-col gap-1.5">
           <li>Open {aboutFlags}</li>
@@ -281,10 +278,8 @@ export class Project extends gl.Unit {
   }
 
   private showFileSystemNotAllowedToast() {
-    toast.error('File system access disabled', {
-      className: 'items-start!',
-      icon: <AlertCircle className="relative top-0.75 size-4" />,
-      description: <div>You have file system access disabled in your browser settings. Please enable it to continue.</div>,
+    this.$.toast.error('File system access disabled', {
+      description: 'You have file system access disabled in your browser settings. Please enable it to continue.',
     })
   }
 
@@ -297,8 +292,7 @@ export class Project extends gl.Unit {
 
     return (
       <div className="mx-auto min-h-full w-full max-w-(--project-width)">
-        {this.state.ready && <this.MainView />}
-        {!this.state.ready && <this.LoadingView />}
+        {this.state.ready ? <this.MainView /> : <this.LoadingView />}
         <this.DeleteDialogView />
         <this.ExportDialogView />
       </div>
@@ -348,8 +342,7 @@ export class Project extends gl.Unit {
     return (
       <div className="flex flex-col gap-4 p-4 pb-20">
         <this.HeaderView />
-        {!this.setup.completed && <this.setup.View />}
-        {this.setup.completed && (
+        {this.setup.completed ? (
           <>
             <this.ErrorView />
             <this.TabsView />
@@ -358,6 +351,8 @@ export class Project extends gl.Unit {
             {this.state.selectedTabId === 'files' && <this.FilesView />}
             {this.state.selectedTabId === 'settings' && <this.SettingsView />}
           </>
+        ) : (
+          <this.setup.View />
         )}
       </div>
     )
@@ -367,13 +362,13 @@ export class Project extends gl.Unit {
     return (
       <div className="flex w-full flex-col gap-3 border-b pb-4">
         <div className="flex justify-between">
-          <div className="flex h-8 items-end text-xl" onClick={() => (this.state.handle = null)}>
-            {this.spec.name}
-          </div>
-          <div className="flex gap-2">
-            {this.setup.completed && <this.ReloadButtonView />}
-            {this.setup.completed && <this.ExportButtonView />}
-          </div>
+          <div className="flex h-8 items-end text-xl">{this.spec.name}</div>
+          {this.setup.completed && (
+            <div className="flex gap-2">
+              <this.ReloadButtonView />
+              <this.ExportButtonView />
+            </div>
+          )}
         </div>
         <div className="flex justify-between">
           <div className="flex gap-2 font-mono select-none">
@@ -571,8 +566,8 @@ export class Project extends gl.Unit {
       <this.Card className="overflow-hidden">
         <div className="flex items-center border-b bg-neutral-50 p-4 font-medium dark:bg-neutral-800/30">
           <div>
-            <span className="">
-              Total: {uniqueFiles.length} {uniqueFiles.length === 1 ? 'file' : 'files'}
+            <span>
+              {uniqueFiles.length} {uniqueFiles.length === 1 ? 'file' : 'files'}
             </span>
           </div>
           <div className="ml-auto font-mono">
@@ -603,16 +598,12 @@ export class Project extends gl.Unit {
   private SettingsFolderView() {
     if (!this.state.handle) return null
     return (
-      <this.SettingsSection
-        Icon={FolderOpen}
-        title="Connected Folder"
-        description="Local folder where project files are located."
-      >
+      <this.Section Icon={FolderOpen} title="Connected Folder" description="Local folder where project files are located.">
         <Button variant="outline" size="sm" onClick={() => this.connect()}>
           <Folder />
           <div className="max-w-30 truncate">{this.state.handle.name}</div>
         </Button>
-      </this.SettingsSection>
+      </this.Section>
     )
   }
 
@@ -625,7 +616,7 @@ export class Project extends gl.Unit {
     )
 
     return (
-      <this.SettingsSection Icon={Blocks} title="Epos Build" description={description}>
+      <this.Section Icon={Blocks} title="Epos Build" description={description}>
         <Select
           value={this.debug ? 'development' : 'production'}
           onValueChange={value => this.setDebug(value === 'development')}
@@ -640,21 +631,17 @@ export class Project extends gl.Unit {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </this.SettingsSection>
+      </this.Section>
     )
   }
 
   private SettingsDeleteView() {
     return (
-      <this.SettingsSection
-        Icon={Trash2}
-        title="Delete Project"
-        description="Permanently delete the project. Files on your computer won't be removed."
-      >
+      <this.Section Icon={Trash2} title="Delete Project" description="Files on your computer won't be removed.">
         <Button variant="destructive" size="sm" onClick={() => this.toggleDeleteDialog()}>
           Delete
         </Button>
-      </this.SettingsSection>
+      </this.Section>
     )
   }
 
@@ -725,26 +712,37 @@ export class Project extends gl.Unit {
   // MARK: UI Elements
   // ============================================================================
 
-  private Card(props: { children: React.ReactNode; className?: string }) {
+  Card(props: { children?: React.ReactNode; className?: string }) {
     return <div className={cn('-mt-px rounded-xl border bg-card text-sm', props.className)}>{props.children}</div>
   }
 
-  private SettingsSection(props: {
-    Icon: React.ComponentType<{ className?: string }>
-    title: string
-    description: React.ReactNode
-    children: React.ReactNode
+  Section(props: {
+    Icon?: React.ComponentType<{ className?: string }>
+    title?: string
+    description?: React.ReactNode
+    vertical?: boolean
+    children?: React.ReactNode
     className?: string
   }) {
     return (
-      <div className={cn('flex justify-between gap-8 p-4 not-last:border-b', props.className)}>
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <props.Icon className="size-3.5" />
-            {props.title}
+      <div
+        className={cn(
+          'flex justify-between gap-8 p-4 text-sm not-last:border-b',
+          props.vertical && 'flex-col justify-start gap-2.5',
+          props.className,
+        )}
+      >
+        {(props.Icon || props.title || props.description) && (
+          <div>
+            {(props.Icon || props.title) && (
+              <div className="flex items-center gap-2 font-medium">
+                {props.Icon && <props.Icon className="size-3.5" />}
+                {props.title}
+              </div>
+            )}
+            {props.description && <div className="mt-1 max-w-md text-muted-foreground">{props.description}</div>}
           </div>
-          <div className="mt-1 max-w-md text-sm text-muted-foreground">{props.description}</div>
-        </div>
+        )}
         <div>{props.children}</div>
       </div>
     )

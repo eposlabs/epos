@@ -21,6 +21,7 @@ export class App extends gl.Unit {
   permissions = new gl.Permissions(this)
   highlight = new gl.Highlight(this)
   welcome = new gl.Welcome(this)
+  toast = new gl.Toast(this)
 
   async init() {
     document.documentElement.classList.add('antialiased')
@@ -86,7 +87,7 @@ export class App extends gl.Unit {
         <this.highlight.SetupView />
         <this.SidebarView />
         <this.BodyView />
-        <Toaster richColors={true} />
+        <Toaster />
       </SidebarProvider>
     )
   }
@@ -158,6 +159,9 @@ export class App extends gl.Unit {
     23() {
       this.welcome = new gl.Welcome(this)
       this.welcome.show = false
+    },
+    25() {
+      this.toast = new gl.Toast(this)
     },
   }
 }

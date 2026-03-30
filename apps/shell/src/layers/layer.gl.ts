@@ -8,6 +8,7 @@ import { ProjectWatcher, type ProjectWatcher as ProjectWatcherType } from '../un
 import { Project, type Project as ProjectType } from '../units/project.js'
 import { Projects, type Projects as ProjectsType } from '../units/projects.js'
 import { Theme, type Theme as ThemeType } from '../units/theme.js'
+import { Toast, type Toast as ToastType } from '../units/toast.js'
 import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.js'
 import { Utils, type Utils as UtilsType } from '../units/utils.js'
 import { Welcome, type Welcome as WelcomeType } from '../units/welcome.js'
@@ -23,6 +24,7 @@ Object.assign(gl, {
   Project,
   Projects,
   Theme,
+  Toast,
   UtilsFs,
   Utils,
   Welcome,
@@ -42,6 +44,7 @@ declare global {
     Project: typeof Project
     Projects: typeof Projects
     Theme: typeof Theme
+    Toast: typeof Toast
     UtilsFs: typeof UtilsFs
     Utils: typeof Utils
     Welcome: typeof Welcome
@@ -58,6 +61,7 @@ declare global {
     Project: Project
     Projects: Projects
     Theme: Theme
+    Toast: Toast
     UtilsFs: UtilsFs
     Utils: Utils
     Welcome: Welcome
@@ -74,6 +78,7 @@ declare global {
     export type Project = ProjectType
     export type Projects = ProjectsType
     export type Theme = ThemeType
+    export type Toast = ToastType
     export type UtilsFs = UtilsFsType
     export type Utils = UtilsType
     export type Welcome = WelcomeType
