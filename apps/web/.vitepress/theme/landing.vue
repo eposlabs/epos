@@ -3,10 +3,10 @@ import { createHighlighter } from 'shiki'
 import { useData } from 'vitepress'
 import { watch } from 'vue'
 
-// @ts-ignore
 import snippetEposJson from './snippets/epos.json?raw'
-// @ts-ignore
-import snippetBusOn from './snippets/bus-on.js?raw'
+import snippetBus from './snippets/bus.js?raw'
+import stateSnippet from './snippets/state.js?raw'
+import storageSnippet from './snippets/storage.js?raw'
 
 const { isDark } = useData()
 
@@ -48,8 +48,8 @@ const spec = {
       'load': ['popup.css', 'popup.js'],
     },
     {
-      'matches': '<background>',
       'load': ['background.js'],
+      'matches': '<background>',
     },
   ],
 }
@@ -81,11 +81,11 @@ const steps = [
   @apply text-8xl font-medium tracking-tighter text-main;
 }
 .h2 {
-  @apply text-4xl font-medium tracking-tight text-main;
+  @apply text-3xl font-medium tracking-tight text-main;
 }
 
 .button {
-  @apply border border-black/20 px-11 py-2.5 text-base font-medium text-main;
+  @apply border border-black/20 px-11 py-2.25 text-base font-medium text-main;
 }
 .button-brand {
   @apply bg-brand text-black!;
@@ -171,41 +171,37 @@ code {
 
       <div class="flex border-t border-divider">
         <div class="box w-1/2">
-          <div class="eyebrow">WHAT IS EPOS?</div>
-          <h2 class="h2 mt-4">Extension runtime.</h2>
+          <h2 class="h2 mt-4">Extension runtime</h2>
           <p class="prose mt-6 max-w-2xl">
-            Epos is not a boilerplate, framework, or bundler. It's a <strong>web extension runtime</strong> that runs your
-            local code directly in the browser during development.
+            Epos is a <span class="[text-decoration:line-through]">boilerplate</span>{{ ' ' }}
+            <span class="[text-decoration:line-through]">framework</span>{{ ' ' }}
+            <span class="[text-decoration:line-through]">bundler</span> <strong>web extension runtime</strong> that runs
+            your code directly in the browser during development.
           </p>
         </div>
         <div class="box w-1/2 border-l border-divider">
-          <div class="eyebrow">BUILT-IN FEATURES</div>
-          <h2 class="h2 mt-4">Powerful building blocks.</h2>
+          <h2 class="h2 mt-4">Powerful building blocks</h2>
           <p class="prose mt-6">
-            Epos comes with powerful features like <strong>unified messaging</strong>, <strong>shared state</strong> and
-            <strong>file storage</strong> that work out of the box in all contexts. No setup required.
+            <strong>Unified messaging</strong>, <strong>shared state</strong>, <strong>file storage</strong> and other
+            features work out of the box in all contexts. No setup required.
           </p>
         </div>
       </div>
 
       <div class="flex border-t border-divider">
-        <div class="box flex flex-col items-center">
-          <div class="eyebrow">SIMPLE SETUP</div>
-          <h2 class="h2 mt-4">Reimagine extension development.</h2>
-          <p class="prose mt-6 max-w-3xl">
-            With Epos, you can develop your extension directly in the browser with zero setup. Just connect a local folder
-            and Epos will run your code with hot module replacement, so you can see your changes in real time as you edit.
-          </p>
+        <div class="box w-[50%]">
+          <h2 class="h2 mt-4">Simpler configuration through epos.json</h2>
+          <p class="prose mt-6 max-w-3xl">Just tell which files to load and where, and Epos will take care of the rest.</p>
           <div class="w-xl">
             <pre class="highlight" data-lang="json">{{ snippetEposJson }}</pre>
           </div>
         </div>
+        <div class="box border-l border-divider"></div>
       </div>
 
       <div class="flex border-t border-divider">
         <div class="box flex">
           <div>
-            <div class="eyebrow">MESSAGING</div>
             <h2 class="h2 mt-4">Unified messaging system.</h2>
             <p class="prose mt-6">
               <code>epos.bus</code> provides simple communication between all contexts with no setup. Just
@@ -215,24 +211,29 @@ code {
           </div>
 
           <div class="flex flex-col">
-            <pre class="highlight" data-lang="js">{{ snippetBusOn }}</pre>
-            <pre class="highlight" data-lang="js">epos.bus.send('event', data)</pre>
+            <pre class="highlight" data-lang="js">{{ snippetBus }}</pre>
           </div>
         </div>
       </div>
 
       <div class="flex border-t border-divider">
         <div class="box">
-          <div class="eyebrow">SHARED STATE</div>
           <h2 class="h2 mt-4">Shared state that feels like magic.</h2>
           <p class="prose mt-6">
-            Epos has powerful features like hot module replacement, cross-context communication, and unified APIs that work
-            in all contexts. Spend less time on setup and more time building.
+            Epos gives you a reactive shared state. Use it like a normal JavaScript object, and Epos will keep it in sync
+            across all contexts in real time with automatic persistence, so all state is restored on reload.
           </p>
+          <pre class="highlight" data-lang="js">{{ stateSnippet }}</pre>
         </div>
       </div>
 
-      <div class="flex h-100 border-t border-divider"></div>
+      <div class="flex border-t border-divider">
+        <div class="box">
+          <h2 class="h2 mt-4">Simple key-value storage for files and data</h2>
+          <p class="prose mt-6">// TODO</p>
+          <pre class="highlight" data-lang="js">{{ storageSnippet }}</pre>
+        </div>
+      </div>
     </div>
   </div>
 </template>
