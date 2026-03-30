@@ -291,7 +291,7 @@ export class Project extends gl.Unit {
     if (this.dev) return <this.DevView />
 
     return (
-      <div className="mx-auto min-h-full w-full max-w-(--project-width)">
+      <div className="mx-auto min-h-full w-full max-w-project">
         {this.state.ready ? <this.MainView /> : <this.LoadingView />}
         <this.DeleteDialogView />
         <this.ExportDialogView />

@@ -1,6 +1,6 @@
 ::: warning
 
-This is an AI-generated draft based on the Epos source code. Proper documentation is coming soon.
+This is an AI-generated draft based on the Epos source code.
 
 :::
 

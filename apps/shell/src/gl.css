@@ -141,7 +141,6 @@
 :root {
   color: var(--color-foreground);
   --sidebar: var(--card);
-  --project-width: calc(44rem + 1px);
 }
 
 .lattice {
@@ -160,4 +159,6 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --color-brand: #e9ff01;
+  --spacing-project: calc(44rem + 1px);
+  --spacing-sidebar: 19rem;
 }

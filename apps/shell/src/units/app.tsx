@@ -68,22 +68,27 @@ export class App extends gl.Unit {
       return <this.permissions.View />
     }
 
+    const latticeStyle = {
+      backgroundPosition: `calc(var(--spacing-sidebar) + (100vw - var(--spacing-sidebar) - var(--spacing-project)) / 2) 0`,
+    }
+
     return (
       <TooltipProvider delayDuration={500}>
-        {this.welcome.show && <this.welcome.View />}
-        {!this.welcome.show && <this.MainView />}
+        <div className="relative h-screen w-screen">
+          <div className="lattice absolute inset-0" style={latticeStyle} />
+          <div className="relative size-full">{this.welcome.show ? <this.welcome.View /> : <this.MainView />}</div>
+        </div>
       </TooltipProvider>
     )
   }
 
   private MainView() {
-    const style = {
-      '--sidebar-width': '19rem',
-      backgroundPosition: `calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--project-width)) / 2) 0`,
+    const sidebarStyle = {
+      '--sidebar-width': 'var(--spacing-sidebar)',
     } as React.CSSProperties
 
     return (
-      <SidebarProvider style={style} className="lattice h-screen min-w-205">
+      <SidebarProvider style={sidebarStyle} className="h-screen min-w-205">
         <this.highlight.SetupView />
         <this.SidebarView />
         <this.BodyView />

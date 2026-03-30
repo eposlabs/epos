@@ -11,13 +11,16 @@ export class Welcome extends gl.Unit {
 
   View() {
     return (
-      <div className="lattice flex h-screen w-screen items-center justify-center">
-        <div className="rounded-lg border bg-card p-4">
+      <div className="flex size-full justify-center">
+        <div className="absolute top-[calc(45%)] flex -translate-y-1/2 flex-col items-center">
           <div className="text-lg">Welcome to Epos</div>
-          <div className="mt-2 text-sm text-muted-foreground">Get started by creating your first project.</div>
-          <Button onClick={() => this.start()}>
-            Create Project <ArrowRight />
-          </Button>
+          <div className="mt-3 text-base text-muted-foreground">To get started, create your first project.</div>
+          <div className="mt-5">
+            <Button size="lg" onClick={() => this.start()} className="gap-2.5 px-4 squircle:rounded-3xl">
+              Create Project
+              <ArrowRight />
+            </Button>
+          </div>
         </div>
       </div>
     )
