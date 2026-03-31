@@ -16,5 +16,8 @@
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vitepress": "^2.0.0-alpha.12"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1"
   }
 }
