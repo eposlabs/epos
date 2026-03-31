@@ -1,5 +1,5 @@
 {
-  "name": "my-extension",
+  "name": "epos-project",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,14 +8,11 @@
     "build": "vite build --mode production",
     "preview": "vite build --mode preview"
   },
-  "dependencies": {
-    "epos": "1.60.0"
-  },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
-    "vite-plugin-rebundle": "1.41.0"
+    "vite-plugin-rebundle": "^1.41.0"
   }
 }

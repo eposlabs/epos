@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import Eyebrow from './eyebrow.vue'
+import Cta from './cta.vue'
+import Eyebrow from './ui/eyebrow.vue'
 
 const steps = [
   { index: '01', title: 'Install', description: 'Install Epos from the Chrome Web Store.' },
@@ -10,8 +11,8 @@ const steps = [
 </script>
 
 <template>
-  <div class="flex">
-    <div class="w-[60%] p-12">
+  <div class="flex px-12 py-16">
+    <div class="grow">
       <Eyebrow>WEB EXTENSION ENGINE</Eyebrow>
       <h1 class="mt-6 text-8xl font-medium tracking-tighter text-main">
         A better way to
@@ -25,25 +26,9 @@ const steps = [
         <div class="sm:hidden"></div>
         that work across all execution contexts with no extra setup.
       </div>
-      <div class="mt-8 flex gap-5">
-        <a
-          class="border border-black/20 bg-brand px-11 py-2.5 text-base font-medium text-main dark:text-black"
-          href="https://get.epos.dev"
-        >
-          Install Epos
-        </a>
-        <a
-          :class="[
-            'border border-black/20 px-11 py-2.5 text-base font-medium text-main transition hover:bg-zinc-100',
-            'dark:border-white/20 dark:hover:bg-zinc-800',
-          ]"
-          href="/guide"
-        >
-          Get Started
-        </a>
-      </div>
+      <Cta class="mt-8" />
     </div>
-    <div class="grow p-12">
+    <div class="w-fit pr-14">
       <Eyebrow>WORKFLOW</Eyebrow>
       <div class="mt-8">
         <div class="flex" v-for="(step, index) in steps" :key="step.index">

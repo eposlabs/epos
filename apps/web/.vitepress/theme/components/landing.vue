@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { createHighlighter } from 'shiki'
-import { useData } from 'vitepress'
-import { watch } from 'vue'
-import FeatureBus from './feature-bus.vue'
-import FeatureConfig from './feature-config.vue'
-import FeatureOverview from './feature-overview.vue'
-import FeatureRuntime from './feature-runtime.vue'
-import FeatureState from './feature-state.vue'
-import FeatureStorage from './feature-storage.vue'
+import Config from './config.vue'
+import Features from './features.vue'
+import Footer from './footer.vue'
 import Hero from './hero.vue'
 import Highlighter from './highlighter.vue'
 import Lattice from './lattice.vue'
-import Separator from './separator.vue'
+import Messaging from './messaging.vue'
+import Runtime from './runtime.vue'
+import Setup from './setup.vue'
+import Start from './start.vue'
+import State from './state.vue'
+import Storage from './storage.vue'
 </script>
 
 <template>
@@ -26,14 +25,21 @@ import Separator from './separator.vue'
     <Lattice />
     <div class="relative mx-auto min-h-[calc(100vh-var(--vp-nav-height))] max-w-page border-r border-l bg-(--vp-c-bg)">
       <Hero class="border-t" />
+      <Runtime class="border-t" />
       <div class="flex border-t">
-        <FeatureRuntime class="w-1/2" />
-        <FeatureOverview class="w-1/2 border-l" />
+        <Messaging class="w-1/2" />
+        <State class="w-1/2 border-l" />
       </div>
-      <FeatureConfig class="border-t" />
-      <FeatureBus class="border-t" />
-      <FeatureState class="border-t" />
-      <FeatureStorage class="border-t" />
+      <div class="flex border-t">
+        <Storage class="w-1/2" />
+        <Config class="w-1/2 border-l" />
+      </div>
+      <div class="flex border-t">
+        <Setup class="w-[50%]" />
+        <Features class="border-l" />
+      </div>
+      <Start class="border-t" />
+      <Footer class="border-t" />
     </div>
   </div>
 </template>
