@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import Feature from './feature.vue'
+import CardDescription from './card-description.vue'
+import CardTitle from './card-title.vue'
+import Card from './card.vue'
 import Snippet from './snippet.vue'
 
 const code = `
@@ -24,12 +26,12 @@ const code = `
 </script>
 
 <template>
-  <Feature title="Simpler Configuration" class="border-t">
-    <template #description>
+  <Card>
+    <CardTitle>Simpler Configuration</CardTitle>
+    <CardDescription>
       Describe <strong>which</strong> files to load and <strong>where</strong>. Epos automatically injects your code and
       sets up the environment.
-    </template>
-
+    </CardDescription>
     <Snippet title="epos.json" lang="json" :code="code" />
-  </Feature>
+  </Card>
 </template>

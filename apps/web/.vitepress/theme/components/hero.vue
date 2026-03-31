@@ -10,7 +10,7 @@ const steps = [
 </script>
 
 <template>
-  <div class="flex border-t">
+  <div class="flex">
     <div class="w-[60%] p-12">
       <Eyebrow>WEB EXTENSION ENGINE</Eyebrow>
       <h1 class="mt-6 text-8xl font-medium tracking-tighter text-main">

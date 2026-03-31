@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import Feature from './feature.vue'
+import CardDescription from './card-description.vue'
+import CardTitle from './card-title.vue'
+import Card from './card.vue'
 import Snippet from './snippet.vue'
 
 const snippet = `
 // In background:
-epos.bus.on('event', handler)
+epos.bus.on('math:sum', (a, b) => a + b)
 
 // On web page:
-epos.bus.send('event', data)
+const result = await epos.bus.send('math:sum', 1, 2)
 `.trim()
 </script>
 
 <template>
-  <Feature title="Unified Messaging" class="border-t">
-    <template #description>
-      <p>
-        <code>epos.bus</code> provides simple communication between all contexts with no setup. Just
-        <code>epos.bus.send()</code> and <code>epos.bus.on()</code> to send and receive messages. It even works with hot
-        module replacement, so your handlers will update in real time as you edit your code.
-      </p>
-    </template>
-
+  <Card>
+    <CardTitle>Unified Messaging</CardTitle>
+    <CardDescription> Simple API for cross-context communication with <strong>automatic routing</strong> </CardDescription>
     <Snippet title="bus" lang="javascript" :code="snippet" />
-  </Feature>
+  </Card>
 </template>

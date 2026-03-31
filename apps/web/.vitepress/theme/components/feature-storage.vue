@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import Feature from './feature.vue'
+import CardDescription from './card-description.vue'
+import CardTitle from './card-title.vue'
+import Card from './card.vue'
 import Snippet from './snippet.vue'
 
 const snippet = `
-await epos.storage.set('file', file)
-const file = await epos.storage.get('file')
+// Store file
+await epos.storage.set('user-pic', imageFile)
+
+// Access later
+const pic = await epos.storage.get('user-pic')
 `.trim()
 </script>
 
 <template>
-  <Feature title="Storage for Files and Data" class="border-t">
-    <template #description>
-      Epos provides a simple API for storing files and data. Use <code>epos.storage.set()</code> to save data and
-      <code>epos.storage.get()</code> to retrieve it.
-    </template>
-
+  <Card>
+    <CardTitle>Storage for Files and Data</CardTitle>
+    <CardDescription>
+      Storage your app files and data with a simple <code>get()</code> and <code>set()</code> API. Powered by IndexedDB.
+    </CardDescription>
     <Snippet title="storage" lang="javascript" :code="snippet" />
-  </Feature>
+  </Card>
 </template>

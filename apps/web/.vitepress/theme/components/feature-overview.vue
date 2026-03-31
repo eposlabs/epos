@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import Feature from './feature.vue'
+import CardDescription from './card-description.vue'
+import CardTitle from './card-title.vue'
+import Card from './card.vue'
 </script>
 
 <template>
-  <Feature title="Powerful Building Blocks" class="border-t">
-    <template #description>
-      <strong>Unified messaging</strong>, <strong>shared state</strong>, <strong>file storage</strong> and other features
+  <Card>
+    <CardTitle>Powerful Building Blocks</CardTitle>
+    <CardDescription>
+      <strong>Unified Messaging</strong>, <strong>Shared State</strong>, <strong>File Storage</strong> and other features
       work out of the box across all contexts. No setup required.
-    </template>
-  </Feature>
+    </CardDescription>
+  </Card>
 </template>
