@@ -3,13 +3,13 @@ import Feature from './feature.vue'
 import Snippet from './snippet.vue'
 
 const snippet = `
-// Make changes in background:
 const state = await epos.state.connect()
+
+// Make changes in background:
 state.items = []
 state.items.push('Hello world!')
 
 // And they are reflected in the popup:
-const state = await epos.state.connect()
 state.items // ['Hello world!']
 `.trim()
 </script>

@@ -3,7 +3,7 @@ const props = defineProps<{ title: string }>()
 </script>
 
 <template>
-  <div class="p-12">
+  <div class="w-1/2 border-r p-12">
     <h2 class="text-2xl font-medium tracking-tight text-main">
       {{ props.title }}
     </h2>
