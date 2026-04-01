@@ -16,19 +16,19 @@ const steps = [
       <Eyebrow>WEB EXTENSION ENGINE</Eyebrow>
       <h1 class="mt-6 text-8xl font-medium tracking-tighter text-main">
         A better way to
-        <div class="sm:hidden"></div>
+        <div class=""></div>
         build browser
-        <div class="sm:hidden"></div>
+        <div class=""></div>
         extensions.
       </h1>
       <div class="mt-6">
         Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong>
-        <div class="sm:hidden"></div>
+        <div class=""></div>
         that work across all execution contexts with no extra setup.
       </div>
       <Cta class="mt-8" />
     </div>
-    <div class="w-fit pr-14">
+    <div class="w-fit pr-14 pl-12 text-nowrap">
       <Eyebrow>WORKFLOW</Eyebrow>
       <div class="mt-8">
         <div class="flex" v-for="(step, index) in steps" :key="step.index">

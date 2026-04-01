@@ -8,7 +8,7 @@ import Card from './ui/card.vue'
 <template>
   <Card class="flex flex-col items-center py-20 text-center">
     <CardTitle class="flex items-center gap-4 text-5xl">Start building with Epos</CardTitle>
-    <CardDescription class="mt-2 max-w-2xl!">Install Epos and start building your next extension today.</CardDescription>
+    <CardDescription class="max-w-2xl!">Install Epos and start building your next extension.</CardDescription>
     <Cta />
   </Card>
 </template>

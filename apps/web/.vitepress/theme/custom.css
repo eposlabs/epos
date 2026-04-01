@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant md (@media (width < 1000px));
-@custom-variant sm (@media (width < 500px));
 
 @theme {
   --breakpoint-*: initial;
@@ -51,6 +49,9 @@ html.dark {
   }
   .VPContent {
     @apply pt-0;
+  }
+  strong {
+    @apply font-normal text-main;
   }
 }
 

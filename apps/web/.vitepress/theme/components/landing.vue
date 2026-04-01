@@ -14,29 +14,23 @@ import Storage from './storage.vue'
 </script>
 
 <template>
-  <div
-    :class="[
-      'relative text-lg leading-8 text-dim',
-      '**:[code]:rounded-lg **:[code]:bg-zinc-100 **:[code]:px-2 **:[code]:py-1 **:[code]:font-mono **:[code]:text-main',
-      '**:[strong]:font-normal **:[strong]:text-main',
-    ]"
-  >
+  <div class="relative text-lg leading-8 text-dim">
     <Highlighter />
     <Lattice />
     <div class="relative mx-auto min-h-[calc(100vh-var(--vp-nav-height))] max-w-page border-r border-l bg-(--vp-c-bg)">
       <Hero class="border-t" />
       <Runtime class="border-t" />
-      <div class="flex border-t">
-        <Messaging class="w-1/2" />
-        <State class="w-1/2 border-l" />
+      <div class="flex">
+        <Setup class="w-1/2 border-t" />
+        <Features class="w-1/2 border-t border-l" />
       </div>
-      <div class="flex border-t">
-        <Storage class="w-1/2" />
-        <Config class="w-1/2 border-l" />
+      <div class="flex">
+        <Messaging class="w-1/2 border-t" />
+        <State class="w-1/2 border-t border-l" />
       </div>
-      <div class="flex border-t">
-        <Setup class="w-[50%]" />
-        <Features class="border-l" />
+      <div class="flex">
+        <Storage class="w-1/2 border-t" />
+        <Config class="w-1/2 border-t border-l" />
       </div>
       <Start class="border-t" />
       <Footer class="border-t" />
