@@ -17,20 +17,20 @@ import Storage from './storage.vue'
   <div class="relative text-lg leading-8 text-dim">
     <Highlighter />
     <Lattice />
-    <div class="relative mx-auto min-h-[calc(100vh-var(--vp-nav-height))] max-w-page border-r border-l bg-(--vp-c-bg)">
+    <div class="relative mx-auto min-h-[calc(100vh-var(--vp-nav-height))] max-w-page bg-(--vp-c-bg) md:border-x">
       <Hero class="border-t" />
       <Runtime class="border-t" />
-      <div class="flex">
-        <Setup class="w-1/2 border-t" />
-        <Features class="w-1/2 border-t border-l" />
+      <div class="xl:flex">
+        <Setup class="border-t xl:w-1/2" />
+        <Features class="border-t xl:w-1/2 xl:border-l" />
       </div>
-      <div class="flex">
-        <Messaging class="w-1/2 border-t" />
-        <State class="w-1/2 border-t border-l" />
+      <div class="xl:flex">
+        <Messaging class="border-t xl:w-1/2" />
+        <State class="border-t xl:w-1/2 xl:border-l" />
       </div>
-      <div class="flex">
-        <Storage class="w-1/2 border-t" />
-        <Config class="w-1/2 border-t border-l" />
+      <div class="xl:flex">
+        <Storage class="border-t xl:w-1/2" />
+        <Config class="border-t xl:w-1/2 xl:border-l" />
       </div>
       <Start class="border-t" />
       <Footer class="border-t" />

@@ -11,24 +11,23 @@ const steps = [
 </script>
 
 <template>
-  <div class="flex px-12 py-16">
-    <div class="grow">
+  <div class="xl:flex">
+    <div class="grow px-6 py-10 sm:p-12 xl:py-16">
       <Eyebrow>WEB EXTENSION ENGINE</Eyebrow>
-      <h1 class="mt-6 text-8xl font-medium tracking-tighter text-main">
+      <h1 class="mt-6 text-5xl font-medium tracking-tighter text-main xs:text-7xl md:text-8xl">
         A better way to
         <div class=""></div>
         build browser
         <div class=""></div>
         extensions.
       </h1>
-      <div class="mt-6">
+      <div class="mt-6 max-w-xl">
         Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong>
-        <div class=""></div>
         that work across all execution contexts with no extra setup.
       </div>
       <Cta class="mt-8" />
     </div>
-    <div class="w-fit pr-14 pl-12 text-nowrap">
+    <div class="border-t px-6 py-10 text-nowrap sm:p-12 xl:border-0 xl:py-16 xl:pr-26">
       <Eyebrow>WORKFLOW</Eyebrow>
       <div class="mt-8">
         <div class="flex" v-for="(step, index) in steps" :key="step.index">

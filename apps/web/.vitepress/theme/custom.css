@@ -2,11 +2,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  --breakpoint-xs: 500px;
   --color-brand: #e8ff00;
   --color-dim: var(--color-dim);
   --color-divider: var(--vp-c-divider);
   --color-main: var(--color-main);
-  --spacing-page: 1281px; /* Extra 1px to overlap the lattice */
+  --spacing-page: calc(1280px + 1px); /* Extra 1px to overlap the lattice */
+}
+
+@media (width <= 1280px) {
+  :root {
+    --spacing-page: calc(864px + 1px);
+  }
+}
+
+@media (width <= 1024px) {
+  :root {
+    --spacing-page: calc(768px + 1px);
+  }
+}
+
+@media (width <= 768px) {
+  :root {
+    --spacing-page: 100%;
+  }
 }
 
 html:not(.dark) {
@@ -38,7 +57,7 @@ html.dark {
 
 .Layout:not(:has(.has-sidebar)) {
   .VPNav {
-    @apply relative mx-auto max-w-page xl:border-x;
+    @apply relative mx-auto max-w-page md:border-x;
   }
   .VPNav .content-body {
     @apply m-0 p-0;
