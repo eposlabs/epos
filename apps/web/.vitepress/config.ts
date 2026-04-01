@@ -1,7 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: '[epos] Web Extension Engine',
   description: 'Build Web Extensions',
@@ -12,16 +11,12 @@ export default defineConfig({
   },
   themeConfig: {
     siteTitle: 'ᛃ epos',
-    outline: {
-      level: 2,
-    },
-
-    // https://vitepress.dev/reference/default-theme-config
+    outline: { level: 2 },
+    search: { provider: 'local' },
     nav: [
       { text: 'Guide', link: '/guide/' },
       { text: 'API', link: '/api/' },
     ],
-
     sidebar: {
       '/guide/': [
         {
@@ -67,24 +62,11 @@ export default defineConfig({
         { text: 'epos.libs.*', link: '/api/libs' },
       ],
     },
-
     socialLinks: [
       {
         icon: 'github',
         link: 'https://github.com/eposlabs/epos',
       },
     ],
-  },
-
-  markdown: {
-    // anchor: {
-    //   slugify(str) {
-    //     return str
-    //       .toLowerCase()
-    //       .split('(')[0]
-    //       .split('<')[0]
-    //       .replace(/[^a-z0-9_-]+/g, '-')
-    //   },
-    // },
   },
 })

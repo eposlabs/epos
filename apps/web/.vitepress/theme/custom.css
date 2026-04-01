@@ -2,7 +2,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --breakpoint-*: initial;
   --color-brand: #e8ff00;
   --color-dim: var(--color-dim);
   --color-divider: var(--vp-c-divider);
@@ -39,7 +38,7 @@ html.dark {
 
 .Layout:not(:has(.has-sidebar)) {
   .VPNav {
-    @apply relative mx-auto max-w-page border-x;
+    @apply relative mx-auto max-w-page xl:border-x;
   }
   .VPNav .content-body {
     @apply m-0 p-0;
