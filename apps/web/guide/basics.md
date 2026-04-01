@@ -28,10 +28,10 @@ Create an empty folder on your computer. This is where your project will live.
 
 In [app.epos.dev](https://app.epos.dev):
 
-1. Click the **New Project** button.
-2. Select the **None** template.
-3. Click **Connect**.
-4. Pick the folder you created.
+1. Click **Create Project**.
+2. Select folder.
+3. Select **No Template**.
+4. Click **Finish Setup**.
 
 The browser will ask for permission to access that folder. Epos only gets access to the folder you choose, not the rest of your disk.
 

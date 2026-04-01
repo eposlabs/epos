@@ -181,8 +181,8 @@ import './main.css'
 
 const App = () => {
   return (
-    <div className="rounded-sm bg-gray-200 p-2">
-      Hello from Epos + Vite
+    <div className="p-4 font-sans">
+      Epos + Vite
     </div>
   )
 }

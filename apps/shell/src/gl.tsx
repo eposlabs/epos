@@ -6,6 +6,4 @@ epos.state.register({ ...gl })
 const app = await epos.state.connect(new gl.App(null))
 epos.render(<app.View />)
 
-if (epos.env.project.debug) {
-  Object.assign(self, { epos, $: app, gl })
-}
+Object.assign(self, { epos, $: app, gl })
