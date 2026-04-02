@@ -71,7 +71,7 @@ You are no longer limited to any context restrictions. Just use `epos.browser` a
 
 Read more in the [Extension APIs](/guide/extension) guide.
 
-## Simpler Project Setup
+## Simple Setup
 
 `epos.json` replaces `manifest.json` and lets you define your extension in a simpler way. You tell Epos **which** files to load and **where**, and it handles the rest.
 

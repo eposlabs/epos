@@ -8,6 +8,9 @@
     "build": "vite build --mode production",
     "preview": "vite build --mode preview"
   },
+  "dependencies": {
+    "epos": "^2.0.1"
+  },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "tailwindcss": "^4.2.2",
