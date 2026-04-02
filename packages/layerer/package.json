@@ -5,10 +5,12 @@
   "license": "MIT",
   "author": "imkost",
   "description": "",
-  "keywords": [
-    "vite",
-    "vite-plugin"
-  ],
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eposlabs/epos.git",
+    "directory": "packages/layerer"
+  },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo && chmod +x dist/bin.js",

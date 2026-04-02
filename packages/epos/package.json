@@ -6,6 +6,11 @@
   "author": "imkost",
   "description": "",
   "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eposlabs/epos.git",
+    "directory": "packages/epos"
+  },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",

@@ -9,6 +9,11 @@
     "vite",
     "vite-plugin"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eposlabs/epos.git",
+    "directory": "packages/vite-plugin-rebundle"
+  },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
     "build": "rimraf dist && tsgo",
