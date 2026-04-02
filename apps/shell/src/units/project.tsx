@@ -740,7 +740,7 @@ export class Project extends gl.Unit {
                 {props.title}
               </div>
             )}
-            {props.description && <div className="mt-1 max-w-md text-muted-foreground">{props.description}</div>}
+            {props.description && <div className="mt-1.5 max-w-md text-muted-foreground">{props.description}</div>}
           </div>
         )}
         <div>{props.children}</div>

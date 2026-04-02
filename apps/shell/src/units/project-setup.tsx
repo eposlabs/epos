@@ -197,7 +197,7 @@ export class ProjectSetup extends gl.Unit {
     return (
       <this.$project.Section
         Icon={Layers}
-        title="Choose Template"
+        title="Project Setup"
         description="Start from a template or configure manually."
         vertical={true}
       >
@@ -219,7 +219,11 @@ export class ProjectSetup extends gl.Unit {
           </label>
           <label className="flex items-center gap-3">
             <RadioGroupItem value="none" id="r2" />
-            <div>No Template</div>
+            <div className="flex gap-2">
+              <div>
+                Manual <span className="text-muted-foreground">(just connect the folder)</span>
+              </div>
+            </div>
           </label>
         </RadioGroup>
       </this.$project.Section>
@@ -270,13 +274,14 @@ export class ProjectSetup extends gl.Unit {
   }
 
   private StartView() {
+    if (!this.$project.state.handle) return null
     return (
       <this.$project.Section>
         <Button disabled={this.state.processing} onClick={() => this.start()} className="translate-0!">
           {this.state.processing ? (
             <>Initializing...</>
           ) : this.template ? (
-            <>Initialize Template</>
+            <>Initialize Template in “{this.$project.state.handle.name}” Folder</>
           ) : (
             <>
               Finish Setup
