@@ -16,11 +16,12 @@ export class ProjectWatcher extends gl.Unit {
     this.stopGlobalObserver()
   }
 
-  startGlobalObserver() {
+  async startGlobalObserver() {
     if (this.state.globalObserver) return
-    if (!this.$project.state.handle) throw this.never()
+    const handle = this.$project.state.handle
+    if (!handle) throw this.never()
 
-    this.state.globalObserver = new FileSystemObserver(records => {
+    const observer = new FileSystemObserver(records => {
       // Error? -> Reload
       if (this.$project.state.error) {
         this.scheduleReload()
@@ -35,7 +36,9 @@ export class ProjectWatcher extends gl.Unit {
       }
     })
 
-    this.state.globalObserver.observe(this.$project.state.handle, { recursive: true })
+    const [, error] = await this.$.utils.safe(() => observer.observe(handle, { recursive: true }))
+    if (error) return this.log.error(error)
+    this.state.globalObserver = observer
   }
 
   stopGlobalObserver() {

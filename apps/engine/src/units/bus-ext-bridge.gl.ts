@@ -85,7 +85,7 @@ export class BusExtBridge extends gl.Unit {
       // Remove proxy action for the specified tab (`csTop`)
       if (req.name === 'Bus.removeTabProxyAction') {
         void (async () => {
-          if (!tabId) throw this.never()
+          if (!tabId) return
           const args = await this.$bus.serializer.deserialize(req.argsJson)
           if (!this.$.utils.is.array(args)) throw this.never()
           const [name] = args
@@ -97,7 +97,7 @@ export class BusExtBridge extends gl.Unit {
 
       // Remove all proxy actions for the specified tab (`csTop`)
       if (req.name === 'Bus.removeAllTabProxyActions') {
-        if (!tabId) throw this.never()
+        if (!tabId) return
         this.$bus.actions = this.$bus.actions.filter(action => action.target !== tabId)
         return
       }
