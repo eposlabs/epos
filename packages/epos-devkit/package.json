@@ -23,11 +23,11 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "1.25.0",
+    "@eposlabs/utils": "^1.26.0",
     "@tabler/icons-react": "^3.41.1",
     "clsx": "^2.1.1",
-    "epos": "1.60.0",
-    "epos-unit": "1.30.0",
+    "epos": "2.0.1",
+    "epos-unit": "^1.31.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
@@ -35,6 +35,6 @@
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-rebundle": "1.41.0"
+    "vite-plugin-rebundle": "^2.0.0"
   }
 }

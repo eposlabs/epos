@@ -1,5 +1,5 @@
 // Usage:
-// > npm run release -- [patch|minor|major] [workspace1] [workspace2] ...
+// > npm run release [patch|minor|major] [workspace1] [workspace2] ...
 // ============================================================================
 
 import { run } from './utils/run.ts'

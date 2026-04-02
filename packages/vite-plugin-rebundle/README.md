@@ -83,6 +83,15 @@ When you run `vite build`, Vite normally outputs multiple chunks per entry if co
 - Afterward, each entry is passed through rolldown.
 - The final result is one js file per entry with no dynamic imports or shared chunks.
 
+## Environment Variables
+
+You can use `import.meta.env.REBUNDLE_PORT` to listen to rebundle events via WebSocket:
+
+```javascript
+const ws = new WebSocket(`ws://localhost:${import.meta.env.REBUNDLE_PORT}`)
+ws.addEventListener('message', e => console.log('Rebundle event:', e.data))
+```
+
 ## Notes
 
 Source maps are not currently supported. If you pass `sourcemap` option, it will be ignored. This plugin works with both `vite` and `rolldown-vite`.
