@@ -22,8 +22,8 @@ const steps = [
         extensions.
       </h1>
       <div class="mt-6 max-w-xl">
-        Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong>
-        that work across all execution contexts with no extra setup.
+        Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong> that work
+        across all extension contexts with no extra setup.
       </div>
       <Cta class="mt-8" />
     </div>

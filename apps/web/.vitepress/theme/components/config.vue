@@ -15,7 +15,7 @@ import epos from 'epos'
   <Card>
     <CardTitle>Works Out of the Box</CardTitle>
     <CardDescription>
-      Every feature works seamlessly across all extension contexts. All required setup is handled automatically.
+      Every feature works in every extension context. All required setup is handled automatically.
     </CardDescription>
     <Snippet lang="javascript" :code="code" />
   </Card>

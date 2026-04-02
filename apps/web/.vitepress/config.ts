@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '[epos] Web Extension Engine',
-  description: 'Build Web Extensions',
+  description: 'Build browser extensions.',
   head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
   outDir: 'dist',
   vite: {

@@ -17,7 +17,7 @@ state.items.push('Hello world!')
 <template>
   <Card>
     <CardTitle>State with Real-Time Sync</CardTitle>
-    <CardDescription>Modify your state in one context, see the changes in all other contexts instantly.</CardDescription>
+    <CardDescription>Update state in one context and see changes instantly in every other context.</CardDescription>
     <Snippet lang="javascript" :code="code" />
   </Card>
 </template>
