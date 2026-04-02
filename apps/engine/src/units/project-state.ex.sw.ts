@@ -113,10 +113,10 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
   private async setup() {
     // Listen for updates from other peers
-    const missedUpdates: Uint8Array[] = []
-    this.bus.on('update', (update: Uint8Array) => {
+    const missedUpdates: Blob[] = []
+    this.bus.on('update', async (update: Blob) => {
       if (this.connected) {
-        this.$.libs.yjs.applyUpdate(this.doc, update, 'remote')
+        await this.applyUpdate(update)
       } else {
         missedUpdates.push(update)
       }
@@ -126,23 +126,24 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     if (this.$.env.is.sw) {
       const root = await this.$.idb.get<Obj>(...this.location)
       this.root = this.attach(root ?? {}, null) as Root<T>
-      this.bus.on('swGetDocAsUpdate', () => this.$.libs.yjs.encodeStateAsUpdate(this.doc))
+      this.bus.on('swGetDocAsUpdate', () => new Blob([this.$.libs.yjs.encodeStateAsUpdate(this.doc) as BlobPart]))
     } else if (this.$.env.is.ex) {
-      const docAsUpdate = await this.bus.send<Uint8Array>('swGetDocAsUpdate')
+      const docAsUpdate = await this.bus.send<Blob>('swGetDocAsUpdate')
       if (!docAsUpdate) throw this.never()
-      this.$.libs.yjs.applyUpdate(this.doc, docAsUpdate, 'remote')
+      await this.applyUpdate(docAsUpdate)
       const yRoot = this.doc.getMap('root')
       this.root = this.attach(yRoot, null) as Root<T>
     }
 
     // Apply missed updates
     for (const update of missedUpdates) {
-      this.$.libs.yjs.applyUpdate(this.doc, update, 'remote')
+      await this.applyUpdate(update)
     }
 
     // Start local changes broadcaster
     this.doc.on('update', async (update: Uint8Array, origin: Origin) => {
-      if (origin === null) await this.bus.send('update', update)
+      if (origin !== null) return
+      await this.bus.send('update', new Blob([update as BlobPart]))
     })
 
     // Finalize setup:
@@ -599,6 +600,11 @@ export class ProjectState<T = Obj> extends exSw.Unit {
 
   // MARK: Helpers
   // ============================================================================
+
+  private async applyUpdate(update: Blob) {
+    const buffer = await update.arrayBuffer()
+    this.$.libs.yjs.applyUpdate(this.doc, new Uint8Array(buffer), 'remote')
+  }
 
   private getMeta(target: any): Meta | null {
     return (target?.[_meta_] as Meta) ?? null

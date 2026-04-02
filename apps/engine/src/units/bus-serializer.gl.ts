@@ -5,11 +5,8 @@ export type BlobIdRef = { [REF]: 'blobId'; id: string }
 export type BlobUrlRef = { [REF]: 'blobUrl'; url: string }
 export type DateRef = { [REF]: 'date'; iso: string }
 export type ErrorRef = { [REF]: 'error'; message: string; stack: string | undefined }
-export type Uint16Ref = { [REF]: 'uint16'; integers: number[] }
-export type Uint32Ref = { [REF]: 'uint32'; integers: number[] }
-export type Uint8Ref = { [REF]: 'uint8'; integers: number[] }
 export type UndefinedRef = { [REF]: 'undefined' }
-export type Ref = BlobIdRef | BlobUrlRef | DateRef | ErrorRef | Uint16Ref | Uint32Ref | Uint8Ref | UndefinedRef
+export type Ref = BlobIdRef | BlobUrlRef | DateRef | ErrorRef | UndefinedRef
 
 export type Storage = Map<StorageKey, unknown>
 export type StorageKey = string
@@ -46,15 +43,7 @@ export class BusSerializer extends gl.Unit {
       const value = this[key]
 
       // Sanitize supported non-json values as storage links
-      if (
-        $.utils.is.blob(value) ||
-        $.utils.is.date(value) ||
-        $.utils.is.error(value) ||
-        $.utils.is.uint16Array(value) ||
-        $.utils.is.uint32Array(value) ||
-        $.utils.is.uint8Array(value) ||
-        $.utils.is.undefined(value)
-      ) {
+      if ($.utils.is.blob(value) || $.utils.is.date(value) || $.utils.is.error(value) || $.utils.is.undefined(value)) {
         const key = $.utils.generateId()
         storage.set(key, value)
         return { [STORAGE_KEY]: key } as StorageLink
@@ -97,21 +86,6 @@ export class BusSerializer extends gl.Unit {
       // Error
       if ($.utils.is.error(value)) {
         return { [REF]: 'error', message: value.message, stack: value.stack } satisfies ErrorRef
-      }
-
-      // Uint8Array
-      if ($.utils.is.uint8Array(value)) {
-        return { [REF]: 'uint8', integers: Array.from(value) } satisfies Uint8Ref
-      }
-
-      // Uint16Array
-      if ($.utils.is.uint16Array(value)) {
-        return { [REF]: 'uint16', integers: Array.from(value) } satisfies Uint16Ref
-      }
-
-      // Uint32Array
-      if ($.utils.is.uint32Array(value)) {
-        return { [REF]: 'uint32', integers: Array.from(value) } satisfies Uint32Ref
       }
 
       // Undefined
@@ -175,21 +149,6 @@ export class BusSerializer extends gl.Unit {
         const key = this.$.utils.generateId()
         storage.set(key, undefined)
         return { [STORAGE_KEY]: key }
-      }
-
-      // Deserialize Uint8Array
-      if (value[REF] === 'uint8') {
-        return new Uint8Array(value.integers)
-      }
-
-      // Deserialize Uint16Array
-      if (value[REF] === 'uint16') {
-        return new Uint16Array(value.integers)
-      }
-
-      // Deserialize Uint32Array
-      if (value[REF] === 'uint32') {
-        return new Uint32Array(value.integers)
       }
 
       throw this.never()

@@ -56,7 +56,8 @@ export class ProjectWatcher extends gl.Unit {
       if (hash !== hash2) return this.scheduleReload()
     })
 
-    observer.observe(handle)
+    const [, error] = await this.$.utils.safe(() => observer.observe(handle))
+    if (error) return this.log.error(error)
     this.state.fileObservers.push(observer)
   }
 
