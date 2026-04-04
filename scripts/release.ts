@@ -2,12 +2,13 @@
 // > npm run release [patch|minor|major] [workspace1] [workspace2] ...
 // ============================================================================
 
-import { run } from './utils/run.js'
+import { run } from './utils/run.ts'
 
 void (() => {
   const { version, targets } = parseArgs()
   const workspacesArg = targets.map(target => `-w ${target}`).join(' ')
   if (version) run(`npm version ${version} --workspaces-update=false ${workspacesArg}`)
+  run(`syncpack fix`)
   run(`syncpack fix`)
   run(`npm run build ${workspacesArg}`)
   run(`npm publish ${workspacesArg}`)

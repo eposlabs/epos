@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig-node.json",
-  "include": ["scripts"]
+  "include": ["scripts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  }
 }

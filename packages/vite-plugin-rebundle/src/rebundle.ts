@@ -2,9 +2,10 @@ import { is } from '@eposlabs/utils'
 import chalk from 'chalk'
 import { filesize } from 'filesize'
 import { rm, stat } from 'node:fs/promises'
-import { extname, join } from 'node:path'
+import { join } from 'node:path'
 import { getPort } from 'portfinder'
-import { rolldown, type InputOptions, type OutputBundle, type OutputOptions } from 'rolldown'
+import type { InputOptions, LogLevel, LogOrStringHandler, OutputBundle, OutputOptions, RolldownLog } from 'rolldown'
+import { rolldown } from 'rolldown'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import { WebSocketServer } from 'ws'
 
@@ -30,9 +31,7 @@ export class Rebundle {
   private originals: Record<string, string> = {}
   private port: number | null = null
   private ws: WebSocketServer | null = null
-  private isRollupVite = false
-  private isRolldownVite = false
-  private ORIGINALS_DIR = 'ORIGINALS'
+  private ORIGINALS = 'ORIGINALS' // Temporary folder for original chunks
 
   constructor(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
     this.commonOptions = commonOptions ?? {}
@@ -55,35 +54,32 @@ export class Rebundle {
   // ============================================================================
 
   private onConfig = async (config: UserConfig) => {
+    const onLog = config.build?.rolldownOptions?.onLog ?? null
+
     if (config.build?.watch) {
       this.port = await getPort({ port: 3100 })
       this.ws = new WebSocketServer({ port: this.port })
     }
 
     return {
-      define: { 'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port) },
-      build: { sourcemap: false },
+      define: {
+        'import.meta.env.REBUNDLE_PORT': JSON.stringify(this.port),
+      },
+      build: {
+        sourcemap: false,
+        rolldownOptions: {
+          onLog: (level: LogLevel, log: RolldownLog, defaultLogger: LogOrStringHandler) => {
+            if (log.code === 'FILE_NAME_CONFLICT') return
+            if (onLog) return onLog(level, log, defaultLogger)
+            return defaultLogger(level, log)
+          },
+        },
+      },
     }
   }
 
   private onConfigResolved = async (config: ResolvedConfig) => {
-    // Detect Vite variant
-    this.isRollupVite = !('oxc' in config)
-    this.isRolldownVite = !this.isRollupVite
-
-    // Save resolved config
     this.config = config
-
-    // Hide js files from output logs for rollup Vite
-    if (this.isRollupVite) {
-      const info = this.config.logger.info
-      this.config.logger.info = (message, options) => {
-        const path = message.split(/\s+/)[0]
-        if (is.absent(path)) return
-        if (extname(path) === '.js') return
-        info(message, options)
-      }
-    }
   }
 
   private onGenerateBundle = (_: any, bundle: OutputBundle) => {
@@ -93,12 +89,6 @@ export class Rebundle {
       // Move all chunks to a temporary subfolder
       chunk.fileName = this.prefixed(originalFileName)
       chunk.imports = chunk.imports.map(name => this.prefixed(name))
-
-      // Use prefixed names as bundle keys for rollup Vite (rolldown Vite does this automatically)
-      if (this.isRollupVite) {
-        bundle[chunk.fileName] = chunk
-        delete bundle[originalFileName]
-      }
     }
   }
 
@@ -144,11 +134,11 @@ export class Rebundle {
       this.originals[chunk.fileName] = chunk.code
 
       // Delete chunk from the bundle to hide Vite's output log
-      if (this.isRolldownVite) delete bundle[chunk.fileName]
+      delete bundle[chunk.fileName]
     }
 
     // Remove folder with original chunks
-    await rm(join(this.dist, this.ORIGINALS_DIR), { recursive: true })
+    await rm(join(this.dist, this.ORIGINALS), { recursive: true })
 
     // Notify about modified chunks
     if (this.ws && modifiedEntryChunks.length > 0) {
@@ -166,11 +156,11 @@ export class Rebundle {
   }
 
   private prefixed(path: string) {
-    return join(this.ORIGINALS_DIR, path)
+    return join(this.ORIGINALS, path)
   }
 
   private unprefixed(path: string) {
-    return path.replace(`${this.ORIGINALS_DIR}/`, '')
+    return path.replace(`${this.ORIGINALS}/`, '')
   }
 
   private getChunks(bundle: OutputBundle) {
