@@ -6,6 +6,7 @@
   "author": "imkost",
   "description": "",
   "keywords": [],
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/epos-devkit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",
@@ -35,6 +36,6 @@
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-rebundle": "^2.0.1"
+    "vite-plugin-rebundle": "^2.0.2"
   }
 }

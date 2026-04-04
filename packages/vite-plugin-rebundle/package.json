@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-rebundle",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -9,6 +9,7 @@
     "vite",
     "vite-plugin"
   ],
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/vite-plugin-rebundle",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",

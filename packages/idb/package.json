@@ -6,6 +6,7 @@
   "author": "imkost",
   "description": "",
   "keywords": [],
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/idb",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",

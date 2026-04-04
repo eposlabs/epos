@@ -18,7 +18,7 @@
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "nanoid": "^5.1.7",
-    "preact": "^10.29.0",
+    "preact": "^10.29.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "strip-json-comments": "^5.0.3",
@@ -28,11 +28,11 @@
   "devDependencies": {
     "@eposlabs/layerer": "^1.29.0",
     "@tailwindcss/vite": "^4.2.2",
-    "@types/chrome": "^0.1.38",
+    "@types/chrome": "^0.1.39",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
-    "vite-plugin-rebundle": "^2.0.1"
+    "vite-plugin-rebundle": "^2.0.2"
   }
 }

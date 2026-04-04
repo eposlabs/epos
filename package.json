@@ -1,5 +1,5 @@
 {
-  "name": "monorepo",
+  "name": "epos-mono",
   "version": "*",
   "private": true,
   "type": "module",
@@ -13,10 +13,10 @@
     "lint": "npm run lint -w apps -w packages",
     "prettier": "prettier --write ./",
     "release": "node scripts/release.ts",
-    "reinstall": "npx rimraf node_modules package-lock.json **/node_modules **/package-lock.json && npm install --legacy-peer-deps"
+    "reinstall": "npx rimraf --glob node_modules package-lock.json **/node_modules **/package-lock.json && npm install"
   },
   "devDependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260401.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260404.1",
     "npm-check-updates": "^20.0.0",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
