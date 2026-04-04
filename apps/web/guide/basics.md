@@ -18,7 +18,7 @@ Once you are ready to publish your extension, click the **Export** button in the
 
 To get started, install Epos from the [Chrome Web Store](https://get.epos.dev).
 
-Once installed, Epos will automatically open the [app.epos.dev](https://app.epos.dev) dashboard in a new pinned tab. This tab **must remain open** while you develop your extension.
+Once installed, click the Epos extension icon to open [app.epos.dev](https://app.epos.dev) dashboard in a new tab. This tab will be automatically pinned and **must remain open** while you develop your extension.
 
 ## Create a Project Folder
 
@@ -29,8 +29,8 @@ Create an empty folder on your computer. This is where your project will live.
 In [app.epos.dev](https://app.epos.dev):
 
 1. Click **Create Project**.
-2. Select folder.
-3. Select **No Template**.
+2. Select your previously created folder.
+3. Select **Manual Setup**.
 4. Click **Finish Setup**.
 
 The browser will ask for permission to access that folder. Epos only gets access to the folder you choose, not the rest of your disk.

@@ -107,7 +107,7 @@ export class App extends gl.Unit {
                 <this.Logo className="size-4" />
                 <div className="ml-2">[epos]</div>
                 <SquareArrowOutUpRight className="ml-2 size-3.5 transition not-group-hover:opacity-0" />
-                <div className="ml-auto text-muted-foreground">v1.8</div>
+                <div className="ml-auto text-muted-foreground">v{epos.env.project.spec.version}</div>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarHeader>

@@ -219,10 +219,8 @@ export class ProjectSetup extends gl.Unit {
           </label>
           <label className="flex items-center gap-3">
             <RadioGroupItem value="none" id="r2" />
-            <div className="flex gap-2">
-              <div>
-                Manual Setup <span className="text-muted-foreground">(just connect the folder)</span>
-              </div>
+            <div>
+              Manual Setup <span className="text-muted-foreground">(just connect the folder)</span>
             </div>
           </label>
         </RadioGroup>

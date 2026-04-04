@@ -15,7 +15,7 @@
     "@eposlabs/utils": "^1.26.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "epos": "2.0.1",
+    "epos": "^2.0.1",
     "epos-devkit": "^1.6.0",
     "epos-unit": "^1.31.0",
     "fflate": "^0.8.2",
@@ -36,6 +36,6 @@
     "shadcn": "^4.1.2",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
-    "vite-plugin-rebundle": "^2.0.0"
+    "vite-plugin-rebundle": "^2.0.1"
   }
 }

@@ -32,7 +32,7 @@ export class Rebundle {
   private ws: WebSocketServer | null = null
   private isRollupVite = false
   private isRolldownVite = false
-  private ORIGINALS_DIR = 'REBUNDLE_originals'
+  private ORIGINALS_DIR = 'ORIGINALS'
 
   constructor(commonOptions?: RolldownOptions | null, bundleOptions?: BundleOptions) {
     this.commonOptions = commonOptions ?? {}

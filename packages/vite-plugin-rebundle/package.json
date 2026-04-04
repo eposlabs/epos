@@ -23,7 +23,8 @@
     ".": "./dist/rebundle.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "readme.md"
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.26.0",

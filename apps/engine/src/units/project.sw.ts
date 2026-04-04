@@ -322,10 +322,8 @@ export class Project extends sw.Unit {
     }
 
     return await this.$.utils.hash([
+      this.spec,
       this.debug,
-      this.spec.name,
-      this.spec.slug,
-      this.spec.assets,
       this.manifest.permissions,
       this.manifest.host_permissions,
       targetsHashData,
