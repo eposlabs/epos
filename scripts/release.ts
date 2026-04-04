@@ -8,8 +8,8 @@ void (() => {
   const { version, targets } = parseArgs()
   const workspacesArg = targets.map(target => `-w ${target}`).join(' ')
   if (version) run(`npm version ${version} --workspaces-update=false ${workspacesArg}`)
-  run(`syncpack fix`)
-  run(`syncpack fix`)
+  run(`syncpack fix`) // "^2.0.0" -> "2.0.1"
+  run(`syncpack fix`) // "2.0.1" -> "^2.0.1"
   run(`npm run build ${workspacesArg}`)
   run(`npm publish ${workspacesArg}`)
   run(`npm install`)
