@@ -161,7 +161,8 @@ export class Project extends gl.Unit {
       const [file, readError] = await this.$.utils.safe(() => this.readFile(path))
       if (readError) return this.setError(`Failed to read asset: ${path}`, readError)
       assets[path] = file
-      void this.watcher.startFileObserver(path, file)
+      const [, observerError] = await this.$.utils.safe(() => this.watcher.startFileObserver(path))
+      if (observerError) return this.setError(`Failed to start file observer for: ${path}`, observerError)
       this.assets.push({ path, size: file.size })
     }
 
@@ -177,7 +178,8 @@ export class Project extends gl.Unit {
         const [content, parseError] = await this.$.utils.safe(() => file.text())
         if (parseError) return this.setError(`Failed to read file: ${resource.path}`, parseError)
         sources[resource.path] = content
-        void this.watcher.startFileObserver(resource.path, file)
+        const [, observerError] = await this.$.utils.safe(() => this.watcher.startFileObserver(resource.path))
+        if (observerError) return this.setError(`Failed to start file observer for: ${resource.path}`, observerError)
         if (resource.path.endsWith('.js')) {
           this.jsSources.push({ path: resource.path, size: file.size, minified: this.isMinifiedJs(content) })
         } else if (resource.path.endsWith('.css')) {

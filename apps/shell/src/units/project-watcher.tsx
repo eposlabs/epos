@@ -12,6 +12,10 @@ export class ProjectWatcher extends gl.Unit {
   }
 
   dispose() {
+    this.stop()
+  }
+
+  stop() {
     this.stopFileObservers()
     this.stopGlobalObserver()
   }
@@ -32,7 +36,9 @@ export class ProjectWatcher extends gl.Unit {
       for (const record of records) {
         const path = record.relativePathComponents.join('/')
         const pathMovedFrom = record.relativePathMovedFrom?.join('/') ?? null
-        if (path === 'epos.json' || pathMovedFrom === 'epos.json') this.scheduleReload()
+        if (path === 'epos.json' || pathMovedFrom === 'epos.json') {
+          this.scheduleReload()
+        }
       }
     })
 
@@ -47,20 +53,10 @@ export class ProjectWatcher extends gl.Unit {
     this.state.globalObserver = null
   }
 
-  async startFileObserver(path: string, file: File) {
-    const hash = await this.getFileHash(file)
-    const [handle] = await this.$.utils.safe(() => this.$project.getFileHandle(path))
-    if (!handle) throw this.never()
-
-    const observer = new FileSystemObserver(async () => {
-      const [file2] = await this.$.utils.safe(() => handle.getFile())
-      if (!file2) return this.scheduleReload()
-      const hash2 = await this.getFileHash(file2)
-      if (hash !== hash2) return this.scheduleReload()
-    })
-
-    const [, error] = await this.$.utils.safe(() => observer.observe(handle))
-    if (error) return this.log.error(error)
+  async startFileObserver(path: string) {
+    const handle = await this.$project.getFileHandle(path)
+    const observer = new FileSystemObserver(() => this.scheduleReload())
+    await observer.observe(handle)
     this.state.fileObservers.push(observer)
   }
 
@@ -72,12 +68,5 @@ export class ProjectWatcher extends gl.Unit {
   private scheduleReload() {
     clearTimeout(this.state.reloadTimer)
     this.state.reloadTimer = this.setTimeout(() => this.$project.reload())
-  }
-
-  private async getFileHash(file: File) {
-    const fileBuffer = await file.arrayBuffer()
-    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer)
-    const hashHex = [...new Uint8Array(hashBuffer)].map(byte => byte.toString(16).padStart(2, '0')).join('')
-    return hashHex
   }
 }

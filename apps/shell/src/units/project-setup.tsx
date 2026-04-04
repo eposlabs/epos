@@ -197,7 +197,7 @@ export class ProjectSetup extends gl.Unit {
     return (
       <this.$project.Section
         Icon={Layers}
-        title="Project Setup"
+        title="How to Set Up"
         description="Start from a template or configure manually."
         vertical={true}
       >
@@ -221,7 +221,7 @@ export class ProjectSetup extends gl.Unit {
             <RadioGroupItem value="none" id="r2" />
             <div className="flex gap-2">
               <div>
-                Manual <span className="text-muted-foreground">(just connect the folder)</span>
+                Manual Setup <span className="text-muted-foreground">(just connect the folder)</span>
               </div>
             </div>
           </label>
