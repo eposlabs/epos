@@ -56,7 +56,8 @@ export class ProjectWatcher extends gl.Unit {
   async startFileObserver(path: string) {
     const handle = await this.$project.getFileHandle(path)
     const observer = new FileSystemObserver(() => this.scheduleReload())
-    await observer.observe(handle)
+    const [, error] = await this.$.utils.safe(() => observer.observe(handle))
+    if (error) return this.log.error(error)
     this.state.fileObservers.push(observer)
   }
 
