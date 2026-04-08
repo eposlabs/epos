@@ -5,10 +5,10 @@ import Card from './ui/card.vue'
 import Snippet from './snippet.vue'
 
 const code = `
-// In background:
+// In the background script:
 epos.bus.on('math:sum', (a, b) => a + b)
 
-// On web page:
+// On a web page:
 const result = await epos.bus.send('math:sum', 1, 2)
 `.trim()
 </script>

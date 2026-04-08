@@ -86,6 +86,7 @@ export class Project extends gl.Unit {
   async dispose() {
     await this.$.idb.delete('epos-shell', 'handles', this.id)
     this.watcher.stopGlobalObserver()
+    this.watcher.stopFileObservers()
   }
 
   update(updates: Omit<ProjectBase, 'id'>) {
@@ -141,7 +142,10 @@ export class Project extends gl.Unit {
     if (!force && !this.setup.completed) return
 
     this.state.error = null
+    this.watcher.stopGlobalObserver()
     this.watcher.stopFileObservers()
+
+    await this.watcher.startGlobalObserver()
 
     // Read epos.json
     const [specText, readError] = await this.$.utils.safe(() => this.readFileAsText('epos.json'))
@@ -217,7 +221,7 @@ export class Project extends gl.Unit {
     }
 
     this.watcher.stopGlobalObserver()
-    this.watcher.startGlobalObserver()
+    await this.watcher.startGlobalObserver()
     await this.reload()
   }
 
@@ -309,9 +313,9 @@ export class Project extends gl.Unit {
           <div
             className={cn(
               'mx-0.5 size-1.25 shrink-0 rounded-full',
-              this.state.error && 'bg-destructive',
-              !this.state.error && 'bg-green-600 dark:bg-green-300',
-              !this.setup.completed && 'bg-amber-600 dark:bg-amber-300',
+              this.enabled && this.state.error && 'bg-destructive',
+              this.enabled && !this.state.error && 'bg-green-600 dark:bg-green-300',
+              this.enabled && !this.setup.completed && 'bg-amber-600 dark:bg-amber-300',
               !this.enabled && 'bg-muted-foreground',
             )}
           />

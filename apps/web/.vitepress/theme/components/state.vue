@@ -8,7 +8,7 @@ const code = `
 const state = await epos.state.connect()
 
 // Modify like a regular object.
-// All changes are synced real-time!
+// Changes are synced in real time.
 state.items = []
 state.items.push('Hello world!')
 `.trim()

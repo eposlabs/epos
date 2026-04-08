@@ -6,7 +6,11 @@ import Card from './ui/card.vue'
 
 const code = `
 // The same API for every context:
-// background, popup, side panel, web pages, iframes
+// - background
+// - popup
+// - side panel
+// - web pages
+// - iframes
 import epos from 'epos'
 `.trim()
 </script>

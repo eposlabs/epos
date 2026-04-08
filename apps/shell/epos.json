@@ -2,7 +2,7 @@
   "$schema": "https://epos.dev/schema.json",
   "name": "[epos]",
   "slug": "epos-shell",
-  "version": "2.0",
+  "version": "1.9",
   "description": "Web Extension Engine.",
   "options": {
     "allowProjectsApi": true,

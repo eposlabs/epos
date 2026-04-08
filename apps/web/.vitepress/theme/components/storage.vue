@@ -5,10 +5,10 @@ import Card from './ui/card.vue'
 import Snippet from './snippet.vue'
 
 const code = `
-// Store in background:
+// Store in the background script:
 await epos.storage.set('user-pic', imageFile)
 
-// Access later in popup:
+// Access later in the popup:
 const pic = await epos.storage.get('user-pic')
 `.trim()
 </script>
