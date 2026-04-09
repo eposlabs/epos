@@ -17,7 +17,7 @@ import Card from './ui/card.vue'
         <li><strong>Preconfigured Shadow DOM</strong></li>
         <li><strong>Simple React integration</strong></li>
         <li><strong>CORS-free fetch</strong> for web pages</li>
-        <li><strong>Browser APIs</strong> in every context</li>
+        <li><strong>Extension APIs</strong> in every context</li>
         <li><strong>Invisible web pages</strong> for background automation</li>
         <li><strong>Granular updates</strong> without a full reload</li>
         <li><strong>Dedicated project dashboard</strong></li>

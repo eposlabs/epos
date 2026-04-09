@@ -1,10 +1,12 @@
 # vite-plugin-rebundle
 
-A Vite plugin that guarantees **one standalone file per entry point**. Each entry is bundled into a single file with no code-splitting or dynamic imports.
+A Vite plugin that guarantees **one standalone file per entry point**. It rebundles each entry into a single file with no shared chunks or dynamic imports. Requires **Vite 8+**.
 
 ## Why?
 
-There are cases when you need bundles without dynamic imports. Vite doesn't provide such an option when building with multiple entries. `vite-plugin-rebundle` solves this issue by rebundling Vite’s output with [`rolldown`](https://rolldown.rs/) to enforce single-file output. This plugin runs only during `vite build`, and it does not affect the Vite dev server.
+Vite does not provide single-file output for multi-entry builds. When code splitting is needed, each entry can produce extra chunks and dynamic imports.
+
+`vite-plugin-rebundle` solves that by taking Vite's build output and rebundling each entry with [`rolldown`](https://rolldown.rs/). It runs only during `vite build` and does not affect the dev server.
 
 ## Installation
 
@@ -13,6 +15,8 @@ npm install -D vite-plugin-rebundle
 ```
 
 ## Usage
+
+Add the plugin to your Vite config:
 
 ```javascript
 import { defineConfig } from 'vite'
@@ -36,7 +40,10 @@ export default defineConfig({
 
 ## Configuration
 
-You can provide global `rolldown` input and output options as the first argument. Per-entry options can be passed in the second argument:
+`rebundle()` accepts up to two arguments:
+
+- The first argument contains global `rolldown` input and output options applied to every entry.
+- The second argument contains per-entry options that are deep-merged with the global ones.
 
 ```javascript
 export default defineConfig({
@@ -76,16 +83,15 @@ export default defineConfig({
 
 ## How it works
 
-When you run `vite build`, Vite normally outputs multiple chunks per entry if code-splitting is needed.
-`vite-plugin-rebundle` hooks into the build process and **rebundles each entry’s output with rolldown**, forcing a single self-contained file per entry.
+When you run `vite build`, `vite-plugin-rebundle`:
 
-- Vite still handles the initial build (tree-shaking, asset pipeline, etc.).
-- Afterward, each entry is passed through rolldown.
-- The final result is one js file per entry with no dynamic imports or shared chunks.
+1. Lets Vite perform the normal build.
+2. Rebundles each entry with rolldown.
+3. Writes back a single self-contained JavaScript file per entry.
 
-## Environment Variables
+## Watch Mode
 
-You can use `import.meta.env.REBUNDLE_PORT` to listen to rebundle events via WebSocket:
+When running in build watch mode, the plugin exposes `import.meta.env.REBUNDLE_PORT`. You can use it to listen for rebundle events over WebSocket:
 
 ```javascript
 const ws = new WebSocket(`ws://localhost:${import.meta.env.REBUNDLE_PORT}`)
@@ -94,4 +100,4 @@ ws.addEventListener('message', e => console.log('Rebundle event:', e.data))
 
 ## Notes
 
-Source maps are not currently supported. If you pass `sourcemap` option, it will be ignored. This plugin works with both `vite` and `rolldown-vite`.
+Source maps are not currently supported. If you pass `sourcemap` option, it will be ignored.
