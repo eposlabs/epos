@@ -13,7 +13,7 @@
     "@eposlabs/idb": "^1.27.0",
     "@eposlabs/types": "^1.26.0",
     "@eposlabs/utils": "^1.26.0",
-    "epos": "^2.0.1",
+    "epos": "^2.0.2",
     "lz-string": "^1.5.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
