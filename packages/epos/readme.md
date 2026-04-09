@@ -1,3 +1,3 @@
-Vite plugin and type definitions for Epos.
+# epos
 
-https://epos.dev
+A Vite plugin and type definitions for [Epos](https://epos.dev).
