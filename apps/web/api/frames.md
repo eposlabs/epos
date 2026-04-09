@@ -20,6 +20,8 @@ Creates a frame and returns its generated id.
 
 ### Notes
 
+- `attrs` is a map of `<iframe>` attributes to apply to the created frame.
+- `src` and `name` are managed by Epos and ignored if provided.
 - The frame gets a generated name and project metadata attributes.
 - Epos also sets default iframe attributes such as width, height, sandbox, and allow rules.
 - Before the frame is created, Epos adds a network rule that removes `X-Frame-Options` for the target hostname.

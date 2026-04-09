@@ -537,6 +537,7 @@ Behavior:
 
 - Exposes files listed in `epos.json` `assets`.
 - `url()` returns a usable asset URL.
+- `get()` can read an asset from IndexedDB even when it is not currently loaded.
 - `load()` optionally preloads assets into memory.
 
 ### `epos.frames`
@@ -544,8 +545,8 @@ Behavior:
 ```ts
 type EposFrames = {
   create(url: string, attrs?: Record<string, string | number>): Promise<string>
-  remove(id?: string): Promise<void>
-  has(id?: string): Promise<boolean>
+  remove(id: string): Promise<void>
+  has(id: string): Promise<boolean>
   list(): Promise<{ id: string; name: string; url: string }[]>
 }
 ```
@@ -553,6 +554,7 @@ type EposFrames = {
 Behavior:
 
 - Creates hidden background iframes in the offscreen document.
+- `create()` accepts regular `<iframe>` attributes, except `src` and `name`, which Epos manages itself.
 - Useful when a real page context is needed, not just a network request.
 - Frame targets can also receive Epos code via `frame:` match patterns.
 

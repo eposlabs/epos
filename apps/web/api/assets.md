@@ -47,7 +47,8 @@ Returns the asset as a `Blob`.
 ### Notes
 
 - If the asset is already loaded, the in-memory blob is returned.
-- Otherwise Epos reads it from IndexedDB.
+- Otherwise Epos reads it directly from IndexedDB.
+- Reading an unloaded asset this way does not keep it loaded in memory afterward.
 
 ## epos.assets.list()
 
