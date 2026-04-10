@@ -24,7 +24,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.0",
+    "@eposlabs/utils": "^1.26.1",
     "@tabler/icons-react": "^3.41.1",
     "clsx": "^2.1.1",
     "epos": "^2.0.2",

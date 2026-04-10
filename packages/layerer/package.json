@@ -1,6 +1,6 @@
 {
   "name": "@eposlabs/layerer",
-  "version": "1.29.0",
+  "version": "1.29.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.0",
+    "@eposlabs/utils": "^1.26.1",
     "chokidar": "^5.0.0",
     "minimist": "^1.2.8"
   },

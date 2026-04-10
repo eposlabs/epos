@@ -45,13 +45,19 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="flex flex-col gap-5 sm:flex-row">
-      <button
+      <a
+        class="cursor-pointer border border-black/20 bg-brand px-11 py-2.5 text-center text-base font-medium text-main dark:border-brand dark:text-black"
+        href="https://chromewebstore.google.com/detail/epos/kliobnfbhleelcpnfimenebpgffbclck"
+      >
+        Install Epos
+      </a>
+      <!-- <button
         class="cursor-pointer border border-black/20 bg-brand px-11 py-2.5 text-center text-base font-medium text-main dark:border-brand dark:text-black"
         type="button"
         @click="openDialog"
       >
         Install Epos
-      </button>
+      </button> -->
       <a
         :class="[
           'border border-black/20 px-11 py-2.5 text-center text-base font-medium text-main transition hover:bg-zinc-100',
