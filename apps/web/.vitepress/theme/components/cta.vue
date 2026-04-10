@@ -109,9 +109,9 @@ onBeforeUnmount(() => {
               <a
                 class="border border-black/20 bg-brand px-6 py-3 text-center text-base font-medium text-main dark:border-brand dark:text-black"
                 download
-                href="/epos-1.9.zip"
+                href="/epos-1.10.zip"
               >
-                Download epos-1.9.zip
+                Download epos-1.10.zip
               </a>
             </div>
           </div>

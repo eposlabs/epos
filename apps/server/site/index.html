@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPOS Server</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f1e8;
+        --card: rgba(255, 255, 255, 0.78);
+        --text: #1f1a17;
+        --muted: #6a5d55;
+        --accent: #b24c2d;
+        --border: rgba(31, 26, 23, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top left, rgba(178, 76, 45, 0.18), transparent 34%),
+          radial-gradient(circle at bottom right, rgba(45, 93, 178, 0.12), transparent 30%),
+          linear-gradient(135deg, #efe4d1 0%, var(--bg) 50%, #e9dfd3 100%);
+        color: var(--text);
+        font-family: Georgia, 'Times New Roman', serif;
+      }
+
+      main {
+        width: min(720px, 100%);
+        padding: 48px 40px;
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        background: var(--card);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 24px 80px rgba(31, 26, 23, 0.12);
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .eyebrow {
+        margin-bottom: 14px;
+        color: var(--accent);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.8rem, 8vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .body {
+        margin-top: 18px;
+        max-width: 42rem;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .path {
+        margin-top: 28px;
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(31, 26, 23, 0.05);
+        color: var(--text);
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">EPOS Server</p>
+      <h1>Hello.</h1>
+      <p class="body">
+        This server is running on Caddy. The primary domain redirects to the Chrome Web Store, and other HTTP requests are
+        rewritten to this single HTML file.
+      </p>
+      <p class="path">/index.html</p>
+    </main>
+  </body>
+</html>

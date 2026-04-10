@@ -2,7 +2,7 @@
   "$schema": "https://epos.dev/schema.json",
   "name": "[epos]",
   "slug": "epos-shell",
-  "version": "1.9",
+  "version": "1.10",
   "description": "Web Extension Engine.",
   "options": {
     "allowProjectsApi": true,
@@ -33,7 +33,7 @@
     "templates/vite/src/background.ts",
     "templates/vite/src/main.css",
     "templates/vite/src/main.tsx",
-    "templates/vite/.gitignore",
+    "templates/vite/gitignore",
     "templates/vite/epos.json",
     "templates/vite/package.json",
     "templates/vite/tsconfig.json",

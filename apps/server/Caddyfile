@@ -1,0 +1,13 @@
+{
+  admin off
+}
+
+get.epos.dev {
+  redir https://chromewebstore.google.com/detail/epos/kliobnfbhleelcpnfimenebpgffbclck permanent
+}
+
+http:// {
+  root * /srv
+  rewrite * /index.html
+  file_server
+}

@@ -203,7 +203,7 @@ export class Project extends gl.Unit {
     const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
-    const filename = `${this.spec.slug}-${this.spec.version}.zip`
+    const filename = `${this.spec.slug === 'epos-shell' ? 'epos' : this.spec.slug}-${this.spec.version}.zip`
     await epos.browser.downloads.download({ url, filename })
     URL.revokeObjectURL(url)
     this.state.exporting = false

@@ -1,0 +1,1 @@
+Caddy stores runtime configuration in this directory.

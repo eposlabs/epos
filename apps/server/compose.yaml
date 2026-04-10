@@ -1,0 +1,12 @@
+services:
+  redirect:
+    build:
+      context: .
+    container_name: epos-server
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./config:/config

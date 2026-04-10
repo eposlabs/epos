@@ -30,7 +30,7 @@ export class ProjectSetup extends gl.Unit {
           'src/background.ts',
           'src/main.css',
           'src/main.tsx',
-          '.gitignore',
+          'gitignore',
           'epos.json',
           'package.json',
           'tsconfig.json',
@@ -117,9 +117,10 @@ export class ProjectSetup extends gl.Unit {
       }
 
       // Copy template files to the project folder
-      for (const path of files) {
+      for (let path of files) {
         const blob = await epos.assets.get(`templates/${this.template}/${path}`)
         if (!blob) throw this.never()
+        if (path === 'gitignore') path = '.gitignore'
         await this.$.utils.fs.writeFile(this.$project.state.handle, path, blob)
       }
     })
