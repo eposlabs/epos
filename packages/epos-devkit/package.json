@@ -36,6 +36,6 @@
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-rebundle": "^2.0.5"
+    "vite-plugin-rebundle": "^2.0.6"
   }
 }

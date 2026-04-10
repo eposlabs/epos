@@ -25,7 +25,7 @@ import { rebundle } from 'vite-plugin-rebundle'
 export default defineConfig({
   plugins: [rebundle()],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         bundle1: 'src/bundle1.js',
         bundle2: 'src/bundle2.js',
@@ -68,7 +68,7 @@ export default defineConfig({
     ),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         bundle1: 'src/bundle1.js',
         bundle2: 'src/bundle2.js',
