@@ -4,11 +4,13 @@
 
 :80 {
   root * /server/docs
+  try_files {path} /404.html
   file_server
 }
 
 epos.dev {
   root * /server/docs
+  try_files {path} /404.html
   file_server
 }
 
