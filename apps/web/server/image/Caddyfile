@@ -1,0 +1,22 @@
+{
+  admin off
+}
+
+:80 {
+  root * /server/docs
+  file_server
+}
+
+epos.dev {
+  root * /server/docs
+  file_server
+}
+
+app.epos.dev {
+  root * /server/shell
+  file_server
+}
+
+get.epos.dev {
+  redir https://chromewebstore.google.com/detail/epos/kliobnfbhleelcpnfimenebpgffbclck permanent
+}

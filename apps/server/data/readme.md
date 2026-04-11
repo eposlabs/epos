@@ -1,1 +1,0 @@
-Caddy stores certificates and ACME state in this directory.

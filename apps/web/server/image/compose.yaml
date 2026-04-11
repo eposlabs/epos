@@ -1,0 +1,17 @@
+services:
+  epos-web:
+    build: .
+    image: epos-web
+    container_name: epos-web
+    restart: always
+    platform: linux/amd64
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - /server:/server
+volumes:
+  caddy_data:
+  caddy_config:

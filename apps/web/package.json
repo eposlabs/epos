@@ -1,0 +1,14 @@
+{
+  "name": "web",
+  "version": "*",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "npm run build && npm run upload",
+    "build": "npm run build:image && npm run build:docs",
+    "build:image": "cd server/image && docker compose build && docker save epos-web:latest > epos-web.tar",
+    "build:docs": "npm run build -w docs -- --outDir ../web/server/docs",
+    "upload": "rsync -avzP ./server/* imkost@5.161.107.178:/server",
+    "restart": "ssh imkost@5.161.107.178 \"cd /server/image && docker load < epos-web.tar && docker compose up -d\""
+  }
+}
