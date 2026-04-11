@@ -206,6 +206,6 @@ epos.render(<App />)
 
 For a longer Epos-specific context document, see:
 
-- `apps/web/guide/ai.md`
+- `apps/docs/guide/ai.md`
 
 Use that file when a task needs the broader product explanation and the fuller API reference surface.

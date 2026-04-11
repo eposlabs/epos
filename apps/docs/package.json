@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "docs",
   "version": "*",
   "private": true,
   "type": "module",
@@ -7,7 +7,7 @@
     "dev": "vitepress dev --host",
     "build": "vitepress build",
     "preview": "vitepress preview",
-    "deploy": "npm run build && netlify deploy --dir apps/web/dist --site 0a55e18d-3914-4207-84ca-6cc2869ea828 --prod"
+    "deploy": "npm run build && netlify deploy --dir apps/docs/dist --site 0a55e18d-3914-4207-84ca-6cc2869ea828 --prod"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",

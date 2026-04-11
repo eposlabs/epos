@@ -4,7 +4,7 @@
 
 - [`apps/engine`](https://github.com/eposlabs/epos/tree/main/apps/engine) - an opinionated engine for building Chromium browser extensions with React.
 - [`apps/shell`](https://github.com/eposlabs/epos/tree/main/apps/shell) - a project management dashboard built with Epos engine.
-- [`apps/web`](https://github.com/eposlabs/epos/tree/main/apps/web) - a documentation website available at https://epos.dev.
+- [`apps/docs`](https://github.com/eposlabs/epos/tree/main/apps/docs) - a documentation website available at https://epos.dev.
 
 ## Packages
 
