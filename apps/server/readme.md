@@ -1,6 +1,6 @@
 # apps/server
 
-Minimal Docker bundle that runs Caddy, redirects `get.epos.dev` to the Chrome Web Store, and serves a fallback `index.html` for other HTTP requests.
+Minimal Docker bundle that runs Caddy.
 
 ## Launch
 
@@ -16,7 +16,6 @@ Caddy obtains and renews TLS certificates automatically.
 
 Requirements:
 
-- DNS for `get.epos.dev` must point to this server
 - Ports `80` and `443` must be publicly reachable
 - No other service should already be bound to those ports
 
@@ -36,16 +35,3 @@ Behavior:
 
 - Requests for `get.epos.dev` are redirected to the Chrome Web Store listing
 - Other HTTP requests are rewritten to `index.html`, so the same page is returned for `/`, `/foo`, `/bar/baz`, and similar paths
-
-Main file:
-
-```sh
-site/index.html
-```
-
-## Included files
-
-- `Caddyfile`: redirect and fallback static file configuration
-- `Dockerfile`: builds the Caddy image
-- `site/index.html`: HTML returned for fallback requests
-- `compose.yaml`: one-command launch file
