@@ -7,7 +7,8 @@
     "dev": "vite build --mode development",
     "build": "vite build --mode production",
     "lint": "tsgo --build --noEmit",
-    "shadcn": "node ../../scripts/shadcn.ts"
+    "shadcn": "node ../../scripts/shadcn.ts",
+    "deploy": "rsync -avzP ./web/* admin@epos.dev:/srv/apps/shell"
   },
   "dependencies": {
     "@eposlabs/idb": "^1.27.1",

@@ -38,6 +38,7 @@ export default defineConfig(async ({ mode }) => {
     build: {
       watch: mode === 'production' ? null : {},
       minify: false,
+      copyPublicDir: false,
       reportCompressedSize: false,
       rolldownOptions: {
         input: {

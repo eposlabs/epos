@@ -23,12 +23,12 @@
   "targets": [
     {
       "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
-      "load": ["dist/fonts.css", "dist/gl.css", "dist/gl.js"]
+      "load": ["public/fonts.css", "dist/gl.css", "dist/gl.js"]
     }
   ],
   "assets": [
-    "dist/icon.svg",
-    "dist/icon.png",
+    "public/icon.svg",
+    "public/icon.png",
     "templates/vite/public/epos.svg",
     "templates/vite/src/background.ts",
     "templates/vite/src/main.css",

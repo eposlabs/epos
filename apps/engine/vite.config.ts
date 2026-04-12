@@ -2,6 +2,7 @@ import { layerer } from '@eposlabs/layerer'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export type Env = 'development' | 'production'
 export type Define = Record<string, string>
@@ -51,6 +52,15 @@ export default defineConfig(async ({ mode }) => {
 
     plugins: [
       tailwindcss(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: 'public/*',
+            dest: './',
+            rename: { stripBase: 1 },
+          },
+        ],
+      }),
       rebundle(null, {
         'cs': bundle('cs'),
         'os': bundle('os'),

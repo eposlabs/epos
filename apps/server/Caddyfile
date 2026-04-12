@@ -3,13 +3,13 @@
 }
 
 epos.dev {
-  root * /server/docs
+  root * /srv/apps/docs
   try_files {path} /404.html
   file_server
 }
 
 app.epos.dev {
-  root * /server/shell
+  root * /srv/apps/shell
   file_server
 }
 

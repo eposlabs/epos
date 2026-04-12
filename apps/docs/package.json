@@ -7,11 +7,10 @@
     "dev": "vitepress dev --host",
     "build": "vitepress build",
     "preview": "vitepress preview",
-    "deploy": "npm run build && netlify deploy --dir apps/docs/dist --site 0a55e18d-3914-4207-84ca-6cc2869ea828 --prod"
+    "deploy": "npm run build && rsync -avzP ./dist/* admin@epos.dev:/srv/apps/docs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
-    "netlify-cli": "^24.9.0",
     "oxc-minify": "^0.123.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",

@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "*",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "npm run build && npm run upload && npm run restart",
+    "build": "docker compose build && docker save epos:latest > epos.tar",
+    "upload": "rsync -avzP ./epos.tar ./compose.yaml admin@epos.dev:/srv",
+    "restart": "ssh admin@epos.dev 'cd /srv && docker load < epos.tar && docker compose up -d'"
+  }
+}

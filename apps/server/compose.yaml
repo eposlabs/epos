@@ -1,8 +1,8 @@
 services:
-  epos-web:
+  epos:
     build: .
-    image: epos-web
-    container_name: epos-web
+    image: epos
+    container_name: epos
     restart: always
     platform: linux/amd64
     ports:
@@ -11,7 +11,7 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-      - /server:/server
+      - /srv:/srv
 volumes:
   caddy_data:
   caddy_config:
