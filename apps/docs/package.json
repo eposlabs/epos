@@ -11,9 +11,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
-    "oxc-minify": "^0.123.0",
+    "oxc-minify": "^0.124.0",
     "tailwindcss": "^4.2.2",
-    "vite": "^8.0.3",
+    "vite": "^8.0.8",
     "vitepress": "^2.0.0-alpha.12"
   },
   "dependencies": {
