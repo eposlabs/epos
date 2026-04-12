@@ -19,7 +19,7 @@ const steps = [
         <div class=""></div>
         build browser
         <div class=""></div>
-        extensions.
+        extensions
       </h1>
       <div class="mt-6 max-w-xl">
         Epos gives you a <strong>zero-config</strong> workflow and <strong>powerful built-in features</strong> that work
