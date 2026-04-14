@@ -1,4 +1,4 @@
-# @eposlabs/layerer
+# paralayer
 
 An internal tool used by EposLabs projects.
 

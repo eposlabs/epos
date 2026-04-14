@@ -1,5 +1,5 @@
-import { layerer } from '@eposlabs/layerer'
 import tailwindcss from '@tailwindcss/vite'
+import { paralayer } from 'paralayer'
 import { defineConfig } from 'vite'
 import { rebundle, type RolldownOptions } from 'vite-plugin-rebundle'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
@@ -11,9 +11,9 @@ export default defineConfig(async ({ mode }) => {
   const modeOk = mode === 'development' || mode === 'production' || mode === 'preview'
   if (!modeOk) throw new Error('Invalid mode')
 
-  const layers = await layerer({
+  const layers = await paralayer({
     watch: mode !== 'production',
-    baseLayer: 'gl',
+    extend: 'gl',
   })
 
   const bundle = (name: string, params: { env?: Env; define?: Define } = {}): RolldownOptions => {

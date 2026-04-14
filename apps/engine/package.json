@@ -26,11 +26,11 @@
     "yjs": "^13.6.30"
   },
   "devDependencies": {
-    "@eposlabs/layerer": "^1.29.1",
     "@tailwindcss/vite": "^4.2.2",
     "@types/chrome": "^0.1.40",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "paralayer": "^1.20.1",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.8",
     "vite-plugin-rebundle": "^2.0.6",

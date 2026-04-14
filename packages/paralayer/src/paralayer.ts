@@ -1,4 +1,4 @@
-import { Queue, Unit, is, safe } from '@eposlabs/utils'
+import { Queue, Unit, ensureArray, is, safe } from '@eposlabs/utils'
 import { watch, type FSWatcher } from 'chokidar'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join, relative } from 'node:path'
@@ -18,13 +18,13 @@ export type Options = {
   watch?: boolean
   /** Whether the layer variables should be exposed globally. */
   expose?: boolean
-  /** If provided, other layers will extend this base layer. */
-  baseLayer?: string | null
-  /** If a file name does not have any layer tags, it will be assigned to this default layer. */
-  defaultLayer?: string | null
+  /** Layer that all other layers extend. */
+  extend?: string | null
+  /** Layer assigned to files without layer tags. */
+  default?: string | null
 }
 
-export class Layerer extends Unit {
+export class Paralayer extends Unit {
   private files: { [path: string]: File | null } = {}
   private options: Omit<Options, 'input' | 'output'> & { input: Input; output: Output }
   private started = false
@@ -37,15 +37,14 @@ export class Layerer extends Unit {
 
   constructor(options: Options) {
     super()
-    this.options = {
-      ...options,
-      input: options.input ?? './src',
-      output: options.output ?? './src/layers',
-    }
+    const inputs = ensureArray(options.input).filter(is.present)
+    const input = inputs.length > 0 ? inputs : ['./src']
+    const output = options.output ?? './src/layers'
+    this.options = { ...options, input, output }
   }
 
   async start() {
-    if (this.started) throw new Error('Layerer has already been started')
+    if (this.started) throw new Error('paralayer has already been started')
     this.started = true
 
     await safe(rm(this.options.output, { recursive: true }))
@@ -59,8 +58,8 @@ export class Layerer extends Unit {
     if (!this.options.watch) await this.watcher.close()
 
     // Return content of define.js
-    const defineJsPath = join(this.options.output, 'define.js')
-    return await readFile(defineJsPath, 'utf-8')
+    const definePath = join(this.options.output, 'define.js')
+    return await readFile(definePath, 'utf-8')
   }
 
   // MARK: Handlers
@@ -89,7 +88,7 @@ export class Layerer extends Unit {
       await this.queue.add(() => this.build())
     }
 
-    // File added / changed? -> Reset its content and rebuild
+    // File added or changed? -> Reset its content and rebuild
     if (event === 'add' || event === 'change') {
       this.files[path] = null
       await this.queue.add(() => this.build())
@@ -105,9 +104,16 @@ export class Layerer extends Unit {
   // ============================================================================
 
   private async build() {
-    // Group file paths by layers
+    const writeDefineJs = async (content: string) => {
+      const definePath = join(this.options.output, 'define.js')
+      await this.write(definePath, content)
+    }
+
+    // No files? -> Create empty define.js
     const paths = Object.keys(this.files)
-    if (paths.length === 0) return
+    if (paths.length === 0) return await writeDefineJs('// No layers found\n')
+
+    // Group file paths by layers
     const pathsByLayers = Object.groupBy(paths, path => this.getLayer(path))
     const allLayers = Object.keys(pathsByLayers)
 
@@ -158,16 +164,15 @@ export class Layerer extends Unit {
     }
 
     // Generate define.js file
-    const defineFile = join(this.options.output, 'define.js')
     const defineContent = this.generateDefineContent(allLayers)
-    await this.write(defineFile, defineContent)
+    await writeDefineJs(defineContent)
   }
 
   // MARK: Misc
   // ============================================================================
 
   private extractExportedClassNames(content: string) {
-    if (content.includes('layerer-ignore')) return []
+    if (content.includes('paralayer-ignore')) return []
     return content
       .split(/^export class /m)
       .slice(1)
@@ -197,9 +202,9 @@ export class Layerer extends Unit {
 
     let extendPascal = ''
     let extendCamel = ''
-    if (this.options.baseLayer && layer !== this.options.baseLayer) {
-      extendPascal = `extends ${this.getLayerName(this.options.baseLayer, 'Pascal')} `
-      extendCamel = `extends ${this.getLayerName(this.options.baseLayer, 'camel')} `
+    if (this.options.extend && layer !== this.options.extend) {
+      extendPascal = `extends ${this.getLayerName(this.options.extend, 'Pascal')} `
+      extendCamel = `extends ${this.getLayerName(this.options.extend, 'camel')} `
     }
 
     const globals = [
@@ -232,8 +237,8 @@ export class Layerer extends Unit {
       })
       .map(layer => `import './layer.${layer}.js'`)
 
-    if (this.options.baseLayer && topLayer !== this.options.baseLayer) {
-      imports.unshift(`import './layer.${this.options.baseLayer}.js'`)
+    if (this.options.extend && topLayer !== this.options.extend) {
+      imports.unshift(`import './layer.${this.options.extend}.js'`)
     }
 
     return [...imports, ''].join('\n')
@@ -258,7 +263,7 @@ export class Layerer extends Unit {
     const name = basename(path)
     const layer = name.split('.').slice(1, -1).sort().join('.')
     if (layer) return layer
-    return this.options.defaultLayer ?? ''
+    return this.options.default ?? ''
   }
 
   private getLayerName(layer: string, style: 'camel' | 'Pascal') {
@@ -283,6 +288,7 @@ export class Layerer extends Unit {
   private async write(path: string, content: string) {
     const [prevContent] = await safe(() => readFile(path, 'utf-8'))
     if (content === prevContent) return
+    await mkdir(join(path, '..'), { recursive: true })
     await writeFile(path, content, 'utf-8')
   }
 }
@@ -290,9 +296,9 @@ export class Layerer extends Unit {
 // MARK: Export
 // ============================================================================
 
-export async function layerer(options: Options) {
-  const defineLayersJs = await new Layerer(options).start()
-  return defineLayersJs
+export async function paralayer(options: Options) {
+  const layers = await new Paralayer(options).start()
+  return layers
 }
 
-export default layerer
+export default paralayer

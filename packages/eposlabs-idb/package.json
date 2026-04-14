@@ -1,16 +1,16 @@
 {
-  "name": "@eposlabs/types",
-  "version": "1.26.1",
+  "name": "@eposlabs/idb",
+  "version": "1.27.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/types",
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/eposlabs-idb",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",
-    "directory": "packages/types"
+    "directory": "packages/eposlabs-idb"
   },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
@@ -18,7 +18,7 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/types.js"
+    ".": "./dist/idb.js"
   },
   "files": [
     "dist"

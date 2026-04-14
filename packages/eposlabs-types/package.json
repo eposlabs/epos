@@ -1,16 +1,16 @@
 {
-  "name": "@eposlabs/utils",
-  "version": "1.26.2",
+  "name": "@eposlabs/types",
+  "version": "1.26.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/utils",
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/eposlabs-types",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",
-    "directory": "packages/utils"
+    "directory": "packages/eposlabs-types"
   },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
@@ -18,12 +18,14 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/utils-common.js",
-    "./node": "./dist/utils-node.js"
+    ".": "./dist/types.js"
   },
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "@eposlabs/utils": "^1.26.2"
+  },
   "publishConfig": {
     "access": "public"
   }

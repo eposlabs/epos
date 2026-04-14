@@ -1,27 +1,27 @@
 {
-  "name": "@eposlabs/layerer",
-  "version": "1.29.1",
+  "name": "paralayer",
+  "version": "1.20.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/layerer",
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/paralayer",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",
-    "directory": "packages/layerer"
+    "directory": "packages/paralayer"
   },
   "scripts": {
-    "dev": "rimraf dist && tsgo --watch",
+    "dev": "npm run build && tsgo --watch",
     "build": "rimraf dist && tsgo && chmod +x dist/bin.js",
     "lint": "tsgo --build --noEmit"
   },
   "bin": {
-    "@eposlabs/layerer": "./dist/bin.js"
+    "paralayer": "./dist/bin.js"
   },
   "exports": {
-    ".": "./dist/layerer.js"
+    ".": "./dist/paralayer.js"
   },
   "files": [
     "dist"

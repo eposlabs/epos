@@ -1,15 +1,15 @@
-import { layerer } from '@eposlabs/layerer'
 import tailwindcss from '@tailwindcss/vite'
 import { epos } from 'epos/vite'
+import { paralayer } from 'paralayer'
 import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
   const env = mode === 'development' ? 'development' : 'production'
 
-  const layers = await layerer({
+  const layers = await paralayer({
     watch: mode !== 'production',
-    defaultLayer: 'gl',
+    default: 'gl',
   })
 
   return {
