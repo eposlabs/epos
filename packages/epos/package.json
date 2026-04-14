@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.1",
+    "@eposlabs/utils": "^1.26.2",
     "@types/chrome": "^0.1.40",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -41,6 +41,6 @@
     "vite": "^8.0.8"
   },
   "peerDependencies": {
-    "vite": "^8.0.3"
+    "vite": "^8.0.8"
   }
 }

@@ -12,7 +12,7 @@
   "dependencies": {
     "@eposlabs/idb": "^1.27.1",
     "@eposlabs/types": "^1.26.1",
-    "@eposlabs/utils": "^1.26.1",
+    "@eposlabs/utils": "^1.26.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "epos": "^2.0.2",

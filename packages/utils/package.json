@@ -1,6 +1,6 @@
 {
   "name": "@eposlabs/utils",
-  "version": "1.26.1",
+  "version": "1.26.2",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -18,7 +18,8 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/utils.js"
+    ".": "./dist/utils-common.js",
+    "./node": "./dist/utils-node.js"
   },
   "files": [
     "dist"

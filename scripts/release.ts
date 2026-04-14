@@ -2,7 +2,7 @@
 // > npm run release [patch|minor|major] [workspace1] [workspace2] ...
 // ============================================================================
 
-import { run } from './utils/run.ts'
+import { run } from '@eposlabs/utils/node'
 
 void (() => {
   const { version, targets } = parseArgs()
