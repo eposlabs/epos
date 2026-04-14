@@ -1,4 +1,4 @@
-# EposLabs Monorepo
+# Epos Monorepo
 
 ## Apps
 
