@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.2",
+    "@eposlabs/utils": "^1.26.3",
     "chokidar": "^5.0.0",
     "minimist": "^1.2.8"
   },

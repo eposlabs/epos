@@ -25,7 +25,7 @@
     "src"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.2",
+    "@eposlabs/utils": "^1.26.3",
     "epos": "^2.0.2",
     "nanoid": "^5.1.7"
   }

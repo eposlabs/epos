@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.2",
+    "@eposlabs/utils": "^1.26.3",
     "@types/chrome": "^0.1.40",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

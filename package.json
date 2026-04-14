@@ -16,7 +16,7 @@
     "reinstall": "npx rimraf --glob node_modules package-lock.json **/node_modules **/package-lock.json && npm install"
   },
   "devDependencies": {
-    "@eposlabs/utils": "^1.26.2",
+    "@eposlabs/utils": "^1.26.3",
     "@types/node": "^25.6.0",
     "@typescript/native-preview": "^7.0.0-dev.20260414.1",
     "npm-check-updates": "^21.0.0",
