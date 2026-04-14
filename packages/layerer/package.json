@@ -18,7 +18,7 @@
     "lint": "tsgo --build --noEmit"
   },
   "bin": {
-    "layerer": "./src/bin.js"
+    "@eposlabs/layerer": "./dist/bin.js"
   },
   "exports": {
     ".": "./dist/layerer.js"
