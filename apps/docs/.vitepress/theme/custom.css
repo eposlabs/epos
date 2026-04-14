@@ -55,7 +55,7 @@ html.dark {
   }
 }
 
-.Layout:not(:has(.has-sidebar)) {
+.Layout:has(.VPPage):not(:has(.has-sidebar)) {
   .VPNav {
     @apply relative mx-auto max-w-page md:border-x;
   }
