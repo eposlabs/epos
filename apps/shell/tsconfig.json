@@ -1,6 +1,6 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig-src.json" }, { "path": "./tsconfig-vite.json" }],
+  "references": [{ "path": "./tsconfig.src.json" }, { "path": "./tsconfig.vite.json" }],
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
