@@ -1,19 +1,21 @@
-import { App, type App as AppType } from '../units/app.js'
-import { Highlight, type Highlight as HighlightType } from '../units/highlight.js'
-import { Idb, type Idb as IdbType } from '../units/idb.js'
-import { Libs, type Libs as LibsType } from '../units/libs.js'
-import { Permissions, type Permissions as PermissionsType } from '../units/permissions.js'
-import { ProjectSetup, type ProjectSetup as ProjectSetupType } from '../units/project-setup.js'
-import { ProjectWatcher, type ProjectWatcher as ProjectWatcherType } from '../units/project-watcher.js'
-import { Project, type Project as ProjectType } from '../units/project.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.js'
-import { Theme, type Theme as ThemeType } from '../units/theme.js'
-import { Toast, type Toast as ToastType } from '../units/toast.js'
-import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.js'
-import { Welcome, type Welcome as WelcomeType } from '../units/welcome.js'
+import { Unit, type Unit as UnitType } from '../core/core-unit.ts'
+import { App, type App as AppType } from '../units/app.tsx'
+import { Highlight, type Highlight as HighlightType } from '../units/highlight.tsx'
+import { Idb, type Idb as IdbType } from '../units/idb.ts'
+import { Libs, type Libs as LibsType } from '../units/libs.ts'
+import { Permissions, type Permissions as PermissionsType } from '../units/permissions.tsx'
+import { ProjectSetup, type ProjectSetup as ProjectSetupType } from '../units/project-setup.tsx'
+import { ProjectWatcher, type ProjectWatcher as ProjectWatcherType } from '../units/project-watcher.tsx'
+import { Project, type Project as ProjectType } from '../units/project.tsx'
+import { Projects, type Projects as ProjectsType } from '../units/projects.tsx'
+import { Theme, type Theme as ThemeType } from '../units/theme.tsx'
+import { Toast, type Toast as ToastType } from '../units/toast.tsx'
+import { UtilsFs, type UtilsFs as UtilsFsType } from '../units/utils-fs.ts'
+import { Utils, type Utils as UtilsType } from '../units/utils.ts'
+import { Welcome, type Welcome as WelcomeType } from '../units/welcome.tsx'
 
 Object.assign(gl, {
+  Unit,
   App,
   Highlight,
   Idb,
@@ -34,6 +36,7 @@ declare global {
   const gl: Gl
 
   interface Gl {
+    Unit: typeof Unit
     App: typeof App
     Highlight: typeof Highlight
     Idb: typeof Idb
@@ -51,6 +54,7 @@ declare global {
   }
 
   interface gl {
+    Unit: Unit
     App: App
     Highlight: Highlight
     Idb: Idb
@@ -68,6 +72,7 @@ declare global {
   }
 
   namespace gl {
+    export type Unit = UnitType
     export type App = AppType
     export type Highlight = HighlightType
     export type Idb = IdbType

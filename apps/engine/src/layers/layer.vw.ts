@@ -1,9 +1,11 @@
-import { App, type App as AppType } from '../units/app.vw.js'
-import { Project, type Project as ProjectType } from '../units/project.vw.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.vw.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.vw.js'
+import { Unit, type Unit as UnitType } from '../core/core-unit.vw.ts'
+import { App, type App as AppType } from '../units/app.vw.tsx'
+import { Project, type Project as ProjectType } from '../units/project.vw.tsx'
+import { Projects, type Projects as ProjectsType } from '../units/projects.vw.tsx'
+import { Utils, type Utils as UtilsType } from '../units/utils.vw.ts'
 
 Object.assign(vw, {
+  Unit,
   App,
   Project,
   Projects,
@@ -14,6 +16,7 @@ declare global {
   const vw: Vw
 
   interface Vw extends Gl {
+    Unit: typeof Unit
     App: typeof App
     Project: typeof Project
     Projects: typeof Projects
@@ -21,6 +24,7 @@ declare global {
   }
 
   interface vw extends gl {
+    Unit: Unit
     App: App
     Project: Project
     Projects: Projects
@@ -28,6 +32,7 @@ declare global {
   }
 
   namespace vw {
+    export type Unit = UnitType
     export type App = AppType
     export type Project = ProjectType
     export type Projects = ProjectsType

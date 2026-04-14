@@ -1,4 +1,4 @@
-import './layer.gl.js'
-import './layer.ex.sw.js'
-import './layer.sw.vw.js'
-import './layer.sw.js'
+import './layer.gl.ts'
+import './layer.ex.sw.ts'
+import './layer.sw.vw.ts'
+import './layer.sw.ts'

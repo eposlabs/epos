@@ -1,26 +1,28 @@
-import { Alive, type Alive as AliveType } from '../units/alive.sw.js'
-import { App, type App as AppType } from '../units/app.sw.js'
-import { Idb, type Idb as IdbType } from '../units/idb.sw.js'
-import { Libs, type Libs as LibsType } from '../units/libs.sw.js'
-import { Net, type Net as NetType } from '../units/net.sw.js'
-import { Peer, type Peer as PeerType } from '../units/peer.sw.js'
-import { ProjectBrowserAlarms, type ProjectBrowserAlarms as ProjectBrowserAlarmsType } from '../units/project-browser-alarms.sw.js'
-import { ProjectBrowserContextMenus, type ProjectBrowserContextMenus as ProjectBrowserContextMenusType } from '../units/project-browser-context-menus.sw.js'
-import { ProjectBrowserDeclarativeNetRequest, type ProjectBrowserDeclarativeNetRequest as ProjectBrowserDeclarativeNetRequestType } from '../units/project-browser-declarative-net-request.sw.js'
-import { ProjectBrowserNotifications, type ProjectBrowserNotifications as ProjectBrowserNotificationsType } from '../units/project-browser-notifications.sw.js'
-import { ProjectBrowserPermissions, type ProjectBrowserPermissions as ProjectBrowserPermissionsType } from '../units/project-browser-permissions.sw.js'
-import { ProjectBrowserStorageArea, type ProjectBrowserStorageArea as ProjectBrowserStorageAreaType } from '../units/project-browser-storage-area.sw.js'
-import { ProjectBrowserStorage, type ProjectBrowserStorage as ProjectBrowserStorageType } from '../units/project-browser-storage.sw.js'
-import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../units/project-browser.sw.js'
-import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../units/project-fetcher.sw.js'
-import { ProjectTarget, type ProjectTarget as ProjectTargetType } from '../units/project-target.sw.js'
-import { Project, type Project as ProjectType } from '../units/project.sw.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.sw.js'
-import { Shell, type Shell as ShellType } from '../units/shell.sw.js'
-import { UtilsOrigins, type UtilsOrigins as UtilsOriginsType } from '../units/utils-origins.sw.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.sw.js'
+import { Unit, type Unit as UnitType } from '../core/core-unit.sw.ts'
+import { Alive, type Alive as AliveType } from '../units/alive.sw.ts'
+import { App, type App as AppType } from '../units/app.sw.ts'
+import { Idb, type Idb as IdbType } from '../units/idb.sw.ts'
+import { Libs, type Libs as LibsType } from '../units/libs.sw.ts'
+import { Net, type Net as NetType } from '../units/net.sw.ts'
+import { Peer, type Peer as PeerType } from '../units/peer.sw.ts'
+import { ProjectBrowserAlarms, type ProjectBrowserAlarms as ProjectBrowserAlarmsType } from '../units/project-browser-alarms.sw.ts'
+import { ProjectBrowserContextMenus, type ProjectBrowserContextMenus as ProjectBrowserContextMenusType } from '../units/project-browser-context-menus.sw.ts'
+import { ProjectBrowserDeclarativeNetRequest, type ProjectBrowserDeclarativeNetRequest as ProjectBrowserDeclarativeNetRequestType } from '../units/project-browser-declarative-net-request.sw.ts'
+import { ProjectBrowserNotifications, type ProjectBrowserNotifications as ProjectBrowserNotificationsType } from '../units/project-browser-notifications.sw.ts'
+import { ProjectBrowserPermissions, type ProjectBrowserPermissions as ProjectBrowserPermissionsType } from '../units/project-browser-permissions.sw.ts'
+import { ProjectBrowserStorageArea, type ProjectBrowserStorageArea as ProjectBrowserStorageAreaType } from '../units/project-browser-storage-area.sw.ts'
+import { ProjectBrowserStorage, type ProjectBrowserStorage as ProjectBrowserStorageType } from '../units/project-browser-storage.sw.ts'
+import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../units/project-browser.sw.ts'
+import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../units/project-fetcher.sw.ts'
+import { ProjectTarget, type ProjectTarget as ProjectTargetType } from '../units/project-target.sw.ts'
+import { Project, type Project as ProjectType } from '../units/project.sw.ts'
+import { Projects, type Projects as ProjectsType } from '../units/projects.sw.ts'
+import { Shell, type Shell as ShellType } from '../units/shell.sw.ts'
+import { UtilsOrigins, type UtilsOrigins as UtilsOriginsType } from '../units/utils-origins.sw.ts'
+import { Utils, type Utils as UtilsType } from '../units/utils.sw.ts'
 
 Object.assign(sw, {
+  Unit,
   Alive,
   App,
   Idb,
@@ -48,6 +50,7 @@ declare global {
   const sw: Sw
 
   interface Sw extends Gl {
+    Unit: typeof Unit
     Alive: typeof Alive
     App: typeof App
     Idb: typeof Idb
@@ -72,6 +75,7 @@ declare global {
   }
 
   interface sw extends gl {
+    Unit: Unit
     Alive: Alive
     App: App
     Idb: Idb
@@ -96,6 +100,7 @@ declare global {
   }
 
   namespace sw {
+    export type Unit = UnitType
     export type Alive = AliveType
     export type App = AppType
     export type Idb = IdbType

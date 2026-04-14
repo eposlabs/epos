@@ -1,16 +1,5 @@
-import { Unit } from 'epos-unit'
+import { Unit as BaseUnit } from 'epos-unit'
 
-class UnitGl<T extends gl = gl> extends Unit<T['App']> {}
-gl.Unit = UnitGl
+export class Unit<T extends gl = gl> extends BaseUnit<T['App']> {}
 
-declare global {
-  interface Gl {
-    Unit: typeof UnitGl
-  }
-  interface gl {
-    Unit: UnitGl
-  }
-  namespace gl {
-    export type Unit = UnitGl
-  }
-}
+gl.Unit = Unit

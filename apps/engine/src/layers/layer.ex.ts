@@ -1,23 +1,25 @@
-import { App, type App as AppType } from '../units/app.ex.js'
-import { Idb, type Idb as IdbType } from '../units/idb.ex.js'
-import { Libs, type Libs as LibsType } from '../units/libs.ex.js'
-import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../units/project-browser.ex.js'
-import { ProjectEposAssets, type ProjectEposAssets as ProjectEposAssetsType } from '../units/project-epos-assets.ex.js'
-import { ProjectEposDom, type ProjectEposDom as ProjectEposDomType } from '../units/project-epos-dom.ex.js'
-import { ProjectEposEnv, type ProjectEposEnv as ProjectEposEnvType } from '../units/project-epos-env.ex.js'
-import { ProjectEposFrames, type ProjectEposFrames as ProjectEposFramesType } from '../units/project-epos-frames.ex.js'
-import { ProjectEposGeneral, type ProjectEposGeneral as ProjectEposGeneralType } from '../units/project-epos-general.ex.js'
-import { ProjectEposLibs, type ProjectEposLibs as ProjectEposLibsType } from '../units/project-epos-libs.ex.js'
-import { ProjectEposProjects, type ProjectEposProjects as ProjectEposProjectsType } from '../units/project-epos-projects.ex.js'
-import { ProjectEposState, type ProjectEposState as ProjectEposStateType } from '../units/project-epos-state.ex.js'
-import { ProjectEposStorage, type ProjectEposStorage as ProjectEposStorageType } from '../units/project-epos-storage.ex.js'
-import { ProjectEpos, type ProjectEpos as ProjectEposType } from '../units/project-epos.ex.js'
-import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../units/project-fetcher.ex.js'
-import { Project, type Project as ProjectType } from '../units/project.ex.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.ex.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.ex.js'
+import { Unit, type Unit as UnitType } from '../core/core-unit.ex.ts'
+import { App, type App as AppType } from '../units/app.ex.ts'
+import { Idb, type Idb as IdbType } from '../units/idb.ex.ts'
+import { Libs, type Libs as LibsType } from '../units/libs.ex.ts'
+import { ProjectBrowser, type ProjectBrowser as ProjectBrowserType } from '../units/project-browser.ex.ts'
+import { ProjectEposAssets, type ProjectEposAssets as ProjectEposAssetsType } from '../units/project-epos-assets.ex.ts'
+import { ProjectEposDom, type ProjectEposDom as ProjectEposDomType } from '../units/project-epos-dom.ex.ts'
+import { ProjectEposEnv, type ProjectEposEnv as ProjectEposEnvType } from '../units/project-epos-env.ex.ts'
+import { ProjectEposFrames, type ProjectEposFrames as ProjectEposFramesType } from '../units/project-epos-frames.ex.ts'
+import { ProjectEposGeneral, type ProjectEposGeneral as ProjectEposGeneralType } from '../units/project-epos-general.ex.ts'
+import { ProjectEposLibs, type ProjectEposLibs as ProjectEposLibsType } from '../units/project-epos-libs.ex.ts'
+import { ProjectEposProjects, type ProjectEposProjects as ProjectEposProjectsType } from '../units/project-epos-projects.ex.ts'
+import { ProjectEposState, type ProjectEposState as ProjectEposStateType } from '../units/project-epos-state.ex.ts'
+import { ProjectEposStorage, type ProjectEposStorage as ProjectEposStorageType } from '../units/project-epos-storage.ex.ts'
+import { ProjectEpos, type ProjectEpos as ProjectEposType } from '../units/project-epos.ex.ts'
+import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../units/project-fetcher.ex.ts'
+import { Project, type Project as ProjectType } from '../units/project.ex.ts'
+import { Projects, type Projects as ProjectsType } from '../units/projects.ex.ts'
+import { Utils, type Utils as UtilsType } from '../units/utils.ex.ts'
 
 Object.assign(ex, {
+  Unit,
   App,
   Idb,
   Libs,
@@ -42,6 +44,7 @@ declare global {
   const ex: Ex
 
   interface Ex extends Gl {
+    Unit: typeof Unit
     App: typeof App
     Idb: typeof Idb
     Libs: typeof Libs
@@ -63,6 +66,7 @@ declare global {
   }
 
   interface ex extends gl {
+    Unit: Unit
     App: App
     Idb: Idb
     Libs: Libs
@@ -84,6 +88,7 @@ declare global {
   }
 
   namespace ex {
+    export type Unit = UnitType
     export type App = AppType
     export type Idb = IdbType
     export type Libs = LibsType

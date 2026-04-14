@@ -1,2 +1,2 @@
-import './layer.gl.js'
-import './layer.pm.js'
+import './layer.gl.ts'
+import './layer.pm.ts'

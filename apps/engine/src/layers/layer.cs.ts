@@ -1,9 +1,11 @@
-import { App, type App as AppType } from '../units/app.cs.js'
-import { Libs, type Libs as LibsType } from '../units/libs.cs.js'
-import { Projects, type Projects as ProjectsType } from '../units/projects.cs.js'
-import { Utils, type Utils as UtilsType } from '../units/utils.cs.js'
+import { Unit, type Unit as UnitType } from '../core/core-unit.cs.ts'
+import { App, type App as AppType } from '../units/app.cs.ts'
+import { Libs, type Libs as LibsType } from '../units/libs.cs.ts'
+import { Projects, type Projects as ProjectsType } from '../units/projects.cs.ts'
+import { Utils, type Utils as UtilsType } from '../units/utils.cs.ts'
 
 Object.assign(cs, {
+  Unit,
   App,
   Libs,
   Projects,
@@ -14,6 +16,7 @@ declare global {
   const cs: Cs
 
   interface Cs extends Gl {
+    Unit: typeof Unit
     App: typeof App
     Libs: typeof Libs
     Projects: typeof Projects
@@ -21,6 +24,7 @@ declare global {
   }
 
   interface cs extends gl {
+    Unit: Unit
     App: App
     Libs: Libs
     Projects: Projects
@@ -28,6 +32,7 @@ declare global {
   }
 
   namespace cs {
+    export type Unit = UnitType
     export type App = AppType
     export type Libs = LibsType
     export type Projects = ProjectsType

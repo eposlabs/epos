@@ -193,8 +193,7 @@ export class Paralayer extends Unit {
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)
         const relativePath = relative(this.options.output, path)
-        const relativePathAsJs = relativePath.replace(/(.ts|.tsx|.jsx)$/, '.js')
-        return `import { ${[...names, ...types].join(', ')} } from '${relativePathAsJs}'`
+        return `import { ${[...names, ...types].join(', ')} } from '${relativePath}'`
       })
       .filter(Boolean)
 
@@ -235,10 +234,10 @@ export class Paralayer extends Unit {
         if (layer1.length !== layer2.length) return layer2.length - layer1.length
         return layer1.localeCompare(layer2)
       })
-      .map(layer => `import './layer.${layer}.js'`)
+      .map(layer => `import './layer.${layer}.ts'`)
 
     if (this.options.extend && topLayer !== this.options.extend) {
-      imports.unshift(`import './layer.${this.options.extend}.js'`)
+      imports.unshift(`import './layer.${this.options.extend}.ts'`)
     }
 
     return [...imports, ''].join('\n')
@@ -252,7 +251,7 @@ export class Paralayer extends Unit {
 
     const vars = layers.map(layer => {
       const layerName = this.getLayerName(layer, 'camel')
-      if (this.options.expose) return `globalThis.${layerName} = {}`
+      if (this.options.expose) return `Object.assign(globalThis, { ${layerName}: {} })`
       return `const ${layerName} = {}`
     })
 
