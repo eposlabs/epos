@@ -73,7 +73,7 @@ To run your extension on that page, set `matches` to `<page>` in `epos.json`:
 
 ## `action` as a URL
 
-Instead of `true`, you can also set `action` to a URL.
+Instead of `true` and `<page>`, you can also set `action` to a URL.
 
 ::: code-group
 

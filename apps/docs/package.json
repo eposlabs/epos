@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vitepress dev --host",
     "build": "vitepress build",
-    "preview": "vitepress preview",
-    "deploy": "npm run build && rsync -avzP ./dist/* admin@epos.dev:/srv/apps/docs"
+    "preview": "vitepress preview"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
