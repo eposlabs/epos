@@ -22,7 +22,7 @@
   "hostPermissions": ["<allUrls>"],
   "targets": [
     {
-      "matches": ["https://app.epos.dev/*", "https://epos.dev/@learn"],
+      "matches": "https://app.epos.dev/*",
       "load": ["public/fonts.css", "dist/gl.css", "dist/gl.js"]
     }
   ],

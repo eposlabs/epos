@@ -81,29 +81,14 @@ export class ProjectTarget extends sw.Unit {
 
   private testPattern(pattern: MatchPattern, url: Url) {
     // Do not match extension pages
-    const { origin } = new URL(url)
+    const { host, origin } = new URL(url)
     const isExtensionPage = origin === location.origin
     if (isExtensionPage) return false
 
-    // Do not match epos.dev pages unless explicitly specified
-    const apexDomain = this.getApexDomain(url)
-    const patternApexDomain = this.getApexDomain(pattern.replaceAll('*', 'wildcard--'))
-    if (apexDomain === 'epos.dev' && patternApexDomain !== 'epos.dev') return false
+    // Only shell can access `app.epos.dev`
+    if (host === 'app.epos.dev' && this.$project.spec.slug !== 'epos-shell') return false
 
     const matcher = this.$.libs.matchPattern(pattern)
     return matcher.assertValid().match(url)
-  }
-
-  /**
-   * Examples:
-   * - <all_urls> -> null
-   * - https://sub.example.com/path -> example.com
-   * - https://example.co.uk/path -> co.uk
-   * - https://localhost/path -> localhost
-   */
-  private getApexDomain(url: Url) {
-    if (url === '<all_urls>') return null
-    const { host } = new URL(url)
-    return host.split('.').slice(-2).join('.')
   }
 }
