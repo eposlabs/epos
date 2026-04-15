@@ -1,5 +1,3 @@
 # @eposlabs/idb
 
-An IDB wrapper used by EposLabs projects.
-
-https://github.com/eposlabs/epos
+An IDB wrapper used by [Epos Labs](https://github.com/eposlabs/).

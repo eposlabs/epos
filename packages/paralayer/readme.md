@@ -1,5 +1,3 @@
 # paralayer
 
-An internal tool used by EposLabs projects.
-
-https://github.com/eposlabs/epos
+An internal tool used by [Epos Labs](https://github.com/eposlabs/).
