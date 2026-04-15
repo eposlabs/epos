@@ -28,5 +28,8 @@
     "@eposlabs/utils": "^1.26.3",
     "epos": "^2.0.2",
     "nanoid": "^5.1.7"
+  },
+  "devDependencies": {
+    "@eposlabs/tsconfig": "^1.0.1"
   }
 }

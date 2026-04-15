@@ -32,6 +32,7 @@
     "minimist": "^1.2.8"
   },
   "devDependencies": {
+    "@eposlabs/tsconfig": "^1.0.1",
     "@types/minimist": "^1.2.5"
   },
   "publishConfig": {

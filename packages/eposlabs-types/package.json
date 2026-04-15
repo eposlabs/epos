@@ -28,5 +28,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@eposlabs/tsconfig": "^1.0.1"
   }
 }

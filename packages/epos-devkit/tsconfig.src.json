@@ -1,4 +1,4 @@
 {
-  "extends": "../../tsconfig.browser.json",
+  "extends": "@eposlabs/tsconfig/browser",
   "include": ["src"]
 }

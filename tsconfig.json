@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.node.json",
+  "extends": "@eposlabs/tsconfig/node",
   "include": ["scripts"],
   "compilerOptions": {
     "allowImportingTsExtensions": true

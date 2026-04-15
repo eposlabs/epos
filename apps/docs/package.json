@@ -8,14 +8,15 @@
     "build": "vitepress build",
     "preview": "vitepress preview"
   },
+  "dependencies": {
+    "highlight.js": "^11.11.1"
+  },
   "devDependencies": {
+    "@eposlabs/tsconfig": "^1.0.1",
     "@tailwindcss/vite": "^4.2.2",
     "oxc-minify": "^0.125.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.8",
     "vitepress": "^2.0.0-alpha.12"
-  },
-  "dependencies": {
-    "highlight.js": "^11.11.1"
   }
 }

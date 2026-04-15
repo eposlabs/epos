@@ -10,7 +10,7 @@ void (() => {
   if (version) run(`npm version ${version} --workspaces-update=false ${workspacesArg}`)
   run(`syncpack fix`) // "^2.0.0" -> "2.0.1"
   run(`syncpack fix`) // "2.0.1" -> "^2.0.1"
-  run(`npm run build ${workspacesArg}`)
+  run(`npm run build --if-present ${workspacesArg}`)
   run(`npm publish ${workspacesArg}`)
   run(`npm install`)
 })()

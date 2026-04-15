@@ -35,5 +35,8 @@
     "rolldown": "^1.0.0-rc.15",
     "vite": "^8.0.8",
     "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@eposlabs/tsconfig": "^1.0.1"
   }
 }

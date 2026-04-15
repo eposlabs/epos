@@ -1,0 +1,29 @@
+{
+  "name": "@eposlabs/tsconfig",
+  "version": "1.0.1",
+  "type": "module",
+  "license": "MIT",
+  "author": "imkost",
+  "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/eposlabs-tsconfig",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eposlabs/epos.git",
+    "directory": "packages/eposlabs-tsconfig"
+  },
+  "exports": {
+    ".": "./configs/tsconfig.base.json",
+    "./browser": "./configs/tsconfig.browser.json",
+    "./node": "./configs/tsconfig.node.json"
+  },
+  "files": [
+    "configs"
+  ],
+  "dependencies": {
+    "@eposlabs/utils": "^1.26.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
