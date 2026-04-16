@@ -10,8 +10,9 @@
   ],
   "scripts": {
     "edge": "ncu --upgrade --deep && npm install",
-    "lint": "npm run lint -w apps -w packages",
+    "lint": "npm run lint -w apps -w packages --if-present",
     "prettier": "prettier --write ./",
+    "shadcn": "node scripts/shadcn.ts",
     "release": "node scripts/release.ts",
     "reinstall": "npx rimraf --glob node_modules package-lock.json **/node_modules **/package-lock.json && npm install"
   },

@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite build --mode development",
     "build": "vite build --mode production",
-    "lint": "tsgo --build --noEmit",
-    "shadcn": "node ../../scripts/shadcn.ts"
+    "lint": "tsgo --build --noEmit"
   },
   "dependencies": {
     "@eposlabs/idb": "^1.27.2",

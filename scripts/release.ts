@@ -1,12 +1,12 @@
 // Usage:
-// > npm run release [patch|minor|major] [workspace1] [workspace2] ...
+// > npm run release [...workspaces] [patch|minor|major]
 // ============================================================================
 
 import { run } from '@eposlabs/utils/node'
 
 void (() => {
-  const { version, targets } = parseArgs()
-  const workspacesArg = targets.map(target => `-w ${target}`).join(' ')
+  const { workspaces, version } = parseArgs()
+  const workspacesArg = workspaces.map(workspace => `-w ${workspace}`).join(' ')
   if (version) run(`npm version ${version} --workspaces-update=false ${workspacesArg}`)
   run(`syncpack fix`) // "^2.0.0" -> "2.0.1"
   run(`syncpack fix`) // "2.0.1" -> "^2.0.1"
@@ -17,9 +17,10 @@ void (() => {
 
 function parseArgs() {
   const args = process.argv.slice(2)
-  if (args[0] === 'patch' || args[0] === 'minor' || args[0] === 'major') {
-    return { version: args[0], targets: args.slice(1) }
+  const lastArg = args.at(-1)
+  if (lastArg === 'patch' || lastArg === 'minor' || lastArg === 'major') {
+    return { workspaces: args.slice(0, -1), version: lastArg }
   } else {
-    return { version: null, targets: args }
+    return { workspaces: args, version: null }
   }
 }

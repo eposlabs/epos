@@ -629,7 +629,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     if (allowMissingModels) return null
     const message = `Model '${name}' is not registered`
     const tip1 = `Make sure you registered it via epos.state.register() before calling epos.state.connect()`
-    const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
+    const tip2 = `To allow missing models, set options.allowMissingModels to true in epos.json`
     throw new Error(`${message}. ${tip1}. ${tip2}.`)
   }
 
@@ -642,7 +642,7 @@ export class ProjectState<T = Obj> extends exSw.Unit {
     if (allowMissingModels) return null
     const message = `Class '${instance.constructor.name}' is not registered as a model`
     const tip1 = `Make sure you registered it via epos.state.register()`
-    const tip2 = `To allow missing models, set config.allowMissingModels to true in epos.json`
+    const tip2 = `To allow missing models, set options.allowMissingModels to true in epos.json`
     throw new Error(`${message}. ${tip1}. ${tip2}.`)
   }
 
