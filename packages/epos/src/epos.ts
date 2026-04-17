@@ -452,18 +452,18 @@ export type BusService<T extends Obj<any>> = {
 }
 
 export type ReqInit = {
-  body: RequestInit['body']
-  cache: RequestInit['cache']
-  credentials: RequestInit['credentials']
-  headers: RequestInit['headers']
-  integrity: RequestInit['integrity']
-  keepalive: RequestInit['keepalive']
-  method: RequestInit['method']
-  mode: RequestInit['mode']
-  priority: RequestInit['priority']
-  redirect: RequestInit['redirect']
-  referrer: RequestInit['referrer']
-  referrerPolicy: RequestInit['referrerPolicy']
+  body?: RequestInit['body']
+  cache?: RequestInit['cache']
+  credentials?: RequestInit['credentials']
+  headers?: RequestInit['headers']
+  integrity?: RequestInit['integrity']
+  keepalive?: RequestInit['keepalive']
+  method?: RequestInit['method']
+  mode?: RequestInit['mode']
+  priority?: RequestInit['priority']
+  redirect?: RequestInit['redirect']
+  referrer?: RequestInit['referrer']
+  referrerPolicy?: RequestInit['referrerPolicy']
 }
 
 export type Res = {

@@ -16,7 +16,7 @@ Once you are ready to publish your extension, click the **Export** button in the
 
 ## Install Epos
 
-To get started, install Epos from the [Chrome Web Store](https://chromewebstore.google.com/detail/epos/kliobnfbhleelcpnfimenebpgffbclck).
+To get started, install Epos from the [Chrome Web Store](https://get.epos.dev).
 
 Once installed, click the Epos extension icon to open [app.epos.dev](https://app.epos.dev) dashboard in a new tab. This tab will be automatically pinned and **must remain open** while you develop your extension.
 

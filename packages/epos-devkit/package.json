@@ -27,7 +27,7 @@
     "@eposlabs/utils": "^1.26.3",
     "@tabler/icons-react": "^3.41.1",
     "clsx": "^2.1.1",
-    "epos": "^2.0.2",
+    "epos": "^2.0.4",
     "epos-unit": "^1.31.0",
     "tailwind-merge": "^3.5.0"
   },

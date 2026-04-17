@@ -9,7 +9,7 @@
     "preview": "vite build --mode preview"
   },
   "dependencies": {
-    "epos": "^2.0.2"
+    "epos": "^2.0.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",

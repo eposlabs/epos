@@ -6,7 +6,7 @@ While frameworks like [WXT](https://wxt.dev/) and [Plasmo](https://www.plasmo.co
 
 ## Installation
 
-Epos is not an npm package. Instead, the engine is a browser extension installed from the [Chrome Web Store](https://chromewebstore.google.com/detail/epos/kliobnfbhleelcpnfimenebpgffbclck). In other words, Epos is an **extension for building other extensions**.
+Epos is not an npm package. Instead, the engine is a browser extension installed from the [Chrome Web Store](https://get.epos.dev). In other words, Epos is an **extension for building other extensions**.
 
 ## Workflow
 

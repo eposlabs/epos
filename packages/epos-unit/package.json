@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.26.3",
-    "epos": "^2.0.2",
+    "epos": "^2.0.4",
     "nanoid": "^5.1.7"
   },
   "devDependencies": {
