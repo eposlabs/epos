@@ -1,5 +1,6 @@
 export default epos.libs.reactDom
 export const {
+  __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
   createPortal,
   flushSync,
   preconnect,

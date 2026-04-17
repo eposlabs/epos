@@ -1,7 +1,12 @@
 export default epos.libs.react
 export const {
+  __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+  __COMPILER_RUNTIME,
   act,
+  Activity,
   cache,
+  cacheSignal,
+  captureOwnerStack,
   Children,
   cloneElement,
   Component,
@@ -18,6 +23,7 @@ export const {
   startTransition,
   StrictMode,
   Suspense,
+  unstable_useCacheRefresh,
   use,
   useActionState,
   useCallback,
@@ -25,6 +31,7 @@ export const {
   useDebugValue,
   useDeferredValue,
   useEffect,
+  useEffectEvent,
   useId,
   useImperativeHandle,
   useInsertionEffect,
