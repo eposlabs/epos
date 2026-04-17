@@ -1,6 +1,6 @@
 {
   "name": "paralayer",
-  "version": "1.20.2",
+  "version": "1.20.3",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -27,12 +27,12 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.3",
+    "@eposlabs/utils": "^1.26.4",
     "chokidar": "^5.0.0",
     "minimist": "^1.2.8"
   },
   "devDependencies": {
-    "@eposlabs/tsconfig": "^1.0.1",
+    "@eposlabs/tsconfig": "^1.0.2",
     "@types/minimist": "^1.2.5"
   },
   "publishConfig": {

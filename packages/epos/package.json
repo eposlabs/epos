@@ -1,6 +1,6 @@
 {
   "name": "epos",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.3",
+    "@eposlabs/utils": "^1.26.4",
     "@types/chrome": "^0.1.40",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -38,7 +38,7 @@
     "yjs": "^13.6.30"
   },
   "devDependencies": {
-    "@eposlabs/tsconfig": "^1.0.1",
+    "@eposlabs/tsconfig": "^1.0.2",
     "vite": "^8.0.8"
   },
   "peerDependencies": {

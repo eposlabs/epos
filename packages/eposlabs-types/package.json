@@ -1,6 +1,6 @@
 {
   "name": "@eposlabs/types",
-  "version": "1.26.2",
+  "version": "1.26.3",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
@@ -24,12 +24,12 @@
     "dist"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.3"
+    "@eposlabs/utils": "^1.26.4"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@eposlabs/tsconfig": "^1.0.1"
+    "@eposlabs/tsconfig": "^1.0.2"
   }
 }
