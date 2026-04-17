@@ -14,12 +14,12 @@
   },
   "scripts": {
     "dev": "rimraf dist && tsgo --watch",
-    "build": "rimraf dist && tsgo",
+    "build": "rimraf dist && tsgo --build",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/utils-common.js",
-    "./node": "./dist/utils-node.js"
+    ".": "./dist/shared/utils.shared.js",
+    "./node": "./dist/node/utils.node.js"
   },
   "files": [
     "dist"

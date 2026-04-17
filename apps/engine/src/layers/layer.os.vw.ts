@@ -1,5 +1,5 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.os.vw.ts'
-import { Libs, type Libs as LibsType } from '../units/libs.os.vw.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.os.vw'
+import { Libs, type Libs as LibsType } from '../units/libs.os.vw'
 
 Object.assign(osVw, {
   Unit,

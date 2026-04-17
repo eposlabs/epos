@@ -1,9 +1,9 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.os.ts'
-import { Alive, type Alive as AliveType } from '../units/alive.os.ts'
-import { App, type App as AppType } from '../units/app.os.ts'
-import { Project, type Project as ProjectType } from '../units/project.os.ts'
-import { Projects, type Projects as ProjectsType } from '../units/projects.os.ts'
-import { Utils, type Utils as UtilsType } from '../units/utils.os.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.os'
+import { Alive, type Alive as AliveType } from '../units/alive.os'
+import { App, type App as AppType } from '../units/app.os'
+import { Project, type Project as ProjectType } from '../units/project.os'
+import { Projects, type Projects as ProjectsType } from '../units/projects.os'
+import { Utils, type Utils as UtilsType } from '../units/utils.os'
 
 Object.assign(os, {
   Unit,

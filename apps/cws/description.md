@@ -1,4 +1,4 @@
-Epos is an extension for building Chromium extensions with React. Connect your local folder to Epos and start developing. When ready, just click "Export" to get a standalone ZIP file that you can publish.
+Epos is an engine for building Chromium extensions with React. Connect your local folder to Epos and start developing. When ready, just click "Export" to get a standalone ZIP file that you can publish.
 
 ⚡ What Epos gives you:
 

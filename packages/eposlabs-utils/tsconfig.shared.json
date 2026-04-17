@@ -1,0 +1,9 @@
+{
+  "extends": "@eposlabs/tsconfig",
+  "include": ["src/shared"],
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src/shared",
+    "outDir": "dist/shared"
+  }
+}

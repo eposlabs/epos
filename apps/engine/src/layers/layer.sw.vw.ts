@@ -1,5 +1,5 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.sw.vw.ts'
-import { Medium, type Medium as MediumType } from '../units/medium.sw.vw.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.sw.vw'
+import { Medium, type Medium as MediumType } from '../units/medium.sw.vw'
 
 Object.assign(swVw, {
   Unit,

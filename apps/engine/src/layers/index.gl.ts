@@ -1,1 +1,1 @@
-import './layer.gl.ts'
+import './layer.gl'

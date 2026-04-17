@@ -1,6 +1,6 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.pm.ts'
-import { App, type App as AppType } from '../units/app.pm.ts'
-import { Utils, type Utils as UtilsType } from '../units/utils.pm.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.pm'
+import { App, type App as AppType } from '../units/app.pm'
+import { Utils, type Utils as UtilsType } from '../units/utils.pm'
 
 Object.assign(pm, {
   Unit,

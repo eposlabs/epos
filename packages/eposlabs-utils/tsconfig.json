@@ -1,9 +1,4 @@
 {
-  "extends": "@eposlabs/tsconfig/node",
-  "include": ["src"],
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "noEmit": false
-  }
+  "files": [],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.shared.json" }]
 }

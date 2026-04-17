@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "npm run build && tsgo --watch",
-    "build": "rimraf dist && tsgo && chmod +x dist/bin.js",
+    "build": "rimraf dist && tsgo --build && chmod +x dist/bin.js",
     "lint": "tsgo --build --noEmit"
   },
   "bin": {

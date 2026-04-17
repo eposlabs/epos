@@ -152,7 +152,7 @@ const cn = (...inputs: ClassValue[]) => {
 
 const AutoWidget = epos.component(() => {
   const ctx = useWidgetContext()
-  const { target, property, descriptor } = ctx
+  const { target, property } = ctx
 
   const value = target[property]
   if (is.string(value)) return <TextWidget />

@@ -16,6 +16,7 @@ export type Options = {
   input?: Input
   output?: Output
   watch?: boolean
+  ext?: 'omit' | 'keep' | 'js'
   /** Whether the layer variables should be exposed globally. */
   expose?: boolean
   /** Layer that all other layers extend. */
@@ -38,9 +39,10 @@ export class Paralayer extends Unit {
   constructor(options: Options) {
     super()
     const inputs = ensureArray(options.input).filter(is.present)
+    const ext = options.ext ?? 'omit'
     const input = inputs.length > 0 ? inputs : ['./src']
     const output = options.output ?? './src/layers'
-    this.options = { ...options, input, output }
+    this.options = { ...options, input, output, ext }
   }
 
   async start() {
@@ -193,7 +195,7 @@ export class Paralayer extends Unit {
         const names = file.names
         const types = file.names.map(name => `type ${name} as ${name}Type`)
         const relativePath = relative(this.options.output, path)
-        return `import { ${[...names, ...types].join(', ')} } from '${relativePath}'`
+        return `import { ${[...names, ...types].join(', ')} } from '${this.processExt(relativePath)}'`
       })
       .filter(Boolean)
 
@@ -234,10 +236,10 @@ export class Paralayer extends Unit {
         if (layer1.length !== layer2.length) return layer2.length - layer1.length
         return layer1.localeCompare(layer2)
       })
-      .map(layer => `import './layer.${layer}.ts'`)
+      .map(layer => `import './${this.processExt(`layer.${layer}.ts`)}'`)
 
     if (this.options.extend && topLayer !== this.options.extend) {
-      imports.unshift(`import './layer.${this.options.extend}.ts'`)
+      imports.unshift(`import './${this.processExt(`layer.${this.options.extend}.ts`)}'`)
     }
 
     return [...imports, ''].join('\n')
@@ -289,6 +291,14 @@ export class Paralayer extends Unit {
     if (content === prevContent) return
     await mkdir(join(path, '..'), { recursive: true })
     await writeFile(path, content, 'utf-8')
+  }
+
+  private processExt(path: string) {
+    const ext = extname(path)
+    if (this.options.ext === 'keep') return path
+    if (this.options.ext === 'omit') return path.slice(0, -ext.length)
+    if (this.options.ext === 'js') return `${path.slice(0, -ext.length)}.js`
+    throw new Error(`Invalid ext option: ${this.options.ext}`)
   }
 }
 

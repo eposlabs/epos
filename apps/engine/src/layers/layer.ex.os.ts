@@ -1,5 +1,5 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.ex.os.ts'
-import { Peer, type Peer as PeerType } from '../units/peer.ex.os.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.ex.os'
+import { Peer, type Peer as PeerType } from '../units/peer.ex.os'
 
 Object.assign(exOs, {
   Unit,

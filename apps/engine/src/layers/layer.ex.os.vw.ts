@@ -1,5 +1,5 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.ex.os.vw.ts'
-import { ProjectsWatcher, type ProjectsWatcher as ProjectsWatcherType } from '../units/projects-watcher.ex.os.vw.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.ex.os.vw'
+import { ProjectsWatcher, type ProjectsWatcher as ProjectsWatcherType } from '../units/projects-watcher.ex.os.vw'
 
 Object.assign(exOsVw, {
   Unit,

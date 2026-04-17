@@ -1,8 +1,8 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.cs.ts'
-import { App, type App as AppType } from '../units/app.cs.ts'
-import { Libs, type Libs as LibsType } from '../units/libs.cs.ts'
-import { Projects, type Projects as ProjectsType } from '../units/projects.cs.ts'
-import { Utils, type Utils as UtilsType } from '../units/utils.cs.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.cs'
+import { App, type App as AppType } from '../units/app.cs'
+import { Libs, type Libs as LibsType } from '../units/libs.cs'
+import { Projects, type Projects as ProjectsType } from '../units/projects.cs'
+import { Utils, type Utils as UtilsType } from '../units/utils.cs'
 
 Object.assign(cs, {
   Unit,

@@ -1,0 +1,9 @@
+{
+  "extends": "@eposlabs/tsconfig/node",
+  "include": ["src/node"],
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src/node",
+    "outDir": "dist/node"
+  }
+}

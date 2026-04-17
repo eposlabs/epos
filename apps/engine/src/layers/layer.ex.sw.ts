@@ -1,6 +1,6 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.ex.sw.ts'
-import { ProjectState, type ProjectState as ProjectStateType } from '../units/project-state.ex.sw.ts'
-import { ProjectStates, type ProjectStates as ProjectStatesType } from '../units/project-states.ex.sw.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.ex.sw'
+import { ProjectState, type ProjectState as ProjectStateType } from '../units/project-state.ex.sw'
+import { ProjectStates, type ProjectStates as ProjectStatesType } from '../units/project-states.ex.sw'
 
 Object.assign(exSw, {
   Unit,

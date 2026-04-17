@@ -1,8 +1,8 @@
-import { Unit, type Unit as UnitType } from '../core/core-unit.vw.ts'
-import { App, type App as AppType } from '../units/app.vw.tsx'
-import { Project, type Project as ProjectType } from '../units/project.vw.tsx'
-import { Projects, type Projects as ProjectsType } from '../units/projects.vw.tsx'
-import { Utils, type Utils as UtilsType } from '../units/utils.vw.ts'
+import { Unit, type Unit as UnitType } from '../core/core-unit.vw'
+import { App, type App as AppType } from '../units/app.vw'
+import { Project, type Project as ProjectType } from '../units/project.vw'
+import { Projects, type Projects as ProjectsType } from '../units/projects.vw'
+import { Utils, type Utils as UtilsType } from '../units/utils.vw'
 
 Object.assign(vw, {
   Unit,
