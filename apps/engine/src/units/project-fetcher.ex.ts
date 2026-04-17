@@ -22,7 +22,7 @@ export class ProjectFetcher extends ex.Unit {
     const canAccess = await this.$project.browser.api.permissions.contains({ origins: [href] })
     if (!canAccess) throw new Error(`No permission to access ${href}`)
 
-    const res = await this.sw.fetch(href, init)
+    const res = await this.sw.fetch(href, this.prepareInit(init))
     if (this.$.utils.is.error(res)) throw res
 
     return {
@@ -49,5 +49,15 @@ export class ProjectFetcher extends ex.Unit {
         return result
       },
     }
+  }
+
+  private prepareInit(init?: ReqInit) {
+    init = { ...init }
+
+    if (init.headers instanceof Headers) {
+      init.headers = Object.fromEntries(init.headers.entries())
+    }
+
+    return init
   }
 }
