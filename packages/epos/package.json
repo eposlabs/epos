@@ -13,8 +13,8 @@
     "directory": "packages/epos"
   },
   "scripts": {
-    "dev": "rimraf dist && tsgo --watch",
-    "build": "rimraf dist && tsgo --build",
+    "dev": "rm -rf dist && tsgo --watch",
+    "build": "rm -rf dist && tsgo --build",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",
+    "@typescript/native-preview": "^7.0.0-dev.20260418.1",
     "vite": "^8.0.8"
   },
   "peerDependencies": {

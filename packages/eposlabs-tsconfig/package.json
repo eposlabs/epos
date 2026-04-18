@@ -21,7 +21,8 @@
     "configs"
   ],
   "dependencies": {
-    "@eposlabs/utils": "^1.26.4"
+    "@eposlabs/utils": "^1.26.4",
+    "@types/node": "^25.6.0"
   },
   "publishConfig": {
     "access": "public"

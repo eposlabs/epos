@@ -14,7 +14,7 @@
     "prettier": "prettier --write ./",
     "shadcn": "node scripts/shadcn.ts",
     "release": "node scripts/release.ts",
-    "reinstall": "npx rimraf --glob node_modules package-lock.json **/node_modules **/package-lock.json && npm install",
+    "reinstall": "npx rimraf --glob node_modules/ package-lock.json **/node_modules/ **/package-lock.json && npm install",
     "docs:dev": "npm run dev -w docs",
     "docs:build": "npm run build -w docs",
     "docs:preview": "npm run preview -w docs",
@@ -50,8 +50,6 @@
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",
     "@eposlabs/utils": "^1.26.4",
-    "@types/node": "^25.6.0",
-    "@typescript/native-preview": "^7.0.0-dev.20260417.1",
     "npm-check-updates": "^21.0.2",
     "prettier": "^3.8.3",
     "prettier-plugin-organize-imports": "^4.3.0",
