@@ -1,11 +1,10 @@
 FROM node:alpine AS builder
-WORKDIR /srv
-COPY ./package*.json ./
-COPY ./apps/docs/package*.json ./apps/docs/
-COPY ./packages/eposlabs-tsconfig ./packages/eposlabs-tsconfig/
-RUN npm ci -w docs --include-workspace-root
-COPY ./apps/docs/ ./apps/docs/
-RUN npm run build -w docs
+COPY ./package*.json /srv
+COPY ./apps/docs/package*.json /srv/apps/docs/
+COPY ./packages/eposlabs-tsconfig /srv/packages/eposlabs-tsconfig/
+RUN cd /srv && npm ci -w docs --include-workspace-root
+COPY ./apps/docs/ /srv/apps/docs/
+RUN cd /srv && npm run build -w docs
 
 FROM caddy:alpine
 COPY ./apps/docs/Caddyfile /etc/caddy/Caddyfile
