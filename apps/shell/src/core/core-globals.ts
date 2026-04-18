@@ -4,9 +4,6 @@
 /// <reference types="wicg-file-system-access"/>
 
 declare global {
-  const DEV: boolean
-  const PROD: boolean
-
   interface Array<T> {
     remove(value: T): boolean
   }

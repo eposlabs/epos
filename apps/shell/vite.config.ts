@@ -5,8 +5,6 @@ import { defineConfig } from 'vite'
 import { rebundle } from 'vite-plugin-rebundle'
 
 export default defineConfig(async ({ mode }) => {
-  const env = mode === 'development' ? 'development' : 'production'
-
   const layers = await paralayer({
     watch: mode !== 'production',
     default: 'gl',
@@ -16,13 +14,6 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       tsconfigPaths: true,
     },
-
-    define: {
-      'DEV': JSON.stringify(mode === 'development'),
-      'PROD': JSON.stringify(mode !== 'development'),
-      'process.env.NODE_ENV': JSON.stringify(env),
-    },
-
     plugins: [
       epos(),
       tailwindcss(),
@@ -34,7 +25,6 @@ export default defineConfig(async ({ mode }) => {
         },
       }),
     ],
-
     build: {
       watch: mode === 'production' ? null : {},
       minify: false,

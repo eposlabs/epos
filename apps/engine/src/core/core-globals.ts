@@ -4,8 +4,6 @@
 import type { Epos, Spec } from 'epos'
 
 declare global {
-  var DEV: boolean
-  var PROD: boolean
   var BUNDLE: 'cs' | 'ex' | 'os' | 'pm' | 'sw' | 'vw'
   var EX_MINI: boolean
   var require: any

@@ -1,7 +1,7 @@
 export class EnvIs extends gl.Unit {
   // Environment
-  dev = DEV
-  prod = PROD
+  dev = import.meta.env.DEV
+  prod = import.meta.env.PROD
 
   // Bundle
   cs = BUNDLE === 'cs'

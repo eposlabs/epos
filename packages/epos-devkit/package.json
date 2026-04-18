@@ -13,8 +13,8 @@
     "directory": "packages/epos-devkit"
   },
   "scripts": {
-    "dev": "vite build --mode development",
-    "build": "vite build --mode production",
+    "dev": "NODE_ENV=development vite build --mode development",
+    "build": "NODE_ENV=production vite build --mode production",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {

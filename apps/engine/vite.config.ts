@@ -22,13 +22,9 @@ export default defineConfig(async ({ mode }) => {
       input: {
         transform: {
           define: {
-            'DEV': JSON.stringify(env === 'development'),
-            'PROD': JSON.stringify(env === 'production'),
             'BUNDLE': JSON.stringify(name),
             'import.meta.env.DEV': JSON.stringify(env === 'development'),
             'import.meta.env.PROD': JSON.stringify(env === 'production'),
-            'import.meta.env.MODE': JSON.stringify(env),
-            'process.env.NODE_ENV': JSON.stringify(env),
             ...params.define,
           },
         },
@@ -43,13 +39,6 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
-    define: {
-      'import.meta.env.DEV': 'import.meta.env.DEV',
-      'import.meta.env.PROD': 'import.meta.env.PROD',
-      'import.meta.env.MODE': 'import.meta.env.MODE',
-      'process.env.NODE_ENV': 'process.env.NODE_ENV',
-    },
-
     plugins: [
       tailwindcss(),
       viteStaticCopy({

@@ -1,4 +1,4 @@
-if (DEV && BUNDLE === 'sw') {
+if (import.meta.env.DEV && BUNDLE === 'sw') {
   let ws: WebSocket | null = null
   void reconnect(0)
 
