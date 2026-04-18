@@ -16,8 +16,8 @@
     "directory": "packages/vite-plugin-rebundle"
   },
   "scripts": {
-    "dev": "rimraf dist && tsgo --watch",
-    "build": "rimraf dist && tsgo --build",
+    "dev": "rm -rf dist && tsgo --watch",
+    "build": "npm run lint && rm -rf dist && tsgo --build",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {

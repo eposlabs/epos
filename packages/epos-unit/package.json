@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "rm -rf dist && tsgo --watch",
-    "build": "rm -rf dist && tsgo --build",
+    "build": "npm run lint && rm -rf dist && tsgo --build",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
