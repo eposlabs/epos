@@ -31,11 +31,11 @@
     "@types/chrome": "^0.1.40",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript/native-preview": "^7.0.0-dev.20260418.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260419.1",
     "paralayer": "^1.20.3",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.8",
     "vite-plugin-rebundle": "^2.0.7",
-    "vite-plugin-static-copy": "^4.0.1"
+    "vite-plugin-static-copy": "^4.1.0"
   }
 }
