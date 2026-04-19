@@ -11,7 +11,7 @@ export class App extends sw.Unit {
   net = new sw.Net(this)
   peer = new sw.Peer(this)
   projects = new sw.Projects(this)
-  shell = new sw.Shell(this)
+  dashboard = new sw.Dashboard(this)
 
   async init() {
     self.$ = this
@@ -20,11 +20,11 @@ export class App extends sw.Unit {
     this.logInfo()
     this.initGlobalMethods()
     await this.createOffscreen()
-    await this.shell.reloadTabs()
+    await this.dashboard.reloadTabs()
   }
 
   private logInfo() {
-    if (!this.shell.isInstalled()) return
+    if (!this.dashboard.isInstalled()) return
     const title = `ᛃ epos is running | https://epos.dev`
     const subtitle = `To inspect background processes, open offscreen.html from the extension details page`
     this.$.utils.info({ title, subtitle, timestamp: true })

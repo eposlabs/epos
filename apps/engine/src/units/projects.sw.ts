@@ -267,8 +267,8 @@ export class Projects extends sw.Unit {
       return
     }
 
-    // Process action by `epos-shell` if installed
-    await this.$.shell.processAction()
+    // Process action by `dashboard` if installed
+    await this.$.dashboard.processAction()
   }
 
   private async loadEx() {

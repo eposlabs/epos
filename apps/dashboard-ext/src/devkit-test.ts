@@ -27,7 +27,7 @@
 // // TODO: provide all possible variants of data (get/set/value/method/computed/etc + extends)
 // // and check what are visible with getOwnPropertyDescriptors / prototypes
 // class Header extends Base {
-//   title = 'Epos Shell App'
+//   title = 'Epos Dashboard'
 //   theme = 'dark'
 //   visible = false
 

@@ -29,11 +29,11 @@ export class App extends gl.Unit {
     await this.ensureSinglePinnedTab()
   }
 
-  async exportShell() {
+  async exportDashboard() {
     const eposProjects = await epos.projects.list()
-    const shell = eposProjects.find(project => project.spec.slug === 'epos-shell')
-    if (!shell) return
-    const project = new gl.Project(this, shell)
+    const dashboard = eposProjects.find(project => project.spec.slug === 'dashboard')
+    if (!dashboard) return
+    const project = new gl.Project(this, dashboard)
     await project.export()
   }
 
@@ -43,9 +43,9 @@ export class App extends gl.Unit {
   }
 
   private async ensureSinglePinnedTab() {
-    const shellTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
-    if (shellTabs.length === 1) {
-      const tab = shellTabs[0]
+    const dashboardTabs = await epos.browser.tabs.query({ url: 'https://app.epos.dev/*' })
+    if (dashboardTabs.length === 1) {
+      const tab = dashboardTabs[0]
       if (!tab) throw this.never()
       if (tab.pinned) return
       await epos.browser.tabs.update(epos.env.tabId, { pinned: true })
@@ -53,7 +53,7 @@ export class App extends gl.Unit {
     } else {
       await epos.browser.tabs.update(epos.env.tabId, { active: true, pinned: true })
       await epos.browser.tabs.move(epos.env.tabId, { index: 0 })
-      for (const tab of shellTabs) {
+      for (const tab of dashboardTabs) {
         if (!tab.id || tab.id === epos.env.tabId) continue
         await epos.browser.tabs.remove(tab.id)
       }

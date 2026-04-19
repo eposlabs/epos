@@ -85,8 +85,8 @@ export class ProjectTarget extends sw.Unit {
     const isExtensionPage = origin === location.origin
     if (isExtensionPage) return false
 
-    // Only shell can access `app.epos.dev`
-    if (host === 'app.epos.dev' && this.$project.spec.slug !== 'epos-shell') return false
+    // Only `dashboard` can access `app.epos.dev`
+    if (host === 'app.epos.dev' && this.$project.spec.slug !== 'dashboard') return false
 
     const matcher = this.$.libs.matchPattern(pattern)
     return matcher.assertValid().match(url)

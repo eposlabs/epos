@@ -78,13 +78,13 @@ export class Project extends gl.Unit {
 
   async init() {
     this.reload = this.$.utils.enqueue(this.reload)
-    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('epos-shell', 'handles', this.id)
+    const handle = await this.$.idb.get<FileSystemDirectoryHandle>('dashboard', 'handles', this.id)
     if (handle) this.useHandle(handle)
     this.state.ready = true
   }
 
   async dispose() {
-    await this.$.idb.delete('epos-shell', 'handles', this.id)
+    await this.$.idb.delete('dashboard', 'handles', this.id)
     this.watcher.stopGlobalObserver()
     this.watcher.stopFileObservers()
   }
@@ -203,7 +203,7 @@ export class Project extends gl.Unit {
     const files = await epos.projects.export(this.id)
     const zip = await this.$.utils.zip(files)
     const url = URL.createObjectURL(zip)
-    const filename = `${this.spec.slug === 'epos-shell' ? 'epos' : this.spec.slug}-${this.spec.version}.zip`
+    const filename = `${this.spec.slug === 'dashboard' ? 'epos' : this.spec.slug}-${this.spec.version}.zip`
     await epos.browser.downloads.download({ url, filename })
     URL.revokeObjectURL(url)
     this.state.exporting = false
@@ -211,7 +211,7 @@ export class Project extends gl.Unit {
   }
 
   private async useHandle(handle: FileSystemDirectoryHandle) {
-    await this.$.idb.set('epos-shell', 'handles', this.id, handle)
+    await this.$.idb.set('dashboard', 'handles', this.id, handle)
     this.state.handle = handle
 
     const access = await handle.queryPermission({ mode: 'readwrite' })

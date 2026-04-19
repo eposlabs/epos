@@ -1,9 +1,9 @@
-export class Shell extends sw.Unit {
+export class Dashboard extends sw.Unit {
   private url = 'https://app.epos.dev/'
   private urlFilter = 'https://app.epos.dev/*'
 
   isInstalled() {
-    return this.$.projects.list.some(project => project.spec.slug === 'epos-shell')
+    return this.$.projects.list.some(project => project.spec.slug === 'dashboard')
   }
 
   async reloadTabs() {
@@ -17,9 +17,9 @@ export class Shell extends sw.Unit {
   async processAction() {
     if (!this.isInstalled()) return
 
-    const shellTab = (await this.$.browser.tabs.query({ url: this.urlFilter }))[0]
-    if (shellTab) {
-      await this.$.browser.tabs.update(shellTab.id, { active: true })
+    const dashboardTab = (await this.$.browser.tabs.query({ url: this.urlFilter }))[0]
+    if (dashboardTab) {
+      await this.$.browser.tabs.update(dashboardTab.id, { active: true })
     } else {
       await this.$.browser.tabs.create({ url: this.url, active: true })
     }

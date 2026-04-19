@@ -1,6 +1,7 @@
 import { Unit, type Unit as UnitType } from '../core/core-unit.sw'
 import { Alive, type Alive as AliveType } from '../units/alive.sw'
 import { App, type App as AppType } from '../units/app.sw'
+import { Dashboard, type Dashboard as DashboardType } from '../units/dashboard.sw'
 import { Idb, type Idb as IdbType } from '../units/idb.sw'
 import { Libs, type Libs as LibsType } from '../units/libs.sw'
 import { Net, type Net as NetType } from '../units/net.sw'
@@ -17,7 +18,6 @@ import { ProjectFetcher, type ProjectFetcher as ProjectFetcherType } from '../un
 import { ProjectTarget, type ProjectTarget as ProjectTargetType } from '../units/project-target.sw'
 import { Project, type Project as ProjectType } from '../units/project.sw'
 import { Projects, type Projects as ProjectsType } from '../units/projects.sw'
-import { Shell, type Shell as ShellType } from '../units/shell.sw'
 import { UtilsOrigins, type UtilsOrigins as UtilsOriginsType } from '../units/utils-origins.sw'
 import { Utils, type Utils as UtilsType } from '../units/utils.sw'
 
@@ -25,6 +25,7 @@ Object.assign(sw, {
   Unit,
   Alive,
   App,
+  Dashboard,
   Idb,
   Libs,
   Net,
@@ -41,7 +42,6 @@ Object.assign(sw, {
   ProjectTarget,
   Project,
   Projects,
-  Shell,
   UtilsOrigins,
   Utils,
 })
@@ -53,6 +53,7 @@ declare global {
     Unit: typeof Unit
     Alive: typeof Alive
     App: typeof App
+    Dashboard: typeof Dashboard
     Idb: typeof Idb
     Libs: typeof Libs
     Net: typeof Net
@@ -69,7 +70,6 @@ declare global {
     ProjectTarget: typeof ProjectTarget
     Project: typeof Project
     Projects: typeof Projects
-    Shell: typeof Shell
     UtilsOrigins: typeof UtilsOrigins
     Utils: typeof Utils
   }
@@ -78,6 +78,7 @@ declare global {
     Unit: Unit
     Alive: Alive
     App: App
+    Dashboard: Dashboard
     Idb: Idb
     Libs: Libs
     Net: Net
@@ -94,7 +95,6 @@ declare global {
     ProjectTarget: ProjectTarget
     Project: Project
     Projects: Projects
-    Shell: Shell
     UtilsOrigins: UtilsOrigins
     Utils: Utils
   }
@@ -103,6 +103,7 @@ declare global {
     export type Unit = UnitType
     export type Alive = AliveType
     export type App = AppType
+    export type Dashboard = DashboardType
     export type Idb = IdbType
     export type Libs = LibsType
     export type Net = NetType
@@ -119,7 +120,6 @@ declare global {
     export type ProjectTarget = ProjectTargetType
     export type Project = ProjectType
     export type Projects = ProjectsType
-    export type Shell = ShellType
     export type UtilsOrigins = UtilsOriginsType
     export type Utils = UtilsType
   }
