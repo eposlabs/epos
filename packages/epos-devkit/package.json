@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development vite build --mode development",
-    "build": "npm run lint && NODE_ENV=production vite build --mode production",
+    "build": "npm run lint && vite build --mode production",
     "lint": "tsgo --build --noEmit"
   },
   "exports": {

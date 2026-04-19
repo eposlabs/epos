@@ -96,8 +96,8 @@ Recommended scripts:
 {
   "scripts": {
     "dev": "NODE_ENV=development vite build --mode development",
-    "build": "NODE_ENV=production vite build --mode production",
-    "preview": "NODE_ENV=production vite build --mode preview"
+    "build": "vite build --mode production",
+    "preview": "vite build --mode preview"
   }
 }
 ```

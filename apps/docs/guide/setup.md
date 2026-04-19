@@ -137,8 +137,8 @@ Update to use the build command:
     "build": "tsc && vite build", // [!code --]
     "preview": "vite preview" // [!code --]
     "dev": "NODE_ENV=development vite build --mode development", // [!code ++]
-    "build": "NODE_ENV=production vite build --mode production", // [!code ++]
-    "preview": "NODE_ENV=production vite build --mode preview" // [!code ++]
+    "build": "vite build --mode production", // [!code ++]
+    "preview": "vite build --mode preview" // [!code ++]
   },
   ...
 }

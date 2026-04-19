@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development vite build --mode development",
-    "build": "npm run lint && NODE_ENV=production vite build --mode production",
-    "preview": "NODE_ENV=production vite build --mode preview",
+    "build": "npm run lint && vite build --mode production",
+    "preview": "vite build --mode preview",
     "lint": "tsgo --build --noEmit"
   },
   "dependencies": {
