@@ -402,7 +402,7 @@ export class Projects extends sw.Unit {
   }
 
   private hasReactCode(js: string) {
-    return js.includes('epos.libs.reactJsxRuntime') || js.includes('React.createElement')
+    return js.includes('epos.libs.reactJsxRuntime') || js.includes('React.createElement') || js.includes('jsxDEV')
   }
 
   private getAddressUrl(address: Address) {
