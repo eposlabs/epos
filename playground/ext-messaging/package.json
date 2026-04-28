@@ -1,16 +1,16 @@
 {
-  "name": "@eposlabs/idb",
-  "version": "1.27.3",
+  "name": "ext-messaging",
+  "version": "0.0.1",
   "type": "module",
   "license": "MIT",
   "author": "imkost",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/eposlabs-idb",
+  "homepage": "https://github.com/eposlabs/epos/tree/main/packages/ext-messaging",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eposlabs/epos.git",
-    "directory": "packages/eposlabs-idb"
+    "directory": "packages/ext-messaging"
   },
   "scripts": {
     "dev": "rm -rf dist && tsgo --watch",
@@ -18,14 +18,11 @@
     "lint": "tsgo --build --noEmit"
   },
   "exports": {
-    ".": "./dist/idb.js"
+    ".": "./dist/messaging.js"
   },
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "@eposlabs/utils": "^1.26.4"
   },

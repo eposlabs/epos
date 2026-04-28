@@ -1,3 +1,3 @@
 # @eposlabs/tsconfig
 
-Configurations for TypeScript used by [Epos Labs](https://github.com/eposlabs/).
+Configurations for TypeScript used by [EposLabs](https://github.com/eposlabs/).

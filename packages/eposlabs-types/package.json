@@ -23,11 +23,11 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
-    "@eposlabs/utils": "^1.26.4"
-  },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@eposlabs/utils": "^1.26.4"
   },
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",

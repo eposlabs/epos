@@ -1,3 +1,3 @@
 # @eposlabs/utils
 
-A set of utilities used by [Epos Labs](https://github.com/eposlabs/).
+A set of utilities used by [EposLabs](https://github.com/eposlabs/).
