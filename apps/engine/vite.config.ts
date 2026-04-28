@@ -25,6 +25,8 @@ export default defineConfig(async ({ mode }) => {
             'BUNDLE': JSON.stringify(name),
             'import.meta.env.DEV': JSON.stringify(env === 'development'),
             'import.meta.env.PROD': JSON.stringify(env === 'production'),
+            'import.meta.env.MODE': JSON.stringify(env),
+            'process.env.NODE_ENV': JSON.stringify(env),
             ...params.define,
           },
         },
@@ -39,6 +41,13 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
+    // Pass env variables as is so rebundle can replace them correctly
+    define: {
+      'import.meta.env.DEV': 'import.meta.env.DEV',
+      'import.meta.env.PROD': 'import.meta.env.PROD',
+      'import.meta.env.MODE': 'import.meta.env.MODE',
+      'process.env.NODE_ENV': 'process.env.NODE_ENV',
+    },
     plugins: [
       tailwindcss(),
       viteStaticCopy({

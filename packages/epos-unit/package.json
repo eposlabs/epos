@@ -26,11 +26,11 @@
   ],
   "dependencies": {
     "@eposlabs/utils": "^1.26.4",
-    "epos": "^2.0.6",
+    "epos": "^2.0.7",
     "nanoid": "^5.1.9"
   },
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",
-    "@typescript/native-preview": "^7.0.0-dev.20260419.1"
+    "@typescript/native-preview": "^7.0.0-dev.20260428.1"
   }
 }

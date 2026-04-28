@@ -1,9 +1,0 @@
-{
-  "extends": "@eposlabs/tsconfig/browser",
-  "include": ["src"],
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "noEmit": false
-  }
-}

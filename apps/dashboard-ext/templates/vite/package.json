@@ -9,13 +9,13 @@
     "preview": "vite build --mode preview"
   },
   "dependencies": {
-    "epos": "^2.0.6"
+    "epos": "^2.0.7"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "tailwindcss": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
+    "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
-    "vite": "^8.0.8",
+    "vite": "^8.0.10",
     "vite-plugin-rebundle": "^2.0.7"
   }
 }

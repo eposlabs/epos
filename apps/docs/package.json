@@ -13,10 +13,10 @@
   },
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",
-    "@tailwindcss/vite": "^4.2.2",
-    "oxc-minify": "^0.126.0",
-    "tailwindcss": "^4.2.2",
-    "vite": "^8.0.8",
+    "@tailwindcss/vite": "^4.2.4",
+    "oxc-minify": "^0.128.0",
+    "tailwindcss": "^4.2.4",
+    "vite": "^8.0.10",
     "vitepress": "^2.0.0-alpha.12"
   }
 }

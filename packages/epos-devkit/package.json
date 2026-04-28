@@ -27,16 +27,16 @@
     "@eposlabs/utils": "^1.26.4",
     "@tabler/icons-react": "^3.41.1",
     "clsx": "^2.1.1",
-    "epos": "^2.0.6",
+    "epos": "^2.0.7",
     "epos-unit": "^1.31.1",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@eposlabs/tsconfig": "^1.0.2",
-    "@tailwindcss/vite": "^4.2.2",
-    "@typescript/native-preview": "^7.0.0-dev.20260419.1",
-    "tailwindcss": "^4.2.2",
-    "vite": "^8.0.8",
+    "@tailwindcss/vite": "^4.2.4",
+    "@typescript/native-preview": "^7.0.0-dev.20260428.1",
+    "tailwindcss": "^4.2.4",
+    "vite": "^8.0.10",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-rebundle": "^2.0.7"
   }
